@@ -12,12 +12,12 @@ import Pagination from "@/components/Pagination";
 import { AiOutlineMenuUnfold } from "react-icons/ai";
 import { IoPersonOutline } from "react-icons/io5";
 import { MdTune } from "react-icons/md";
-import SuccessPopup from "../../components/successPopup";
-import FailedPopup from "../../components/failedPopup";
 import { setTime } from "react-datepicker/dist/date_utils";
 import { getSocket } from "@/app/utils/socket";
 import AdminHeader from "../../components/AdminHeader";
 import BaseLayout4 from "@/components/BaseLayout4";
+import SuccessPopup from "../../components/successPopup";
+import FailedPopup from "../../components/failedPopup";
 interface ApiResponse {
   candidateFirstName: string;
   candidateLastName: string;
@@ -194,30 +194,30 @@ useEffect(() => {
 
       const allMeetings: Meeting[] = response.data.data?.meetings || [];
 
-      // Filter and sort meetings
-      const today = new Date();
-      const currentTime = today.getTime();
-
       const upcomingMeetings = allMeetings
-        .filter((meeting) => {
-          const meetingDate = new Date(meeting.selectedDate);
-          const [startHour, startMinute] = meeting.startTime[0]
-            .split(":")
-            .map(Number);
-          meetingDate.setHours(startHour, startMinute, 0, 0);
-          return meetingDate.getTime() >= currentTime;
-        })
+        .filter((meeting) => meeting.meetingStatus !== "Completed")
         .sort((a, b) => {
           const aDate = new Date(a.selectedDate);
           const bDate = new Date(b.selectedDate);
-          const [aH, aM] = a.startTime[0].split(":").map(Number);
-          const [bH, bM] = b.startTime[0].split(":").map(Number);
+          const aStartTimeStr = Array.isArray(a.startTime)
+            ? a.startTime[0]
+            : a.startTime;
+          const bStartTimeStr = Array.isArray(b.startTime)
+            ? b.startTime[0]
+            : b.startTime;
+          const [aH, aM] = aStartTimeStr.split(":").map(Number);
+          const [bH, bM] = bStartTimeStr.split(":").map(Number);
           aDate.setHours(aH, aM, 0, 0);
           bDate.setHours(bH, bM, 0, 0);
           return aDate.getTime() - bDate.getTime();
         });
 
+      const completedMeetings = allMeetings.filter(
+        (meeting) => meeting.meetingStatus === "Completed"
+      );
+
       setUpcomingClasses(upcomingMeetings);
+      setCompletedData(completedMeetings);
     } catch (error) {
       console.error("Error fetching meetings:", error);
     }
@@ -281,11 +281,6 @@ useEffect(() => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = dataToShow.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(dataToShow.length / itemsPerPage);
-
-  // const filteredApplicants =
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentApplicants = currentItems.slice(startIndex, endIndex);
 
   const handleRescheduleSubmit = async () => {
     if (
@@ -503,7 +498,7 @@ useEffect(() => {
 
                     <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                       <span className="text-left -ml-60 ">
-                        Showing {currentApplicants.length} Of{" "}
+                        Showing {currentItems.length} Of{" "}
                         {dataToShow.length}
                       </span>
                     </div>

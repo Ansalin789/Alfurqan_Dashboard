@@ -13,6 +13,8 @@ import Pagination from "@/components/Pagination";
 import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import { TooltipProps } from "recharts";
+import FilterModal, { FilterField } from "@/components/FilterModal";
+
 interface Employee {
   _id: string;
   firstName: string;
@@ -166,6 +168,23 @@ const EmployeePage = () => {
   const [earningsPage, setEarningsPage] = useState(1);
   const earningsPerPage = 5;
   const [searchEarnings, setSearchEarnings] = useState("");
+  const [leavePage, setLeavePage] = useState(1);
+  const leavePerPage = 5;
+  const [searchLeave, setSearchLeave] = useState("");
+  const [workingPage, setWorkingPage] = useState(1);
+  const workingPerPage = 5;
+  const [searchWorking, setSearchWorking] = useState("");
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filters, setFilters] = useState<Record<string, any>>({});
+
+  const handleFilterChange = (newFilters: Record<string, any>) => {
+    setFilters(newFilters);
+  };
+  
+  const handleResetFilters = () => {
+    setFilters({});
+  };
+
   // Paginated months for earnings
   const monthsArray = Array.from({ length: 12 }).map((_, index) => {
     const monthNumber = index + 1;
@@ -182,16 +201,30 @@ const EmployeePage = () => {
     return {
       key: `${monthName}-${currentYear}`,
       monthName,
+      monthNumber,
       currentYear,
       totalhours,
       earnings,
     };
   });
-  const filteredEarnings = monthsArray.filter(
-    (row) =>
+  const filteredEarnings = monthsArray.filter((row) => {
+    const searchMatch =
       row.monthName.toLowerCase().includes(searchEarnings.toLowerCase()) ||
-      row.currentYear.toString().includes(searchEarnings)
-  );
+      row.currentYear.toString().includes(searchEarnings);
+
+    let filterMatch = true;
+    if (filters.month && row.monthNumber.toString() !== filters.month) {
+      filterMatch = false;
+    }
+    if (filters.totalhours && row.totalhours.toString() !== filters.totalhours) {
+      filterMatch = false;
+    }
+    if (filters.earnings && row.earnings.toFixed(2) !== filters.earnings) {
+      filterMatch = false;
+    }
+
+    return searchMatch && filterMatch;
+  });
   const totalEarningsPages = Math.ceil(
     filteredEarnings.length / earningsPerPage
   );
@@ -200,38 +233,76 @@ const EmployeePage = () => {
     earningsPage * earningsPerPage
   );
 
-  const [leavePage, setLeavePage] = useState(1);
-  const leavePerPage = 5;
-  const [searchLeave, setSearchLeave] = useState("");
-  const filteredLeave = leaveData.filter(
-    (item) =>
+  const filteredLeave = leaveData.filter((item) => {
+    const searchMatch =
       item.name?.toLowerCase().includes(searchLeave.toLowerCase()) ||
       item.employeeId?.toLowerCase().includes(searchLeave.toLowerCase()) ||
       item.role?.toLowerCase().includes(searchLeave.toLowerCase()) ||
       item.leaveType?.toLowerCase().includes(searchLeave.toLowerCase()) ||
-      item.leaveStatus?.toLowerCase().includes(searchLeave.toLowerCase())
-  );
+      item.leaveStatus?.toLowerCase().includes(searchLeave.toLowerCase());
+
+    let filterMatch = true;
+    if (filters.leaveType && item.leaveType !== filters.leaveType) {
+      filterMatch = false;
+    }
+    if (filters.status && item.leaveStatus !== filters.status) {
+      filterMatch = false;
+    }
+    if (filters.dateRange) {
+      const itemFrom = new Date(item.fromDate);
+      const itemTo = new Date(item.toDate);
+      const filterFrom = filters.dateRange.from
+        ? new Date(filters.dateRange.from)
+        : null;
+      const filterTo = filters.dateRange.to
+        ? new Date(filters.dateRange.to)
+        : null;
+
+      if (filterFrom && itemTo < filterFrom) {
+        filterMatch = false;
+      }
+      if (filterTo && itemFrom > filterTo) {
+        filterMatch = false;
+      }
+    }
+    return searchMatch && filterMatch;
+  });
   const totalLeavePages = Math.ceil(filteredLeave.length / leavePerPage);
   const paginatedLeave = filteredLeave.slice(
     (leavePage - 1) * leavePerPage,
     leavePage * leavePerPage
   );
 
-  const [workingPage, setWorkingPage] = useState(1);
-  const workingPerPage = 5;
-  const [searchWorking, setSearchWorking] = useState("");
-  const filteredWorking = schedule.filter(
-    (item) =>
+  const filteredWorking = schedule.filter((item) => {
+    const searchMatch =
       item.day?.toLowerCase().includes(searchWorking.toLowerCase()) ||
-      item.date?.toLowerCase().includes(searchWorking.toLowerCase())
-  );
+      item.date?.toLowerCase().includes(searchWorking.toLowerCase());
+
+    let filterMatch = true;
+    if (filters.day && item.day !== filters.day) {
+      filterMatch = false;
+    }
+    if (filters.dateRange) {
+      const itemDate = new Date(item.date);
+      const from = filters.dateRange.from
+        ? new Date(filters.dateRange.from)
+        : null;
+      const to = filters.dateRange.to ? new Date(filters.dateRange.to) : null;
+      if (from && itemDate < from) {
+        filterMatch = false;
+      }
+      if (to && itemDate > to) {
+        filterMatch = false;
+      }
+    }
+
+    return searchMatch && filterMatch;
+  });
   const totalWorkingPages = Math.ceil(filteredWorking.length / workingPerPage);
   const paginatedWorking = filteredWorking.slice(
     (workingPage - 1) * workingPerPage,
     workingPage * workingPerPage
   );
-
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   useEffect(() => {
     // Retrieve employeeId and userId from search params
@@ -371,9 +442,22 @@ const EmployeePage = () => {
           item.classType?.rate || "",
           item.classType?.currency || "",
         ];
-        return searchFields.some((field) =>
+
+        let matchesFilters = true;
+        if (filters.className && item.classType?.className !== filters.className) {
+            matchesFilters = false;
+        }
+        if (filters.rate && item.classType?.rate !== filters.rate) {
+            matchesFilters = false;
+        }
+        if (filters.currency && item.classType?.currency !== filters.currency) {
+            matchesFilters = false;
+        }
+
+        const matchesSearch = searchFields.some((field) =>
           field.toString().toLowerCase().includes(searchWages.toLowerCase())
         );
+        return matchesSearch && matchesFilters;
       })
     : [];
   const totalWagesPages = Math.ceil(filteredWages.length / wagesPerPage);
@@ -396,6 +480,52 @@ const EmployeePage = () => {
     return (
       leaveStatusStyles[status as LeaveStatus] || leaveStatusStyles.DEFAULT
     );
+  }
+
+  const wageClassNameOptions = Array.from(new Set(wages.map(w => w.classType?.className).filter(Boolean))).map(o => ({value: o!, label: o!}));
+  const wageRateOptions = Array.from(new Set(wages.map(w => w.classType?.rate).filter(Boolean))).map(o => ({value: o!, label: o!}));
+  const wageCurrencyOptions = Array.from(new Set(wages.map(w => w.classType?.currency).filter(Boolean))).map(o => ({value: o!, label: o!}));
+
+  const wagesFilterFields: FilterField[] = [
+      { name: 'className', label: 'Class Name', type: 'select', options: wageClassNameOptions },
+      { name: 'rate', label: 'Rate', type: 'select', options: wageRateOptions },
+      { name: 'currency', label: 'Currency', type: 'select', options: wageCurrencyOptions },
+  ];
+
+  const earningsFilterFields: FilterField[] = [
+      { name: 'month', label: 'Month', type: 'select', options: Array.from({length: 12}, (_, i) => ({value: (i+1).toString(), label: new Date(0, i).toLocaleString('default', { month: 'long' }) }))},
+      { name: 'totalhours', label: 'Total Hours', type: 'text' },
+      { name: 'earnings', label: 'Total Earnings', type: 'text' },
+  ];
+
+  const leaveTypeOptions = Array.from(new Set(leaveData.map(l => l.leaveType).filter(Boolean))).map(o => ({value: o!, label: o!}));
+  const leaveStatusOptions = Array.from(new Set(leaveData.map(l => l.leaveStatus).filter(Boolean))).map(o => ({value: o as string, label: o as string}));
+
+  const leaveRequestFilterFields: FilterField[] = [
+      { name: 'leaveType', label: 'Leave Type', type: 'select', options: leaveTypeOptions },
+      { name: 'dateRange', label: 'Date', type: 'date-range' },
+      { name: 'status', label: 'Status', type: 'select', options: leaveStatusOptions },
+  ];
+
+  const workingHoursDayOptions = Array.from(new Set(schedule.map(s => s.day).filter(Boolean))).map(o => ({value: o!, label: o!}));
+  const workingHoursFilterFields: FilterField[] = [
+      { name: 'day', label: 'Day', type: 'select', options: workingHoursDayOptions },
+      { name: 'dateRange', label: 'Date', type: 'date-range' },
+  ];
+
+  const getFilterFieldsForTab = (tab: string) => {
+    switch(tab) {
+      case 'Wages':
+        return wagesFilterFields;
+      case 'Earnings':
+        return earningsFilterFields;
+      case 'Leave Requests':
+        return leaveRequestFilterFields;
+      case 'WorkingHours':
+        return workingHoursFilterFields;
+      default:
+        return [];
+    }
   }
 
   return (
@@ -1000,7 +1130,7 @@ const EmployeePage = () => {
                             Day
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
-                            Preferred Working Hours
+                            Date
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Working Hours
@@ -1052,6 +1182,15 @@ const EmployeePage = () => {
           </div>
         </div>
       </div>
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onFilter={handleFilterChange}
+        onReset={handleResetFilters}
+        filterFields={getFilterFieldsForTab(activeTab)}
+        filterValues={filters}
+        setFilterValues={setFilters}
+      />
     </BaseLayout4>
   );
 };
