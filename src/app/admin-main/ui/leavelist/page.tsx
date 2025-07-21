@@ -16,6 +16,7 @@ import DatePicker from "react-datepicker";
 
 interface LeaveRequest {
   _id: string;
+  summaryId:string;
   name: string;
   employeeId: string;
   role: string;
@@ -35,9 +36,9 @@ interface LeaveRequest {
   __v: number;
 }
 
-interface LeaveRequestListResponse {
+interface LeaveSummaryListResponse {
   totalCount: number;
-  leaveRequest: LeaveRequest[];
+  leavesummary: LeaveRequest[];
 }
 type LeaveStatus = "APPROVED" | "WAITINGLIST" | "REJECTED";
 
@@ -49,6 +50,8 @@ export default function ApplicantsPage() {
    const [selectedLeave, setSelectedLeave] = useState<{
      employeeId: string;
      id: string;
+     approvedId:string;
+     approvedName:string;
      name: string;
      designation: string;
      fromDate: string;
@@ -59,6 +62,7 @@ export default function ApplicantsPage() {
      status: string;
      approvedDays: string;
      deductionDays: string;
+     summaryId?: string;
    } | null>(null);
   const [activeTab, setActiveTab] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
@@ -119,11 +123,11 @@ export default function ApplicantsPage() {
 
   const fetchLeaveRequests = async (token: string) => {
     try {
-      const res = await axios.get<LeaveRequestListResponse>(
-        "https://api.blackstoneinfomaticstech.com/leaverequest/list",
+      const res = await axios.get<LeaveSummaryListResponse>(
+        "https://api.blackstoneinfomaticstech.com/leavesummary/list",
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setLeaveRequests(res.data.leaveRequest);
+      setLeaveRequests(res.data.leavesummary);
     } catch (err) {
       console.error("Error fetching leave request list", err);
     }
@@ -136,18 +140,17 @@ export default function ApplicantsPage() {
     }
 
     const token = localStorage.getItem("AdminAuthToken");
-
     if (!token) {
       alert("Admin token not found. Please login again.");
       return;
     }
 
-    // ✅ Logging the actual _id
-    console.log("Updating leave for _id:", selectedLeave?.id);
+    // Add this line to log the ID being updated
+    console.log("Updating leave summary with ID:", selectedLeave?.summaryId);
 
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/leaverequest/${selectedLeave?.id}`, // ✅ use id instead of employeeId
+        `http://localhost:5001/leavesummary/${selectedLeave?.summaryId}`,
         {
           method: "PUT",
           headers: {
@@ -157,27 +160,71 @@ export default function ApplicantsPage() {
           body: JSON.stringify({
             fromDate,
             toDate,
-            approvedDays,
             leaveStatus: "APPROVED",
-            leaveType: selectedLeave?.leaveType,
-            reason: selectedLeave?.reason,
-            approvedId: "Admin",
+            approvedDays: Number(approvedDays),
+            deductionDays: Number(deductionDays) || 0,
             approvedName: "Admin",
-            status: "active",
           }),
         }
       );
-
       const data = await res.json();
-
       if (res.ok) {
         alert("Leave approved successfully");
         setSelectedLeave(null);
+        fetchLeaveRequests(token);
       } else {
         alert(data.message || "Failed to approve leave");
       }
     } catch (error) {
       console.error("Error approving leave:", error);
+      alert("Something went wrong");
+    }
+  };
+
+  // Add handleDecline for REJECTED status
+  const handleDecline = async () => {
+    if (!fromDate || !toDate || !approvedDays) {
+      alert("From Date, To Date, and Approved Days are required");
+      return;
+    }
+
+    const token = localStorage.getItem("AdminAuthToken");
+    if (!token) {
+      alert("Admin token not found. Please login again.");
+      return;
+    }
+
+    console.log("Declining leave summary with ID:", selectedLeave?.summaryId);
+
+    try {
+      const res = await fetch(
+        `http://localhost:5001/leavesummary/${selectedLeave?.summaryId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            fromDate,
+            toDate,
+            leaveStatus: "REJECTED",
+            approvedDays: Number(approvedDays),
+            deductionDays: Number(deductionDays) || 0,
+            approvedName: "Admin",
+          }),
+        }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        alert("Leave rejected successfully");
+        setSelectedLeave(null);
+        fetchLeaveRequests(token);
+      } else {
+        alert(data.message || "Failed to reject leave");
+      }
+    } catch (error) {
+      console.error("Error rejecting leave:", error);
       alert("Something went wrong");
     }
   };
@@ -342,22 +389,21 @@ export default function ApplicantsPage() {
                                                                        className="w-full px-2 py-1 text-[10px] text-[#17243E] dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
                                                                        onClick={() => {
                                                                          setSelectedLeave({
-                                                                           id: item._id, // 🟡 use MongoDB document ID
-                                                                           employeeId: item.employeeId, // ✅ required for backend API
+                                                                           id: item._id, // This is the leave request id, used for update
+                                                                           summaryId: item._id, // If you need to send summaryId in body, keep this
+                                                                           employeeId: item.employeeId,
+                                                                           approvedId: item.approvedId,
+                                                                           approvedName: item.approvedName,
                                                                            name: item.name,
                                                                            designation: item.role,
                                                                            leaveType: item.leaveType,
                                                                            fromDate: item.fromDate,
                                                                            toDate: item.toDate,
-                                                                           dateRange: `${new Date(
-                                                                             item.fromDate
-                                                                           ).toLocaleDateString("en-US", {
+                                                                           dateRange: `${new Date(item.fromDate).toLocaleDateString("en-US", {
                                                                              month: "short",
                                                                              day: "numeric",
                                                                              year: "numeric",
-                                                                           })} - ${new Date(
-                                                                             item.toDate
-                                                                           ).toLocaleDateString("en-US", {
+                                                                           })} - ${new Date(item.toDate).toLocaleDateString("en-US", {
                                                                              month: "short",
                                                                              day: "numeric",
                                                                              year: "numeric",
@@ -569,12 +615,7 @@ export default function ApplicantsPage() {
                               <div className="relative w-full">
                                 <input
                                   type="text"
-                                  value={
-                                    selectedLeave?.status === "APPROVED" ||
-                                    selectedLeave?.status === "REJECTED"
-                                      ? selectedLeave?.approvedDays || ""
-                                      : approvedDays
-                                  }
+                       
                                   onChange={(e) =>
                                     selectedLeave?.status === "WAITINGLIST" &&
                                     setApprovedDays(e.target.value)
@@ -599,12 +640,7 @@ export default function ApplicantsPage() {
                               <div className="relative w-full">
                                 <input
                                   type="date"
-                                  value={
-                                    selectedLeave?.status === "APPROVED" ||
-                                    selectedLeave?.status === "REJECTED"
-                                      ? selectedLeave.fromDate || ""
-                                      : fromDate
-                                  }
+                           
                                   onChange={(e) =>
                                     selectedLeave?.status === "WAITINGLIST" &&
                                     setFromDate(e.target.value)
@@ -628,12 +664,7 @@ export default function ApplicantsPage() {
                               <div className="relative w-full">
                                 <input
                                   type="date"
-                                  value={
-                                    selectedLeave?.status === "APPROVED" ||
-                                    selectedLeave?.status === "REJECTED"
-                                      ? selectedLeave?.toDate || ""
-                                      : toDate
-                                  }
+                        
                                   onChange={(e) =>
                                     selectedLeave?.status === "WAITINGLIST" &&
                                     setToDate(e.target.value)
@@ -685,8 +716,8 @@ export default function ApplicantsPage() {
                           <>
                             {/* Decline Button */}
                             <button
-                              onClick={() => setSelectedLeave(null)}
-                              className="px-4 py-1 border border-[#576CBC] text-[#576CBC] rounded-lg transition"
+                              onClick={handleDecline}
+                              className="px-4 py-1 border border-[#D34645] text-[#D34645] rounded-lg transition"
                             >
                               Decline
                             </button>

@@ -218,6 +218,19 @@ interface LeaveRequestListResponse {
   leaveRequest: LeaveRequest[];
 }
 
+// Update the interface for the new API response
+interface LeaveSummaryListResponse {
+  totalCount: number;
+  leavesummary: LeaveRequest[];
+}
+
+// Leave status constants
+export const leave: Record<string, any> = Object.freeze({
+  APPROVED: "APPROVED",
+  REJECTED: "REJECTED",
+  WAITINGLIST: "WAITINGLIST"
+});
+
 const Page = () => {
   const [activeTab, setActiveTab] = useState<
     "teachers" | "otheremployees" | "recruitment" | "leave"
@@ -606,7 +619,7 @@ const Page = () => {
           : null;
       if (!token) return;
       try {
-        const res = await axios.get("https://api.blackstoneinfomaticstech.com/leaverequest/card", {
+        const res = await axios.get("http://localhost:5001/leaverequest/card", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setLeaveCard(res.data);
@@ -624,13 +637,13 @@ const Page = () => {
           : null;
       if (!token) return;
       try {
-        const res = await axios.get<LeaveRequestListResponse>(
-          "https://api.blackstoneinfomaticstech.com/leaverequest/list",
+        const res = await axios.get<LeaveSummaryListResponse>(
+          "https://api.blackstoneinfomaticstech.com/leavesummary/list",
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setLeaveRequests(res.data.leaveRequest);
+        setLeaveRequests(res.data.leavesummary); // <-- use leavesummary
       } catch (err) {
-        console.error("Error fetching leave request list", err);
+        console.error("Error fetching leave summary list", err);
       }
     };
     fetchLeaveRequests();
@@ -795,12 +808,12 @@ const Page = () => {
       return;
     }
 
-    // ✅ Logging the actual _id
-    console.log("Updating leave for _id:", selectedLeave?.id);
+    // Logging the actual _id
+    console.log("Updating leave summary for _id:", selectedLeave?.id);
 
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/leaverequest/${selectedLeave?.id}`, // ✅ use id instead of employeeId
+        `http://localhost:5001/leavesummary/${selectedLeave?.id}`,
         {
           method: "PUT",
           headers: {
@@ -810,13 +823,10 @@ const Page = () => {
           body: JSON.stringify({
             fromDate,
             toDate,
-            approvedDays,
             leaveStatus: "APPROVED",
-            leaveType: selectedLeave?.leaveType,
-            reason: selectedLeave?.reason,
-            approvedId: "Admin",
-            approvedName: "Admin",
-            status: "active",
+            approvedDays: Number(approvedDays),
+            deductionDays: Number(deductionDays) || 0,
+            approvedName: "Admin"
           }),
         }
       );
@@ -831,6 +841,57 @@ const Page = () => {
       }
     } catch (error) {
       console.error("Error approving leave:", error);
+      alert("Something went wrong");
+    }
+  };
+
+  // Decline leave
+  const handleDecline = async () => {
+    if (!fromDate || !toDate || !approvedDays) {
+      alert("From Date, To Date, and Approved Days are required");
+      return;
+    }
+
+    const token = localStorage.getItem("AdminAuthToken");
+
+    if (!token) {
+      alert("Admin token not found. Please login again.");
+      return;
+    }
+
+    // Logging the actual _id
+    console.log("Declining leave summary for _id:", selectedLeave?.id);
+
+    try {
+      const res = await fetch(
+        `http://localhost:5001/leavesummary/${selectedLeave?.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            fromDate,
+            toDate,
+            leaveStatus: leave.REJECTED,
+            approvedDays: Number(approvedDays),
+            deductionDays: Number(deductionDays) || 0,
+            approvedName: "Admin"
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Leave declined successfully");
+        setSelectedLeave(null);
+      } else {
+        alert(data.message || "Failed to decline leave");
+      }
+    } catch (error) {
+      console.error("Error declining leave:", error);
       alert("Something went wrong");
     }
   };
@@ -2073,25 +2134,35 @@ const Page = () => {
             {activeTab === "leave" && (
               <div className="space-y-4 overflow-y-auto scrollbar-none">
                 {/* Summary Cards */}
-                <div className="flex gap-5 ">
-                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
-                    <p className="text-md font-medium">Total Leave Requests</p>
-                    <h2 className="text-2xl font-semibold ">
-                      {leaveCard.totalApplication}
-                    </h2>
-                  </div>
-                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
-                    <p className="text-md font-medium">Total Approved</p>
-                    <h2 className="text-2xl font-semibold">
-                      {leaveCard.approved}
-                    </h2>
-                  </div>
-                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
-                    <p className="text-md font-medium">Total Declined</p>
-                    <h2 className="text-2xl font-semibold">
-                      {leaveCard.rejected}
-                    </h2>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[{
+                    title: "Total Leave Requests",
+                    count: leaveCard.totalApplication
+                  }, {
+                    title: "Total Approved",
+                    count: leaveCard.approved
+                  }, {
+                    title: "Total Declined",
+                    count: leaveCard.rejected
+                  }].map((card) => (
+                    <div
+                      key={card.title}
+                      className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col w-full p-3 h-full"
+                    >
+                      <div className="flex flex-col justify-between gap-y-8">
+                        <div>
+                          <p className="text-[16px] font-medium dark:text-white text-white">
+                            {card.title}
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="text-[28px] font-semibold dark:text-white text-white">
+                            {card.count}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 <div className="overflow-y-scroll scrollbar-none w-full h-[350px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
@@ -2115,8 +2186,8 @@ const Page = () => {
                     </div>
                     <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400 mr-20">
                       <span className="text-left">
-                        Showing {leaveRequests.length === 0 ? 0 : 1} to{" "}
-                        {leaveRequests.length} of {leaveRequests.length}
+                        Showing {(leaveRequests?.length ?? 0) === 0 ? 0 : 1} to{" "}
+                        {leaveRequests?.length ?? 0} of {leaveRequests?.length ?? 0}
                       </span>
                     </div>
                   </div>
@@ -2147,7 +2218,7 @@ const Page = () => {
                       </tr>
                     </thead>
                     <tbody className="text-[10px] text-[#1D2939]">
-                      {leaveRequests.length > 0 ? (
+                      {(leaveRequests?.length ?? 0) > 0 ? (
                         leaveRequests
                           .filter((item) => {
                             const search = searchQuery1.toLowerCase();
@@ -2162,6 +2233,7 @@ const Page = () => {
                               item.leaveStatus.toLowerCase().includes(search)
                             );
                           })
+                          .slice(0, 6) // Show only the first 7 entries
                           .map((item, index) => {
                             const btnId = `action-btn-${item._id}`;
                             return (
@@ -2606,7 +2678,7 @@ const Page = () => {
                           <>
                             {/* Decline Button */}
                             <button
-                              onClick={() => setSelectedLeave(null)}
+                              onClick={handleDecline}
                               className="px-4 py-1 border border-[#576CBC] text-[#576CBC] rounded-lg transition"
                             >
                               Decline
