@@ -69,6 +69,7 @@ const ApplicantsList: React.FC = () => {
   const [filterDateFrom, setFilterDateFrom] = useState<Date | null>(null);
   const [filterDateTo, setFilterDateTo] = useState<Date | null>(null);
 
+  const [filteredApplicants, setFilteredApplicants] = useState<Applicant[]>([]);
   const tabs = ["All", "NewCandidates", "Shortlisted", "Rejected", "Waiting"];
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -80,6 +81,79 @@ const ApplicantsList: React.FC = () => {
       }
     }
   }, []);
+
+  useEffect(() => {
+    let filtered = applicants;
+
+    // Filter by active tab
+    if (activeTab === "NewCandidates") {
+      filtered = filtered.filter(
+        (applicant) => applicant.applicationStatus === "NEWAPPLICATION"
+      );
+    } else if (activeTab !== "All") {
+      filtered = filtered.filter(
+        (applicant) =>
+          applicant.applicationStatus.toLowerCase() === activeTab.toLowerCase()
+      );
+    }
+
+    // Filter by search query
+    const search = searchQuery.trim().toLowerCase();
+    if (search) {
+      filtered = filtered.filter(
+        (applicant) =>
+          applicant.candidateFirstName.toLowerCase().includes(search) ||
+          applicant.candidateLastName.toLowerCase().includes(search) ||
+          applicant.candidateEmail.toLowerCase().includes(search) ||
+          (applicant.positionApplied || "").toLowerCase().includes(search) ||
+          (applicant.applicationStatus || "").toLowerCase().includes(search)
+      );
+    }
+
+    // Filter by modal inputs
+    if (filterName) {
+      filtered = filtered.filter(
+        (applicant) =>
+          applicant.candidateFirstName
+            .toLowerCase()
+            .includes(filterName.toLowerCase()) ||
+          applicant.candidateLastName
+            .toLowerCase()
+            .includes(filterName.toLowerCase())
+      );
+    }
+    if (filterPosition) {
+      filtered = filtered.filter(
+        (applicant) => applicant.positionApplied === filterPosition
+      );
+    }
+    if (filterStatus) {
+      filtered = filtered.filter(
+        (applicant) => applicant.applicationStatus === filterStatus
+      );
+    }
+    if (filterDateFrom) {
+      filtered = filtered.filter(
+        (applicant) => new Date(applicant.applicationDate) >= filterDateFrom
+      );
+    }
+    if (filterDateTo) {
+      filtered = filtered.filter(
+        (applicant) => new Date(applicant.applicationDate) <= filterDateTo
+      );
+    }
+
+    setFilteredApplicants(filtered);
+  }, [
+    activeTab,
+    applicants,
+    searchQuery,
+    filterName,
+    filterPosition,
+    filterStatus,
+    filterDateFrom,
+    filterDateTo,
+  ]);
 
   const fetchApplicants = async (token: string) => {
     try {
@@ -149,25 +223,25 @@ const ApplicantsList: React.FC = () => {
   const statuses = Array.from(new Set(applicants.map(a => a.applicationStatus).filter(Boolean)));
 
   // Filtering logic for applicants
-  const filteredApplicants = applicants.filter(applicant => {
-    const nameMatch = filterName === "" ||
-      applicant.candidateFirstName.toLowerCase().includes(filterName.toLowerCase()) ||
-      applicant.candidateLastName.toLowerCase().includes(filterName.toLowerCase());
-    const positionMatch = filterPosition === "" || applicant.positionApplied === filterPosition;
-    const statusMatch = filterStatus === "" || applicant.applicationStatus === filterStatus;
-    const fromDateMatch = !filterDateFrom || new Date(applicant.applicationDate) >= filterDateFrom;
-    const toDateMatch = !filterDateTo || new Date(applicant.applicationDate) <= filterDateTo;
-    // Search bar keyword filter
-    const search = searchQuery.trim().toLowerCase();
-    const keywordMatch =
-      search === "" ||
-      applicant.candidateFirstName.toLowerCase().includes(search) ||
-      applicant.candidateLastName.toLowerCase().includes(search) ||
-      applicant.candidateEmail.toLowerCase().includes(search) ||
-      (applicant.positionApplied || "").toLowerCase().includes(search) ||
-      (applicant.applicationStatus || "").toLowerCase().includes(search);
-    return nameMatch && positionMatch && statusMatch && fromDateMatch && toDateMatch && keywordMatch;
-  });
+  // const filteredApplicants = applicants.filter(applicant => {
+  //   const nameMatch = filterName === "" ||
+  //     applicant.candidateFirstName.toLowerCase().includes(filterName.toLowerCase()) ||
+  //     applicant.candidateLastName.toLowerCase().includes(filterName.toLowerCase());
+  //   const positionMatch = filterPosition === "" || applicant.positionApplied === filterPosition;
+  //   const statusMatch = filterStatus === "" || applicant.applicationStatus === filterStatus;
+  //   const fromDateMatch = !filterDateFrom || new Date(applicant.applicationDate) >= filterDateFrom;
+  //   const toDateMatch = !filterDateTo || new Date(applicant.applicationDate) <= filterDateTo;
+  //   // Search bar keyword filter
+  //   const search = searchQuery.trim().toLowerCase();
+  //   const keywordMatch =
+  //     search === "" ||
+  //     applicant.candidateFirstName.toLowerCase().includes(search) ||
+  //     applicant.candidateLastName.toLowerCase().includes(search) ||
+  //     applicant.candidateEmail.toLowerCase().includes(search) ||
+  //     (applicant.positionApplied || "").toLowerCase().includes(search) ||
+  //     (applicant.applicationStatus || "").toLowerCase().includes(search);
+  //   return nameMatch && positionMatch && statusMatch && fromDateMatch && toDateMatch && keywordMatch;
+  // });
 
   const itemsPerPage = 6;
   const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
