@@ -39,7 +39,7 @@ const StudentTeacherStaff = () => {
   const fetchData = async (token: string) => {
     try {
       const res = await fetch(
-        "https://api.blackstoneinfomaticstech.com/dashboard/admin/count",
+        "http://localhost:5001/dashboard/admin/count",
         {
           method: "GET",
           headers: {
@@ -89,14 +89,16 @@ const StudentTeacherStaff = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row justify-center items-center gap-4 ">
-      {data.map((item) => (
-        <div
-          key={item.title}
-          className="bg-[#FFFFFF] flex flex-row justify-between  p-4 rounded-2xl w-[350px] shadow-lg h-[120px] dark:bg-[#343434]"
-        >
+<div className="flex flex-wrap gap-4 p-0 w-full">
+  {data.map((item) => (
+    <div
+      key={item.title}
+      className="bg-white dark:bg-[#343434] flex flex-row justify-between items-center p-4 rounded-2xl shadow-lg h-[120px] min-w-[232px] w-full sm:w-[58%] lg:w-[32%] xl:w-[30%]"
+    >
           <div>
-            <div className="text-[14px] text-black mt-1 dark:text-[#fff]">{item.title}</div>
+            <div className="text-[14px] text-black mt-1 dark:text-[#fff]">
+              {item.title}
+            </div>
 
             {/* Top Section with Number and Icon */}
             <div className="flex justify-between text items-center">
@@ -121,55 +123,51 @@ const StudentTeacherStaff = () => {
           </div>
 
           {/* Responsive Pie Chart */}
-          <div className="relative mt-2">
-  <PieChart width={88} height={80}> {/* slightly larger chart to fit full pie */}
-    <Tooltip content={<CustomTooltip />} />
-
-    {/* Male segment */}
-    <Pie
-      data={[{ name: "male", value: item.male }]}
-      cx={50}
-      cy={40}
-      innerRadius={0}
-      outerRadius={30} // larger pie
-      startAngle={-90}
-      endAngle={-90 + (item.male / (item.male + item.female)) * 360}
-      fill={COLORS[0]}
-      stroke="none"
-      dataKey="value"
-    />
-
-    {/* Female segment */}
-    <Pie
-      data={[{ name: "female", value: item.female }]}
-      cx={50}
-      cy={40}
-      innerRadius={0}
-      outerRadius={24} // slightly smaller for layering
-      startAngle={-90 + (item.male / (item.male + item.female)) * 360}
-      endAngle={270}
-      fill={COLORS[1]}
-      stroke="none"
-      dataKey="value"
-    />
-
-    {/* Male outline ring */}
-    <Pie
-      data={[{ name: "male", value: item.male }]}
-      cx={50}
-      cy={40}
-      innerRadius={30}
-      outerRadius={32} // small outer ring
-      startAngle={-90}
-      endAngle={-90 + (item.male / (item.male + item.female)) * 360}
-      fill={COLORS[2]}
-      stroke="none"
-      dataKey="value"
-    />
-  </PieChart>
-</div>
-
-
+          <div className="flex items-center justify-center w-[88px] h-[88px]">
+          <PieChart width={88} height={80}>
+              {/* slightly larger chart to fit full pie */}
+              <Tooltip content={<CustomTooltip />} />
+              {/* Male segment */}
+              <Pie
+                data={[{ name: "male", value: item.male }]}
+                cx={50}
+                cy={40}
+                innerRadius={0}
+                outerRadius={30} // larger pie
+                startAngle={-90}
+                endAngle={-90 + (item.male / (item.male + item.female)) * 360}
+                fill={COLORS[0]}
+                stroke="none"
+                dataKey="value"
+              />
+              {/* Female segment */}
+              <Pie
+                data={[{ name: "female", value: item.female }]}
+                cx={50}
+                cy={40}
+                innerRadius={0}
+                outerRadius={24} // slightly smaller for layering
+                startAngle={-90 + (item.male / (item.male + item.female)) * 360}
+                endAngle={270}
+                fill={COLORS[1]}
+                stroke="none"
+                dataKey="value"
+              />
+              {/* Male outline ring */}
+              <Pie
+                data={[{ name: "male", value: item.male }]}
+                cx={50}
+                cy={40}
+                innerRadius={30}
+                outerRadius={32} // small outer ring
+                startAngle={-90}
+                endAngle={-90 + (item.male / (item.male + item.female)) * 360}
+                fill={COLORS[2]}
+                stroke="none"
+                dataKey="value"
+              />
+            </PieChart>
+          </div>
         </div>
       ))}
     </div>

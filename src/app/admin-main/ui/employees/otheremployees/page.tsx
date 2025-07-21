@@ -119,6 +119,7 @@ interface ShiftSchedule {
   toTime: string;
 }
 
+type LeaveStatus = "APPROVED" | "WAITINGLIST" | "REJECTED";
 // CustomTooltip for dark mode
 const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
   const isDark = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
@@ -320,7 +321,7 @@ const EmployeePage = () => {
   const fetchLeaveData = async (userId: string) => {
     try {
       const res = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/leaverequest?employeeId=${userId}`,
+        `http://localhost:5001/leaverequest?employeeId=${userId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -380,6 +381,22 @@ const EmployeePage = () => {
     (wagesPage - 1) * wagesPerPage,
     wagesPage * wagesPerPage
   );
+
+  const leaveStatusStyles: Record<LeaveStatus | "DEFAULT", string> = {
+    APPROVED:
+      "bg-[#EEEEFF] text-[#38619A] dark:bg-[#2F3642] dark:text-[#225BAA] rounded-md px-8 text-[10px]",
+    WAITINGLIST:
+      "bg-[#FDF6EC] dark:bg-[#534634] dark:text-[#F0AD4E] text-[#F0AD4E] rounded-md px-8 text-[10px]",
+    REJECTED:
+      "bg-[#FDECEC] dark:bg-[#503434] dark:text-[#D34645] text-[#D34645] rounded-md px-8 text-[10px]",
+    DEFAULT: "bg-gray-200 text-gray-700 border border-gray-300 px-3",
+  };
+
+  function getLeaveStatusStyle(status: string): string {
+    return (
+      leaveStatusStyles[status as LeaveStatus] || leaveStatusStyles.DEFAULT
+    );
+  }
 
   return (
     <BaseLayout4>
@@ -907,7 +924,9 @@ const EmployeePage = () => {
                               <td className="p-3 text-center">{item.reason}</td>
                               <td className="p-3 text-center">
                               <div className="flex items-center gap-2 justify-center">
-                                {item.leaveStatus}
+                                <span className={getLeaveStatusStyle(item.leaveStatus)}>
+                                  {item.leaveStatus}
+                                </span>
                               </div>
                             </td>
                           </tr>

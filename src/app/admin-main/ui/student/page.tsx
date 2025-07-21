@@ -4,6 +4,7 @@ import StudentsRecord from "../../components/studentrecord";
 import BaseLayout4 from "@/components/BaseLayout4";
 import TrailManagement from "../../components/studentlist";
 import { useRouter } from "next/navigation";
+import AdminHeader from "../../components/AdminHeader";
 
 const Dashboard = () => {
   const router = useRouter();
@@ -14,33 +15,32 @@ const Dashboard = () => {
 
   return (
     <BaseLayout4>
-<div className=" sm:p-1 md:p-3 min-h-screen w-full max-w-8xl mx-auto ">
-  <div className=" px-5">
-    <h2 className="text-xl font-bold mb-4 ">Students List</h2>
+      <AdminHeader currentSection="Student List" />
 
-    <div className="mb-4">
-      <div className="flex flex-wrap gap-6 ">
-        <StudentsRecord />
+      <div className="min-h-screen w-full max-w-8xl mx-auto ">
+        <div className=" p-2">
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-2">
+              <StudentsRecord />
+            </div>
+          </div>
+
+          <div className="mb-2">
+            <div className="flex flex-wrap gap-4">
+              <TrailManagement />
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              className="bg-transparent border border-[#576CBC] text-[#576CBC] text-[12px] px-4 py-2 rounded-md shadow transition"
+              onClick={handleView}
+            >
+              View all
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <div className="mb-2">
-      <div className="flex flex-wrap gap-4">
-        <TrailManagement />
-      </div>
-    </div>
-
-    <div className="flex justify-end">
-      <button
-        className="text-white text-xs bg-[#223857] cursor-pointer rounded-md px-2 py-1"
-        onClick={handleView}
-      >
-        View all
-      </button>
-    </div>
-    </div>
-</div>
-
     </BaseLayout4>
   );
 };
