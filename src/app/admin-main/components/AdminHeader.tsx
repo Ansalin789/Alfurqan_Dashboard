@@ -277,7 +277,7 @@ export default function AdminHeader({
               </button>
 
               {showNotification && (
-                <div className="absolute right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 mt-2 w-[90vw] sm:w-[470px] bg-gradient-to-br bg-white border-[#939299] rounded-lg shadow-2xl z-30 animate-fade-in-up dark:bg-[#252525]">
+                <div className="absolute -ml-24  sm:right-auto sm:left-1/2 sm:-translate-x-1/2 mt-2 w-[90vw] sm:w-[470px] bg-gradient-to-br bg-white border-[#939299] rounded-lg shadow-2xl z-30 animate-fade-in-up dark:bg-[#252525]">
                   <div className="pt-3 pb-2 pl-4 border-b border-white flex justify-between items-center bg-white/10 rounded-t-xl backdrop-blur-sm dark:border-[#252525] dark:bg-[#252525]">
                     <h4 className="font-semibold text-[#010E30] text-lg dark:text-[#FFFFFF]">
                       Notifications
@@ -390,8 +390,20 @@ export default function AdminHeader({
       </div>
 
       {showAddPackage && <AddPackage onClose={() => setShowAddPackage(false)} />}
-      {showAddMeeting && <AddMeeting onClose={() => setShowAddMeeting(false)} onSubmit={() => setShowAddMeeting(false)} students={[]} />}
-      {showAddExpenses && <AddExpenses onClose={() => setShowAddExpenses(false)} />}
+
+{showAddMeeting && (
+  <AddMeeting 
+    onClose={() => setShowAddMeeting(false)} 
+    onMeetingCreated={() => {
+      // This will be called when a meeting is successfully created
+      setShowAddMeeting(false);
+      // You might want to add additional logic here to refresh meetings list
+    }}
+  />
+)}
+      {showAddExpenses && <AddExpenses onClose={() => setShowAddExpenses(false)} refreshExpenses={function (): void {
+        throw new Error("Function not implemented.");
+      } } />}
     </div>
   );
 }
