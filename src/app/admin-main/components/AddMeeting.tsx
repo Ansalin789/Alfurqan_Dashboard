@@ -5,10 +5,11 @@ import { X } from "lucide-react";
 import axios from "axios";
 import { FaUserCircle } from "react-icons/fa";
 
-interface Teacher {
+interface User {
   id: string;
   name: string;
   email: string;
+  role?: string;
 }
 
 interface MeetingData {
@@ -54,15 +55,15 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
     duration: "1h"
   });
 
-  const [availableTeachers, setAvailableTeachers] = useState<Teacher[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
-  const [showTeacherList, setShowTeacherList] = useState(false);
+  const [showUserList, setShowUserList] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    const fetchTeachers = async () => {
+    const fetchUsers = async () => {
       try {
         const token = localStorage.getItem("AdminAuthToken");
         if (!token) {
@@ -70,27 +71,42 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
           return;
         }
 
+        console.log("Fetching users from API...");
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/otheremployees",
+          "https://api.blackstoneinfomaticstech.com/users",
           {
             headers: { Authorization: `Bearer ${token}` }
           }
         );
 
-        const teachers = response.data.users.map((user: any) => ({
-          id: user._id,
-          name: user.userName,
-          email: user.email || "no-email@example.com"
-        }));
+        console.log("API Response:", response.data);
 
-        setAvailableTeachers(teachers);
+        let usersArray = Array.isArray(response.data) 
+          ? response.data 
+          : response.data.users || response.data.data || [];
+
+
+const users = usersArray
+  .filter((user: any) => {
+
+    const roles = Array.isArray(user.role) ? user.role : [user.role];
+    return !roles.some((r: string) => r?.toString().toLowerCase() === 'admin');
+  })
+  .map((user: any) => ({
+    id: user._id,
+    name: user.userName || user.name,
+    email: user.email || "no-email@example.com",
+    role: Array.isArray(user.role) ? user.role[0] : user.role
+  }));
+        console.log("Filtered non-admin users:", users);
+        setAvailableUsers(users);
       } catch (err) {
-        console.error("Error fetching teachers:", err);
-        setError("Failed to load teachers. Please try again.");
+        console.error("Error fetching users:", err);
+        setError("Failed to load users. Please try again.");
       }
     };
 
-    fetchTeachers();
+    fetchUsers();
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -112,14 +128,14 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
     return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
   };
 
-  const toggleTeacher = (teacher: Teacher) => {
+  const toggleUser = (user: User) => {
     setFormData(prev => {
-      const isSelected = prev.teachers.some(t => t.teacherId === teacher.id);
+      const isSelected = prev.teachers.some(t => t.teacherId === user.id);
       
       if (isSelected) {
         return {
           ...prev,
-          teachers: prev.teachers.filter(t => t.teacherId !== teacher.id)
+          teachers: prev.teachers.filter(t => t.teacherId !== user.id)
         };
       } else {
         return {
@@ -127,9 +143,9 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
           teachers: [
             ...prev.teachers,
             {
-              teacherId: teacher.id,
-              teacherName: teacher.name,
-              teacherEmail: teacher.email,
+              teacherId: user.id,
+              teacherName: user.name,
+              teacherEmail: user.email,
               attendee: "present"
             }
           ]
@@ -167,7 +183,7 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
     }
 
     if (formData.teachers.length === 0) {
-      setError("At least one teacher must be selected");
+      setError("At least one attendee must be selected");
       setLoading(false);
       return;
     }
@@ -180,13 +196,12 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
         return;
       }
 
-      // Prepare payload according to backend requirements
       const payload = {
         meetingName: formData.meetingName,
         selectedDate: formData.selectedDate,
         startTime: formData.startTime,
         endTime: formData.endTime,
-        teacher: formData.teachers, // Match backend expectation
+        teacher: formData.teachers,
         description: formData.description,
         meetingminutes: formData.description || "Meeting minutes",
         status: "Active",
@@ -197,13 +212,15 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
         duration: calculateDuration(formData.startTime, formData.endTime)
       };
 
-      console.log("Submitting meeting data:", payload);
+      console.log("Preparing to send payload:", payload);
 
       const url = meetingToEdit?._id 
         ? `https://api.blackstoneinfomaticstech.com/allAdminMeeting/${meetingToEdit._id}`
         : "https://api.blackstoneinfomaticstech.com/addadminMeeting";
 
       const method = meetingToEdit?._id ? "PUT" : "POST";
+
+      console.log(`Making ${method} request to ${url}`);
 
       const response = await axios({
         method,
@@ -215,9 +232,10 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
         }
       });
 
-      console.log("Backend response:", response.data);
+      console.log("API Response:", response.data);
 
       if ([200, 201].includes(response.status)) {
+        console.log("Meeting successfully saved/updated");
         setSuccess(true);
         setTimeout(() => {
           onMeetingCreated();
@@ -226,7 +244,6 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
       }
     } catch (err: any) {
       console.error("API Error:", err);
-      console.error("Error details:", err.response?.data);
       
       let errorMessage = "An error occurred while saving the meeting.";
       
@@ -246,12 +263,12 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
     }
   };
 
-  const filteredTeachers = availableTeachers.filter(teacher =>
-    teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    teacher.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = availableUsers.filter(user =>
+    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const isTeacherSelected = (id: string) => {
+  const isUserSelected = (id: string) => {
     return formData.teachers.some(t => t.teacherId === id);
   };
 
@@ -375,7 +392,7 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
               <input
                 type="text"
                 readOnly
-                onClick={() => !loading && setShowTeacherList(true)}
+                onClick={() => !loading && setShowUserList(true)}
                 value={
                   formData.teachers.length > 0
                     ? `${formData.teachers.length} selected`
@@ -419,13 +436,13 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
           </div>
         </form>
 
-        {showTeacherList && (
+        {showUserList && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div className="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[80vh] flex flex-col">
               <div className="p-4 border-b flex justify-between items-center">
-                <h3 className="font-medium">Select Teachers</h3>
+                <h3 className="font-medium">Select Attendees</h3>
                 <button 
-                  onClick={() => setShowTeacherList(false)}
+                  onClick={() => setShowUserList(false)}
                   disabled={loading}
                 >
                   <X size={20} />
@@ -435,7 +452,7 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
               <div className="p-4">
                 <input
                   type="text"
-                  placeholder="Search teachers..."
+                  placeholder="Search attendees..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md mb-4 text-sm"
@@ -443,25 +460,25 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
                 />
 
                 <div className="overflow-y-auto max-h-[50vh]">
-                  {filteredTeachers.length > 0 ? (
-                    filteredTeachers.map((teacher) => (
+                  {filteredUsers.length > 0 ? (
+                    filteredUsers.map((user) => (
                       <div
-                        key={teacher.id}
+                        key={user.id}
                         className="flex items-center justify-between p-3 border-b hover:bg-gray-50"
                       >
                         <div className="flex items-center gap-3">
                           <FaUserCircle className="text-gray-400" size={20} />
                           <div>
-                            <p className="text-sm font-medium">{teacher.name}</p>
+                            <p className="text-sm font-medium">{user.name}</p>
                             <p className="text-xs text-gray-500">
-                              {teacher.email}
+                              {user.email} {user.role && `(${user.role})`}
                             </p>
                           </div>
                         </div>
                         <input
                           type="checkbox"
-                          checked={isTeacherSelected(teacher.id)}
-                          onChange={() => toggleTeacher(teacher)}
+                          checked={isUserSelected(user.id)}
+                          onChange={() => toggleUser(user)}
                           className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500"
                           disabled={loading}
                         />
@@ -469,7 +486,7 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
                     ))
                   ) : (
                     <div className="text-center py-4 text-gray-500 text-sm">
-                      No teachers found
+                      No attendees found
                     </div>
                   )}
                 </div>
@@ -478,7 +495,7 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
               <div className="p-4 border-t flex justify-end">
                 <button
                   type="button"
-                  onClick={() => setShowTeacherList(false)}
+                  onClick={() => setShowUserList(false)}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
                   disabled={loading}
                 >
