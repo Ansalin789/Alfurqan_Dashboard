@@ -11,6 +11,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 
 type TabbedTableProps = {
   studentId: string;
+  userId: string;
   courseName : string;
 };
 // types.ts (or wherever you define your types)
@@ -189,15 +190,41 @@ interface AssignmentType {
   
 }
 
-const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName}) => {
+// Define the PaymentResponse interface
+interface PaymentResponse {
+  id: string;
+  object: string;
+  amount: number;
+  currency: string;
+  status: string;
+  // Add other fields from the paymentResponse object as needed
+}
+
+// Define the PaymentDetail interface
+interface PaymentDetail {
+  _id: string;
+  userId: string;
+  userName: string;
+  paymentStatus: string;
+  paymentAmount: string;
+  paymentResponse: PaymentResponse;
+  paymentDate: string;
+  status: string;
+  createdBy: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  __v: number;
+}
+
+const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , userId}) => {
   console.log(studentId);
   const [activeTab, setActiveTab] = useState("Class");
   const tabs = [
     "Class",
     "Courses",
     "Payment History",
-    "Assessments",
     "Assignments",
+    "Assessments",
   ];
   const [classData, setClassData] = useState<ClassSchedule[]>([]);
   // const [stats, setStats] = useState<Stats | null>(null);
@@ -222,8 +249,9 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName}) => {
     totalDuration: 0,
   });
 
+  const [paymentHistory, setPaymentHistory] = useState<PaymentDetail[]>([]); // State to hold payment history
 
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -409,7 +437,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName}) => {
         console.log("No auth token found.");
       }
     }
-  }, [studentId]);
+  }, []);
 
   const fetchClassSchedule = async (token: string, studentId: string) => {
     try {
@@ -432,52 +460,6 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName}) => {
       console.error("Error fetching schedules:", error);
     }
   };
-
-  /////////////////////////counts in course///////////////////
-  // Fetch stats data from an API
-  // useEffect(() => {
-  //   if (typeof window !== "undefined" && studentId) {
-  //     const token = localStorage.getItem("AdminAuthToken");
-  //     if (token) {
-  //       fetchStatsData(token, studentId);
-  //     } else {
-  //       console.log("No auth token found.");
-  //     }
-  //   }
-  // }, [studentId]);
-
-  // const fetchStatsData = async (token: string, studentId: string) => {
-  //   try {
-  //     const response = await fetch(
-  //       `http://localhost:5001/classShedule/studentsclasscount?studentId=${studentId}`,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-
-  //     const data: Stats = await response.json();
-  //     setStats(data);
-  //   } catch (error) {
-  //     console.error("Error fetching stats:", error);
-  //   }
-  // };
-  // // Depend on studentId to refetch stats when it changes
-
-
-  // if (!stats) {
-  //   return <div>Error: Stats could not be loaded.</div>; // Handle case where stats are not available
-  // }
-
-  // Define progressData using the fetched stats
-  // const progressData = [
-  //   { label: "Level", value: stats.level, color: "#7DB5CB" },
-  //   { label: "Attendance", value: stats.totalAttendance, color: "#9AD7D6" },
-  //   { label: "Total Classes", value: stats.totalClasses, color: "#8B93D2" },
-  //   { label: "Duration", value: stats.totalduration, color: "#B48BD2" },
-  // ];
 
   const assessment = [
     {
@@ -588,34 +570,34 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName}) => {
       setLoading(true);
       setError(null);
       try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("AdminAuthToken")
-            : null;
-        const studentId = localStorage.getItem("StudentPortalId");
+        const token = localStorage.getItem("AdminAuthToken");
 
         if (!token || !studentId) {
-          console.error("Missing token or teacher ID");
+          console.error("Missing token or student ID");
           return;
         }
-        const res = await fetch(`http://localhost:5001/assignments/student?studentId=${studentId}`,
-          {
-            headers: {
-              "Authorization": `Bearer ${token}`,
-            },
-          }
-        );
+
+        const res = await fetch(`http://localhost:5001/assignments/student?studentId=${studentId}`, {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+
         if (!res.ok) throw new Error("Failed to fetch assignments");
         const data = await res.json();
-        setAssignments((data.data || []) as AssignmentType[]);
+        console.log("Fetched Assignments Data:", data); // Log the fetched data
+
+        // Ensure that the data is being set correctly
+        setAssignments(data.data || []); // Set the assignments data
       } catch (err: any) {
         setError(err.message || "Error fetching assignments");
       } finally {
         setLoading(false);
       }
     };
+
     fetchAssignments();
-  }, []);
+  }, [studentId]); // Ensure studentId is in the dependency array
 
   // Filter assignments based on current filters
   const filterAssignments = (assignments: AssignmentType[]) => {
@@ -711,11 +693,6 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName}) => {
     }
   };
 
-  const tabOptions = [
-    { type: "Pending", label: "Pending", count: filteredPendingAssignments.length },
-    { type: "Completed", label: "Completed", count: filteredCompletedAssignments.length },
-  ];
-
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({
       ...prev,
@@ -739,6 +716,35 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName}) => {
   const applyFilters = () => {
     setShowFilter(false);
   };
+
+  // Fetch payment history
+  useEffect(() => {
+    const fetchPaymentHistory = async () => {
+      try {
+        const token = localStorage.getItem("AdminAuthToken");
+        if (!token || !studentId) {
+          console.error("Missing token or student ID");
+          return;
+        }
+
+        const response = await axios.get(`http://localhost:5001/student/paymenthistory`, {
+          params: { userId: userId },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.data.paymentDetails) {
+          setPaymentHistory(response.data.paymentDetails);
+        }
+      } catch (error) {
+        console.error("Failed to fetch payment history:", error);
+      }
+    };
+
+    fetchPaymentHistory();
+  }, [studentId, userId]); // Added userId as a dependency
 
   return (
     <div className=" overflow-x-auto mt-4">
@@ -1046,7 +1052,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName}) => {
         </div>
       )}
 
-      {/* Table for 'Payment' Tab */}
+      {/* Table for 'Payment History' Tab */}
       {activeTab === "Payment History" && (
         <div className="">
           <div className="rounded-xl overflow-hidden">
@@ -1055,100 +1061,46 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName}) => {
                 type="text"
                 placeholder="Search"
                 className="bg-transparent outline-none text-[12px] w-32 py-3"
-                // value and onChange can be implemented if you want search for payments
+                // Implement search functionality if needed
                 disabled
               />
-              <div
-                className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
-                // onClick={() => setIsFilterModalOpen(true)}
-              >
+              <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer">
                 <MdTune className="w-4 h-4" />
-
                 <span>Filter</span>
               </div>
               <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-                Showing{" "}
-                {paginatedPaymentData.length === 0
-                  ? 0
-                  : (currentPage - 1) * itemsPerPage + 1}{" "}
-                to {Math.min(currentPage * itemsPerPage, transactions.length)}{" "}
-                of {transactions.length}
+                Showing {paymentHistory.length} of {paymentHistory.length}
               </span>
             </div>
             <div className="overflow-x-auto max-h-none">
-              <table
-                className="w-full min-w-[900px] text-sm text-left table-auto"
-                style={{ width: "100%", tableLayout: "fixed" }}
-              >
+              <table className="w-full min-w-[900px] text-sm text-left table-auto">
                 <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                   <tr className="font-medium">
-                    <th className="p-4 font-semibold text-[12px] text-center">
-                      Invoice ID
-                    </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
-                      Date
-                    </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
-                      Course
-                    </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
-                      Due By Days
-                    </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
-                      Paid Date
-                    </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
-                      Status
-                    </th>
+                    <th className="p-4 font-semibold text-[12px] text-center">Invoice ID</th>
+                    <th className="p-4 font-semibold text-[12px] text-center">Date</th>
+                    <th className="p-4 font-semibold text-[12px] text-center">Course</th>
+                    <th className="p-4 font-semibold text-[12px] text-center">Amount</th>
+                    <th className="p-4 font-semibold text-[12px] text-center">Status</th>
                   </tr>
                 </thead>
                 <tbody className="text-[10px] text-[#1D2939]">
-                  {paginatedPaymentData.length > 0 ? (
-                    paginatedPaymentData.map((row, index) => {
-                      let statusClass = "";
-                      switch (row.status) {
-                        case "Paid":
-                          statusClass = "bg-green-500 text-white";
-                          break;
-                        case "Pending":
-                          statusClass = "bg-red-500 text-white";
-                          break;
-                        case "Void":
-                          statusClass = "bg-yellow-500 text-white";
-                          break;
-                        case "Cancelled":
-                          statusClass = "bg-gray-500 text-white";
-                          break;
-                      }
-                      return (
-                        <tr
-                          key={row.invoiceid}
-                          className={`text-center dark:text-white ${
-                            index % 2 === 0
-                              ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                              : "bg-[#F8F8F8] dark:bg-[#303030]"
-                          }`}
-                        >
-                          <td className="p-3">{row.invoiceid}</td>
-                          <td className="p-3">{row.date}</td>
-                          <td className="p-3">{row.course}</td>
-                          <td className="p-3">{row.duebydays}</td>
-                          <td className="p-3">{row.paiddate}</td>
-                          <td className="p-3">
-                            <span
-                              className={`inline-flex items-center justify-center w-16 h-6 px-3 py-1 rounded-2xl ${statusClass}`}
-                            >
-                              {row.status}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })
+                  {paymentHistory.length > 0 ? (
+                    paymentHistory.map((payment, index) => (
+                      <tr key={payment._id} className={`text-center dark:text-white ${index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"}`}>
+                        <td className="p-3">{payment.paymentResponse.id}</td>
+                        <td className="p-3">{new Date(payment.paymentDate).toLocaleDateString()}</td>
+                        <td className="p-3">{payment.userName}</td>
+                        <td className="p-3">{payment.paymentAmount}</td>
+                        <td className="p-3">
+                          <span className={`inline-flex items-center justify-center w-16 h-6 px-3 py-1 rounded-2xl ${payment.paymentStatus === "succeeded" ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}>
+                            {payment.paymentStatus}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="p-4 text-center">
-                        No data available
-                      </td>
+                      <td colSpan={5} className="p-4 text-center">No data available</td>
                     </tr>
                   )}
                 </tbody>
@@ -1325,8 +1277,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName}) => {
                        "Class Type",
                       "Assigned Date",
                       "Due Date",
-                      "Status",
-                      "Action"
+                      "Status"
                     ].map((header, idx) => (
                       <th
                         key={idx}
@@ -1338,132 +1289,36 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName}) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {studentsToDisplay.map((assignment, index) => {
-                    const status = mapStatus(assignment.assignmentStatus);
-                    const isNotAssigned = status === "Pending";
-                    const isCompleted = status === "Completed";
-                    const isAssigned = status === "Assigned";
+                  {assignments.length > 0 ? (
+                    assignments.map((assignment, index) => {
+                      const status = assignment.assignmentStatus; // Use the assignmentStatus directly
+                      const rowBgClass = index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]";
 
-                    // 🛠 Fix: Extract nested ternary condition
-                    const rowBgClass =
-                      index % 2 === 0
-                        ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                        : "bg-[#F8F8F8] dark:bg-[#303030]";
-
-                    return (
-                      <tr
-                        key={assignment._id || index}
-                        className={`text-[10px] ${rowBgClass}`}
-                      >
-                        <td className="px-3 py-4 break-words text-[11px]">
-                          {assignment.assignmentId}
-                        </td>
-                        <td className="px-3 py-4 break-words text-[11px]">
-                          {assignment.assignedTeacher}
-                        </td>
-                        <td className="px-3 py-4 break-words text-[11px]">
-                          {assignment.courses}
-                        </td>
-                        <td className="px-3 py-4 break-words text-[11px]">
-                          {assignment.level}
-                        </td>
-                         <td className="px-3 py-4 break-words text-[11px]">
-                          {assignment.title}
-                        </td>
-                             <td className="px-3 py-4 break-words text-[11px]">
-                          {assignment.sessionClassType}
-                        </td>
-                        <td className="px-3 py-4 break-words text-[11px]">
-                          {assignment.assignedDate ? new Date(assignment.assignedDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}
-                        </td>
-                        <td className="px-3 py-4 break-words text-[11px]">
-                          {assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}
-                        </td>
-                        <td className="px-3 py-4 break-words text-[11px]">
-                          <span className={`py-1 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(mapStatus(assignment.assignmentStatus))}`}>
-                            {mapStatus(assignment.assignmentStatus)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-center relative text-[11px]">
-                          {(() => {
-                            let buttonClass = "text-gray-500 hover:text-gray-700 dark:text-[#ffff] ";
-                            if (isNotAssigned) {
-                              buttonClass += "opacity-40 cursor-not-allowed";
-                            }
-                            const handleClick = () => {
-                              if (!isNotAssigned) {
-                                toggleDropdown(assignment._id);
-                              }
-                            };
-                            const isButtonDisabled = isNotAssigned;
-                            return (
-                              <button
-                                className={buttonClass}
-                                onClick={handleClick}
-                                disabled={isButtonDisabled}
-                              >
-                                <BsThreeDotsVertical />
-                              </button>
-                            );
-                          })()}
-                          {openDropdownId === assignment._id && isAssigned && (
-                            <div className="absolute right-0 w-40 p-2 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
-                              <button
-                                className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                                onClick={() => {
-                                  setOpenDropdownId(null);
-                                  console.log('Start Assignment clicked, assignmentId:', assignment.assignmentId); // <-- log assignmentId
-                                  router.push(
-                                    `/student/ui/startassignment?assignmentId=${assignment.assignmentId}`
-                                  );
-                                }}
-                              >
-                                Start Assignment
-                              </button>
-                              <button
-                                className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                                onClick={() => {
-                                  setOpenDropdownId(null);
-                                  router.push(
-                                    `/student/ui/assignmentlist?assignmentId=${assignment.assignmentId}`
-                                  );
-                                }}
-                              >
-                                View List
-                              </button>
-                              <button
-                                className="block w-full px-4 py-1 text-[11px] dark:text-[#ffff]"
-                                onClick={() => setOpenDropdownId(null)}
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          )}
-                          {openDropdownId === assignment._id && isCompleted && (
-                            <div className="absolute right-0 w-32 p-2 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
-                              <button
-                                className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                                onClick={() => {
-                                  setOpenDropdownId(null);
-                                  router.push(
-                                    `/student/ui/assignmentlist?assignmentId=${assignment.assignmentId}`
-                                  );
-                                }}
-                              >
-                                View List
-                              </button>
-                              <button
-                                className="block w-full px-4 py-1 text-[11px] dark:text-[#ffff]"
-                                onClick={() => setOpenDropdownId(null)}
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                      return (
+                        <tr key={assignment._id || index} className={`text-[10px] ${rowBgClass}`}>
+                          <td className="px-3 py-4 break-words text-[11px]">{assignment.assignmentId}</td>
+                          <td className="px-3 py-4 break-words text-[11px]">{assignment.assignedTeacher}</td>
+                          <td className="px-3 py-4 break-words text-[11px]">{assignment.courses}</td>
+                          <td className="px-3 py-4 break-words text-[11px]">{assignment.level}</td>
+                          <td className="px-3 py-4 break-words text-[11px]">{assignment.title}</td>
+                          <td className="px-3 py-4 break-words text-[11px]">{assignment.sessionClassType}</td>
+                          <td className="px-3 py-4 break-words text-[11px]">{assignment.assignedDate ? new Date(assignment.assignedDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}</td>
+                          <td className="px-3 py-4 break-words text-[11px]">{assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}</td>
+                          <td className="px-3 py-4 break-words text-[11px]">
+                            <span className={`py-1 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(mapStatus(assignment.assignmentStatus))}`}>
+                              {mapStatus(assignment.assignmentStatus)}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={10} className="p-4 text-center">
+                        No data available
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
