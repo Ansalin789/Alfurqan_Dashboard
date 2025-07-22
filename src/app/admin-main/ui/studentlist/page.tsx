@@ -192,7 +192,7 @@ export default function StudentList() {
 
           {/* Tabbed Table Section */}
           <div className="w-full overflow-hidden">
-            <TabbedTable studentId={student._id} />
+            <TabbedTable studentId={student._id} courseName ={student.student.course}/>
           </div>
         </div>
       )}

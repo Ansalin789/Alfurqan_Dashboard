@@ -4,11 +4,14 @@ import { buildStyles, CircularProgressbar } from "react-circular-progressbar";
 import StudentsRecord from "./studentcourseprogress";
 import axios from "axios";
 import { MdTune } from "react-icons/md";
+import { PieChart, Pie, Cell } from "recharts";
 import { useRouter } from "next/navigation";
+import { BsThreeDotsVertical } from "react-icons/bs";
 
 
 type TabbedTableProps = {
   studentId: string;
+  courseName : string;
 };
 // types.ts (or wherever you define your types)
 interface ClassSchedule {
@@ -30,24 +33,32 @@ interface ClassSchedule {
   amount: string;
   student: {
     studentId: string;
-    studentFirstName: string;
-    studentLastName: string;
     studentEmail: string;
+    studentPhone: number;
+    course: string;
+    package: string;
+    city: string;
+    country: string;
     gender: string;
   };
+  course: {
+    courseId: string;
+    courseName: string;
+  };
   teacher: {
-    teacherId: string;
+    teacherId?: string;
     teacherName: string;
-    teacherEmail: string;
+    teacherEmail?: string;
   };
 }
 
-type Stats = {
-  level: number;
-  totalAttendance: number;
-  totalClasses: number;
-  totalduration: number;
-};
+
+// type Stats = {
+//   level: number;
+//   totalAttendance: number;
+//   totalClasses: number;
+//   totalduration: number;
+// };
 
 interface StudentResponse {
   students: StudentItem[];
@@ -60,6 +71,7 @@ interface StudentItem {
   _id: string;
   username: string;
   password: string;
+  course:string;
   role: string;
   status: string;
   createdDate: string;
@@ -75,7 +87,6 @@ interface StudentDetails {
   studentId: string;
   studentEmail: string;
   studentPhone: number;
-  course: string;
   package: string;
   city: string;
   country: string;
@@ -129,7 +140,56 @@ interface PaymentRow {
   status: string;
 }
 
-const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
+interface AssignmentType {
+  _id: string;
+  studentId: string;
+  studentName: string;
+  sessionClassType?: string;
+  assignmentName: string;
+  questionName?: string;
+  questionType?: string;
+  typeofQuestion?: string;
+  title: string;
+  assignedTeacher?: string;
+  assignedTeacherId?: string;
+  assignmentId: string;
+  assignmentType?: {
+    type?: string;
+    name?: string;
+    chooseType?: boolean;
+    trueorfalseType?: boolean;
+  };
+  chooseType?: boolean;
+  trueorfalseType?: boolean;
+  question?: string;
+  hasOptions?: boolean;
+  options?: {
+    optionOne?: string;
+    optionTwo?: string;
+    optionThree?: string;
+    optionFour?: string;
+  };
+  status?: string;
+  createdDate?: string;
+  createdBy?: string;
+  updatedDate?: string;
+  updatedBy?: string;
+  level?: string;
+  courses?: string;
+  assignedDate?: string;
+  dueDate?: string;
+  answer?: string;
+  answerValidation?: string;
+  assignmentStatus?: string;
+  __v?: number;
+  questions?: {
+    _id: string;
+    status: string;
+  }[];
+  
+}
+
+const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName}) => {
   console.log(studentId);
   const [activeTab, setActiveTab] = useState("Class");
   const tabs = [
@@ -140,7 +200,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
     "Assignments",
   ];
   const [classData, setClassData] = useState<ClassSchedule[]>([]);
-  const [stats, setStats] = useState<Stats | null>(null);
+  // const [stats, setStats] = useState<Stats | null>(null);
   const [coursesData, setCoursesData] = useState<CourseRow[]>([]);
 
   const [transactions, setTransactions] = useState<PaymentRow[]>([]);
@@ -148,8 +208,102 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  const router = useRouter();
+  const handleLogin = (studentId: string, courseName: string) => {
+    localStorage.setItem("StudentPortalId", studentId);
+    localStorage.setItem("StudentCourseName", courseName);
 
+  };
+
+  const [dashboardCounts, setDashboardCounts] = useState({
+    totalLevel: 0,
+    totalAttendance: 0,
+    totalClasses: 0,
+    presentCount: 0,
+    totalDuration: 0,
+  });
+
+
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        
+        const token = localStorage.getItem("AdminAuthToken");
+       
+        console.log("✅ tokenss:", token);
+        console.log("✅ studentIdsss:", studentId);
+        console.log("✅ courseNamesss:", courseName);
+  
+        if (!token || !studentId || !courseName) {
+          console.error("❌ studentId or courseName missing in localStorage");
+          return;
+        }
+  
+        const response = await axios.get(`http://localhost:5001/dashboard/student/counts`, {
+          params: { studentId, courseName },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            
+          },
+        });
+  
+        console.log("✅ FULL API response:", response);
+        console.log("✅ Final Data:", JSON.stringify(response.data, null, 2));
+  
+        setDashboardCounts({
+          totalLevel: Number(response.data.totalLevel) || 0,
+          totalAttendance: Number(response.data.totalAttendance) || 0,
+          totalClasses: Number(response.data.totalClasses) || 0,
+          presentCount: 0,
+          totalDuration: Number(response.data.totalDuration) || 0,
+        });
+      } catch (error) {
+        console.error("❌ Error fetching dashboard counts:", error);
+      }
+    };
+  
+    fetchData();
+  }, [studentId, courseName]); // Add studentId as a dependency
+  
+
+  const data = [
+    {
+      title: "Level",
+      value: `${Math.floor(dashboardCounts.totalLevel)}`,
+      percentage: Math.floor(dashboardCounts.totalLevel),
+      ringColor: "#7DB5CB",
+      bgColor: "#E7EFF2",
+    },
+
+    {
+      title: "Attendance",
+      value: `${Math.floor(dashboardCounts.totalAttendance)}%`,
+      percentage: Math.floor(dashboardCounts.totalAttendance),
+      ringColor: "#9AD7D6",
+      bgColor: "#E7EFF2",
+    },
+
+    {
+      title: "Total Classes",
+      value: `${Math.floor(dashboardCounts.totalClasses)}`, // No % sign here
+      // Cap percentage to 100 for pie chart to avoid overflow
+      percentage:
+        dashboardCounts.totalClasses > 100
+          ? 100
+          : Math.floor(dashboardCounts.totalClasses),
+      ringColor: "#8B93D2",
+      bgColor: "#E7EFF2",
+    },
+
+    {
+      title: "Duration",
+      value: `${Math.floor(dashboardCounts.totalDuration)} Hr`,
+      percentage: Math.floor(dashboardCounts.totalDuration),
+      ringColor: "#B690D5",
+      bgColor: "#E7EFF2",
+    },
+  ];
   ////////////////courses///////////////////
   useEffect(() => {
     if (typeof window !== "undefined" && studentId) {
@@ -161,11 +315,12 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
       }
     }
   }, [studentId]);
+  
 
   const fetchStudentDetails = async (token: string, studentId: string) => {
     try {
       const response = await axios.get<StudentResponse>(
-        `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
+        `http://localhost:5001/alstudents/${studentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -205,7 +360,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
   const fetchStudentInvoice = async (token: string, studentId: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/studentinvoice/${studentId}`,
+        `http://localhost:5001/studentinvoice/${studentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -259,7 +414,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
   const fetchClassSchedule = async (token: string, studentId: string) => {
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
+        `http://localhost:5001/classShedule/students?studentId=${studentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -280,49 +435,49 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
 
   /////////////////////////counts in course///////////////////
   // Fetch stats data from an API
-  useEffect(() => {
-    if (typeof window !== "undefined" && studentId) {
-      const token = localStorage.getItem("AdminAuthToken");
-      if (token) {
-        fetchStatsData(token, studentId);
-      } else {
-        console.log("No auth token found.");
-      }
-    }
-  }, [studentId]);
+  // useEffect(() => {
+  //   if (typeof window !== "undefined" && studentId) {
+  //     const token = localStorage.getItem("AdminAuthToken");
+  //     if (token) {
+  //       fetchStatsData(token, studentId);
+  //     } else {
+  //       console.log("No auth token found.");
+  //     }
+  //   }
+  // }, [studentId]);
 
-  const fetchStatsData = async (token: string, studentId: string) => {
-    try {
-      const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/classShedule/studentsclasscount?studentId=${studentId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+  // const fetchStatsData = async (token: string, studentId: string) => {
+  //   try {
+  //     const response = await fetch(
+  //       `http://localhost:5001/classShedule/studentsclasscount?studentId=${studentId}`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
 
-      const data: Stats = await response.json();
-      setStats(data);
-    } catch (error) {
-      console.error("Error fetching stats:", error);
-    }
-  };
-  // Depend on studentId to refetch stats when it changes
+  //     const data: Stats = await response.json();
+  //     setStats(data);
+  //   } catch (error) {
+  //     console.error("Error fetching stats:", error);
+  //   }
+  // };
+  // // Depend on studentId to refetch stats when it changes
 
 
-  if (!stats) {
-    return <div>Error: Stats could not be loaded.</div>; // Handle case where stats are not available
-  }
+  // if (!stats) {
+  //   return <div>Error: Stats could not be loaded.</div>; // Handle case where stats are not available
+  // }
 
   // Define progressData using the fetched stats
-  const progressData = [
-    { label: "Level", value: stats.level, color: "#7DB5CB" },
-    { label: "Attendance", value: stats.totalAttendance, color: "#9AD7D6" },
-    { label: "Total Classes", value: stats.totalClasses, color: "#8B93D2" },
-    { label: "Duration", value: stats.totalduration, color: "#B48BD2" },
-  ];
+  // const progressData = [
+  //   { label: "Level", value: stats.level, color: "#7DB5CB" },
+  //   { label: "Attendance", value: stats.totalAttendance, color: "#9AD7D6" },
+  //   { label: "Total Classes", value: stats.totalClasses, color: "#8B93D2" },
+  //   { label: "Duration", value: stats.totalduration, color: "#B48BD2" },
+  // ];
 
   const assessment = [
     {
@@ -369,8 +524,6 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
     startIndex + itemsPerPage
   );
 
-
-
   const donutColors = [
     "#7DB5CB",
     "#9AD7D6",
@@ -381,6 +534,210 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
 
   const handleViewDetails = (studentId : string) => {
     router.push(`/admin-main/ui/studentclass?studentId=${studentId}`);
+  };
+
+  const [assignments, setAssignments] = useState<AssignmentType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const router = useRouter();
+  const [backendScore, setBackendScore] = useState<number | null>(null);
+  const [showFilter, setShowFilter] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState("");
+
+  // Filter state variables
+  const [filters, setFilters] = useState({
+    assignmentName: "",
+    course: "",
+    level: "",
+    assignedDateFrom: "",
+    assignedDateTo: "",
+    dueDateFrom: "",
+    dueDateTo: "",
+    status: ""
+  });
+
+  // Get unique values for filter options
+  const getUniqueCourses = () => {
+    const values = assignments.map(assignment => assignment.courses).filter(Boolean) as string[];
+    return Array.from(new Set(values));
+  };
+  
+  const getUniqueLevels = () => {
+    const values = assignments.map(assignment => assignment.level).filter(Boolean) as string[];
+    return Array.from(new Set(values));
+  };
+
+  // Map assignment status for display and filtering
+  const mapStatus = (status?: string) => {
+    switch (status?.toUpperCase()) {
+      case "ASSIGNED":
+      case "INPROGRESS":
+        return "Assigned";
+      case "COMPLETED":
+        return "Completed";
+      case "PENDING":
+      case "NOT ASSIGNED":
+      default:
+        return "Pending";
+    }
+  };
+
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("AdminAuthToken")
+            : null;
+        const studentId = localStorage.getItem("StudentPortalId");
+
+        if (!token || !studentId) {
+          console.error("Missing token or teacher ID");
+          return;
+        }
+        const res = await fetch(`http://localhost:5001/assignments/student?studentId=${studentId}`,
+          {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+            },
+          }
+        );
+        if (!res.ok) throw new Error("Failed to fetch assignments");
+        const data = await res.json();
+        setAssignments((data.data || []) as AssignmentType[]);
+      } catch (err: any) {
+        setError(err.message || "Error fetching assignments");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAssignments();
+  }, []);
+
+  // Filter assignments based on current filters
+  const filterAssignments = (assignments: AssignmentType[]) => {
+    return assignments.filter(assignment => {
+      // Search by keyword in all table data (case-insensitive)
+      if (
+        searchKeyword &&
+        !Object.values(assignment)
+          .map(val => (typeof val === 'string' ? val.toLowerCase() : ''))
+          .join(' ')
+          .includes(searchKeyword.toLowerCase())
+      ) {
+        return false;
+      }
+      // Assignment Name filter
+      if (filters.assignmentName && !assignment.title?.toLowerCase().includes(filters.assignmentName.toLowerCase())) {
+        return false;
+      }
+      // Course filter
+      if (filters.course && assignment.courses !== filters.course) {
+        return false;
+      }
+      // Level filter
+      if (filters.level && assignment.level !== filters.level) {
+        return false;
+      }
+      // Status filter (use mapped status)
+      if (filters.status && mapStatus(assignment.assignmentStatus) !== filters.status) {
+        return false;
+      }
+      // Assigned Date range filter
+      if (filters.assignedDateFrom && assignment.assignedDate) {
+        const assignedDate = new Date(assignment.assignedDate);
+        const fromDate = new Date(filters.assignedDateFrom);
+        if (assignedDate < fromDate) {
+          return false;
+        }
+      }
+      if (filters.assignedDateTo && assignment.assignedDate) {
+        const assignedDate = new Date(assignment.assignedDate);
+        const toDate = new Date(filters.assignedDateTo);
+        if (assignedDate > toDate) {
+          return false;
+        }
+      }
+      // Due Date range filter
+      if (filters.dueDateFrom && assignment.dueDate) {
+        const dueDate = new Date(assignment.dueDate);
+        const fromDate = new Date(filters.dueDateFrom);
+        if (dueDate < fromDate) {
+          return false;
+        }
+      }
+      if (filters.dueDateTo && assignment.dueDate) {
+        const dueDate = new Date(assignment.dueDate);
+        const toDate = new Date(filters.dueDateTo);
+        if (dueDate > toDate) {
+          return false;
+        }
+      }
+      return true;
+    });
+  };
+
+  // Tab logic (if you want to filter by assignmentStatus)
+  const pendingAssignments = assignments.filter(a => mapStatus(a.assignmentStatus) !== "Completed");
+  const completedAssignments = assignments.filter(a => {
+    const isAssignmentCompleted = mapStatus(a.assignmentStatus) === "Completed";
+    // If there are questions, check that none are "ASSIGNED"
+    const allQuestionsNotAssigned = !a.questions || a.questions.every(q => mapStatus(q.status) !== "Assigned");
+    return isAssignmentCompleted && allQuestionsNotAssigned;
+  });
+
+  // Apply filters to the appropriate tab
+  const filteredPendingAssignments = filterAssignments(pendingAssignments);
+  const filteredCompletedAssignments = filterAssignments(completedAssignments);
+  const studentsToDisplay = activeTab === "Pending" ? filteredPendingAssignments : filteredCompletedAssignments;
+
+  const toggleDropdown = (id: string) => {
+    setOpenDropdownId((prev) => (prev === id ? null : id));
+  };
+
+  const getStatusStyle = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case "COMPLETED":
+        return "bg-[#ECFDF3] text-[#377E36] dark:bg-[#2E3D2E] dark:text-[#377E36]";
+      case "INPROGRESS":
+        return "bg-[#FDF6EC] text-[#F0AD4E] dark:bg-[#534634] dark:text-[#F0AD4E]";
+      case "ASSIGNED":
+        return "bg-[#FDECEC] text-[#D34645] dark:bg-[#4D3131] dark:text-[#D34645]";
+      default:
+        return "bg-gray-100 text-gray-600";
+    }
+  };
+
+  const tabOptions = [
+    { type: "Pending", label: "Pending", count: filteredPendingAssignments.length },
+    { type: "Completed", label: "Completed", count: filteredCompletedAssignments.length },
+  ];
+
+  const handleFilterChange = (field: string, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      assignmentName: "",
+      course: "",
+      level: "",
+      assignedDateFrom: "",
+      assignedDateTo: "",
+      dueDateFrom: "",
+      dueDateTo: "",
+      status: ""
+    });
+  };
+
+  const applyFilters = () => {
+    setShowFilter(false);
   };
 
   return (
@@ -471,9 +828,9 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
                             : "bg-[#F8F8F8] dark:bg-[#303030]"
                         }`}
                       >
-                        <td className="p-3">{row.student.studentId}</td>
+                        <td className="p-3">{row._id}</td>
                         <td className="p-3">{row.teacher.teacherName}</td>
-                        <td className="p-3">{row.package}</td>
+                        <td className="p-3">{row.course.courseName}</td>
                         <td className="p-3">
                           {new Date(row.startDate).toLocaleDateString("en-US", {
                             year: "numeric",
@@ -526,40 +883,54 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
         <div className="">
           {/* Donut/Progress Grid */}
           <div className="grid grid-cols-4 gap-4 text-center mb-6">
-            {progressData.map((item, idx) => {
-              let suffix = "";
-              let isPercentage = false;
-              if (item.label === "Attendance") {
-                suffix = "%";
-                isPercentage = true;
-              } else if (item.label === "Duration") {
-                suffix = "hrs";
-              }
-              return (
-                <div
-                  key={item.label}
-                  className="flex flex-row justify-between items-center p-4 rounded-xl  dark:bg-[#343434]"
-                >
-                  <p className="mt-4 text-xs font-medium align-top text-white">{item.label}</p>
-                  <div className="relative w-20 h-20 flex items-center justify-center">
-                    <CircularProgressbar
-                      value={item.value}
-                      maxValue={isPercentage ? 100 : undefined}
-                      strokeWidth={12}
-                      styles={buildStyles({
-                        pathColor: donutColors[idx],
-                        trailColor: "#393939",
-                        strokeLinecap: "round",
-                      })}
-                    />
-                    <div className="absolute text-base font-bold text-white flex items-center justify-center w-full h-full">
-                      {Math.round(item.value)}
-                      {suffix}
-                    </div>
-                  </div>
+        {data.map((item, idx) => (
+          <div
+            key={idx}
+            className="p-4 rounded-xl shadow-lg w-full bg-gradient-to-b from-white to-[#F9FAFB] dark:from-[#343434] dark:to-[#2A2A2A]"
+          >
+            <h3 className="text-[#010E30] dark:text-white text-[14px] font-medium mb-2">
+              {item.title}
+            </h3>
+            <div className="flex justify-center">
+              <div className="relative w-[80px] h-[80px]">
+                <PieChart width={80} height={80}>
+                  <Pie
+                    data={[{ value: 100 }]}
+                    dataKey="value"
+                    innerRadius={26}
+                    outerRadius={35}
+                    startAngle={90}
+                    endAngle={-270}
+                    stroke="none"
+                    isAnimationActive={false}
+                  >
+                    <Cell fill={item.bgColor} />
+                  </Pie>
+                  <Pie
+                    data={[
+                      { value: item.percentage },
+                      { value: 100 - item.percentage },
+                    ]}
+                    dataKey="value"
+                    innerRadius={24}
+                    outerRadius={38}
+                    startAngle={90}
+                    endAngle={-270}
+                    cornerRadius={2}
+                    stroke="none"
+                    isAnimationActive={false}
+                  >
+                    <Cell fill={item.ringColor} />
+                    <Cell fill="transparent" />
+                  </Pie>
+                </PieChart>
+                <div className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold text-[#010E30] dark:text-white">
+                  {item.value}
                 </div>
-              );
-            })}
+              </div>
+            </div>
+          </div>
+        ))}
           </div>
           <div className="rounded-xl overflow-hidden">
             <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
@@ -923,6 +1294,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
                 // value and onChange can be implemented if you want search for assignments
                 disabled
               />
+              
               <div
                 className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
                 // onClick={() => setIsFilterModalOpen(true)}
@@ -941,71 +1313,157 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
               </span>
             </div>
             <div className="overflow-x-auto max-h-none">
-              <table
-                className="w-full min-w-[900px] text-sm text-left table-auto"
-                style={{ width: "100%", tableLayout: "fixed" }}
-              >
-                <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
-                  <tr className="font-medium">
-                    <th className="p-4 font-semibold text-[12px] text-center">
-                      Subject
-                    </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
-                      Date
-                    </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
-                      Score
-                    </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
-                      Grade
-                    </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
-                      Status
-                    </th>
+            <table className="table-fixed w-full">
+                <thead className="text-[13px] bg-[#4C6993] text-white">
+                  <tr>
+                    {[
+                      "Assignment ID",
+                      "Assigned By",
+                      "Course",
+                      "Level",
+                      "Assignemnt Name",
+                       "Class Type",
+                      "Assigned Date",
+                      "Due Date",
+                      "Status",
+                      "Action"
+                    ].map((header, idx) => (
+                      <th
+                        key={idx}
+                        className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
+                      >
+                        {header}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody className="text-[10px] text-[#1D2939]">
-                  {paginatedAssessmentData.length > 0 ? (
-                    paginatedAssessmentData.map((row, index) => {
-                      let statusClass = "";
-                      switch (row.status) {
-                        case "Completed":
-                          statusClass = "bg-green-500 text-white";
-                          break;
-                        case "Retake Required":
-                          statusClass = "bg-red-500 text-white";
-                          break;
-                      }
-                      return (
-                        <tr
-                          key={row.subject + row.date + index}
-                          className={`text-center dark:text-white ${
-                            index % 2 === 0
-                              ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                              : "bg-[#F8F8F8] dark:bg-[#303030]"
-                          }`}
-                        >
-                          <td className="p-3">{row.subject}</td>
-                          <td className="p-3">{row.date}</td>
-                          <td className="p-3">{row.score}</td>
-                          <td className="p-3">{row.grade}</td>
-                          <td className="p-3">
-                            <span
-                              className={`inline-flex items-center justify-center w-28 h-6 px-3 py-1 rounded-2xl ${statusClass}`}
-                            >
-                              {row.status}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan={5} className="p-4 text-center">
-                        No data available
-                      </td>
-                    </tr>
-                  )}
+                <tbody>
+                  {studentsToDisplay.map((assignment, index) => {
+                    const status = mapStatus(assignment.assignmentStatus);
+                    const isNotAssigned = status === "Pending";
+                    const isCompleted = status === "Completed";
+                    const isAssigned = status === "Assigned";
+
+                    // 🛠 Fix: Extract nested ternary condition
+                    const rowBgClass =
+                      index % 2 === 0
+                        ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                        : "bg-[#F8F8F8] dark:bg-[#303030]";
+
+                    return (
+                      <tr
+                        key={assignment._id || index}
+                        className={`text-[10px] ${rowBgClass}`}
+                      >
+                        <td className="px-3 py-4 break-words text-[11px]">
+                          {assignment.assignmentId}
+                        </td>
+                        <td className="px-3 py-4 break-words text-[11px]">
+                          {assignment.assignedTeacher}
+                        </td>
+                        <td className="px-3 py-4 break-words text-[11px]">
+                          {assignment.courses}
+                        </td>
+                        <td className="px-3 py-4 break-words text-[11px]">
+                          {assignment.level}
+                        </td>
+                         <td className="px-3 py-4 break-words text-[11px]">
+                          {assignment.title}
+                        </td>
+                             <td className="px-3 py-4 break-words text-[11px]">
+                          {assignment.sessionClassType}
+                        </td>
+                        <td className="px-3 py-4 break-words text-[11px]">
+                          {assignment.assignedDate ? new Date(assignment.assignedDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}
+                        </td>
+                        <td className="px-3 py-4 break-words text-[11px]">
+                          {assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}
+                        </td>
+                        <td className="px-3 py-4 break-words text-[11px]">
+                          <span className={`py-1 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(mapStatus(assignment.assignmentStatus))}`}>
+                            {mapStatus(assignment.assignmentStatus)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center relative text-[11px]">
+                          {(() => {
+                            let buttonClass = "text-gray-500 hover:text-gray-700 dark:text-[#ffff] ";
+                            if (isNotAssigned) {
+                              buttonClass += "opacity-40 cursor-not-allowed";
+                            }
+                            const handleClick = () => {
+                              if (!isNotAssigned) {
+                                toggleDropdown(assignment._id);
+                              }
+                            };
+                            const isButtonDisabled = isNotAssigned;
+                            return (
+                              <button
+                                className={buttonClass}
+                                onClick={handleClick}
+                                disabled={isButtonDisabled}
+                              >
+                                <BsThreeDotsVertical />
+                              </button>
+                            );
+                          })()}
+                          {openDropdownId === assignment._id && isAssigned && (
+                            <div className="absolute right-0 w-40 p-2 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
+                              <button
+                                className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
+                                onClick={() => {
+                                  setOpenDropdownId(null);
+                                  console.log('Start Assignment clicked, assignmentId:', assignment.assignmentId); // <-- log assignmentId
+                                  router.push(
+                                    `/student/ui/startassignment?assignmentId=${assignment.assignmentId}`
+                                  );
+                                }}
+                              >
+                                Start Assignment
+                              </button>
+                              <button
+                                className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
+                                onClick={() => {
+                                  setOpenDropdownId(null);
+                                  router.push(
+                                    `/student/ui/assignmentlist?assignmentId=${assignment.assignmentId}`
+                                  );
+                                }}
+                              >
+                                View List
+                              </button>
+                              <button
+                                className="block w-full px-4 py-1 text-[11px] dark:text-[#ffff]"
+                                onClick={() => setOpenDropdownId(null)}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
+                          {openDropdownId === assignment._id && isCompleted && (
+                            <div className="absolute right-0 w-32 p-2 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
+                              <button
+                                className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
+                                onClick={() => {
+                                  setOpenDropdownId(null);
+                                  router.push(
+                                    `/student/ui/assignmentlist?assignmentId=${assignment.assignmentId}`
+                                  );
+                                }}
+                              >
+                                View List
+                              </button>
+                              <button
+                                className="block w-full px-4 py-1 text-[11px] dark:text-[#ffff]"
+                                onClick={() => setOpenDropdownId(null)}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

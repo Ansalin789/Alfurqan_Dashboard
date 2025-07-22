@@ -144,8 +144,7 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
             >
               <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                 <tr className="font-medium">
-                  <th className="p-3 font-semibold text-[12px] text-center">Student ID</th>
-                  <th className="p-3 font-semibold text-[12px] text-center">Student Name</th>
+                  <th className="p-3 font-semibold text-[12px] text-center">Class ID</th>
                   <th className="p-3 font-semibold text-[12px] text-center">Teacher Name</th>
                   <th className="p-3 font-semibold text-[12px] text-center">Course Name</th>
                   <th className="p-3 font-semibold text-[12px] text-center">Date</th>
@@ -168,8 +167,7 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
                           : "bg-[#F8F8F8] dark:bg-[#303030]"
                       }`}
                     >
-                      <td className="p-3">{row.student?.studentId}</td>
-                      <td className="p-3">{row.student?.studentFirstName}</td>
+                      <td className="p-3">{row._id}</td>
                       <td className="p-3">{row.teacher?.teacherName}</td>
                       <td className="p-3">{row.course?.courseName}</td>
                       <td className="p-3">{new Date(row.startDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "2-digit" })}</td>
