@@ -1,8 +1,19 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { PieChart, Pie, Tooltip } from "recharts";
-import { ArrowUpRight } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  PieChart,
+  Pie,
+  TooltipProps,
+} from "recharts";
+
 interface DashboardCount {
   totalStudents: number;
   maleStudents: number;
@@ -24,7 +35,11 @@ interface GroupedData {
 
 const StudentTeacherStaff = () => {
   const COLORS = ["#72DAF3", "#EF95F4", "#E5E5E5"];
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [data, setData] = useState<GroupedData[]>([]);
+
+
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("AdminAuthToken");
@@ -38,16 +53,13 @@ const StudentTeacherStaff = () => {
 
   const fetchData = async (token: string) => {
     try {
-      const res = await fetch(
-        "https://api.blackstoneinfomaticstech.com/dashboard/admin/count",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await fetch("https://api.blackstoneinfomaticstech.com/dashboard/admin/count", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const json: DashboardCount = await res.json();
 
       const grouped: GroupedData[] = [
@@ -77,11 +89,40 @@ const StudentTeacherStaff = () => {
     }
   };
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDarkMode(document.documentElement.classList.contains("dark"));
+    });
+  
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+  
+    return () => observer.disconnect();
+  }, []);
+
+  
+
+  const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
+    const isDark = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white text-black text-xs px-2 py-1 rounded shadow-sm">
-          <p>{`${payload[0].name}: ${payload[0].value}`}</p>
+        <div
+          className={`p-2 flex gap-1 rounded shadow-md text-[10px] border ${
+            isDark
+              ? "bg-[#343434] text-white border-[#444]"
+              : "bg-white text-[#22223b] border-gray-200"
+          }`}
+        >
+          <div className={`font-normal ${isDark ? 'text-white' : 'text-[#22223b]'}`}>{payload[0].payload.name}</div>
+          <div>
+            {payload.map((entry: any, idx: number) => (
+              <div key={idx} className={isDark ? 'text-white text-[10px]' : 'text-[#22223b] text-[10px]'}>
+                [{entry.payload.value}]
+              </div>
+            ))}
+          </div>
         </div>
       );
     }
@@ -89,80 +130,77 @@ const StudentTeacherStaff = () => {
   };
 
   return (
-<div className="flex flex-wrap gap-4 p-0 w-full">
-  {data.map((item) => (
-    <div
-      key={item.title}
-      className="bg-white dark:bg-[#343434] flex flex-row justify-between items-center p-4 rounded-2xl shadow-lg h-[120px] min-w-[232px] w-full sm:w-[58%] lg:w-[32%] xl:w-[30%]"
-    >
+    <div className="flex gap-4 p-0 w-full">
+      {data.map((item) => (
+        <div
+          key={item.title}
+          className="bg-white dark:bg-[#343434] flex flex-row justify-between items-center p-4 rounded-2xl shadow-lg h-[120px] w-full"
+        >
           <div>
-            <div className="text-[14px] text-black mt-1 dark:text-[#fff]">
+            <div className="text-[14px] text-black mt-1 dark:text-white">
               {item.title}
             </div>
-
-            {/* Top Section with Number and Icon */}
-            <div className="flex justify-between text items-center">
+            <div className="flex justify-between items-center">
               <div className="text-2xl font-semibold">
                 {(item.count ?? 0).toLocaleString()}
               </div>
             </div>
-
-            {/* Pie Chart and Legend */}
             <div className="flex items-center mt-2">
-              <div className="flex flex-col sm:flex-row text-sm text-black-300 gap-2">
+              <div className="flex flex-col sm:flex-row text-sm gap-2">
                 <div className="flex items-center text-[12px]">
-                  <span className="w-2 h-2 bg-[#EF95F4] rounded-[2px] mr-2"></span>
+                  <span className="w-2 h-2 bg-[#EF95F4] rounded-[2px] mr-2" />
                   <span>Female</span>
                 </div>
                 <div className="flex items-center text-[12px]">
-                  <span className="w-2 h-2 bg-[#72DAF3] rounded-[2px] mr-2"></span>
+                  <span className="w-2 h-2 bg-[#72DAF3] rounded-[2px] mr-2" />
                   <span>Male</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Responsive Pie Chart */}
           <div className="flex items-center justify-center w-[88px] h-[88px]">
-          <PieChart width={88} height={80}>
-              {/* slightly larger chart to fit full pie */}
-              <Tooltip content={<CustomTooltip />} />
+            <PieChart width={90} height={90}>
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: "transparent" }} />
+
+              {/* Outer ring for male only */}
+              <Pie
+                data={[{ name: "male-ring", value: item.male }]}
+                cx={44}
+                cy={44}
+                innerRadius={37}
+                outerRadius={40}
+                startAngle={90}
+                endAngle={90 + (item.male / (item.male + item.female)) * 360}
+                fill={isDarkMode ? "#555555" : COLORS[2]}
+                stroke="none"
+                dataKey="value"
+              />
+
               {/* Male segment */}
               <Pie
                 data={[{ name: "male", value: item.male }]}
-                cx={50}
-                cy={40}
+                cx={44}
+                cy={44}
                 innerRadius={0}
-                outerRadius={30} // larger pie
-                startAngle={-90}
-                endAngle={-90 + (item.male / (item.male + item.female)) * 360}
+                outerRadius={34}
+                startAngle={90}
+                endAngle={90 + (item.male / (item.male + item.female)) * 360}
                 fill={COLORS[0]}
                 stroke="none"
                 dataKey="value"
               />
+
               {/* Female segment */}
               <Pie
                 data={[{ name: "female", value: item.female }]}
-                cx={50}
-                cy={40}
+                cx={44}
+                cy={44}
                 innerRadius={0}
-                outerRadius={24} // slightly smaller for layering
-                startAngle={-90 + (item.male / (item.male + item.female)) * 360}
-                endAngle={270}
+                outerRadius={34}
+                startAngle={90 + (item.male / (item.male + item.female)) * 360}
+                endAngle={450}
                 fill={COLORS[1]}
-                stroke="none"
-                dataKey="value"
-              />
-              {/* Male outline ring */}
-              <Pie
-                data={[{ name: "male", value: item.male }]}
-                cx={50}
-                cy={40}
-                innerRadius={30}
-                outerRadius={32} // small outer ring
-                startAngle={-90}
-                endAngle={-90 + (item.male / (item.male + item.female)) * 360}
-                fill={COLORS[2]}
                 stroke="none"
                 dataKey="value"
               />
