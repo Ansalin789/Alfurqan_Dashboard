@@ -44,7 +44,7 @@ interface Meeting {
     supervisorEmail: string;
     supervisorRole: string;
   };
-  teacher: {
+  teachers: {
     teacherId: string;
     teacherName: string;
     teacherEmail: string;
@@ -169,63 +169,62 @@ const ScheduledClasses = () => {
     };
   }, []);
 
-useEffect(() => {
-  const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("AdminAuthToken")
-      : null;
+  useEffect(() => {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AdminAuthToken")
+        : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-
-  const fetchMeetings = async () => {
-    try {
-      const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/allAdminMeeting",
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const allMeetings: Meeting[] = response.data.data?.meetings || [];
-
-      const upcomingMeetings = allMeetings
-        .filter((meeting) => meeting.meetingStatus !== "Completed")
-        .sort((a, b) => {
-          const aDate = new Date(a.selectedDate);
-          const bDate = new Date(b.selectedDate);
-          const aStartTimeStr = Array.isArray(a.startTime)
-            ? a.startTime[0]
-            : a.startTime;
-          const bStartTimeStr = Array.isArray(b.startTime)
-            ? b.startTime[0]
-            : b.startTime;
-          const [aH, aM] = aStartTimeStr.split(":").map(Number);
-          const [bH, bM] = bStartTimeStr.split(":").map(Number);
-          aDate.setHours(aH, aM, 0, 0);
-          bDate.setHours(bH, bM, 0, 0);
-          return aDate.getTime() - bDate.getTime();
-        });
-
-      const completedMeetings = allMeetings.filter(
-        (meeting) => meeting.meetingStatus === "Completed"
-      );
-
-      setUpcomingClasses(upcomingMeetings);
-      setCompletedData(completedMeetings);
-    } catch (error) {
-      console.error("Error fetching meetings:", error);
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+      return;
     }
-  };
 
-  fetchMeetings();
-}, []);
+    const fetchMeetings = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5001/allAdminMeeting",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
+        const allMeetings: Meeting[] = response.data.data?.meetings || [];
+
+        const upcomingMeetings = allMeetings
+          .filter((meeting) => meeting.meetingStatus !== "Completed")
+          .sort((a, b) => {
+            const aDate = new Date(a.selectedDate);
+            const bDate = new Date(b.selectedDate);
+            const aStartTimeStr = Array.isArray(a.startTime)
+              ? a.startTime[0]
+              : a.startTime;
+            const bStartTimeStr = Array.isArray(b.startTime)
+              ? b.startTime[0]
+              : b.startTime;
+            const [aH, aM] = aStartTimeStr.split(":").map(Number);
+            const [bH, bM] = bStartTimeStr.split(":").map(Number);
+            aDate.setHours(aH, aM, 0, 0);
+            bDate.setHours(bH, bM, 0, 0);
+            return aDate.getTime() - bDate.getTime();
+          });
+
+        const completedMeetings = allMeetings.filter(
+          (meeting) => meeting.meetingStatus === "Completed"
+        );
+
+        setUpcomingClasses(upcomingMeetings);
+        setCompletedData(completedMeetings);
+      } catch (error) {
+        console.error("Error fetching meetings:", error);
+      }
+    };
+
+    fetchMeetings();
+  }, []);
 
   interface Teacher {
     teacherId: string;
@@ -245,7 +244,7 @@ useEffect(() => {
       const nameMatch = meeting.meetingName.toLowerCase().includes(searchLower);
 
       // Search in attendees (teacher names)
-      const attendeeMatch = meeting.teacher.some((teacher) =>
+      const attendeeMatch = meeting.teachers.some((teacher) =>
         teacher.teacherName.toLowerCase().includes(searchLower)
       );
 
@@ -498,8 +497,7 @@ useEffect(() => {
 
                     <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                       <span className="text-left -ml-60 ">
-                        Showing {currentItems.length} Of{" "}
-                        {dataToShow.length}
+                        Showing {currentItems.length} Of {dataToShow.length}
                       </span>
                     </div>
                   </div>
@@ -551,7 +549,7 @@ useEffect(() => {
                           </td>
                           <td className="px-3 py-2 text-left text-[#17243E] dark:text-[#FDFDFD]">
                             <div className="relative">
-                              {item.teacher?.length > 1 ? (
+                              {item.teachers?.flat().length > 1 ? (
                                 <>
                                   <button
                                     onClick={() =>
@@ -564,30 +562,31 @@ useEffect(() => {
                                   </button>
                                   {openTeacherDropdownId === item._id && (
                                     <div className="absolute z-10 mt-2 w-48 bg-white rounded shadow-lg p-2 dark:bg-[#343434]">
-                                      {item.teacher.map((t, idx) => (
-                                        <div
-                                          key={idx}
-                                          className="py-1 text-[#17243E] dark:text-[#FDFDFD]"
-                                        >
-                                          <span className="flex items-center gap-2">
-                                            <IoPersonOutline />
-                                            {t.teacherName}
-                                          </span>
-                                        </div>
-                                      ))}
+                                      {item.teachers
+                                        .flat()
+                                        .map((teacher, idx) => (
+                                          <div
+                                            key={idx}
+                                            className="py-1 text-[#17243E] dark:text-[#FDFDFD]"
+                                          >
+                                            <span className="flex items-center gap-2">
+                                              <IoPersonOutline />
+                                              {teacher.teacherName}
+                                            </span>
+                                          </div>
+                                        ))}
                                     </div>
                                   )}
                                 </>
                               ) : (
                                 <span className="flex items-center gap-2 font-medium">
                                   <IoPersonOutline />
-                                  {item.teacher?.[0]?.teacherName ||
+                                  {item.teachers?.flat()[0]?.teacherName ||
                                     "No teacher assigned"}
                                 </span>
                               )}
                             </div>
                           </td>
-
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                             {new Date(item.selectedDate)
                               .toLocaleDateString("en-US", {
@@ -886,7 +885,7 @@ useEffect(() => {
                 <span>Attendance</span>
               </div>
               <div className="divide-y max-h-40 overflow-y-auto text-sm">
-                {selectedMeetingDetails.teacher.map((teacher, index) => (
+                {selectedMeetingDetails.teachers.map((teacher, index) => (
                   <div
                     key={index}
                     className="flex justify-between items-center px-4 py-2"
