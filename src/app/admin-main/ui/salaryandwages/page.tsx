@@ -110,7 +110,7 @@ const SalaryCard = () => {
     }
     const fetchSalaryWages = async () => {
       try {
-        const response = await fetch("http://localhost:5001/salarywages", {
+        const response = await fetch("https://api.blackstoneinfomaticstech.com/salarywages", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -678,7 +678,7 @@ const SalaryCard = () => {
                         paymentStatus: editForm.paymentStatus,
                         paymentDate: editForm.paymentDate,
                       };
-                      const url = `http://localhost:5001/salarywages/${selectedSalarys.employeeId}`;
+                      const url = `https://api.blackstoneinfomaticstech.com/salarywages/${selectedSalarys.employeeId}`;
                       console.log("PUT request to:", url);
                       console.log("Payload:", payload);
                       const response = await axios.put(url, payload, {

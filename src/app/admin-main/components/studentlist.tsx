@@ -73,7 +73,7 @@ const TrailManagement = () => {
   const fetchStudents = async (token: string) => {
     try {
       const response = await axios.get(
-        "http://localhost:5001/alstudents",
+        "https://api.blackstoneinfomaticstech.com/alstudents",
         {
           method: "GET",
           headers: {

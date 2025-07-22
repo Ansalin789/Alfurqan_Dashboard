@@ -392,7 +392,7 @@ const EmployeePage = () => {
   const fetchLeaveData = async (userId: string) => {
     try {
       const res = await axios.get(
-        `http://localhost:5001/leaverequest?employeeId=${userId}`,
+        `https://api.blackstoneinfomaticstech.com/leaverequest?employeeId=${userId}`,
         {
           headers: {
             "Content-Type": "application/json",

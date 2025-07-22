@@ -629,7 +629,7 @@ const Page = () => {
           : null;
       if (!token) return;
       try {
-        const res = await axios.get("http://localhost:5001/leaverequest/card", {
+        const res = await axios.get("https://api.blackstoneinfomaticstech.com/leaverequest/card", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setLeaveCard(res.data);
@@ -648,7 +648,7 @@ const Page = () => {
       if (!token) return;
       try {
         const res = await axios.get<LeaveSummaryListResponse>(
-          "http://localhost:5001/leavesummary/list",
+          "https://api.blackstoneinfomaticstech.com/leavesummary/list",
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setLeaveRequests(res.data.leavesummary); // <-- use leavesummary
@@ -878,7 +878,7 @@ const Page = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:5001/leavesummary/${selectedLeave?.id}`,
+        `https://api.blackstoneinfomaticstech.com/leavesummary/${selectedLeave?.id}`,
         {
           method: "PUT",
           headers: {

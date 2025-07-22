@@ -183,7 +183,7 @@ const ScheduledClasses = () => {
     const fetchMeetings = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5001/allAdminMeeting",
+          "https://api.blackstoneinfomaticstech.com/allAdminMeeting",
           {
             headers: {
               "Content-Type": "application/json",

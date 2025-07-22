@@ -60,7 +60,7 @@ const Teacherscard: React.FC = () => {
         //   setLoading(false);
         //   return;
         // }
-        const res = await fetch(`http://localhost:5001/dashboard/ac/teachersattendance`,
+        const res = await fetch(`https://api.blackstoneinfomaticstech.com/dashboard/ac/teachersattendance`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

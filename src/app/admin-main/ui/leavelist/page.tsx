@@ -150,7 +150,7 @@ export default function ApplicantsPage() {
 
     try {
       const res = await fetch(
-        `http://localhost:5001/leavesummary/${selectedLeave?.summaryId}`,
+        `https://api.blackstoneinfomaticstech.com/leavesummary/${selectedLeave?.summaryId}`,
         {
           method: "PUT",
           headers: {
@@ -198,7 +198,7 @@ export default function ApplicantsPage() {
 
     try {
       const res = await fetch(
-        `http://localhost:5001/leavesummary/${selectedLeave?.summaryId}`,
+        `https://api.blackstoneinfomaticstech.com/leavesummary/${selectedLeave?.summaryId}`,
         {
           method: "PUT",
           headers: {
