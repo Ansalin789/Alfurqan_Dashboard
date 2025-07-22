@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Pagination from "@/components/Pagination";
+import { AnimatePresence, motion } from "framer-motion";
+import SuccessPopup from "@/app/supervisor/components/successPopup";
+import FailedPopup from "@/app/supervisor/components/failedPopup";
 
 export interface AssignmentItem {
   assignmentId?: string;
@@ -116,6 +119,85 @@ export interface StudentWithAssignments extends StudentCoreInfo {
   assignment: AssignmentItem[];
   level?: string;
 }
+interface AssignmentQuestion {
+  _id: string;
+  levelId: string;
+  levelName: string;
+  courseId: string;
+  courseName: string;
+  assignmentId: string;
+  assignmentName: string;
+  assignmentType: string;
+  questionName: string;
+  chooseType: boolean;
+  trueorfalseType: boolean;
+  question?: string;
+  options?: string[];
+  audioFile?: Buffer;
+  uploadFile?: Buffer;
+  answerValidation: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  __v: number;
+}
+
+interface GroupedAssignment {
+  assignmentId: string;
+  assignmentName: string;
+  questionCount: number;
+  assignments: AssignmentQuestion[];
+}
+
+interface IAssignmentCreate {
+  studentId?: string;
+  studentName: string;
+  sessionClassType: string;
+  questionName: string;
+  questionType: string;
+  typeofQuestion: string;
+  title: string;
+  assignmentName: string;
+  assignedTeacher: string;
+  assignedTeacherId: string;
+  assignmentType: {
+    type:
+      | "quiz"
+      | "writing"
+      | "reading"
+      | "image identification"
+      | "word match";
+    name?: string;
+  };
+  chooseType: boolean;
+  trueorfalseType: boolean;
+  question: string;
+  hasOptions: boolean;
+  options: {
+    optionOne?: string;
+    optionTwo?: string;
+    optionThree?: string;
+    optionFour?: string;
+  };
+  audioFile?: Buffer;
+  uploadFile?: Buffer;
+  status: string;
+  createdDate: Date;
+  createdBy: string;
+  updatedDate: Date;
+  updatedBy: string;
+  level: string;
+  courses: string;
+  assignedDate?: Date;
+  dueDate?: Date;
+  answer: string;
+  answerValidation: string;
+  assignmentStatus: string;
+  commends?: string;
+  score: number;
+  rating: string;
+}
 
 const RegularStudents = () => {
   const router = useRouter();
@@ -134,7 +216,9 @@ const RegularStudents = () => {
   const [filteredUsers, setFilteredUsers] = useState<StudentWithAssignments[]>(
     []
   );
-
+  const [success, setSucces] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [failedMessage, setFailedMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [openModalId, setOpenModalId] = useState<string | null>(null);
@@ -167,6 +251,37 @@ const RegularStudents = () => {
     StudentWithAssignments[]
   >([]);
   const [isFiltered, setIsFiltered] = useState(false);
+  const [adminAssignmentList, setAdminAssignmentList] = useState<
+    {
+      assignmentId: string;
+      assignmentName: string;
+      questionCount: number;
+    }[]
+  >([]);
+
+  const [assignmentMap, setAssignmentMap] = useState<
+    Record<string, AssignmentQuestion[]>
+  >({});
+  const [assignData, setAssignData] = useState<{
+    studentId: string;
+    studentFirstName: string;
+    course: string;
+    level: string;
+  }>({
+    studentId: "",
+    studentFirstName: "",
+    course: "",
+    level: "",
+  });
+
+  const [openModal, setOpenModal] = useState(false);
+  const [step, setStep] = useState(1);
+  const [adminTitle, setAdminTitle] = useState("");
+  const [adminAssignedDate, setAdminAssignedDate] = useState("");
+  const [adminDueDate, setAdminDueDate] = useState("");
+  const [adminComment, setAdminComment] = useState("");
+  const [selectedAssignments, setSelectedAssignments] = useState<string[]>([]);
+
   const handleApplyFilters = () => {
     let result = [...regularStudents];
 
@@ -301,11 +416,314 @@ const RegularStudents = () => {
 
   const handleViewProfile = (studentId: string, assignmentId: string) => {
     if (assignmentId && assignmentId.trim() !== "") {
-      router.push(`/teacher/ui/managestudentview?studentId=${studentId}&assignmentId=${assignmentId}`);
+      router.push(
+        `/teacher/ui/managestudentview?studentId=${studentId}&assignmentId=${assignmentId}`
+      );
     } else {
       router.push(`/teacher/ui/managestudentview?studentId=${studentId}`);
     }
   };
+
+  const handleAssign = async (
+    studentId: string,
+    studentFirstName: string,
+    course: string,
+    level: string
+  ) => {
+    try {
+      setAssignData({ studentId, studentFirstName, course, level });
+      setOpenModal(true);
+
+      const response = await axios.get(
+        "https://api.blackstoneinfomaticstech.com/adminassignment/assignment",
+        {
+          params: {
+            courseName: course,
+            levelName: level,
+          },
+        }
+      );
+
+      const data: GroupedAssignment[] = response.data.data.assignments;
+
+      const commonList = data.map((item) => ({
+        assignmentId: item.assignmentId,
+        assignmentName: item.assignmentName,
+        questionCount: item.questionCount,
+      }));
+
+      const assignmentMapData: Record<string, AssignmentQuestion[]> = {};
+      data.forEach((item) => {
+        assignmentMapData[item.assignmentId] = item.assignments;
+      });
+
+      setAdminAssignmentList(commonList);
+      setAssignmentMap(assignmentMapData);
+      console.log("assignmentquestion", assignmentMapData);
+    } catch (error) {
+      console.error("❌ Failed to fetch assignments:", error);
+    }
+  };
+
+  const toggleAssignment = (id: string) => {
+    setSelectedAssignments((prev) =>
+      prev.includes(id) ? prev.filter((aid) => aid !== id) : [...prev, id]
+    );
+  };
+
+  const handleAdminClose = () => {
+    setOpenModal(false);
+    setAssignData({
+      studentId: "",
+      studentFirstName: "",
+      course: "",
+      level: "",
+    });
+    setStep(1);
+    setAdminTitle("");
+    setAdminAssignedDate("");
+    setAdminDueDate("");
+    setAdminComment("");
+    setSelectedAssignments([]);
+    setAdminAssignmentList([]);
+    setAssignmentMap({});
+  };
+
+  const handleSaveAssignment = async ({
+    adminTitle,
+    adminAssignedDate,
+    adminDueDate,
+    adminComment,
+    selectedAssignments,
+  }: {
+    adminTitle: string;
+    adminAssignedDate: string;
+    adminDueDate: string;
+    adminComment: string;
+    selectedAssignments: string[];
+  }) => {
+    try {
+      if (!selectedAssignments.length) {
+        alert("⚠️ Please select at least one assignment.");
+        return;
+      }
+      const assignedTeacher =
+        typeof window !== "undefined"
+          ? localStorage.getItem("TeacherPortalName")
+          : "";
+      const assignedTeacherId =
+        typeof window !== "undefined"
+          ? localStorage.getItem("TeacherPortalId")
+          : "";
+      if (!assignedTeacher || !assignedTeacherId) {
+        return;
+      }
+      const allMappedAssignments: IAssignmentCreate[] = [];
+
+      selectedAssignments.forEach((assignmentId) => {
+        const questions = assignmentMap[assignmentId] || [];
+
+        questions.forEach((q: AssignmentQuestion) => {
+          // Determine assignment type mapping
+          let assignmentTypeValue = q.assignmentType?.toLowerCase();
+          let assignmentTypeMapped: IAssignmentCreate["assignmentType"]["type"] =
+            assignmentTypeValue === "image"
+              ? "image identification"
+              : assignmentTypeValue === "wordmatch"
+              ? "word match"
+              : (assignmentTypeValue as any);
+
+          // Options formatting
+          const optionsObj = {
+            optionOne: q.options?.[0] ?? "",
+            optionTwo: q.options?.[1] ?? "",
+            optionThree: q.options?.[2] ?? "",
+            optionFour: q.options?.[3] ?? "",
+          };
+
+          // Base structure
+          const mapped: IAssignmentCreate = {
+            studentId: assignData.studentId,
+            studentName: assignData.studentFirstName,
+            sessionClassType: "REGULARCLASS",
+            questionName: q.questionName || "",
+            questionType: q.chooseType
+              ? "choose"
+              : q.trueorfalseType
+              ? "truefalse"
+              : "noOption",
+            typeofQuestion: q.chooseType
+              ? "choose"
+              : q.trueorfalseType
+              ? "truefalse"
+              : "noOption",
+            title: adminTitle.trim(),
+            assignedTeacher: assignedTeacher,
+            assignedTeacherId: assignedTeacherId,
+            assignmentName: q.assignmentName || "",
+            assignmentType: {
+              type: assignmentTypeMapped,
+              name: q.assignmentType,
+            },
+            chooseType: q.chooseType,
+            trueorfalseType: q.trueorfalseType,
+            question: q.question || q.questionName,
+            hasOptions: q.chooseType || q.trueorfalseType,
+            audioFile: q.audioFile,
+            uploadFile: q.uploadFile,
+            options: optionsObj,
+            status: "active",
+            createdDate: new Date(),
+            createdBy: q.createdBy,
+            updatedDate: new Date(),
+            updatedBy: assignedTeacher,
+            level: q.levelName,
+            courses: q.courseName,
+            assignedDate: new Date(adminAssignedDate),
+            dueDate: new Date(adminDueDate),
+            answer: "",
+            answerValidation: q.answerValidation,
+            assignmentStatus: "Assigned",
+            commends: adminComment?.trim() || "",
+            score: 0,
+            rating: "",
+          };
+
+          allMappedAssignments.push(mapped);
+        });
+      });
+
+      console.log("📦 Final Payload to Backend", allMappedAssignments);
+      const formData = new FormData();
+
+      allMappedAssignments.forEach((assignment, i) => {
+        for (const key in assignment) {
+          const value = assignment[key as keyof typeof assignment];
+
+          if ((key === "uploadFile" || key === "audioFile") && value) {
+            let uint8Array: Uint8Array | undefined;
+
+            if (value instanceof Uint8Array) {
+              console.log(`[${i}] ${key} is Uint8Array`);
+              uint8Array = value;
+            } else if (Buffer.isBuffer(value)) {
+              console.log(`[${i}] ${key} is Buffer`);
+              uint8Array = new Uint8Array(value);
+            } else if (
+              typeof value === "object" &&
+              value !== null &&
+              "buffer" in value &&
+              value.buffer instanceof ArrayBuffer
+            ) {
+              console.log(`[${i}] ${key} is object with .buffer`);
+              uint8Array = new Uint8Array(value.buffer);
+            } else if (
+              typeof value === "string" &&
+              value.length > 50 &&
+              /^[A-Za-z0-9+/=]+$/.test(value.replace(/\s/g, ""))
+            ) {
+              console.log(`[${i}] ${key} is base64 string`);
+              try {
+                const binaryStr = atob(value);
+                const len = binaryStr.length;
+                const bytes = new Uint8Array(len);
+                for (let j = 0; j < len; j++) {
+                  bytes[j] = binaryStr.charCodeAt(j);
+                }
+                uint8Array = bytes;
+              } catch (err) {
+                console.warn(
+                  `❌ Base64 decode error for ${key} at index ${i}`,
+                  err
+                );
+                continue;
+              }
+            } else {
+              console.warn(
+                `⚠️ Skipping unsupported binary format: ${key} at index ${i}`
+              );
+              continue;
+            }
+
+            if (!uint8Array) {
+              console.warn(
+                `❌ Could not create Uint8Array for ${key} at index ${i}`
+              );
+              continue;
+            }
+
+            const mimeType = key === "audioFile" ? "audio/mpeg" : "image/jpeg";
+            const filename =
+              key === "audioFile" ? `audio_${i}.mp3` : `image_${i}.jpg`;
+
+            const blob = new Blob([uint8Array], { type: mimeType });
+
+            formData.append(`assignments[${i}][${key}]`, blob, filename);
+            console.log(
+              `✅ Added ${key} to formData at assignments[${i}][${key}]`
+            );
+          } else {
+            const isObject =
+              typeof value === "object" &&
+              value !== null &&
+              !(value instanceof Date) &&
+              !(value instanceof Uint8Array) &&
+              !Buffer.isBuffer(value);
+
+            formData.append(
+              `assignments[${i}][${key}]`,
+              isObject ? JSON.stringify(value) : String(value)
+            );
+          }
+        }
+      });
+
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("TeacherAuthToken")
+          : "";
+      formData.forEach((value, key) => {
+        console.log(`${key}:`, value);
+      });
+
+      const res = await axios.post(
+        "https://api.blackstoneinfomaticstech.com/assignments",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      if ([200, 201].includes(res.status)) {
+        setSucces(true);
+        handleAdminClose();
+      }
+    } catch (err) {
+      const error = err as AxiosError;
+
+      const status = error.response?.status;
+      if (Number(status === 400)) {
+        console.log("please >");
+        setFailedMessage("Please check the form inputs.");
+        setFailed(true);
+      } else if (status === 401) {
+        setFailedMessage("Please login again.");
+        setFailed(true);
+      } else if (status === 403) {
+        setFailedMessage("You don't have permission to perform this action.");
+        setFailed(true);
+      } else if (status === 500) {
+        setFailedMessage("Server error");
+        setFailed(true);
+      } else {
+        setFailed(true);
+        console.error(`Unexpected error: ${status}`);
+      }
+    }
+  };
+
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     const lowerQuery = query.toLowerCase();
@@ -344,7 +762,7 @@ const RegularStudents = () => {
   const handleClick = (courseValue?: string, levelValue?: string) => {
     const finalCourse = courseValue || course;
     const finalLevel = levelValue || level;
-    
+
     console.log("🔍 Debug - Values being passed:");
     console.log("course:", finalCourse);
     console.log("level:", finalLevel);
@@ -363,7 +781,7 @@ const RegularStudents = () => {
       assignedTeacher,
       assignedTeacherId,
       course: finalCourse,
-      level: finalLevel ||"",
+      level: finalLevel || "",
     }).toString();
 
     console.log("🔍 Final URL:", `/teacher/ui/addingnewassignment?${query}`);
@@ -435,10 +853,12 @@ const RegularStudents = () => {
                 />
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-              onClick={() => setShowFilterModal(true)}>
+              <div
+                className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                onClick={() => setShowFilterModal(true)}
+              >
                 <MdTune className="w-4 h-4" />
-                <span >Filter</span>
+                <span>Filter</span>
               </div>
               {showFilterModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
@@ -692,7 +1112,14 @@ const RegularStudents = () => {
                               <button
                                 className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                 onClick={() =>
-                                  handleViewProfile(student.studentId, "")
+                                  handleAssign(
+                                    student.studentId,
+                                    student.studentDetails.student
+                                      .studentFirstName,
+                                    student.studentDetails.student
+                                      .learningInterest,
+                                    student.level || ""
+                                  )
                                 }
                               >
                                 Assign
@@ -715,16 +1142,36 @@ const RegularStudents = () => {
                                   setAssignedTeacherId(
                                     studentDetails?.teacher?.teacherId ?? ""
                                   );
-                                  console.log("🔍 Setting values for student:", student.studentId);
-                                  console.log("🔍 Full student object:", student);
-                                  console.log("🔍 Full studentDetails object:", studentDetails);
-                                  console.log("🔍 studentDetails?.student?.learningInterest:", studentDetails?.student?.learningInterest);
-                                  console.log("🔍 studentDetails?.languageLevel:", studentDetails?.languageLevel);
-                                  console.log("🔍 student?.level:", student?.level);
-                                  
-                                  const courseValue = studentDetails?.student?.learningInterest || "";
+                                  console.log(
+                                    "🔍 Setting values for student:",
+                                    student.studentId
+                                  );
+                                  console.log(
+                                    "🔍 Full student object:",
+                                    student
+                                  );
+                                  console.log(
+                                    "🔍 Full studentDetails object:",
+                                    studentDetails
+                                  );
+                                  console.log(
+                                    "🔍 studentDetails?.student?.learningInterest:",
+                                    studentDetails?.student?.learningInterest
+                                  );
+                                  console.log(
+                                    "🔍 studentDetails?.languageLevel:",
+                                    studentDetails?.languageLevel
+                                  );
+                                  console.log(
+                                    "🔍 student?.level:",
+                                    student?.level
+                                  );
+
+                                  const courseValue =
+                                    studentDetails?.student?.learningInterest ||
+                                    "";
                                   const levelValue = student?.level || "";
-                                  
+
                                   setCourse(courseValue);
                                   setLevel(levelValue);
                                   setOpenModalId(modalIdNoAssignment);
@@ -812,11 +1259,13 @@ const RegularStudents = () => {
                                   </button>
                                   <button
                                     className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
-                                                                          onClick={() => {
-                                        const courseValue = studentDetails?.student?.learningInterest || "";
-                                        const levelValue = student?.level || "";
-                                        handleClick(courseValue, levelValue);
-                                      }}
+                                    onClick={() => {
+                                      const courseValue =
+                                        studentDetails?.student
+                                          ?.learningInterest || "";
+                                      const levelValue = student?.level || "";
+                                      handleClick(courseValue, levelValue);
+                                    }}
                                   >
                                     Create Assignment
                                   </button>
@@ -920,7 +1369,10 @@ const RegularStudents = () => {
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(student.studentId, assignmentItem.assignmentId || "")
+                                            handleViewProfile(
+                                              student.studentId,
+                                              assignmentItem.assignmentId || ""
+                                            )
                                           }
                                         >
                                           View Profile
@@ -943,8 +1395,8 @@ const RegularStudents = () => {
                                                 "REGULARCLASS"
                                             );
                                             setAssignedTeacher(
-                                              studentDetails?.teacher?.teacherName ??
-                                                ""
+                                              studentDetails?.teacher
+                                                ?.teacherName ?? ""
                                             );
                                             setAssignedTeacherId(
                                               studentDetails?.teacher
@@ -958,7 +1410,10 @@ const RegularStudents = () => {
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(student.studentId, assignmentItem.assignmentId || "")
+                                            handleViewProfile(
+                                              student.studentId,
+                                              assignmentItem.assignmentId || ""
+                                            )
                                           }
                                         >
                                           Assign
@@ -982,7 +1437,10 @@ const RegularStudents = () => {
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(student.studentId, assignmentItem.assignmentId || "")
+                                            handleViewProfile(
+                                              student.studentId,
+                                              assignmentItem.assignmentId || ""
+                                            )
                                           }
                                         >
                                           View Profile
@@ -1003,7 +1461,10 @@ const RegularStudents = () => {
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(student.studentId, assignmentItem.assignmentId || "")
+                                            handleViewProfile(
+                                              student.studentId,
+                                              assignmentItem.assignmentId || ""
+                                            )
                                           }
                                         >
                                           Assign
@@ -1026,21 +1487,37 @@ const RegularStudents = () => {
                                                 "REGULARCLASS"
                                             );
                                             setAssignedTeacher(
-                                              studentDetails?.teacher?.teacherName ??
-                                                ""
+                                              studentDetails?.teacher
+                                                ?.teacherName ?? ""
                                             );
                                             setAssignedTeacherId(
                                               studentDetails?.teacher
                                                 ?.teacherId ?? ""
                                             );
-                                            console.log("🔍 Setting values for assignment student:", student.studentId);
-                                            console.log("🔍 studentDetails?.student?.learningInterest:", studentDetails?.student?.learningInterest);
-                                            console.log("🔍 studentDetails?.languageLevel:", studentDetails?.languageLevel);
-                                            console.log("🔍 student?.level:", student?.level);
-                                            
-                                            const courseValue = studentDetails?.student?.learningInterest || "";
-                                            const levelValue = student?.level || "";
-                                            
+                                            console.log(
+                                              "🔍 Setting values for assignment student:",
+                                              student.studentId
+                                            );
+                                            console.log(
+                                              "🔍 studentDetails?.student?.learningInterest:",
+                                              studentDetails?.student
+                                                ?.learningInterest
+                                            );
+                                            console.log(
+                                              "🔍 studentDetails?.languageLevel:",
+                                              studentDetails?.languageLevel
+                                            );
+                                            console.log(
+                                              "🔍 student?.level:",
+                                              student?.level
+                                            );
+
+                                            const courseValue =
+                                              studentDetails?.student
+                                                ?.learningInterest || "";
+                                            const levelValue =
+                                              student?.level || "";
+
                                             setCourse(courseValue);
                                             setLevel(levelValue);
                                             setOpenModalId(modalId);
@@ -1145,11 +1622,13 @@ const RegularStudents = () => {
                                     </button>
                                     <button
                                       className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
-                                                                          onClick={() => {
-                                      const courseValue = studentDetails?.student?.learningInterest || "";
-                                      const levelValue = student?.level || "";
-                                      handleClick(courseValue, levelValue);
-                                    }}
+                                      onClick={() => {
+                                        const courseValue =
+                                          studentDetails?.student
+                                            ?.learningInterest || "";
+                                        const levelValue = student?.level || "";
+                                        handleClick(courseValue, levelValue);
+                                      }}
                                     >
                                       Create Assignment
                                     </button>
@@ -1173,8 +1652,184 @@ const RegularStudents = () => {
           />
         </div>
       </div>
+      {openModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white dark:bg-[#1f1f1f] text-gray-900 dark:text-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-gray-200 dark:border-gray-700"
+          >
+            <h2 className="text-2xl font-bold mb-6 text-center">
+              Assign to {assignData.studentFirstName}
+            </h2>
+
+            <AnimatePresence mode="wait">
+              {step === 1 && (
+                <motion.div
+                  key="step1"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="space-y-4">
+                    <InputField
+                      label="Title"
+                      value={adminTitle}
+                      onChange={setAdminTitle}
+                      placeholder="Enter assignment title"
+                    />
+
+                    <div className="flex gap-4">
+                      <InputField
+                        label="Assigned Date"
+                        type="date"
+                        value={adminAssignedDate}
+                        onChange={setAdminAssignedDate}
+                      />
+                      <InputField
+                        label="Due Date"
+                        type="date"
+                        value={adminDueDate}
+                        onChange={setAdminDueDate}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm mb-1 text-gray-800 dark:text-gray-300">
+                        Comment
+                      </label>
+                      <textarea
+                        value={adminComment}
+                        onChange={(e) => setAdminComment(e.target.value)}
+                        className="w-full p-3 rounded-lg text-[13px] bg-gray-100 dark:bg-[#2d2d2d] border border-gray-300 dark:border-gray-700 resize-none h-24"
+                        placeholder="Write your comment here..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex justify-end gap-3">
+                    <button
+                      onClick={handleAdminClose}
+                      className="px-4 py-1 rounded-md border border-gray-400 dark:border-[#576CBC] text-[#576CBC] dark:bg-[#576CBC]/10 hover:bg-gray-100 dark:hover:bg-[#576CBC]/20 transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => setStep(2)}
+                      className="px-4 py-1 rounded-md bg-[#576CBC] text-white hover:bg-[#475aa1] transition"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {step === 2 && (
+                <motion.div
+                  key="step2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="space-y-4 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
+                    {adminAssignmentList.map((assignment) => (
+                      <div
+                        key={assignment.assignmentId}
+                        className={`flex items-center justify-between p-4 rounded-lg border dark:border-gray-700 transition ${
+                          selectedAssignments.includes(assignment.assignmentId)
+                            ? "bg-green-100 dark:bg-green-900"
+                            : "bg-white dark:bg-[#262626]"
+                        }`}
+                      >
+                        <div>
+                          <p className="font-medium">
+                            {assignment.assignmentName}
+                          </p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Questions: {assignment.questionCount}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() =>
+                            toggleAssignment(assignment.assignmentId)
+                          }
+                          className="text-sm font-semibold text-red-500 hover:opacity-80"
+                        >
+                          {selectedAssignments.includes(assignment.assignmentId)
+                            ? "Remove"
+                            : "Add"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-6 flex justify-between gap-3">
+                    <button
+                      onClick={() => setStep(1)}
+                      className="px-4 py-2 rounded-lg border text-[#576CBC] dark:border-[#576CBC] dark:bg-[#576CBC]/10 hover:bg-gray-100 dark:hover:bg-[#576CBC]/20 transition"
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleSaveAssignment({
+                          adminTitle,
+                          adminAssignedDate,
+                          adminDueDate,
+                          adminComment,
+                          selectedAssignments,
+                        })
+                      }
+                      className="px-4 py-2 rounded-lg bg-[#576CBC] text-white hover:bg-[#475aa1] transition"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </div>
+      )}
+      {success && (
+        <SuccessPopup onClose={() => setSucces(false)} title="Assignment" />
+      )}
+      {failed && (
+        <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
+      )}
     </div>
   );
 };
+
+const InputField = ({
+  label,
+  type = "text",
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  type?: string;
+  value: string;
+  onChange: (val: string) => void;
+  placeholder?: string;
+}) => (
+  <div className="flex-1">
+    <label className="block text-sm mb-1 text-gray-800 dark:text-gray-300">
+      {label}
+    </label>
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full px-3 py-2 rounded-lg text-[13px] bg-gray-100 dark:bg-[#2d2d2d] border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+    />
+  </div>
+);
 
 export default RegularStudents;

@@ -218,6 +218,12 @@ interface LeaveRequestListResponse {
   leaveRequest: LeaveRequest[];
 }
 
+// Update the interface for the new API response
+interface LeaveSummaryListResponse {
+  totalCount: number;
+  leavesummary: LeaveRequest[];
+}
+
 const Page = () => {
   const [activeTab, setActiveTab] = useState<
     "teachers" | "otheremployees" | "recruitment" | "leave"
@@ -229,8 +235,12 @@ const Page = () => {
   const [searchQuery1, setSearchQuery1] = useState<string>("");
   const [showForm, setShowForm] = useState(false);
   const [showTeacherfilterForm, setshowTeacherfilterForm] = useState(false);
+  const [showOtherEmployeesFilterForm, setShowOtherEmployeesFilterForm] =
+    useState(false);
   const [filterCourse, setFilterCourse] = useState("");
   const [filterName, setFilterName] = useState("");
+  const [filterOtherEmployeeName, setFilterOtherEmployeeName] = useState("");
+  const [filterOtherEmployeeRole, setFilterOtherEmployeeRole] = useState("");
   const [selectedLeave, setSelectedLeave] = useState<{
     employeeId: string;
     id: string;
@@ -245,6 +255,13 @@ const Page = () => {
     approvedDays: string;
     deductionDays: string;
   } | null>(null);
+
+  const [isLeaveFilterModalOpen, setIsLeaveFilterModalOpen] = useState(false);
+  const [leaveFilterName, setLeaveFilterName] = useState("");
+  const [leaveFilterRole, setLeaveFilterRole] = useState("");
+  const [leaveFilterStatus, setLeaveFilterStatus] = useState("");
+  const [leaveFilterFrom, setLeaveFilterFrom] = useState<Date | null>(null);
+  const [leaveFilterTo, setLeaveFilterTo] = useState<Date | null>(null);
 
   const [barData, setBarData] = useState<ChartData[]>([]);
   const [genderData, setGenderData] = useState<GenderChartData[]>([]);
@@ -322,6 +339,9 @@ const Page = () => {
     rejected: 0,
   });
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+  const [filteredLeaveRequests, setFilteredLeaveRequests] = useState<
+    LeaveRequest[]
+  >([]);
   const [actionDropdown, setActionDropdown] = useState<string | null>(null);
   const [dropdownPos, setDropdownPos] = useState<{
     top: number;
@@ -335,9 +355,12 @@ const Page = () => {
 
   const filteredEmployees = employees.filter(
     (emp) =>
-      (!filterCourse || emp.role.includes(filterCourse)) &&
-      (!filterName ||
-        emp.userName.toLowerCase().includes(filterName.toLowerCase())) &&
+      (!filterOtherEmployeeRole ||
+        emp.role.includes(filterOtherEmployeeRole)) &&
+      (!filterOtherEmployeeName ||
+        emp.userName
+          .toLowerCase()
+          .includes(filterOtherEmployeeName.toLowerCase())) &&
       (emp.userName.toLowerCase().includes(searchQuery1.toLowerCase()) ||
         emp.email.toLowerCase().includes(searchQuery1.toLowerCase()))
   );
@@ -624,17 +647,72 @@ const Page = () => {
           : null;
       if (!token) return;
       try {
-        const res = await axios.get<LeaveRequestListResponse>(
-          "https://api.blackstoneinfomaticstech.com/leaverequest/list",
+        const res = await axios.get<LeaveSummaryListResponse>(
+          "https://api.blackstoneinfomaticstech.com/leavesummary/list",
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setLeaveRequests(res.data.leaveRequest);
+        setLeaveRequests(res.data.leavesummary); // <-- use leavesummary
       } catch (err) {
-        console.error("Error fetching leave request list", err);
+        console.error("Error fetching leave summary list", err);
       }
     };
     fetchLeaveRequests();
   }, []); // Empty dependency array means this effect runs once on component mount
+
+  useEffect(() => {
+    let filtered = leaveRequests;
+
+    // Filter by search query
+    const search = searchQuery1.trim().toLowerCase();
+    if (search) {
+      filtered = filtered.filter(
+        (item) =>
+          item.employeeId.toLowerCase().includes(search) ||
+          item.name.toLowerCase().includes(search) ||
+          item.role.toLowerCase().includes(search) ||
+          item.leaveType.toLowerCase().includes(search) ||
+          item.fromDate.toLowerCase().includes(search) ||
+          item.toDate.toLowerCase().includes(search) ||
+          item.reason.toLowerCase().includes(search) ||
+          item.leaveStatus.toLowerCase().includes(search)
+      );
+    }
+
+    // Filter by modal inputs
+    if (leaveFilterName) {
+      filtered = filtered.filter((item) =>
+        item.name.toLowerCase().includes(leaveFilterName.toLowerCase())
+      );
+    }
+    if (leaveFilterRole) {
+      filtered = filtered.filter((item) => item.role === leaveFilterRole);
+    }
+    if (leaveFilterStatus) {
+      filtered = filtered.filter(
+        (item) => item.leaveStatus === leaveFilterStatus
+      );
+    }
+    if (leaveFilterFrom) {
+      filtered = filtered.filter(
+        (item) => new Date(item.fromDate) >= leaveFilterFrom
+      );
+    }
+    if (leaveFilterTo) {
+      filtered = filtered.filter(
+        (item) => new Date(item.toDate) <= leaveFilterTo
+      );
+    }
+
+    setFilteredLeaveRequests(filtered);
+  }, [
+    leaveRequests,
+    searchQuery1,
+    leaveFilterName,
+    leaveFilterRole,
+    leaveFilterStatus,
+    leaveFilterFrom,
+    leaveFilterTo,
+  ]);
 
   const handleViewTeacher = (teacherId: string) => {
     if (!teacherId) {
@@ -795,12 +873,12 @@ const Page = () => {
       return;
     }
 
-    // ✅ Logging the actual _id
-    console.log("Updating leave for _id:", selectedLeave?.id);
+    // Logging the actual _id
+    console.log("Updating leave summary for _id:", selectedLeave?.id);
 
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/leaverequest/${selectedLeave?.id}`, // ✅ use id instead of employeeId
+        `https://api.blackstoneinfomaticstech.com/leavesummary/${selectedLeave?.id}`,
         {
           method: "PUT",
           headers: {
@@ -810,13 +888,10 @@ const Page = () => {
           body: JSON.stringify({
             fromDate,
             toDate,
-            approvedDays,
             leaveStatus: "APPROVED",
-            leaveType: selectedLeave?.leaveType,
-            reason: selectedLeave?.reason,
-            approvedId: "Admin",
-            approvedName: "Admin",
-            status: "active",
+            approvedDays: Number(approvedDays),
+            deductionDays: Number(deductionDays) || 0,
+            approvedName: "Admin"
           }),
         }
       );
@@ -889,11 +964,11 @@ const Page = () => {
               : "bg-white text-[#22223b] border-gray-200"
           }`}
         >
-          <div className={`font-normal ${isDark ? 'text-white' : 'text-[#22223b]'}`}>{label}</div>
+          <div className={`font-normal ${isDark ? 'text-white' : 'text-[#22223b]'}`}>{payload[0].payload.name}</div>
           <div>
             {payload.map((entry: any, idx: number) => (
               <div key={idx} className={isDark ? 'text-white text-[10px]' : 'text-[#22223b] text-[10px]'}>
-                {entry.value} Teachers
+                {entry.payload.value} 
               </div>
             ))}
           </div>
@@ -1801,19 +1876,19 @@ const Page = () => {
                         <div className="relative ">
                           {/* Filter Button (opens your filter popup) */}
                           <button
-                          className="flex items-center gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                          onClick={() => setshowTeacherfilterForm(true)}
+                            className="flex items-center gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                            onClick={() => setShowOtherEmployeesFilterForm(true)}
                           >
                             <MdTune className="w-4 h-4" />
                             <span>Filter</span>
                           </button>
-                          {showTeacherfilterForm && (
+                          {showOtherEmployeesFilterForm && (
                             <div className="fixed inset-0 bg-black bg-opacity-10 z-50 flex justify-center items-center overflow-auto">
                               <div className="w-full max-w-sm bg-white dark:bg-[#252525] rounded-2xl shadow-lg overflow-hidden m-4 relative">
                                 <button
                                   className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
                                   onClick={() =>
-                                    setshowTeacherfilterForm(false)
+                                    setShowOtherEmployeesFilterForm(false)
                                   }
                                   aria-label="Close"
                                 >
@@ -1824,7 +1899,6 @@ const Page = () => {
                                     Filter by
                                   </h2>
                                   <div className="flex flex-col gap-3">
-                                    
                                     <label className="text-sm font-medium text-gray-700 dark:text-white mt-2">
                                       Name
                                     </label>
@@ -1832,9 +1906,11 @@ const Page = () => {
                                       type="text"
                                       className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
                                       placeholder="Enter name"
-                                      value={filterName}
+                                      value={filterOtherEmployeeName}
                                       onChange={(e) =>
-                                        setFilterName(e.target.value)
+                                        setFilterOtherEmployeeName(
+                                          e.target.value
+                                        )
                                       }
                                     />
                                     <label className="text-sm font-medium text-gray-700 dark:text-white">
@@ -1842,9 +1918,11 @@ const Page = () => {
                                     </label>
                                     <select
                                       className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
-                                      value={filterCourse}
+                                      value={filterOtherEmployeeRole}
                                       onChange={(e) =>
-                                        setFilterCourse(e.target.value)
+                                        setFilterOtherEmployeeRole(
+                                          e.target.value
+                                        )
                                       }
                                     >
                                       <option value="">Select Role</option>
@@ -1862,8 +1940,8 @@ const Page = () => {
                                     <button
                                       className="flex-1 text-[15px] border border-[#576CBC] text-[#576CBC] rounded-lg py-2 font-medium"
                                       onClick={() => {
-                                        setFilterCourse("");
-                                        setFilterName("");
+                                        setFilterOtherEmployeeName("");
+                                        setFilterOtherEmployeeRole("");
                                       }}
                                     >
                                       Reset
@@ -1871,22 +1949,22 @@ const Page = () => {
                                     <button
                                       className="flex-1 text-[15px] bg-[#576CBC] text-white rounded-lg py-2 font-medium"
                                       onClick={() =>
-                                        setshowTeacherfilterForm(false)
+                                        setShowOtherEmployeesFilterForm(false)
                                       }
                                     >
                                       Show{" "}
                                       {
-                                        filteredEmployees.filter(
+                                        employees.filter(
                                           (emp) =>
-                                            (!filterCourse ||
+                                            (!filterOtherEmployeeRole ||
                                               emp.role.includes(
-                                                filterCourse
+                                                filterOtherEmployeeRole
                                               )) &&
-                                            (!filterName ||
+                                            (!filterOtherEmployeeName ||
                                               emp.userName
                                                 .toLowerCase()
                                                 .includes(
-                                                  filterName.toLowerCase()
+                                                  filterOtherEmployeeName.toLowerCase()
                                                 )) &&
                                             (emp.userName
                                               .toLowerCase()
@@ -1909,28 +1987,11 @@ const Page = () => {
                           )}
                         </div>
                         <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
-                        <span className="text-left -ml-60">
-                          Showing{" "}
-                          {
-                            filteredEmployees.filter(
-                              (emp) =>
-                                (!filterCourse ||
-                                  emp.role.includes(filterCourse)) &&
-                                (!filterName ||
-                                  emp.userName
-                                    .toLowerCase()
-                                    .includes(filterName.toLowerCase())) &&
-                                (emp.userName
-                                  .toLowerCase()
-                                  .includes(searchQuery1.toLowerCase()) ||
-                                  emp.email
-                                    .toLowerCase()
-                                    .includes(searchQuery1.toLowerCase()))
-                            ).length
-                          }{" "}
-                          Of {employees.length}
-                        </span>
-                      </div>
+                          <span className="text-left -ml-60">
+                            Showing {filteredEmployees.length} Of{" "}
+                            {employees.length}
+                          </span>
+                        </div>
                       </div>
                       {/* Employee Cards - match Teachers card grid */}
                       <div className="grid grid-cols-1 bg-white dark:bg-[#3b3b3b] xs:grid-cols-2 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-7 overflow-y-auto">
@@ -2073,25 +2134,39 @@ const Page = () => {
             {activeTab === "leave" && (
               <div className="space-y-4 overflow-y-auto scrollbar-none">
                 {/* Summary Cards */}
-                <div className="flex gap-5 ">
-                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
-                    <p className="text-md font-medium">Total Leave Requests</p>
-                    <h2 className="text-2xl font-semibold ">
-                      {leaveCard.totalApplication}
-                    </h2>
-                  </div>
-                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
-                    <p className="text-md font-medium">Total Approved</p>
-                    <h2 className="text-2xl font-semibold">
-                      {leaveCard.approved}
-                    </h2>
-                  </div>
-                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
-                    <p className="text-md font-medium">Total Declined</p>
-                    <h2 className="text-2xl font-semibold">
-                      {leaveCard.rejected}
-                    </h2>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    {
+                      title: "Total Leave Requests",
+                      count: leaveCard.totalApplication,
+                    },
+                    {
+                      title: "Total Approved",
+                      count: leaveCard.approved,
+                    },
+                    {
+                      title: "Total Declined",
+                      count: leaveCard.rejected,
+                    },
+                  ].map((card) => (
+                    <div
+                      key={card.title}
+                      className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col w-full p-3 h-full"
+                    >
+                      <div className="flex flex-col justify-between gap-y-8">
+                        <div>
+                          <p className="text-[16px] font-medium dark:text-white text-white">
+                            {card.title}
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="text-[28px] font-semibold dark:text-white text-white">
+                            {card.count}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 <div className="overflow-y-scroll scrollbar-none w-full h-[350px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
@@ -2108,15 +2183,15 @@ const Page = () => {
                     </div>
                     <div
                       className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48  cursor-pointer"
-                      // onClick={() => setIsFilterModalOpen(true)}
+                      onClick={() => setIsLeaveFilterModalOpen(true)}
                     >
                       <MdTune className="w-4 h-4" />
                       <span>Filter</span>
                     </div>
                     <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400 mr-20">
                       <span className="text-left">
-                        Showing {leaveRequests.length === 0 ? 0 : 1} to{" "}
-                        {leaveRequests.length} of {leaveRequests.length}
+                        Showing {(filteredLeaveRequests?.length ?? 0) === 0 ? 0 : 1} to{" "}
+                        {filteredLeaveRequests?.length ?? 0} of {filteredLeaveRequests?.length ?? 0}
                       </span>
                     </div>
                   </div>
@@ -2147,21 +2222,9 @@ const Page = () => {
                       </tr>
                     </thead>
                     <tbody className="text-[10px] text-[#1D2939]">
-                      {leaveRequests.length > 0 ? (
-                        leaveRequests
-                          .filter((item) => {
-                            const search = searchQuery1.toLowerCase();
-                            return (
-                              item.employeeId.toLowerCase().includes(search) ||
-                              item.name.toLowerCase().includes(search) ||
-                              item.role.toLowerCase().includes(search) ||
-                              item.leaveType.toLowerCase().includes(search) ||
-                              item.fromDate.toLowerCase().includes(search) ||
-                              item.toDate.toLowerCase().includes(search) ||
-                              item.reason.toLowerCase().includes(search) ||
-                              item.leaveStatus.toLowerCase().includes(search)
-                            );
-                          })
+                      {(filteredLeaveRequests?.length ?? 0) > 0 ? (
+                        filteredLeaveRequests
+                          .slice(0, 6) // Show only the first 7 entries
                           .map((item, index) => {
                             const btnId = `action-btn-${item._id}`;
                             return (
@@ -2640,6 +2703,132 @@ const Page = () => {
                             </button>
                           </>
                         ) : null}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {isLeaveFilterModalOpen && (
+                  <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center overflow-auto">
+                    <div className="w-full max-w-md bg-white dark:bg-[#252525] rounded-2xl shadow-lg overflow-hidden m-4 relative">
+                      <button
+                        className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
+                        onClick={() => setIsLeaveFilterModalOpen(false)}
+                        aria-label="Close"
+                      >
+                        ×
+                      </button>
+                      <div className="p-6 space-y-4">
+                        <h2 className="text-lg font-semibold mb-2 dark:text-[#fff]">
+                          Filter by
+                        </h2>
+                        <div className="flex flex-col gap-3">
+                          <label className="text-sm font-medium text-gray-700 dark:text-[#fff] mt-2">
+                            Employee Name
+                          </label>
+                          <input
+                            type="text"
+                            className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                            placeholder="Enter name"
+                            value={leaveFilterName}
+                            onChange={(e) => setLeaveFilterName(e.target.value)}
+                          />
+                          <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">
+                            Role
+                          </label>
+                          <select
+                            className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                            value={leaveFilterRole}
+                            onChange={(e) => setLeaveFilterRole(e.target.value)}
+                          >
+                            <option value="">All Roles</option>
+                            <option value="SUPERVISOR">Supervisor</option>
+                            <option value="ACADEMICCOACH">
+                              Academic Coach
+                            </option>
+                            <option value="TEACHER">Teacher</option>
+                            <option value="ADMIN">Admin</option>
+                          </select>
+                          <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">
+                            Status
+                          </label>
+                          <select
+                            className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                            value={leaveFilterStatus}
+                            onChange={(e) =>
+                              setLeaveFilterStatus(e.target.value)
+                            }
+                          >
+                            <option value="">All Statuses</option>
+                            <option value="APPROVED">Approved</option>
+                            <option value="WAITINGLIST">Waiting List</option>
+                            <option value="REJECTED">Rejected</option>
+                          </select>
+                          <div className="flex gap-2">
+                            <div className="flex-1">
+                              <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">
+                                From Date
+                              </label>
+                              <input
+                                type="date"
+                                className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm w-full"
+                                value={
+                                  leaveFilterFrom
+                                    ? leaveFilterFrom.toISOString().split("T")[0]
+                                    : ""
+                                }
+                                onChange={(e) =>
+                                  setLeaveFilterFrom(
+                                    e.target.value
+                                      ? new Date(e.target.value)
+                                      : null
+                                  )
+                                }
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">
+                                To Date
+                              </label>
+                              <input
+                                type="date"
+                                className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm w-full"
+                                value={
+                                  leaveFilterTo
+                                    ? leaveFilterTo.toISOString().split("T")[0]
+                                    : ""
+                                }
+                                onChange={(e) =>
+                                  setLeaveFilterTo(
+                                    e.target.value
+                                      ? new Date(e.target.value)
+                                      : null
+                                  )
+                                }
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                          <button
+                            className="flex-1 border border-[#576CBC] text-[#576CBC] rounded-lg py-2 font-medium"
+                            onClick={() => {
+                              setLeaveFilterName("");
+                              setLeaveFilterRole("");
+                              setLeaveFilterStatus("");
+                              setLeaveFilterFrom(null);
+                              setLeaveFilterTo(null);
+                            }}
+                          >
+                            Reset
+                          </button>
+                          <button
+                            className="flex-1 bg-[#576CBC] text-white rounded-lg py-2 font-medium"
+                            onClick={() => setIsLeaveFilterModalOpen(false)}
+                          >
+                            Show results
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -797,7 +797,7 @@ const Step5 = ({
   const [expectedFinishingDate] = useState(28);
   const [subscriptionName, setSubscriptionName] = useState<string>();
   const [planTotalPrice, setPlanTotalPrice] = useState<number>();
-  const [selectedHours, setSelectedHours] = useState<number>(0); // Default to 3 hours
+  const [selectedHours, setSelectedHours] = useState<number>(0); 
 
   // First, add state to track which plan's total is being calculated
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
@@ -915,6 +915,7 @@ const Step5 = ({
                                 focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]"
                   onChange={(e) => setLanguageLevel(e.target.value)}
                 >
+                   <option className="bg-gray-900">Select</option>
                   <option className="bg-gray-900">Level: A1</option>
                   <option className="bg-gray-900">Level: A2</option>
                   <option className="bg-gray-900">Level: A3</option>
@@ -944,6 +945,7 @@ const Step5 = ({
                                 focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]"
                   onChange={(e) => setReadingLevel(e.target.value)}
                 >
+                  <option className="bg-gray-900">Select</option>
                   <option className="bg-gray-900">1</option>
                   <option className="bg-gray-900">2</option>
                   <option className="bg-gray-900">3</option>
@@ -974,6 +976,7 @@ const Step5 = ({
                                 focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]"
                   onChange={(e) => setGrammarLevel(e.target.value)}
                 >
+                  <option className="bg-gray-900">Select</option>
                   <option className="bg-gray-900">0</option>
                   <option className="bg-gray-900">1</option>
                   <option className="bg-gray-900">2</option>
@@ -1540,7 +1543,7 @@ const Step6 = ({
                   overflow: "hidden",
                   WebkitOverflowScrolling: "touch",
                 }}
-                className="h-8 w-16 text-sm px-2 rounded border border-[#4f5154] bg-white/5 text-black appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-[#1c1c1c] dark:text-white"
+                className="h-8 w-16 text-sm px-2 rounded border border-[#4f5154] bg-white/5 text-black appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500  dark:text-white"
               >
                 <option value="">HH</option>
                 {Array.from({ length: 24 }, (_, i) => (
@@ -1554,7 +1557,7 @@ const Step6 = ({
               <select
                 value={fromMinute}
                 onChange={(e) => handleTimeChange1(fromHour, e.target.value)}
-                className="h-8 w-16 text-sm px-2 rounded border border-[#4f5154] bg-white/5 text-black appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-[#1c1c1c] dark:text-white"
+                className="h-8 w-16 text-sm px-2 rounded border border-[#4f5154] bg-white/5 text-black appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500  dark:text-white"
               >
                 <option value="">MM</option>
                 <option value="00">00</option>

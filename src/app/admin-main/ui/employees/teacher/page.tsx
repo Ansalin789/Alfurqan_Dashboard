@@ -17,6 +17,7 @@ import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import { Search, Users } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
+import FilterModal, { FilterField } from "@/components/FilterModal";
 
 const locales = {
   "en-US": require("date-fns/locale/en-US"),
@@ -249,6 +250,7 @@ const Teacher = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filters, setFilters] = useState<Record<string, any>>({});
   const [searchScheduledClass, setSearchScheduledClass] = useState("");
   const [searchPayments, setSearchPayments] = useState("");
   const [searchWages, setSearchWages] = useState("");
@@ -274,7 +276,16 @@ const Teacher = () => {
     })
     .filter((row) => {
       const searchFields = [row.monthName, row.currentYear];
-      return searchFields.some((field) =>
+
+      let matchesFilters = true;
+      if (filters.month && row.monthly && row.monthly.month.toString() !== filters.month) {
+        matchesFilters = false;
+      }
+      if (filters.year && row.currentYear.toString() !== filters.year) {
+        matchesFilters = false;
+      }
+
+      const matchesSearch = searchFields.some((field) =>
         field
           ? field
               .toString()
@@ -282,6 +293,8 @@ const Teacher = () => {
               .includes(searchEarnings.toLowerCase())
           : false
       );
+
+      return matchesSearch && matchesFilters;
     });
 
   const [earningsPage, setEarningsPage] = useState(1);
@@ -316,6 +329,14 @@ const Teacher = () => {
     Complete: "bg-[#002F56] text-white",
     Pending: "bg-gray-300 text-gray-700",
     Rescheduled: "bg-yellow-300 text-black",
+  };
+
+  const handleFilterChange = (newFilters: Record<string, any>) => {
+    setFilters(newFilters);
+  };
+  
+  const handleResetFilters = () => {
+    setFilters({});
   };
 
   useEffect(() => {
@@ -519,11 +540,26 @@ const Teacher = () => {
       student?.preferredTeacher,
       student?.status,
     ];
-    return searchFields.some((field) =>
+
+    let matchesFilters = true;
+    if (filters.studentName && student && `${student.studentFirstName} ${student.studentLastName}` !== filters.studentName) {
+      matchesFilters = false;
+    }
+    if (filters.country && student && student.studentCountry !== filters.country) {
+      matchesFilters = false;
+    }
+    if (filters.subject && student && student.learningInterest !== filters.subject) {
+      matchesFilters = false;
+    }
+
+
+    const matchesSearch = searchFields.some((field) =>
       field
         ? field.toString().toLowerCase().includes(searchTerm.toLowerCase())
         : false
     );
+
+    return matchesSearch && matchesFilters;
   });
   const currentItems = filteredStudents.slice(
     indexOfFirstItem,
@@ -538,7 +574,31 @@ const Teacher = () => {
       event.sessionClassType,
       event.startDate,
     ];
-    return searchFields.some((field) =>
+
+    let matchesFilters = true;
+
+    if (filters.studentName && `${event.student.studentFirstName} ${event.student.studentLastName}` !== filters.studentName) {
+      matchesFilters = false;
+    }
+    if (filters.classType && event.sessionClassType.toLowerCase() !== filters.classType.toLowerCase()) {
+      matchesFilters = false;
+    }
+    if (filters.status && event.scheduleStatus.toLowerCase() !== filters.status.toLowerCase()) {
+      matchesFilters = false;
+    }
+    if (filters.dateRange) {
+      const startDate = new Date(event.startDate);
+      const from = filters.dateRange.from ? new Date(filters.dateRange.from) : null;
+      const to = filters.dateRange.to ? new Date(filters.dateRange.to) : null;
+      if (from && startDate < from) {
+        matchesFilters = false;
+      }
+      if (to && startDate > to) {
+        matchesFilters = false;
+      }
+    }
+
+    const matchesSearch = searchFields.some((field) =>
       field
         ? field
             .toString()
@@ -546,6 +606,7 @@ const Teacher = () => {
             .includes(searchScheduledClass.toLowerCase())
         : false
     );
+    return matchesSearch && matchesFilters;
   });
 
   // Filtered Payments
@@ -559,11 +620,30 @@ const Teacher = () => {
       item.amount,
       item.amount === "0" ? "Pending" : "Paid",
     ];
-    return searchFields.some((field) =>
+
+    let matchesFilters = true;
+    if (filters.status && (item.amount === "0" ? "Pending" : "Paid").toLowerCase() !== filters.status.toLowerCase()) {
+      matchesFilters = false;
+    }
+    if (filters.paymentDate) {
+      const paymentDate = new Date(item.startDate);
+      const from = filters.paymentDate.from ? new Date(filters.paymentDate.from) : null;
+      const to = filters.paymentDate.to ? new Date(filters.paymentDate.to) : null;
+      if (from && paymentDate < from) {
+        matchesFilters = false;
+      }
+      if (to && paymentDate > to) {
+        matchesFilters = false;
+      }
+    }
+
+    const matchesSearch = searchFields.some((field) =>
       field
         ? field.toString().toLowerCase().includes(searchPayments.toLowerCase())
         : false
     );
+
+    return matchesSearch && matchesFilters;
   });
 
   // Filtered Wages
@@ -574,16 +654,44 @@ const Teacher = () => {
           item.classType?.rate || "",
           item.classType?.currency || "",
         ];
-        return searchFields.some((field) =>
+        
+        let matchesFilters = true;
+        if (filters.className && item.classType && !item.classType.className.toLowerCase().includes(filters.className.toLowerCase())) {
+          matchesFilters = false;
+        }
+        if (filters.currency && item.classType && item.classType.currency.toLowerCase() !== filters.currency.toLowerCase()) {
+          matchesFilters = false;
+        }
+
+        const matchesSearch = searchFields.some((field) =>
           field.toString().toLowerCase().includes(searchWages.toLowerCase())
         );
+
+        return matchesSearch && matchesFilters;
       })
     : [];
 
   // Filtered Working Hours
   const filteredWorkingHours = schedule.filter((item) => {
     const searchFields = [item.day, item.date];
-    return searchFields.some((field) =>
+
+    let matchesFilters = true;
+    if(filters.day && item.day.toLowerCase() !== filters.day.toLowerCase()){
+      matchesFilters = false;
+    }
+    if(filters.date){
+      const itemDate = new Date(item.date);
+      const from = filters.date.from ? new Date(filters.date.from) : null;
+      const to = filters.date.to ? new Date(filters.date.to) : null;
+      if(from && itemDate < from){
+        matchesFilters = false;
+      }
+      if(to && itemDate > to){
+        matchesFilters = false;
+      }
+    }
+
+    const matchesSearch = searchFields.some((field) =>
       field
         ? field
             .toString()
@@ -591,6 +699,7 @@ const Teacher = () => {
             .includes(searchWorkingHours.toLowerCase())
         : false
     );
+    return matchesSearch && matchesFilters;
   });
 
   const [wagesPage, setWagesPage] = useState(1);
@@ -600,6 +709,100 @@ const Teacher = () => {
     (wagesPage - 1) * wagesPerPage,
     wagesPage * wagesPerPage
   );
+
+  const studentNameOptions = students
+    .map((s) =>
+      s.studentDetails?.student
+        ? `${s.studentDetails.student.studentFirstName} ${s.studentDetails.student.studentLastName}`
+        : null
+    )
+    .filter((v, i, a) => a.indexOf(v) === i && v !== null)
+    .map((name) => ({ value: name!, label: name! }));
+
+  const scheduleStudentNameOptions = scheduledclass
+    .map((s) =>
+      s.student
+        ? `${s.student.studentFirstName} ${s.student.studentLastName}`
+        : null
+    )
+    .filter((v, i, a) => a.indexOf(v) === i && v !== null)
+    .map((name) => ({ value: name!, label: name! }));
+
+  const scheduleStatusOptions = scheduledclass
+    .map((s) => s.scheduleStatus)
+    .filter((v, i, a) => a.indexOf(v) === i && v !== null && v !== undefined)
+    .map((status) => ({ value: status!, label: status! }));
+
+  const countryOptions = students
+    .map((s) => s.studentDetails?.student?.studentCountry)
+    .filter((v, i, a) => a.indexOf(v) === i && v !== null && v !== undefined)
+    .map((country) => ({ value: country!, label: country! }));
+
+  const subjectOptions = students
+    .map((s) => s.studentDetails?.student?.learningInterest)
+    .filter((v, i, a) => a.indexOf(v) === i && v !== null && v !== undefined)
+    .map((subject) => ({ value: subject!, label: subject! }));
+
+  const studentslistFilterFields: FilterField[] = [
+    { name: 'studentName', label: 'Student Name', type: 'select', options: studentNameOptions },
+    { name: 'country', label: 'Country', type: 'select', options: countryOptions },
+    { name: 'subject', label: 'Subject', type: 'select', options: subjectOptions },
+  ];
+
+  const scheduledClassFilterFields: FilterField[] = [
+    { name: 'studentName', label: 'Student Name', type: 'select', options: scheduleStudentNameOptions },
+    { name: 'classType', label: 'Class Type', type: 'select', options: [
+      { value: 'trial', label: 'Trial' },
+      { value: 'regular', label: 'Regular' },
+    ]},
+    { name: 'status', label: 'Status', type: 'select', options: scheduleStatusOptions },
+    { name: 'dateRange', label: 'Date', type: 'date-range' },
+  ];
+
+  const earningsFilterFields: FilterField[] = [
+    { name: 'month', label: 'Month', type: 'select', options: Array.from({length: 12}, (_, i) => ({value: (i+1).toString(), label: new Date(0, i).toLocaleString('default', { month: 'long' }) }))},
+    { name: 'year', label: 'Year', type: 'text' },
+  ];
+
+  const paymentsFilterFields: FilterField[] = [
+    { name: 'paymentDate', label: 'Payment Date', type: 'date-range' },
+    { name: 'status', label: 'Status', type: 'select', options: [
+      { value: 'paid', label: 'Paid' },
+      { value: 'pending', label: 'Pending' },
+    ] },
+  ];
+
+  const wagesFilterFields: FilterField[] = [
+    { name: 'className', label: 'Class Name', type: 'text' },
+    { name: 'currency', label: 'Currency', type: 'select', options: [
+      { value: 'usd', label: 'USD' },
+      { value: 'eur', label: 'EUR' },
+    ] },
+  ];
+
+  const workingHoursFilterFields: FilterField[] = [
+    { name: 'day', label: 'Day', type: 'select', options: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => ({value: d.toLowerCase(), label: d})) },
+    { name: 'date', label: 'Date', type: 'date-range' },
+  ];
+
+  const getFilterFieldsForTab = (tab: string) => {
+    switch(tab) {
+      case 'Studentslist':
+        return studentslistFilterFields;
+      case 'ScheduledClass':
+        return scheduledClassFilterFields;
+      case 'Earnings':
+        return earningsFilterFields;
+      case 'Payments':
+        return paymentsFilterFields;
+      case 'Wages':
+        return wagesFilterFields;
+      case 'WorkingHours':
+        return workingHoursFilterFields;
+      default:
+        return [];
+    }
+  }
 
   return (
     <BaseLayout4>
@@ -1384,6 +1587,15 @@ const Teacher = () => {
           </div>
         </div>
       </div>
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onFilter={handleFilterChange}
+        onReset={handleResetFilters}
+        filterFields={getFilterFieldsForTab(activeTab)}
+        filterValues={filters}
+        setFilterValues={setFilters}
+      />
     </BaseLayout4>
   );
 };

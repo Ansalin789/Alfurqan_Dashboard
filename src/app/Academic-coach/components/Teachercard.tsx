@@ -1,94 +1,103 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
+import {
+  TooltipProps,
+} from "recharts";
 
-interface ApiResponse {
-  genderBreakdownBySubject: GenderDataItem[];
-}
-
-interface GenderDataItem {
-  subject: string;
-  male: number;
-  female: number;
-  malePercentage: string;
-  femalePercentage: string;
+interface AttendanceResponse {
+  totalTeachers: number;
+  maleTeachers: number;
+  femaleTeachers: number;
+  maleAttendancePresent: number;
+  maleAttendanceAbsent: number;
+  femaleAttendancePresent: number;
+  femaleAttendanceAbsent: number;
 }
 
 interface PieChartData {
   name: string;
-  male: number;
-  female: number;
-  totalCount: number;
   value: number;
   color: string;
 }
 
-const COLORS = ["#AFC0FF", "#9FD0FF", "#B9DDFF"]; // Customize as needed
 
 const Teacherscard: React.FC = () => {
-  const [genderData, setGenderData] = useState<PieChartData[]>([]);
+  const [attendanceData, setAttendanceData] = useState<AttendanceResponse | null>(null);
+  const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
+    const isDark = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
+    if (active && payload && payload.length) {
+      return (
+        <div
+          className={`p-2 rounded shadow-md text-[12px] border ${
+            isDark
+              ? "bg-[#22223b] text-white border-[#444]"
+              : "bg-white text-[#22223b] border-gray-200"
+          }`}
+        >
+          <div className={`font-normal ${isDark ? 'text-white' : 'text-[#22223b]'}`}>{payload[0].payload.name}</div>
+          <div>
+            {payload.map((entry: any, idx: number) => (
+              <div key={idx} className={isDark ? 'text-white text-[10px]' : 'text-[#22223b] text-[10px]'}>
+                {entry.payload.value} 
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const COLORS = ["#9FD0FF", "#F3A8FF"];
 
   useEffect(() => {
-    const fetchGenderData = async () => {
+    const fetchData = async () => {
       try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("SupervisorAuthToken")
-            : null;
-
-        if (!token) {
-          console.error("❌ SupervisorAuthToken not found");
-          return;
-        }
-
-        const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/teacherfemalemale",
+        const token = localStorage.getItem("AcademicCoachAuthToken");
+        // if (!token) {
+        //   setError("No auth token found.");
+        //   setLoading(false);
+        //   return;
+        // }
+        const res = await fetch(`https://api.blackstoneinfomaticstech.com/dashboard/ac/teachersattendance`,
           {
             headers: {
-              "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
             },
           }
         );
+        if (!res.ok) throw new Error("Failed to fetch attendance data");
 
-        if (!response.ok) {
-          console.error("Failed to fetch data:", response.statusText);
-          return;
-        }
-
-        const data: ApiResponse = await response.json();
-        console.log("Fetched API Response:", data);
-
-        if (!data.genderBreakdownBySubject) {
-          console.error("Invalid data structure:", data);
-          return;
-        }
-
-        const transformed: PieChartData[] = data.genderBreakdownBySubject.map(
-          (item: GenderDataItem, index: number) => {
-            const total = item.male + item.female;
-            const malePercent = total > 0 ? (item.male / total) * 100 : 0;
-            const femalePercent = total > 0 ? (item.female / total) * 100 : 0;
-
-            return {
-              name: item.subject.replace(" Teacher", ""), // Ex: Quran Teacher => Quran
-              male: malePercent,
-              female: femalePercent,
-              totalCount: total,
-              value: total, // Pie size will depend on total count of that subject
-              color: COLORS[index % COLORS.length],
-            };
-          }
-        );
-
-        setGenderData(transformed);
+        const data: AttendanceResponse = await res.json();
+        setAttendanceData(data);
       } catch (error) {
-        console.error("Error fetching gender data:", error);
+        console.error("Error fetching attendance data:", error);
       }
     };
 
-    fetchGenderData();
+    fetchData();
   }, []);
+
+  // Pie Chart Breakdown: Male vs Female teachers
+  const pieData: PieChartData[] = attendanceData
+    ? [
+        {
+          name: "Male",
+          value: attendanceData.maleTeachers,
+          color: "#9FD0FF",
+        },
+        {
+          name: "Female",
+          value: attendanceData.femaleTeachers,
+          color: "#F3A8FF",
+        },
+      ]
+    : [];
+
+  const getPercent = (count: number, total: number) =>
+    total > 0 ? `${Math.round((count / total) * 100)}%` : "0%";
 
   return (
     <div className="bg-[#FFFFFF] dark:bg-[#343434] rounded-xl p-4 h-[270px]">
@@ -99,15 +108,11 @@ const Teacherscard: React.FC = () => {
         <div className="flex gap-1">
           <div className="flex items-center gap-[3px]">
             <div className="w-[6px] h-[6px] bg-pink-400 rounded-sm"></div>
-            <span className="text-[9px] text-[#010E30] dark:text-white/70">
-              Female
-            </span>
+            <span className="text-[9px] text-[#010E30] dark:text-white/70">Female</span>
           </div>
           <div className="flex items-center gap-[3px]">
             <div className="w-[6px] h-[6px] bg-blue-400 rounded-sm"></div>
-            <span className="text-[9px] text-[#010E30] dark:text-white/70">
-              Male
-            </span>
+            <span className="text-[9px] text-[#010E30] dark:text-white/70">Male</span>
           </div>
         </div>
       </div>
@@ -115,38 +120,38 @@ const Teacherscard: React.FC = () => {
       <div className="flex justify-center items-center mt-6 dark:text-[#242424]">
         <PieChart width={200} height={200}>
           <Pie
-            data={genderData}
+            data={pieData}
             cx="50%"
             cy="50%"
             innerRadius={40}
             outerRadius={90}
             dataKey="value"
-            labelLine={false}
             stroke="none"
+            labelLine={false}
             label={({ cx, cy, midAngle, innerRadius, outerRadius, index }) => {
               const RADIAN = Math.PI / 180;
               const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
               const x = cx + radius * Math.cos(-midAngle * RADIAN);
               const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-              const data = genderData[index];
+              const item = pieData[index];
               return (
                 <text
                   x={x}
                   y={y}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  className="text-[14px] font-medium fill-[#010E30]"
+                  className="text-[13px] font-medium fill-[#010E30]"
                 >
-                  {`${data.totalCount}`}%
+                  {item.value}
                 </text>
               );
             }}
           >
-            {genderData.map((item) => (
-              <Cell key={item.name} fill={item.color} />
+            {pieData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>
+
           <text
             x="50%"
             y="50%"
@@ -154,48 +159,62 @@ const Teacherscard: React.FC = () => {
             dominantBaseline="middle"
             className="text-[14px] font-semibold fill-[#010E30] dark:fill-white dark:text-white/80"
           >
-            100%
+            {attendanceData?.totalTeachers ?? 0}
           </text>
-          <Tooltip
-            wrapperStyle={{
-              fontSize: "10px",
-              padding: "4px 6px",
-            }}
-          />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: "transparent" }} />
         </PieChart>
       </div>
 
-      <div className="grid grid-cols-3 gap-1 w-full mt-10">
-        {genderData.map((item) => (
-          <div
-            key={item.name}
-            className="flex flex-col items-center text-center"
-          >
-            <div className="flex items-center gap-[1px]">
-              <div
-                className="w-[10px] h-[10px] rounded-[2px]"
-                style={{ backgroundColor: item.color }}
-              ></div>
-              <span className="text-[9px] font-semibold text-[#010E30] dark:text-[#FFFF]">
-                {item.name}
+      <div className="grid grid-cols-2 mt-6 gap-4 text-[11px] font-medium">
+        {/* Total Present */}
+        <div className="flex flex-col items-center">
+          <span className="text-[#010E30] dark:text-[#fff]">Total Present</span>
+          <div className="flex gap-2 mt-2">
+            <div className="flex items-center gap-1">
+              <div className="w-[4px] h-[12px] rounded-sm bg-[#F3A8FF]" />
+              <span>
+                {getPercent(
+                  attendanceData?.femaleAttendancePresent || 0,
+                  attendanceData?.femaleTeachers || 0
+                )}
               </span>
             </div>
-            <div className="flex gap-1 mt-[2px]">
-              <div className="flex flex-col items-center gap-[1px]">
-                <div className="w-[3px] h-[8px] bg-pink-400 rounded-[2px]"></div>
-                <span className="text-[8px] font-medium">
-                  {item.female.toFixed(1)}%
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-[1px]">
-                <div className="w-[3px] h-[8px] bg-blue-400 rounded-sm"></div>
-                <span className="text-[8px] font-medium">
-                  {item.male.toFixed(1)}%
-                </span>
-              </div>
+            <div className="flex items-center gap-1">
+              <div className="w-[4px] h-[12px] rounded-sm bg-[#9FD0FF]" />
+              <span>
+                {getPercent(
+                  attendanceData?.maleAttendancePresent || 0,
+                  attendanceData?.maleTeachers || 0
+                )}
+              </span>
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* Total Absent */}
+        <div className="flex flex-col items-center">
+          <span className="text-[#010E30] dark:text-[#fff]">Total Absent</span>
+          <div className="flex gap-2 mt-2">
+            <div className="flex items-center gap-1">
+              <div className="w-[4px] h-[12px] rounded-sm bg-[#F3A8FF]" />
+              <span>
+                {getPercent(
+                  attendanceData?.femaleAttendanceAbsent || 0,
+                  attendanceData?.femaleTeachers || 0
+                )}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-[4px] h-[12px] rounded-sm bg-[#9FD0FF]" />
+              <span>
+                {getPercent(
+                  attendanceData?.maleAttendanceAbsent || 0,
+                  attendanceData?.maleTeachers || 0
+                )}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,209 +1,511 @@
 "use client";
-import React, { useEffect, useState } from "react";
 
-type Student = {
+import React, { useState, useEffect } from "react";
+import { X } from "lucide-react";
+import axios from "axios";
+import { FaUserCircle } from "react-icons/fa";
+
+interface User {
   id: string;
   name: string;
-};
+  email: string;
+  role?: string;
+}
 
-type Attendance = {
-  id: string;
-  name: string;
-  present: boolean;
-};
+interface MeetingData {
+  _id?: string;
+  meetingName: string;
+  selectedDate: string;
+  startTime: string;
+  endTime: string;
+  description: string;
+  teachers: Array<{
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+    attendee: string;
+  }>;
+  meetingminutes: string;
+  status?: string;
+  meetingStatus?: string;
+  createdDate?: string;
+  createdBy?: string;
+  updatedDate?: string;
+  duration?: string;
+}
 
-type AddMeetingProps = {
+interface AddMeetingProps {
   onClose: () => void;
-  onSubmit: (data: any) => void;
-  students: Student[];
-};
+  onMeetingCreated: () => void;
+  meetingToEdit?: MeetingData | null;
+}
 
-const AddMeeting = ({ onClose, onSubmit, students }: AddMeetingProps) => {
-  const [formData, setFormData] = useState({
-    meetingId: "",
-    meetingTitle: "",
-    scheduledDate: "",
-    meetingDuration: "",
-    timeFrom: "",
-    timeTo: "",
-    meetingMinutes: "",
-    attendance: [] as Attendance[],
+const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProps) => {
+  const [formData, setFormData] = useState<MeetingData>({
+    meetingName: meetingToEdit?.meetingName || "",
+    selectedDate: meetingToEdit?.selectedDate || new Date().toISOString().split('T')[0],
+    startTime: meetingToEdit?.startTime || "",
+    endTime: meetingToEdit?.endTime || "",
+    description: meetingToEdit?.description || "",
+    teachers: meetingToEdit?.teachers || [],
+    meetingminutes: meetingToEdit?.meetingminutes || "Default meeting minutes",
+    status: "Active",
+    meetingStatus: "Scheduled",
+    createdBy: "Admin",
+    duration: "1h"
   });
 
+  const [availableUsers, setAvailableUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("");
+  const [showUserList, setShowUserList] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [success, setSuccess] = useState(false);
+
   useEffect(() => {
-    // Populate attendance with students when component mounts
-    setFormData((prev) => ({
-      ...prev,
-      attendance: students.map((s) => ({ id: s.id, name: s.name, present: true })),
-    }));
-  }, [students]);
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem("AdminAuthToken");
+        if (!token) {
+          setError("Authentication token not found");
+          return;
+        }
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
+        console.log("Fetching users from API...");
+        const response = await axios.get(
+          "https://api.blackstoneinfomaticstech.com/users",
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+
+        console.log("API Response:", response.data);
+
+        let usersArray = Array.isArray(response.data) 
+          ? response.data 
+          : response.data.users || response.data.data || [];
+
+
+const users = usersArray
+  .filter((user: any) => {
+
+    const roles = Array.isArray(user.role) ? user.role : [user.role];
+    return !roles.some((r: string) => r?.toString().toLowerCase() === 'admin');
+  })
+  .map((user: any) => ({
+    id: user._id,
+    name: user.userName || user.name,
+    email: user.email || "no-email@example.com",
+    role: Array.isArray(user.role) ? user.role[0] : user.role
+  }));
+        console.log("Filtered non-admin users:", users);
+        setAvailableUsers(users);
+      } catch (err) {
+        console.error("Error fetching users:", err);
+        setError("Failed to load users. Please try again.");
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData({ ...formData, [name]: value });
   };
 
-  const toggleAttendance = (index: number) => {
-    const updated = [...formData.attendance];
-    updated[index].present = !updated[index].present;
-    setFormData((prev) => ({
-      ...prev,
-      attendance: updated,
-    }));
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    if (timeRegex.test(value) || value === "") {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
-  const handleSubmit = () => {
-    onSubmit(formData);
+  const formatTimeValue = (time: string) => {
+    if (!time) return "";
+    const [hours, minutes] = time.split(':');
+    return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+  };
+
+  const toggleUser = (user: User) => {
+    setFormData(prev => {
+      const isSelected = prev.teachers.some(t => t.teacherId === user.id);
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          teachers: prev.teachers.filter(t => t.teacherId !== user.id)
+        };
+      } else {
+        return {
+          ...prev,
+          teachers: [
+            ...prev.teachers,
+            {
+              teacherId: user.id,
+              teacherName: user.name,
+              teacherEmail: user.email,
+              attendee: "present"
+            }
+          ]
+        };
+      }
+    });
+  };
+
+  const calculateDuration = (start: string, end: string): string => {
+    const [startHour, startMin] = start.split(':').map(Number);
+    const [endHour, endMin] = end.split(':').map(Number);
+    
+    const totalMinutes = (endHour * 60 + endMin) - (startHour * 60 + startMin);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    
+    return `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    if (!formData.meetingName || !formData.selectedDate || !formData.startTime || !formData.endTime) {
+      setError("Please fill all required fields");
+      setLoading(false);
+      return;
+    }
+
+    if (formData.startTime >= formData.endTime) {
+      setError("End time must be after start time");
+      setLoading(false);
+      return;
+    }
+
+    if (formData.teachers.length === 0) {
+      setError("At least one attendee must be selected");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("AdminAuthToken");
+      if (!token) {
+        setError("Authentication token not found");
+        setLoading(false);
+        return;
+      }
+
+      const payload = {
+        meetingName: formData.meetingName,
+        selectedDate: formData.selectedDate,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        teacher: formData.teachers,
+        description: formData.description,
+        meetingminutes: formData.description || "Meeting minutes",
+        status: "Active",
+        meetingStatus: "Scheduled",
+        createdDate: new Date().toISOString(),
+        createdBy: "Admin",
+        updatedDate: new Date().toISOString(),
+        duration: calculateDuration(formData.startTime, formData.endTime)
+      };
+
+      console.log("Preparing to send payload:", payload);
+
+      const url = meetingToEdit?._id 
+        ? `https://api.blackstoneinfomaticstech.com/allAdminMeeting/${meetingToEdit._id}`
+        : "https://api.blackstoneinfomaticstech.com/addadminMeeting";
+
+      const method = meetingToEdit?._id ? "PUT" : "POST";
+
+      console.log(`Making ${method} request to ${url}`);
+
+      const response = await axios({
+        method,
+        url,
+        data: payload,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      console.log("API Response:", response.data);
+
+      if ([200, 201].includes(response.status)) {
+        console.log("Meeting successfully saved/updated");
+        setSuccess(true);
+        setTimeout(() => {
+          onMeetingCreated();
+          onClose();
+        }, 1500);
+      }
+    } catch (err: any) {
+      console.error("API Error:", err);
+      
+      let errorMessage = "An error occurred while saving the meeting.";
+      
+      if (err.response?.data?.issues) {
+        errorMessage = err.response.data.issues
+          .map((issue: any) => issue.message)
+          .join(', ');
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredUsers = availableUsers.filter(user =>
+    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const isUserSelected = (id: string) => {
+    return formData.teachers.some(t => t.teacherId === id);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="max-h-[95vh] overflow-y-auto w-full max-w-4xl bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 scrollbar-hide">
-        <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Meeting Details</h2>
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+        <div className="p-4 border-b flex justify-between items-center">
+          <h2 className="text-lg font-semibold">
+            {meetingToEdit ? "Edit Meeting" : "Add Meeting"}
+          </h2>
+          <button 
+            onClick={onClose} 
+            className="text-gray-500 hover:text-gray-700"
+            disabled={loading}
+          >
+            <X size={20} />
+          </button>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          {error && (
+            <div className="p-2 text-sm text-red-600 bg-red-100 rounded-md">
+              {error}
+            </div>
+          )}
+          
+          {success && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+              <div className="bg-white rounded-xl shadow-lg max-w-sm w-full text-center px-6 py-8 relative">
+                <div className="flex justify-center mb-4">
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <svg
+                      className="w-6 h-6 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
+                <h2 className="text-lg font-semibold text-gray-800">Scheduled successfully</h2>
+                <p className="text-sm text-gray-500 mt-1 mb-4">
+                  You have successfully sent the schedule
+                </p>
+                <div className="h-1 bg-green-500 rounded-full w-20 mx-auto my-4"></div>
+                <button
+                  onClick={() => {
+                    setSuccess(false);
+                    onMeetingCreated();
+                    onClose();
+                  }}
+                  className="bg-[#5B6AC7] text-white text-sm font-medium px-6 py-2 rounded-lg hover:bg-[#4b5ab3] transition"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Meeting Name *</label>
+              <input
+                type="text"
+                name="meetingName"
+                value={formData.meetingName}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                required
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Meeting Date *</label>
+              <input
+                type="date"
+                name="selectedDate"
+                value={formData.selectedDate}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                required
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Start Time </label>
+              <input
+                type="time"
+                name="startTime"
+                value={formatTimeValue(formData.startTime)}
+                onChange={handleTimeChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                required
+                step="300"
+                pattern="[0-9]{2}:[0-9]{2}"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">End Time </label>
+              <input
+                type="time"
+                name="endTime"
+                value={formatTimeValue(formData.endTime)}
+                onChange={handleTimeChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                required
+                step="300"
+                pattern="[0-9]{2}:[0-9]{2}"
+              />
+            </div>
+          </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Meeting ID</label>
-            <input
-              type="text"
-              name="meetingId"
-              value={formData.meetingId}
-              onChange={handleChange}
-              placeholder="#123456789"
-              className="w-full border rounded px-3 py-2 mt-1 text-sm dark:bg-gray-800 dark:text-white"
+            <label className="block text-sm font-medium mb-1">Add Participants *</label>
+            <div className="relative">
+              <input
+                type="text"
+                readOnly
+                onClick={() => !loading && setShowUserList(true)}
+                value={
+                  formData.teachers.length > 0
+                    ? `${formData.teachers.length} selected`
+                    : "Add"
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm cursor-pointer"
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Description</label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              placeholder="Write a description here."
+              disabled={loading}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Meeting Title</label>
-            <input
-              type="text"
-              name="meetingTitle"
-              value={formData.meetingTitle}
-              onChange={handleChange}
-              placeholder="Weekly Meeting"
-              className="w-full border rounded px-3 py-2 mt-1 text-sm dark:bg-gray-800 dark:text-white"
-            />
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Scheduled Date</label>
-            <select
-              name="scheduledDate"
-              value={formData.scheduledDate}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2 mt-1 text-sm dark:bg-gray-800 dark:text-white"
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50"
+              disabled={loading}
             >
-              <option value="">Select</option>
-              <option value="Arabic">Arabic</option>
-              <option value="Maths">Maths</option>
-            </select>
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+              disabled={loading}
+            >
+              {loading ? "Submitting..." : "Submit"}
+            </button>
           </div>
+        </form>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Meeting Duration</label>
-            <input
-              type="date"
-              name="meetingDuration"
-              value={formData.meetingDuration}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2 mt-1 text-sm dark:bg-gray-800 dark:text-white"
-            />
+        {showUserList && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[80vh] flex flex-col">
+              <div className="p-4 border-b flex justify-between items-center">
+                <h3 className="font-medium">Select Attendees</h3>
+                <button 
+                  onClick={() => setShowUserList(false)}
+                  disabled={loading}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="p-4">
+                <input
+                  type="text"
+                  placeholder="Search attendees..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md mb-4 text-sm"
+                  disabled={loading}
+                />
+
+                <div className="overflow-y-auto max-h-[50vh]">
+                  {filteredUsers.length > 0 ? (
+                    filteredUsers.map((user) => (
+                      <div
+                        key={user.id}
+                        className="flex items-center justify-between p-3 border-b hover:bg-gray-50"
+                      >
+                        <div className="flex items-center gap-3">
+                          <FaUserCircle className="text-gray-400" size={20} />
+                          <div>
+                            <p className="text-sm font-medium">{user.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {user.email} {user.role && `(${user.role})`}
+                            </p>
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={isUserSelected(user.id)}
+                          onChange={() => toggleUser(user)}
+                          className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500"
+                          disabled={loading}
+                        />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4 text-gray-500 text-sm">
+                      No attendees found
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-4 border-t flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowUserList(false)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                  disabled={loading}
+                >
+                  Done
+                </button>
+              </div>
+            </div>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Scheduled Time- From</label>
-            <input
-              type="text"
-              name="timeFrom"
-              value={formData.timeFrom}
-              onChange={handleChange}
-              placeholder="60 Minutes"
-              className="w-full border rounded px-3 py-2 mt-1 text-sm dark:bg-gray-800 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Scheduled Time- To</label>
-            <input
-              type="text"
-              name="timeTo"
-              value={formData.timeTo}
-              onChange={handleChange}
-              placeholder="09.00 AM – 10.00 AM"
-              className="w-full border rounded px-3 py-2 mt-1 text-sm dark:bg-gray-800 dark:text-white"
-            />
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <table className="w-full border-collapse rounded overflow-hidden text-sm">
-            <thead className="bg-[#576CBC] text-white">
-              <tr>
-                <th className="text-left px-4 py-2">Name</th>
-                <th className="text-left px-4 py-2">Attendance</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800">
-              {formData.attendance.map((student, index) => (
-                <tr key={student.id} className="border-b border-gray-200 dark:border-gray-700">
-                  <td className="px-4 py-2 text-gray-800 dark:text-white">{student.name}</td>
-                  <td className="px-4 py-2">
-                    <button onClick={() => toggleAttendance(index)}>
-                      {student.present ? (
-                        <span className="text-green-500 font-bold">✔</span>
-                      ) : (
-                        <span className="text-red-500 font-bold">✖</span>
-                      )}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Meeting Minutes</label>
-          <textarea
-            name="meetingMinutes"
-            value={formData.meetingMinutes}
-            onChange={handleChange}
-            placeholder="Write your comment here..."
-            className="w-full border rounded px-3 py-2 text-sm resize-none h-28 dark:bg-gray-800 dark:text-white"
-          />
-        </div>
-
-        <div className="flex justify-end gap-3 mt-6">
-          <button
-            onClick={onClose}
-            className="px-5 py-2 text-sm font-medium bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="px-5 py-2 text-sm font-medium bg-[#576CBC] text-white rounded hover:bg-indigo-700"
-          >
-            Submit
-          </button>
-        </div>
+        )}
       </div>
-
-      {/* Hide scrollbar globally inside modal */}
-      <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 };

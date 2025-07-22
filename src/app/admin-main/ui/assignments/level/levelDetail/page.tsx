@@ -174,7 +174,7 @@ const Page = () => {
   ) => {
     try {
       const response = await axios.get(
-        `http://localhost:5001/adminassignment`,
+        `https://api.blackstoneinfomaticstech.com/adminassignment`,
         {
           params: { courseId, levelId },
           headers: {
@@ -341,7 +341,7 @@ const Page = () => {
         console.error("❌ AdminAuthToken not found");
         return;
       }
-      const res = await fetch(`http://localhost:5001/adminassignment`, {
+      const res = await fetch(`https://api.blackstoneinfomaticstech.com/adminassignment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -774,98 +774,112 @@ const Page = () => {
                   )}
 
                 {/* ✅ Choose (multiple) options */}
-                {form.answerType === "choose" && (
-                  <div className="space-y-3">
-                    <label htmlFor="uycvuycvu" className="font-medium">
-                      Options
-                    </label>
-                    {form.options.map((opt, index) => (
-                      <div key={index} className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          name="correctOption"
-                          checked={
-                            Array.isArray(form.correctAnswer) &&
-                            form.correctAnswer.includes(opt)
-                          }
-                          onChange={(e) => {
-                            let updatedAnswers = Array.isArray(
-                              form.correctAnswer
-                            )
-                              ? [...form.correctAnswer]
-                              : [];
-                            if (e.target.checked) {
-                              updatedAnswers.push(opt);
-                            } else {
-                              updatedAnswers = updatedAnswers.filter(
-                                (ans) => ans !== opt
-                              );
-                            }
-                            setForm({ ...form, correctAnswer: updatedAnswers });
-                          }}
-                        />
-                        <input
-                          type="text"
-                          value={opt}
-                          onChange={(e) => {
-                            const newOptions = [...form.options];
-                            newOptions[index] = e.target.value;
+               {form.answerType === "choose" && (
+  <div className="space-y-3">
+    <label htmlFor="options" className="font-medium">Options</label>
 
-                            // Update correctAnswer if option label changes
-                            let updatedCorrect = form.correctAnswer;
-                            if (Array.isArray(form.correctAnswer)) {
-                              if (form.correctAnswer.includes(opt)) {
-                                updatedCorrect = form.correctAnswer.map((ans) =>
-                                  ans === opt ? e.target.value : ans
-                                );
-                              }
-                            }
+    {form.options.map((opt, index) => {
+      const isSelected =
+        Array.isArray(form.correctAnswer) &&
+        form.correctAnswer.includes(opt);
 
-                            setForm({
-                              ...form,
-                              options: newOptions,
-                              correctAnswer: updatedCorrect,
-                            });
-                          }}
-                          className="flex-1 px-3 py-2 rounded-md bg-gray-100 dark:bg-[#2a2a2a] border border-gray-300"
-                        />
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setForm({ ...form, options: [...form.options, ""] })
-                      }
-                      className="text-blue-600 text-sm"
-                    >
-                      + Add Option
-                    </button>
-                  </div>
-                )}
+      return (
+        <div
+          key={index}
+          className={`flex items-center gap-3 p-2 rounded-md ${
+            isSelected ? 'bg-[#377E36] dark:bg-[#377E36]' : ''
+          }`}
+        >
+          <input
+            type="checkbox"
+            name="correctOption"
+            checked={isSelected}
+            onChange={(e) => {
+              let updatedAnswers = Array.isArray(form.correctAnswer)
+                ? [...form.correctAnswer]
+                : [];
+
+              if (e.target.checked) {
+                updatedAnswers.push(opt);
+              } else {
+                updatedAnswers = updatedAnswers.filter((ans) => ans !== opt);
+              }
+
+              setForm({ ...form, correctAnswer: updatedAnswers });
+            }}
+          />
+          <input
+            type="text"
+            value={opt}
+            onChange={(e) => {
+              const newOptions = [...form.options];
+              newOptions[index] = e.target.value;
+
+              // Sync with correctAnswer if label was selected
+              let updatedCorrect = form.correctAnswer;
+              if (Array.isArray(form.correctAnswer)) {
+                if (form.correctAnswer.includes(opt)) {
+                  updatedCorrect = form.correctAnswer.map((ans) =>
+                    ans === opt ? e.target.value : ans
+                  );
+                }
+              }
+
+              setForm({
+                ...form,
+                options: newOptions,
+                correctAnswer: updatedCorrect,
+              });
+            }}
+            className="flex-1 px-3 py-2 rounded-md bg-gray-100 dark:bg-[#2a2a2a] border border-gray-300"
+          />
+        </div>
+      );
+    })}
+
+    {form.options.length < 4 && (
+      <button
+        type="button"
+        onClick={() =>
+          setForm({ ...form, options: [...form.options, ""] })
+        }
+        className="text-blue-600 text-sm"
+      >
+        + Add Option
+      </button>
+    )}
+  </div>
+)}
+
 
                 {/* ✅ True or False (single answer) */}
-                {form.answerType === "trueorfalse" && (
-                  <div className="space-y-3">
-                    <label htmlFor=" ugu" className="font-medium">
-                      Select Correct Answer
-                    </label>
-                    <div className="flex gap-6">
-                      {["True", "False"].map((opt) => (
-                        <label key={opt} className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            name="correctOption"
-                            checked={form.correctAnswer === opt}
-                            onChange={() =>
-                              setForm({ ...form, correctAnswer: opt })
-                            }
-                          />
-                          {opt}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
+              {form.answerType === "trueorfalse" && (
+  <div className="space-y-3">
+    <label htmlFor="ugu" className="font-medium">
+      Select Correct Answer
+    </label>
+    <div className="flex gap-4">
+      {["True", "False"].map((opt) => {
+        const isSelected = form.correctAnswer === opt;
+        return (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => setForm({ ...form, correctAnswer: opt })}
+            className={`px-6 py-2 rounded-md border text-sm font-medium transition-all ${
+              isSelected
+                ? "bg-green-100 text-green-800 border-green-400 dark:bg-green-900 dark:text-green-200"
+                : "bg-gray-100 dark:bg-[#2a2a2a] text-gray-700 dark:text-white border-gray-300"
+            }`}
+          >
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+)}
+
               </div>
 
               {/* Right Panel - Question List */}

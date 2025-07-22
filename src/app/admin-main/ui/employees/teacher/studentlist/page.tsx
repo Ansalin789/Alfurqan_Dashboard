@@ -397,34 +397,29 @@ const page = () => {
       <AdminHeader currentSection="Student List" />
       <div>
         <div className="rounded-lg overflow-hidden">
-          <div className="flex justify-between items-center px-4 bg-[#FAFAFB] dark:bg-[#343434]">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+        <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
               <input
                 type="text"
                 placeholder="Search"
-                className="bg-transparent outline-none text-[12px] w-52 py-3"
+                className="bg-transparent outline-none text-[12px] w-32 py-3"
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
               />
-            </div>
             <div className="relative">
               <div
-                className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                onClick={() => setIsFilterModalOpen(true)}
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-3 border-r-2 border-l-2 px-48 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
               >
                 <MdTune className="w-4 h-4" />
                 <span>Filter</span>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
-              <span className="text-left ml-60 ">
-                Showing{" "}
+            <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
+            Showing{" "}
                 {filteredStudents.length === 0 ? 0 : indexOfFirstItem + 1} to{" "}
                 {Math.min(indexOfLastItem, filteredStudents.length)} of{" "}
                 {filteredStudents.length}
               </span>
-            </div>
           </div>
           <div className="overflow-x-auto max-h-none">
             <table

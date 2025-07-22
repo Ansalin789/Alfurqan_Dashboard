@@ -239,7 +239,7 @@ const SalaryCard = () => {
             <div className="mt-2">
               {/* Search + Filter Header */}
               <div className="w-full h-11 bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
-                <div className="flex items-center gap-2">
+              <div className="flex justify-between gap-2 items-center px-4 py-0">
                   <Search className="w-4 h-4 text-gray-400  dark:text-gray-400" />
                   <input
                     type="text"

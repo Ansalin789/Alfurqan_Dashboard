@@ -30,7 +30,7 @@ interface User {
   date: string;
   time: string;
   evaluationStatus?: string;
-  city: string;
+  city: string; // Make city required
   numberofstudents?: string;
   comment?: string;
   [key: string]: any;
@@ -65,6 +65,7 @@ const Popup: React.FC<PopupProps> = ({
   user,
   onSave,
 }) => {
+  console.log('Popup user prop:', user); // Debug user prop
   const [formData, setFormData] = useState<User>({
     studentId: "",
     fname: "",
@@ -144,7 +145,8 @@ const Popup: React.FC<PopupProps> = ({
         date: new Date(item.startDate).toLocaleDateString(),
         time: `${item.preferredFromTime}`,
         evaluationStatus: item.evaluationStatus,
-        city: item.city,
+        city: item.city || "",
+
       }));
 
       return {
@@ -186,23 +188,10 @@ const Popup: React.FC<PopupProps> = ({
   ) => {
     const { name, value } = e.target;
 
-    if (name === "student.studentFirstName") {
-      setFormData((prev) => ({
-        ...prev,
-        student: {
-          ...prev.student,
-          studentFirstName: value,
-        },
-      }));
-    } else if (name === "student.studentLastName") {
-      setFormData((prev) => ({
-        ...prev,
-        student: {
-          ...prev.student,
-          studentLastName: value,
-        },
-      }));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -223,7 +212,7 @@ const Popup: React.FC<PopupProps> = ({
       onRequestClose={onRequestClose}
       className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 "
     >
-      <div className="bg-[#FFFFFF] rounded-xl shadow-2xl p-8 w-[800px] max-h-[90vh] overflow-y-auto  scrollbar-none dark:bg-[#252525]">
+      <div className="bg-[#FFFFFF] rounded-xl shadow-2xl p-8 w-[800px] max-h-[95vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 dark:bg-[#252525]">
         <div className="flex justify-between items-center mb-6 pb-4  dark:text-[#FFFFFF] dark:bg-[#252525]">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-[#ffffff]">
             {user ? "Edit Student" : "Add Student"}
@@ -237,7 +226,7 @@ const Popup: React.FC<PopupProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-5 ">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 ">
             {/* First Name */}
             <div>
               <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
@@ -309,15 +298,17 @@ const Popup: React.FC<PopupProps> = ({
             </div>
 
             {/* City */}
-            <div>
-              <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
+            <div className="col-span-1">
+              <label className=" mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
                 City
               </label>
               <input
+                type="text"
                 name="city"
-                value={formData.city}
+                value={formData.city || ""}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                autoComplete="address-level2"
+                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
 
@@ -362,29 +353,7 @@ const Popup: React.FC<PopupProps> = ({
               />
             </div> */}
 
-            {/* Preferred Date */}
-            <div>
-              <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
-                Preferred Date
-              </label>
-              <input
-                type="text"
-                name="date"
-                value={
-                  formData.date
-                    ? new Date(formData.date)
-                        .toLocaleDateString("en-US", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
-                        .replace(/\//g, "-")
-                    : ""
-                }
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              />
-            </div>
+     
 
             {/* Preferred Time */}
             <div>
@@ -415,20 +384,7 @@ const Popup: React.FC<PopupProps> = ({
             </div>
           </div>
 
-          {/* Comment */}
-          <div>
-            <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
-              Comment
-            </label>
-            <textarea
-              name="comment"
-              value={formData.comment}
-              onChange={handleChange}
-              rows={3}
-              className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-            />
-          </div>
-
+     
           {/* Start Evaluation Button */}
           <div className="flex justify-end">
             <button

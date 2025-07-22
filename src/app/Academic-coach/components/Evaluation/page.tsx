@@ -51,6 +51,7 @@ interface TransformedUser {
   studentEmail:string;
   number: string;
   country: string;
+  city: string;
   course: string; // Assuming this corresponds to `learningInterest`
   preferredTeacher: string;
   time: string;
@@ -76,7 +77,7 @@ interface User {
   time: string;
   status?: string;
   evaluationStatus?: string;
-  city?: string;
+  city: string;
   students?: number;
   comment?: string;
 }
@@ -203,6 +204,7 @@ const getAllUser = async (): Promise<{
             ? item.student.studentPhone.toString()
             : "",
           country: item.student.studentCountry,
+          city:item.city,
           course: item.student.learningInterest,
           preferredTeacher: item.student.preferredTeacher,
           time: item.student.preferredFromTime,
@@ -282,6 +284,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
         lastName: string;
         email: string;
         phoneNumber: string;
+        city:string;
         country: string;
         learningInterest: string;
         preferredTeacher: string;
@@ -300,6 +303,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
           fname: item.firstName,
           lname: item.lastName,
           email: item.email,
+          city:item.city,
           number: item.phoneNumber.toString(),
           country: item.country,
           course: item.learningInterest,
@@ -604,6 +608,7 @@ const TrailManagement = () => {
       email: user.email,
       number: user.number,
       country: user.country,
+      city: user.city,
       course: user.course,
       preferredTeacher: user.preferredTeacher,
       date: new Date(user.date).toLocaleDateString(),
