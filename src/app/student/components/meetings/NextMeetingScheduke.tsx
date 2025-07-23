@@ -163,7 +163,7 @@ useEffect(() => {
 
 
   const handleStartClass = () => {
-router.push(`/teacher/ui/livemeeting?id=${classData?._id}`);
+router.push(`/student/ui/livemeeting?id=${classData?._id}`);
     // router.push(`/teacher/livemeeting/${classData?.meetingId}`);
   };
 

@@ -133,19 +133,19 @@ const ClassAnalytics = () => {
     </h3>
 
     {/* Chart and Legend */}
-    <div className="flex flex-col md:flex-row mt-3 items-center justify-between">
+    <div className="flex flex-col md:flex-row  items-center justify-between">
       {/* Left: SVG Chart */}
       <div className="relative w-[160px] h-[160px] flex items-center justify-center">
         <svg viewBox="0 0 160 160" className="w-full h-full">
           {circleData.map(({ radius, color, dash, circumference }, i) => (
             <circle
               key={i}
-              cx="80"
+              cx="140"
               cy="80"
-              r={radius - 3} // space around center text
+              r={radius - 2} // space around center text
               fill="transparent"
               stroke={color}
-              strokeWidth="6"
+              strokeWidth="10"
               strokeDasharray={`${dash} ${circumference - dash}`}
               strokeLinecap="round"
               transform="rotate(-90 80 80)"

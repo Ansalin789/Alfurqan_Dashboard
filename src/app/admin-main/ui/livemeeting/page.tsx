@@ -4,8 +4,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { JitsiMeeting } from "@jitsi/react-sdk";
 import axios from "axios";
 import BaseLayout3 from "@/components/BaseLayout3";
-import SupervisorHeader from "../../components/supervisorHeader";
 import { useSearchParams } from "next/navigation";
+import AdminHeader from "../../components/AdminHeader";
+import BaseLayout4 from "@/components/BaseLayout4";
 interface Attendance {
   id: string | null;
   studentId: string;
@@ -17,18 +18,18 @@ interface Attendance {
   leaveTime: string;
 }
 
-interface Supervisor {
-  supervisorId: string;
-  supervisorName: string;
-  supervisorEmail: string;
-  supervisorRole: string;
+interface Admin {
+  adminId: string;
+  adminName: string;
+  adminEmail: string;
+  adminRole: string;
 }
 
 interface Teacher {
   teacherId: string;
   teacherName: string;
   teacherEmail: string;
-  attendee: string;
+  attendee?: string;
   _id: string;
 }
 
@@ -36,19 +37,18 @@ interface Meeting {
   _id: string;
   meetingName: string;
   meetingId: string;
-  supervisor: Supervisor;
+  admin: Admin;
   selectedDate: string;
   startTime: string;
   endTime: string;
   teacher: Teacher[];
   description: string;
-  duration: string;
   meetingStatus: string;
-  meetingMinutes: string;
   status: string;
   createdDate: string;
   createdBy: string;
   updatedDate: string;
+  updatedBy: string;
   __v: number;
 }
 
@@ -69,15 +69,16 @@ export default function Page() {
       try {
         const token =
           typeof window !== "undefined"
-            ? localStorage.getItem("SupervisorAuthToken")
+            ? localStorage.getItem("AdminAuthToken")
             : null;
         if (!token) {
-          console.error("❌ TeacherAuthToken not found");
+          console.error("❌ AdminAuthToken not found");
           return;
         }
 
-        const response = await axios.get<Meeting>(
-          `https://api.blackstoneinfomaticstech.com/allAdminMeeting/meetingId?${meetingId}`,
+        // Use correct query string and expect array response
+        const response = await axios.get<Meeting[]>(
+          `https://api.blackstoneinfomaticstech.com/allAdminMeeting/meetingId?meetingId=${meetingId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -86,12 +87,14 @@ export default function Page() {
           }
         );
 
-        if (response.data) {
-          console.log("Setting classData to:", response.data);
-          setClassData(response.data);
-          setRoomName(response.data.meetingId);
-          const teacherAttendance = response.data.teacher.map(
-            (teacher: Teacher) => ({
+        if (response.data && response.data.length > 0) {
+          // Use the first meeting for general info
+          setClassData(response.data[0]);
+          setRoomName(response.data[0].meetingId);
+
+          // Flatten all teachers from all meetings
+          const teacherAttendance = response.data.flatMap((meeting) =>
+            meeting.teacher.map((teacher: Teacher) => ({
               id: null,
               studentId: teacher.teacherId,
               name: teacher.teacherName,
@@ -100,12 +103,11 @@ export default function Page() {
               joined: false,
               joinTime: "",
               leaveTime: "",
-            })
+            }))
           );
 
           setAttendance(teacherAttendance);
         } else {
-          console.log("No upcoming class found.");
           setClassData(null);
         }
       } catch (err) {
@@ -121,7 +123,7 @@ export default function Page() {
 
   // Function to handle API update
   const handleMeetingMinutesUpdate = async () => {
-    console.log("📌 Submit clicked");
+    console.log("\uD83D\uDCCC Submit clicked");
     let duration = "";
     if (startTime && endTime) {
       duration = calculateDuration(startTime, endTime);
@@ -130,7 +132,6 @@ export default function Page() {
     }
 
     const payload = {
-      meetingminutes: meetingMinutes,
       duration: duration,
       meetingStatus: "Completed",
       teacher: classData?.teacher.map((teacher) => {
@@ -150,20 +151,22 @@ export default function Page() {
           _id: teacher._id,
         };
       }),
+      // Optionally add updatedBy if you have the admin info
+      // updatedBy: classData?.admin?.adminId,
     };
 
     try {
       const token =
         typeof window !== "undefined"
-          ? localStorage.getItem("SupervisorAuthToken")
+          ? localStorage.getItem("AdminAuthToken")
           : null;
       if (!token) {
-        console.error("❌ TeacherAuthToken not found");
+        console.error("\u274C AdminAuthToken not found");
         return;
       }
 
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/meetingminutes/${meetingId}`,
+        `https://api.blackstoneinfomaticstech.com/allAdminMeeting/update/${meetingId}`,
         {
           method: "PUT",
           headers: {
@@ -180,11 +183,11 @@ export default function Page() {
       }
 
       const result = await response.json();
-      console.log("✅ Meeting Minutes Updated:", result);
+      console.log("\u2705 Meeting Minutes Updated:", result);
 
       setMeetingUpdate(false); // close modal
     } catch (error) {
-      console.error("❌ Error updating meeting minutes:", error);
+      console.error("\u274C Error updating meeting minutes:", error);
     }
   };
   const calculateDuration = (startTime: string, endTime: string): string => {
@@ -205,8 +208,8 @@ export default function Page() {
   };
 
   return (
-    <BaseLayout3>
-      <SupervisorHeader currentSection="Weekly Meeting" showBackButton={true} showBackPath="/supervisor/ui/meetingandtraining" />
+    <BaseLayout4>
+      <AdminHeader currentSection="Live Meeting" showBackButton={true} showBackPath="/admin-main/ui/meeting" />
       <div className="flex flex-col min-h-screen px-4 sm:px-6 md:px-8">
         {/* Page Content */}
         <div className="flex flex-col lg:flex-row gap-6 flex-1 w-full max-w-screen-xl">
@@ -475,20 +478,7 @@ export default function Page() {
               </div>
 
               {/* Meeting Minutes Textarea */}
-              <div className="md:w-1/2 border border-[#343434] rounded-lg p-4 h-72 flex flex-col">
-                <label
-                  htmlFor="htmldaad"
-                  className="text-base font-medium text-gray-700 mb-2 dark:text-[#fff]"
-                >
-                  Meeting Minutes
-                </label>
-                <textarea
-                  value={meetingMinutes}
-                  onChange={(e) => setMeetingMinutes(e.target.value)}
-                  className="flex-grow rounded p-2 text-sm resize-none focus:outline-none dark:bg-[#252525] "
-                  placeholder="Enter your notes here..."
-                />
-              </div>
+            
             </div>
 
             {/* Action Buttons */}
@@ -508,7 +498,8 @@ export default function Page() {
             </div>
           </div>
         </div>
+        
       )}
-    </BaseLayout3>
+    </BaseLayout4>
   );
 }

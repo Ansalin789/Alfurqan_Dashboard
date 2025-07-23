@@ -249,6 +249,9 @@ const page = () => {
   const [searchWages, setSearchWages] = useState("");
   const [searchWorkingHours, setSearchWorkingHours] = useState("");
   const [searchEarnings, setSearchEarnings] = useState("");
+  const [filterStartDate, setFilterStartDate] = useState("");
+  const [filterEndDate, setFilterEndDate] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
 
   const events = [
     {
@@ -364,8 +367,15 @@ const page = () => {
     setCurrentPage(1);
   };
 
+  // Extract unique status options from API response
+  const statuses = Array.from(new Set(scheduledclass.map(
+    item => item.amount === "0" ? "Pending" : "Paid"
+  )));
+
   // Filtered Payments
   const filteredPayments = scheduledclass.filter((item) => {
+    const paymentStatus = item.amount === "0" ? "Pending" : "Paid";
+    // Search logic
     const searchFields = [
       new Date(item.startDate).toLocaleDateString("en-US", {
         year: "numeric",
@@ -373,13 +383,19 @@ const page = () => {
         day: "numeric",
       }),
       item.amount,
-      item.amount === "0" ? "Pending" : "Paid",
+      paymentStatus,
     ];
-    return searchFields.some((field) =>
+    const matchesSearch = searchFields.some((field) =>
       field
         ? field.toString().toLowerCase().includes(searchPayments.toLowerCase())
         : false
     );
+    // Filter logic
+    const matchesStatus = filterStatus ? paymentStatus === filterStatus : true;
+    const matchesDate =
+      (!filterStartDate || new Date(item.startDate) >= new Date(filterStartDate)) &&
+      (!filterEndDate || new Date(item.startDate) <= new Date(filterEndDate));
+    return matchesSearch && matchesStatus && matchesDate;
   });
 
   const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
@@ -414,6 +430,61 @@ const page = () => {
             Showing {filteredPayments.length === 0 ? 0 : indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredPayments.length)} of {filteredPayments.length}
               </span>
           </div>
+          {/* Filter Modal */}
+          {isFilterModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white dark:bg-[#232323] p-6 rounded-lg w-96">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold text-black dark:text-white">Filter by</h2>
+                  <button onClick={() => setIsFilterModalOpen(false)} className="text-gray-500 dark:text-gray-300 text-2xl">&times;</button>
+                </div>
+                <label className="block mb-2 text-black dark:text-white text-sm">Payment Date</label>
+                <div className="flex gap-2 mb-4">
+                  <input
+                    type="date"
+                    className="w-1/2 p-2 rounded bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs"
+                    value={filterStartDate}
+                    onChange={e => setFilterStartDate(e.target.value)}
+                  />
+                  <input
+                    type="date"
+                    className="w-1/2 p-2 rounded bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs"
+                    value={filterEndDate}
+                    onChange={e => setFilterEndDate(e.target.value)}
+                  />
+                </div>
+                <label className="block mb-2 text-black dark:text-white text-sm">Status</label>
+                <select
+                  className="w-full p-2 mb-4 rounded bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs"
+                  value={filterStatus}
+                  onChange={e => setFilterStatus(e.target.value)}
+                >
+                  <option value="">Select Status</option>
+                  {statuses.map(status => (
+                    <option className="text-black dark:text-white text-xs" key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+                <div className="flex justify-between">
+                  <button
+                    className="px-4 py-2 border rounded text-black dark:text-white text-sm"
+                    onClick={() => {
+                      setFilterStartDate("");
+                      setFilterEndDate("");
+                      setFilterStatus("");
+                    }}
+                  >
+                    Reset
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-[#6C74F6] text-white rounded text-sm"
+                    onClick={() => setIsFilterModalOpen(false)}
+                  >
+                    Show results
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="overflow-x-auto max-h-none">
             <table
               className="w-full min-w-[900px] text-sm text-left table-auto"

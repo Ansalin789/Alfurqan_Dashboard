@@ -12,12 +12,26 @@ interface ExpenseFormData {
   status: string;
 }
 
+interface ExpensePayload {
+  paymentDate: string;
+  expenseType: string;
+  amount: string;
+  category: string;
+  paymentMethod: string;
+  status: string;
+  createdBy: string;
+  createdDate: string;
+  updatedDate: string;
+  updatedBy: string;
+}
+
 interface AddExpensesProps {
   onClose: () => void;
   refreshExpenses?: () => void;
 }
 
 const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) => {
+  const API_URL = "https://api.blackstoneinfomaticstech.com";
   const ADMIN_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IkFkbWluIiwic3ViIjoiNjgwNWRhOGMwNjU0MmFhMzM4NThiODg5IiwiaWF0IjoxNzUzMTYxMDQxLCJleHAiOjE3NTMyNDc0NDF9.EK8JgTJWzUDyQTY1ZReIAt0-LEhq2m1euQfPztK0-VE";
 
   const [formData, setFormData] = useState<ExpenseFormData>({
@@ -72,6 +86,22 @@ const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) =
     return true;
   };
 
+  const formatPayload = (): ExpensePayload => {
+    const now = new Date().toISOString();
+    return {
+      paymentDate: formData.paymentDate,
+      expenseType: formData.expenseType.trim(),
+      amount: Number(formData.amount).toFixed(2),
+      category: formData.category,
+      paymentMethod: formData.paymentMethod,
+      status: formData.status,
+      createdBy: "Admin",
+      createdDate: now,
+      updatedDate: now,
+      updatedBy: "Admin"
+    };
+  };
+
   const handleAddPayment = async () => {
     try {
       if (!validateForm()) return;
@@ -79,18 +109,11 @@ const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) =
       setIsSubmitting(true);
       setSubmitSuccess(false);
 
-      const payload = {
-        paymentDate: formData.paymentDate,
-        expenseType: formData.expenseType.trim(),
-        amount: formData.amount.toString(),
-        category: formData.category,
-        paymentMethod: formData.paymentMethod,
-        status: formData.status,
-        createdBy: "Admin"
-      };
+      const payload = formatPayload();
+      console.log("Submitting payload:", payload);
 
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/expense",
+        `${API_URL}/expense`,
         payload,
         {
           headers: {
@@ -101,9 +124,9 @@ const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) =
         }
       );
 
+      console.log("Server response:", response.data);
       toast.success("Expense recorded successfully!");
       
-      // Reset form and show success message briefly
       setSubmitSuccess(true);
       setTimeout(() => {
         setFormData({
@@ -115,30 +138,36 @@ const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) =
           status: "Active",
         });
         setSubmitSuccess(false);
+        if (refreshExpenses) refreshExpenses();
       }, 1500);
 
-      // Call refreshExpenses if provided
-      if (refreshExpenses) {
-        refreshExpenses();
-      }
-
     } catch (error: any) {
-      console.error("Full error details:", error);
-      
+      console.error("Error details:", {
+        error: error,
+        response: error.response?.data,
+        config: error.config,
+      });
+
       if (axios.isAxiosError(error)) {
         if (error.response) {
-          if (error.response.status === 400) {
-            toast.error(error.response.data.message || "Validation failed. Please check all fields.");
+          if (error.response.data.errors) {
+            Object.entries(error.response.data.errors).forEach(([field, messages]) => {
+              if (Array.isArray(messages)) {
+                messages.forEach((message: string) => toast.error(`${field}: ${message}`));
+              } else {
+                toast.error(`${field}: ${messages}`);
+              }
+            });
           } else {
-            toast.error("Payment processing failed");
+            toast.error(error.response.data.message || "Validation failed. Please check your inputs.");
           }
         } else if (error.request) {
-          toast.error("No response received from server. Please try again.");
+          toast.error("No response from server. Please try again.");
         } else {
-          toast.error("Request setup error: " + error.message);
+          toast.error("Request error: " + error.message);
         }
       } else {
-        toast.error("Error: " + (error.message || "Unknown error occurred"));
+        toast.error("Unexpected error: " + error.message);
       }
     } finally {
       setIsSubmitting(false);
@@ -146,52 +175,73 @@ const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) =
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="max-w-xl w-full mx-auto p-6 bg-white rounded-lg shadow-md relative">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+      <div 
+        className="w-full max-w-lg max-h-[90vh] overflow-y-auto mx-auto p-6 rounded-lg shadow-md relative bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
+        style={{
+          width: 'clamp(300px, 90vw, 800px)',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+        }}
+      >
+        <style>{`
+          [class*="dark:bg-gray-800"]::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
+        
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+          className="absolute top-4 right-4 rounded-full p-1 text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
         >
           <X size={24} />
         </button>
         
-        <h2 className="text-2xl font-semibold mb-6 text-gray-800">Admin Expense Entry</h2>
+        <h2 className="text-2xl font-semibold mb-6 dark:text-gray-100">
+          Add Expense
+        </h2>
         
         {submitSuccess ? (
-          <div className="p-4 bg-green-50 text-green-700 rounded-lg text-center">
+          <div className="p-4 rounded-lg text-center mb-6 bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-100">
             <h3 className="font-bold text-lg">Expense Recorded Successfully!</h3>
           </div>
         ) : (
           <form className="space-y-5">
             <div>
-              <label className="block font-medium">Payment Date*</label>
+              <label className="block font-medium mb-2 dark:text-gray-300">
+                Payment Date
+              </label>
               <input
                 type="date"
                 name="paymentDate"
                 value={formData.paymentDate}
                 onChange={handleChange}
-                className="w-full border p-2 rounded border-gray-300"
+                className="w-full p-3 rounded border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white"
                 required
               />
             </div>
 
             <div>
-              <label className="block font-medium">Expense Type*</label>
+              <label className="block font-medium mb-2 dark:text-gray-300">
+                Expense Type
+              </label>
               <input
                 type="text"
                 name="expenseType"
                 value={formData.expenseType}
                 onChange={handleChange}
-                className="w-full border p-2 rounded border-gray-300"
-                placeholder="e.g., Office supplies"
+                className="w-full p-3 rounded border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white"
                 required
+                maxLength={100}
+                placeholder="Enter expense description"
               />
             </div>
 
             <div>
-              <label className="block font-medium">Amount*</label>
+              <label className="block font-medium mb-2 dark:text-gray-300">
+                Amount
+              </label>
               <div className="relative">
-                <span className="absolute left-3 top-2">$</span>
                 <input
                   type="number"
                   name="amount"
@@ -199,20 +249,22 @@ const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) =
                   onChange={handleChange}
                   min="0.01"
                   step="0.01"
-                  className="w-full border p-2 rounded border-gray-300 pl-8"
-                  placeholder="0.00"
+                  className="w-full p-3 rounded border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white pl-4"
                   required
+                  placeholder="0.00"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-medium">Category*</label>
+              <label className="block font-medium mb-2 dark:text-gray-300">
+                Category
+              </label>
               <select
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="w-full border p-2 rounded border-gray-300"
+                className="w-full p-3 rounded border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white"
                 required
               >
                 <option value="">Select Category</option>
@@ -226,12 +278,14 @@ const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) =
             </div>
 
             <div>
-              <label className="block font-medium">Payment Method*</label>
+              <label className="block font-medium mb-2 dark:text-gray-300">
+                Payment Method
+              </label>
               <select
                 name="paymentMethod"
                 value={formData.paymentMethod}
                 onChange={handleChange}
-                className="w-full border p-2 rounded border-gray-300"
+                className="w-full p-3 rounded border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white"
                 required
               >
                 <option value="">Select Method</option>
@@ -244,12 +298,14 @@ const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) =
             </div>
 
             <div>
-              <label className="block font-medium">Status</label>
+              <label className="block font-medium mb-2 dark:text-gray-300">
+                Status
+              </label>
               <select
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full border p-2 rounded border-gray-300"
+                className="w-full p-3 rounded border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white"
               >
                 <option value="Active">Active</option>
                 <option value="Pending">Pending</option>
@@ -257,11 +313,11 @@ const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) =
               </select>
             </div>
 
-            <div className="flex space-x-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-3 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium"
+                className="flex-1 py-3 px-4 rounded-lg font-medium text-[#576CBC] dark:text-blue-400 border-[#576CBC] dark:border-blue-400 border-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
                 disabled={isSubmitting}
               >
                 Cancel
@@ -270,9 +326,7 @@ const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) =
                 type="button"
                 onClick={handleAddPayment}
                 disabled={isSubmitting}
-                className={`flex-1 py-3 px-4 rounded-lg text-white font-medium ${
-                  isSubmitting ? "bg-blue-400" : "bg-blue-600 hover:bg-blue-700"
-                }`}
+                className="flex-1 py-3 px-4 rounded-lg font-medium bg-[#576CBC] dark:bg-blue-600 hover:bg-[#4758a8] dark:hover:bg-blue-700 text-white"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center">
@@ -283,7 +337,7 @@ const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) =
                     Processing...
                   </span>
                 ) : (
-                  "Submit Expense"
+                  "Add Payment"
                 )}
               </button>
             </div>

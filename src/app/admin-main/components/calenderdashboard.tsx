@@ -121,7 +121,7 @@ const Academic: React.FC = () => {
         calendarType="iso8601"
         className="custom-calendar dark:bg-[#343434]"
         onClickDay={() => {
-          router.push(`/admin/ui/meetingdetails`);
+          router.push(`/admin-main/admincalendar`);
         }}
         tileClassName={({ date, view }) =>
           view === "month" && isMeetingDate(date) ? "event-day" : undefined

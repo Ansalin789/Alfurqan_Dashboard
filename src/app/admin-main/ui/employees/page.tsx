@@ -993,7 +993,10 @@ const Page = () => {
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Employees" />
+<AdminHeader 
+  currentSection="Employees" 
+  employeeActiveTab={activeTab} // Pass the activeTab state from your page
+/>
       <div className="h-full w-full p-2 md:mr-10 scrollbar-none">
         <div className="max-w-7xl w-full mx-auto scrollbar-none">
           {/* Tab Navigation */}

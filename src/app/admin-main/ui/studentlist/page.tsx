@@ -17,6 +17,7 @@ interface StudentItem {
   percentage: any;
   _id: string;
   username: string;
+  userId: string;
   password: string;
   role: string;
   status: string;
@@ -39,9 +40,22 @@ interface StudentDetails {
   gender: string;
 }
 
+interface PaymentHistory {
+  paymentId: string;
+  paymentDate: string;
+  paymentAmount: number;
+  paymentStatus: string;
+  userId: string;
+}
+
 export default function StudentList() {
   const searchParams = useSearchParams();
   const studentId = searchParams.get("studentId");
+
+  const [student, setStudent] = useState<StudentItem | null>(null);
+  const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
+  const [loadingPayments, setLoadingPayments] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   useEffect(() => {
     const token =
@@ -77,12 +91,43 @@ export default function StudentList() {
 
       setStudent(filteredStudent || null);
       console.log("Filtered student:", filteredStudent);
+
+      // Fetch payment history if userId exists
+      if (filteredStudent && filteredStudent.userId) {
+        fetchPaymentHistory(filteredStudent.userId, token);
+      } else {
+        setPaymentHistory([]);
+      }
     } catch (error) {
       console.error("Failed to fetch students:", error);
     }
   };
 
-  const [student, setStudent] = useState<StudentItem | null>(null);
+  const fetchPaymentHistory = async (userId: string, token: string) => {
+    setLoadingPayments(true);
+    setPaymentError(null);
+    try {
+      const response = await axios.get(
+        `https://api.blackstoneinfomaticstech.com/student/paymenthistory?userId=${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (response.data && response.data.paymentDetails) {
+        setPaymentHistory(response.data.paymentDetails);
+      } else {
+        setPaymentHistory([]);
+      }
+    } catch (error: any) {
+      setPaymentError("Failed to fetch payment history");
+      setPaymentHistory([]);
+    } finally {
+      setLoadingPayments(false);
+    }
+  };
 
   return (
     <BaseLayout4>
@@ -192,7 +237,11 @@ export default function StudentList() {
 
           {/* Tabbed Table Section */}
           <div className="w-full overflow-hidden">
-            <TabbedTable studentId={student._id} />
+            <TabbedTable
+              studentId={student._id}
+              courseName={student.student.course}
+              userId={paymentHistory[0]?.userId || ""} 
+            />
           </div>
         </div>
       )}

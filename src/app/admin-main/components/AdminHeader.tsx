@@ -12,6 +12,9 @@ import AddPackage from "./AddPackage";
 import AddMeeting from "./AddMeeting";
 import AddExpenses from "./AddExpenses";
 import AdminCalendar from "./AdminCalendar";
+import { toast } from "react-toastify";
+import AddEmployee from "./AddEmployee";
+import GenerateInvoice from "./GenerateInvoice";
 
 type NotificationType = {
   _id: string;
@@ -23,15 +26,20 @@ type NotificationType = {
   isRead: boolean;
 };
 
+
+// In AdminHeader.tsx
+type AdminHeaderProps = {
+  currentSection: string;
+  showBackButton?: boolean;
+  showBackPath?: string;
+  employeeActiveTab?: "teachers" | "otheremployees" | "recruitment" | "leave";
+};
 export default function AdminHeader({
   currentSection,
   showBackButton = false,
   showBackPath = "",
-}: {
-  currentSection: string;
-  showBackButton?: boolean;
-  showBackPath?: string;
-}) {
+  employeeActiveTab,
+}: AdminHeaderProps) {
   const theme: any = useTheme();
   const darkMode = theme?.darkMode ?? false;
   const toggleDarkMode = theme?.toggleDarkMode ?? (() => {});
@@ -47,6 +55,9 @@ export default function AdminHeader({
   const [showAddPackage, setShowAddPackage] = useState(false);
   const [showAddMeeting, setShowAddMeeting] = useState(false);
   const [showAddExpenses, setShowAddExpenses] = useState(false);
+  const [showAddEmployee, setShowAddEmployee] = useState(false);
+  const [expenses, setExpenses] = useState([]);
+const [showGenerateInvoice, setShowGenerateInvoice] = useState(false);
 
   const [permissions, setPermissions] = useState({
     leave: false,
@@ -54,9 +65,26 @@ export default function AdminHeader({
     expenses: false,
     meetings: false,
     invoice: false,
+    employees: false,
   });
 
   const userId = typeof window !== "undefined" ? localStorage.getItem("AdminPortalId") : null;
+
+  const refreshExpenses = async () => {
+    try {
+      const token = localStorage.getItem("AdminAuthToken");
+      const response = await axios.get(
+        "https://api.blackstoneinfomaticstech.com/expense",
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      setExpenses(response.data);
+    } catch (error) {
+      console.error("Failed to refresh expenses:", error);
+      toast.error("Failed to refresh expenses");
+    }
+  };
 
   useEffect(() => {
     const loadPermissions = () => {
@@ -70,6 +98,7 @@ export default function AdminHeader({
             expenses: parsed?.expenses?.write ?? parsed?.invoice?.write ?? false,
             meetings: parsed?.meetings?.write ?? false,
             invoice: parsed?.invoice?.write ?? false,
+            employees: parsed?.employees?.write ?? false,
           });
         }
       } catch (error) {
@@ -131,11 +160,31 @@ export default function AdminHeader({
 
   const getActionButton = () => {
     const path = pathname.toLowerCase();
+    
+if (
+  path.includes("employees") && 
+  permissions.employees &&
+  employeeActiveTab === "otheremployees" // Now using the correct prop
+)   if (
+    path.includes("employees") && 
+    permissions.employees &&
+    employeeActiveTab === "otheremployees" // Now using the correct prop
+  ) {
+    return (
+      <button
+        onClick={() => setShowAddEmployee(true)}
+        className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
+      >
+        Add New 
+      </button>
+    );
+  }
+    
     if (path.includes("dashboard") && (permissions.leave || permissions.meetings)) {
       return (
         <button
           onClick={() => router.push("/admin-main/ui/employees")}
-          className="bg-[#576CBC] text-white px-3 py-1.5 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
+          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
         >
           Leave Approval
         </button>
@@ -145,7 +194,7 @@ export default function AdminHeader({
       return (
         <button
           onClick={() => setShowAddPackage(true)}
-          className="bg-[#576CBC] text-white px-3 py-1.5 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
+          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
         >
           Add Package
         </button>
@@ -155,7 +204,7 @@ export default function AdminHeader({
       return (
         <button
           onClick={() => setShowAddExpenses(true)}
-          className="bg-[#576CBC] text-white px-3 py-1.5 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
+          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
         >
           Add Expenses
         </button>
@@ -165,22 +214,22 @@ export default function AdminHeader({
       return (
         <button
           onClick={() => setShowAddMeeting(true)}
-          className="bg-[#576CBC] text-white px-3 py-1.5 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
+          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
         >
           Add Meeting
         </button>
       );
     }
-    if (path.includes("invoice") && permissions.invoice) {
-      return (
-        <button
-          onClick={() => router.push("/admin-main/ui/send-invoice")}
-          className="bg-[#576CBC] text-white px-3 py-1.5 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
-        >
-          Generate Invoice
-        </button>
-      );
-    }
+if (path.includes("invoice") && permissions.invoice) {
+  return (
+    <button
+      onClick={() => setShowGenerateInvoice(true)}
+      className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
+    >
+      Generate Invoice
+    </button>
+  );
+}
     return null;
   };
 
@@ -257,7 +306,7 @@ export default function AdminHeader({
 
           <div className="flex items-center gap-1 sm:gap-3">
             <button
-              onClick={() => router.push("/admin-main/admincalendar")}
+              onClick={() => router.push("/admin-main/ui/admincalendar")}
               className="p-2 bg-white dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600"
             >
               <CalendarDays className="w-4 h-4 text-gray-800 dark:text-white" />
@@ -277,7 +326,7 @@ export default function AdminHeader({
               </button>
 
               {showNotification && (
-                <div className="absolute -ml-24  sm:right-auto sm:left-1/2 sm:-translate-x-1/2 mt-2 w-[90vw] sm:w-[470px] bg-gradient-to-br bg-white border-[#939299] rounded-lg shadow-2xl z-30 animate-fade-in-up dark:bg-[#252525]">
+                <div className="absolute -ml-24 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 mt-2 w-[90vw] sm:w-[470px] bg-gradient-to-br bg-white border-[#939299] rounded-lg shadow-2xl z-30 animate-fade-in-up dark:bg-[#252525]">
                   <div className="pt-3 pb-2 pl-4 border-b border-white flex justify-between items-center bg-white/10 rounded-t-xl backdrop-blur-sm dark:border-[#252525] dark:bg-[#252525]">
                     <h4 className="font-semibold text-[#010E30] text-lg dark:text-[#FFFFFF]">
                       Notifications
@@ -391,19 +440,38 @@ export default function AdminHeader({
 
       {showAddPackage && <AddPackage onClose={() => setShowAddPackage(false)} />}
 
-{showAddMeeting && (
-  <AddMeeting 
-    onClose={() => setShowAddMeeting(false)} 
-    onMeetingCreated={() => {
-      // This will be called when a meeting is successfully created
-      setShowAddMeeting(false);
-      // You might want to add additional logic here to refresh meetings list
-    }}
-  />
+      {showAddMeeting && (
+        <AddMeeting 
+          onClose={() => setShowAddMeeting(false)} 
+          onMeetingCreated={() => {
+            setShowAddMeeting(false);
+          }}
+        />
+      )}
+
+      {showAddExpenses && (
+        <AddExpenses 
+          onClose={() => setShowAddExpenses(false)}
+          refreshExpenses={refreshExpenses}
+        />
+      )}
+{showGenerateInvoice && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="relative bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <GenerateInvoice onClose={() => setShowGenerateInvoice(false)} />
+    </div>
+  </div>
 )}
-      {showAddExpenses && <AddExpenses onClose={() => setShowAddExpenses(false)} refreshExpenses={function (): void {
-        throw new Error("Function not implemented.");
-      } } />}
+
+      {showAddEmployee && (
+        <AddEmployee 
+          onClose={() => setShowAddEmployee(false)}
+          onSuccess={() => {
+            setShowAddEmployee(false);
+            toast.success("Employee added successfully!");
+          }}
+        />
+      )}
     </div>
   );
 }

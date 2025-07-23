@@ -18,13 +18,17 @@ import AdminHeader from "../../components/AdminHeader";
 import BaseLayout4 from "@/components/BaseLayout4";
 import SuccessPopup from "../../components/successPopup";
 import FailedPopup from "../../components/failedPopup";
+import NextMeetingSchedule from "../../components/NextMeetingSchedule";
+import Modal from "react-modal";
+
 interface ApiResponse {
   candidateFirstName: string;
   candidateLastName: string;
-  positionApplied: string; // Use this field to determine the subject
+  positionApplied: string;
   _id: string;
   candidateEmail: string;
 }
+
 interface Meeting {
   _id: string;
   meetingId: string;
@@ -52,7 +56,7 @@ interface Meeting {
   }[];
 }
 
-const ScheduledClasses = () => {
+const Meetings = () => {
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<string>("upcoming");
@@ -70,32 +74,37 @@ const ScheduledClasses = () => {
   const [completedData, setCompletedData] = useState<Meeting[]>([]);
   const [upcomingClasses, setUpcomingClasses] = useState<Meeting[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [openTeacherDropdownId, setOpenTeacherDropdownId] = useState<
-    string | null
-  >(null);
-  const [selectedMeetingDetails, setSelectedMeetingDetails] =
-    useState<Meeting | null>(null);
-  const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] =
-    useState(false);
-  const [rescheduleDate, setRescheduleDate] = useState(""); // in 'YYYY-MM-DD' format
-  const [rescheduleTime, setRescheduleTime] = useState(""); // in 'HH:mm' 24h format
-  const [searchText, setSearchText] = useState("");
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
-  const [timing, setTiming] = useState("");
-  const [status, setStatus] = useState("");
+  const [openTeacherDropdownId, setOpenTeacherDropdownId] = useState<string | null>(null);
+  const [selectedMeetingDetails, setSelectedMeetingDetails] = useState<Meeting | null>(null);
+  const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] = useState(false);
+  const [rescheduleDate, setRescheduleDate] = useState("");
+  const [rescheduleTime, setRescheduleTime] = useState("");
+  const [rescheduleEndTime, setRescheduleEndTime] = useState("");
+  
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredMeetings, setFilteredMeetings] = useState<Meeting[]>([]);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    meetingName: "",
+    teacherName: "",
+    meetingStatus: "",
+    fromDate: "",
+    toDate: "",
+  });
 
   const toggleTeacherDropdown = (id: string) => {
     setOpenTeacherDropdownId((prev) => (prev === id ? null : id));
   };
 
   useEffect(() => {
+    Modal.setAppElement("body");
+  }, []);
+
+  useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setOpenTeacherDropdownId(null); // Close dropdown
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpenTeacherDropdownId(null);
       }
     };
 
@@ -111,20 +120,17 @@ const ScheduledClasses = () => {
       email: string;
     }[]
   >([]);
-  console.log(isDatePickerOpens);
 
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
 
   useEffect(() => {
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("AdminAuthToken")
-        : null;
+    const token = typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
 
     if (!token) {
       console.error("❌ AdminAuthToken not found");
       return;
     }
+    
     axios
       .get<{ totalCount: number; applicants: ApiResponse[] }>(
         "https://api.blackstoneinfomaticstech.com/otheremployees",
@@ -136,31 +142,25 @@ const ScheduledClasses = () => {
         }
       )
       .then((response) => {
-        console.log("API Response:", response.data); // ✅ Debugging step
-
         if (Array.isArray(response.data.applicants)) {
           const mappedTeachers = response.data.applicants.map((applicant) => ({
-            id: applicant._id, // Use actual teacher ID
+            id: applicant._id,
             name: `${applicant.candidateFirstName} ${applicant.candidateLastName}`,
-            subject: applicant.positionApplied?.toLowerCase() || "unknown", // Prevents crashes if null
-            email: applicant.candidateEmail || "no-email@example.com", // Use actual email
+            subject: applicant.positionApplied?.toLowerCase() || "unknown",
+            email: applicant.candidateEmail || "no-email@example.com",
           }));
           setTeachers(mappedTeachers);
-          console.log("Mapped Teachers:", mappedTeachers);
         } else {
           console.error("Unexpected API response format:", response.data);
         }
       })
       .catch((error) => console.error("Error fetching teachers:", error));
   }, []);
+
   useEffect(() => {
-    const id =
-      typeof window !== "undefined"
-        ? localStorage.getItem("AdminPortalID")
-        : null;
+    const id = typeof window !== "undefined" ? localStorage.getItem("AdminPortalID") : null;
     const socket = getSocket(id ?? "");
     const handleList = (data: { data: Meeting }) => {
-      console.log("📩 Received WebSocket Data:", data);
       setUpcomingClasses((pre) => [...pre, data.data]);
     };
     socket.on("addmeeting", handleList);
@@ -170,10 +170,7 @@ const ScheduledClasses = () => {
   }, []);
 
   useEffect(() => {
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("AdminAuthToken")
-        : null;
+    const token = typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
 
     if (!token) {
       console.error("❌ AdminAuthToken not found");
@@ -192,19 +189,33 @@ const ScheduledClasses = () => {
           }
         );
 
-        const allMeetings: Meeting[] = response.data.data?.meetings || [];
+        const apiMeetings = response.data.data?.meetings || [];
+        const groupedMeetings = apiMeetings.map((group: any) => {
+          const firstRecord = group.records[0];
+          return {
+            _id: firstRecord._id,
+            meetingId: group.meetingId,
+            meetingName: firstRecord.meetingName,
+            meetingStatus: firstRecord.meetingStatus,
+            selectedDate: firstRecord.selectedDate,
+            startTime: firstRecord.startTime,
+            endTime: firstRecord.endTime,
+            description: firstRecord.description,
+            createdDate: firstRecord.createdDate,
+            createdBy: firstRecord.createdBy,
+            teachers: group.records.map((rec: any) => rec.teacher[0]),
+            duration: firstRecord.duration || "",
+            meetingminutes: firstRecord.meetingminutes || "",
+          };
+        });
 
-        const upcomingMeetings = allMeetings
-          .filter((meeting) => meeting.meetingStatus !== "Completed")
-          .sort((a, b) => {
+        const upcomingMeetings = groupedMeetings
+          .filter((meeting: any) => meeting.meetingStatus !== "Completed")
+          .sort((a: any, b: any) => {
             const aDate = new Date(a.selectedDate);
             const bDate = new Date(b.selectedDate);
-            const aStartTimeStr = Array.isArray(a.startTime)
-              ? a.startTime[0]
-              : a.startTime;
-            const bStartTimeStr = Array.isArray(b.startTime)
-              ? b.startTime[0]
-              : b.startTime;
+            const aStartTimeStr = Array.isArray(a.startTime) ? a.startTime[0] : a.startTime;
+            const bStartTimeStr = Array.isArray(b.startTime) ? b.startTime[0] : b.startTime;
             const [aH, aM] = aStartTimeStr.split(":").map(Number);
             const [bH, bM] = bStartTimeStr.split(":").map(Number);
             aDate.setHours(aH, aM, 0, 0);
@@ -212,8 +223,8 @@ const ScheduledClasses = () => {
             return aDate.getTime() - bDate.getTime();
           });
 
-        const completedMeetings = allMeetings.filter(
-          (meeting) => meeting.meetingStatus === "Completed"
+        const completedMeetings = groupedMeetings.filter(
+          (meeting: any) => meeting.meetingStatus === "Completed"
         );
 
         setUpcomingClasses(upcomingMeetings);
@@ -226,76 +237,129 @@ const ScheduledClasses = () => {
     fetchMeetings();
   }, []);
 
-  interface Teacher {
-    teacherId: string;
-    teacherName: string;
-    teacherEmail: string;
-  }
-  type TeachersByMeetingId = Record<string, Teacher[]>;
-  const [teachersByMeetingId, setTeachersByMeetingId] =
-    useState<TeachersByMeetingId>({});
+  // Filter logic implementation
+  const dataToShow = activeTab === "upcoming" ? upcomingClasses : completedData;
 
-  const filterMeetingsBySearch = (meetings: Meeting[]) => {
-    if (!searchText.trim()) return meetings;
+  useEffect(() => {
+    setFilteredMeetings(dataToShow);
+    setSearchQuery("");
+    setCurrentPage(1);
+  }, [activeTab, upcomingClasses, completedData]);
 
-    const searchLower = searchText.toLowerCase();
-    return meetings.filter((meeting) => {
-      // Search in meeting name
-      const nameMatch = meeting.meetingName.toLowerCase().includes(searchLower);
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    const lowerQuery = query.toLowerCase();
 
-      // Search in attendees (teacher names)
-      const attendeeMatch = meeting.teachers.some((teacher) =>
-        teacher.teacherName.toLowerCase().includes(searchLower)
-      );
+    const filtered = dataToShow.filter((item) => {
+      const combinedFields = [
+        item._id,
+        item.meetingName,
+        item.meetingStatus,
+        item.selectedDate,
+        item.startTime,
+        item.endTime,
+        item.description,
+        item.createdBy,
+        ...(item.teachers || []).map((t) => t.teacherName),
+      ]
+        .map((v) => (v ? String(v).toLowerCase() : ""))
+        .join(" ");
 
-      // Search in date
-      const dateMatch = new Date(meeting.selectedDate)
-        .toLocaleDateString("en-US", {
-          month: "short",
-          day: "2-digit",
-          year: "numeric",
-        })
-        .toLowerCase()
-        .includes(searchLower);
-
-      // Search in timing
-      const timingMatch = meeting.startTime.toLowerCase().includes(searchLower);
-
-      // Search in status
-      const statusMatch = meeting.meetingStatus
-        .toLowerCase()
-        .includes(searchLower);
-
-      return (
-        nameMatch || attendeeMatch || dateMatch || timingMatch || statusMatch
-      );
+      return combinedFields.includes(lowerQuery);
     });
+
+    setFilteredMeetings(filtered);
+    setCurrentPage(1);
   };
 
-  const dataToShow = filterMeetingsBySearch(
-    activeTab === "upcoming" ? upcomingClasses || [] : completedData || []
+  const handleApplyFilters = () => {
+    const latestDataToShow = activeTab === "upcoming" ? upcomingClasses : completedData;
+    let filtered = [...latestDataToShow];
+
+    if (filters.meetingName) {
+      filtered = filtered.filter((m) =>
+        m.meetingName?.toLowerCase().includes(filters.meetingName.toLowerCase())
+      );
+    }
+
+    if (filters.teacherName) {
+      filtered = filtered.filter((m) =>
+        m.teachers.some((t) =>
+          t.teacherName?.toLowerCase().includes(filters.teacherName.toLowerCase())
+        )
+      );
+    }
+
+    if (filters.meetingStatus) {
+      filtered = filtered.filter(
+        (m) =>
+          m.meetingStatus?.toLowerCase() === filters.meetingStatus.toLowerCase()
+      );
+    }
+
+    if (filters.fromDate && filters.toDate) {
+      const from = new Date(filters.fromDate);
+      const to = new Date(filters.toDate);
+      filtered = filtered.filter((m) => {
+        const date = new Date(m.selectedDate);
+        return date >= from && date <= to;
+      });
+    }
+
+    setFilteredMeetings(filtered);
+    setCurrentPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      meetingName: "",
+      teacherName: "",
+      meetingStatus: "",
+      fromDate: "",
+      toDate: "",
+    });
+    const latestDataToShow = activeTab === "upcoming" ? upcomingClasses : completedData;
+    setFilteredMeetings(latestDataToShow);
+    setIsFilterModalOpen(false);
+  };
+
+  const teacherNames = Array.from(
+    new Set(
+      dataToShow.flatMap((m) => m.teachers.map((t) => t.teacherName))
+    )
   );
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = dataToShow.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(dataToShow.length / itemsPerPage);
+  const currentItems = filteredMeetings.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredMeetings.length / itemsPerPage);
 
   const handleRescheduleSubmit = async () => {
     if (
-      !rescheduleReason.trim() ||
       !rescheduleDate ||
       !rescheduleTime ||
+      !rescheduleEndTime ||
+      !rescheduleReason ||
       !selectedItemId
     ) {
       alert("Please fill all fields");
       return;
     }
 
+    const endTime = rescheduleEndTime;
+    if (!endTime) {
+      alert("End time is missing for this meeting.");
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("token"); // or use context/auth provider
+      const token = localStorage.getItem("AdminAuthToken");
+      const selectedMeeting = upcomingClasses.find(
+        (m) => m._id === selectedItemId
+      );
+      const meetingIdToSend = selectedMeeting?.meetingId;
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/allAdminMeeting/${selectedItemId}`,
+        `https://api.blackstoneinfomaticstech.com/allAdminMeeting/${meetingIdToSend}`,
         {
           method: "PUT",
           headers: {
@@ -305,31 +369,19 @@ const ScheduledClasses = () => {
           body: JSON.stringify({
             selectedDate: rescheduleDate,
             startTime: rescheduleTime,
+            endTime: rescheduleEndTime,
             description: rescheduleReason,
             meetingStatus: "Rescheduled",
           }),
         }
       );
-      console.log("Reschedule Date:", rescheduleDate);
-      console.log("Reschedule Time:", rescheduleTime);
 
       const result = await response.json();
 
       if (!response.ok) {
+        console.error("Backend error:", result);
         throw new Error(result.message || "Failed to update meeting");
       }
-
-      // Update frontend UI
-      setUpcomingClasses((prevClasses) =>
-        prevClasses.map((item) =>
-          item._id === selectedItemId
-            ? {
-                ...item,
-                meetingStatus: "Rescheduled" as Meeting["meetingStatus"],
-              }
-            : item
-        )
-      );
 
       setSuccess(true);
 
@@ -373,8 +425,6 @@ const ScheduledClasses = () => {
     endTime: string
   ): boolean => {
     const now = new Date();
-
-    // Parse date and combine with start and end times
     const date = new Date(selectedDate);
 
     const [startHour, startMin] = startTime.split(":").map(Number);
@@ -389,52 +439,13 @@ const ScheduledClasses = () => {
     return now >= start && now <= end;
   };
 
-  const handleFilter = async () => {
-    setShowModal(false);
-
-    const token = localStorage.getItem("SupervisorAuthToken");
-
-    const params: any = {};
-    if (fromDate) params["dateRange.from"] = fromDate;
-    if (toDate) params["dateRange.to"] = toDate;
-    if (timing) params["startTime"] = timing;
-    if (status) params["meetingStatus"] = status;
-
-    console.log("📤 Sending filter params:", params);
-
-    try {
-      const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/allMeetings", // Use your backend URL here
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          params,
-        }
-      );
-
-      console.log("✅ Response:", response.data);
-
-      // You can split meetings into upcoming/completed based on your logic
-      const meetings: Meeting[] = response.data.meetings || [];
-
-      setUpcomingClasses(
-        meetings.filter((m: Meeting) => m.meetingStatus !== "Completed")
-      );
-      setCompletedData(
-        meetings.filter((m: Meeting) => m.meetingStatus === "Completed")
-      );
-    } catch (error) {
-      console.error("❌ Error fetching filtered meetings:", error);
-    }
-  };
-
   return (
     <BaseLayout4>
       <div className="">
         <AdminHeader currentSection="meetings" />
         <div className="md:p-0 mx-auto">
+          <NextMeetingSchedule />
+
           <div className="h-full w-full  flex flex-col justify-between">
             <div className="p-0 justify-between flex flex-col">
               <div
@@ -481,23 +492,22 @@ const ScheduledClasses = () => {
                         type="text"
                         placeholder="Search by keyword"
                         className="bg-transparent outline-none text-[15px] w-52 py-3 "
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
+                        value={searchQuery}
+                        onChange={(e) => handleSearch(e.target.value)}
                       />
                     </div>
 
                     <div
                       className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                      onClick={() => setShowModal(true)}
+                      onClick={() => setIsFilterModalOpen(true)}
                     >
-                      {/* <BsFilterLeft /> */}
                       <MdTune className="w-4 h-4" />
                       <span>Filter</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                       <span className="text-left -ml-60 ">
-                        Showing {currentItems.length} Of {dataToShow.length}
+                        Showing {currentItems.length} Of {filteredMeetings.length}
                       </span>
                     </div>
                   </div>
@@ -549,7 +559,7 @@ const ScheduledClasses = () => {
                           </td>
                           <td className="px-3 py-2 text-left text-[#17243E] dark:text-[#FDFDFD]">
                             <div className="relative">
-                              {item.teachers?.flat().length > 1 ? (
+                              {item.teachers?.length > 1 ? (
                                 <>
                                   <button
                                     onClick={() =>
@@ -562,27 +572,26 @@ const ScheduledClasses = () => {
                                   </button>
                                   {openTeacherDropdownId === item._id && (
                                     <div className="absolute z-10 mt-2 w-48 bg-white rounded shadow-lg p-2 dark:bg-[#343434]">
-                                      {item.teachers
-                                        .flat()
-                                        .map((teacher, idx) => (
-                                          <div
-                                            key={idx}
-                                            className="py-1 text-[#17243E] dark:text-[#FDFDFD]"
-                                          >
-                                            <span className="flex items-center gap-2">
-                                              <IoPersonOutline />
-                                              {teacher.teacherName}
-                                            </span>
-                                          </div>
-                                        ))}
+                                      {item.teachers.map((teacher, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="py-1 text-[#17243E] dark:text-[#FDFDFD]"
+                                        >
+                                          <span className="flex items-center gap-2">
+                                            <IoPersonOutline />
+                                            {teacher.teacherName}
+                                          </span>
+                                        </div>
+                                      ))}
                                     </div>
                                   )}
                                 </>
                               ) : (
                                 <span className="flex items-center gap-2 font-medium">
                                   <IoPersonOutline />
-                                  {item.teachers?.flat()[0]?.teacherName ||
-                                    "No teacher assigned"}
+                                  {item.teachers?.length > 0
+                                    ? item.teachers[0].teacherName
+                                    : "No teacher assigned"}
                                 </span>
                               )}
                             </div>
@@ -617,7 +626,7 @@ const ScheduledClasses = () => {
                                       className="text-[10px] font-semibold px-[11px] py-1 rounded-lg bg-[#576cbc] text-white border  "
                                       onClick={() =>
                                         router.push(
-                                          `/supervisor/ui/meetingvideocall?id=${item._id}`
+                                          `/admin-main/ui/livemeeting?meetingId=${item.meetingId}`
                                         )
                                       }
                                     >
@@ -659,7 +668,7 @@ const ScheduledClasses = () => {
                                   } else if (
                                     item.meetingStatus === "Completed"
                                   ) {
-                                    handleViewDetails(item._id); // ← your function to open details view
+                                    handleViewDetails(item._id);
                                   }
                                 }}
                                 className="p-2 rounded-md"
@@ -680,7 +689,8 @@ const ScheduledClasses = () => {
                                       onClick={() => {
                                         setIsRescheduleModalOpen(true);
                                         setSelectedItemId(item._id);
-                                        setIsDetailsModalOpen(false); // Close dropdown after clicking
+                                        setSelectedMeetingDetails(item);
+                                        setIsDetailsModalOpen(false);
                                       }}
                                       className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
                                     >
@@ -711,96 +721,127 @@ const ScheduledClasses = () => {
           </div>
         </div>
       </div>
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
-          <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
-            {/* Close Icon */}
-            <button
-              className="absolute top-2 right-3 text-gray-400 text-xl"
-              onClick={() => setShowModal(false)}
-            >
-              &times;
-            </button>
 
-            <h2 className="text-lg font-semibold mb-4">Filter by</h2>
+      {/* Filter Modal */}
+      <Modal
+        isOpen={isFilterModalOpen}
+        onRequestClose={() => setIsFilterModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white dark:bg-[#343434] w-[650px]"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-40"
+      >
+        <div>
+          <h2 className="text-[16px] font-semibold mb-6 text-[#2D2D2D] dark:text-white">
+            Filter by
+          </h2>
 
-            {/* Date Input */}
-            <div className="mb-4">
-              <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                Date Range
-              </label>
-
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="date"
-                  className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                  value={fromDate}
-                  onChange={(e) => setFromDate(e.target.value)}
-                />
-                <input
-                  type="date"
-                  className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                  value={toDate}
-                  onChange={(e) => setToDate(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Position Applied */}
-            <div className="mb-4">
-              {/* Timing */}
-              <label
-                htmlFor="timimg"
-                className="block text-sm text-gray-700 mb-1 dark:text-white"
-              >
-                Timing
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            {/* <div>
+              <label className="text-sm font-medium text-[#444] dark:text-white mb-1 block">
+                Meeting Name
               </label>
               <input
-                value={timing}
-                onChange={(e) => setTiming(e.target.value)}
-                type="time"
-                className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                type="text"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
+                value={filters.meetingName}
+                onChange={(e) =>
+                  setFilters({ ...filters, meetingName: e.target.value })
+                }
+                placeholder="Enter meeting name"
               />
-            </div>
-
-            {/* Status */}
-            <div className="mb-6">
-              <label
-                htmlFor="status"
-                className="block text-sm font-medium mb-1"
+            </div> */}
+            <div>
+              <label className="text-sm font-medium text-[#444] dark:text-white mb-1 block">
+                Teacher
+              </label>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] text-[#5C5C5C] dark:text-white dark:border-[#5C5C5C]"
+                value={filters.teacherName}
+                onChange={(e) =>
+                  setFilters({ ...filters, teacherName: e.target.value })
+                }
               >
+                <option value="">Select Teacher</option>
+                {teacherNames.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-[#444] dark:text-white mb-1 block">
                 Status
               </label>
               <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] text-[#5C5C5C] dark:text-white dark:border-[#5C5C5C]"
+                value={filters.meetingStatus}
+                onChange={(e) =>
+                  setFilters({ ...filters, meetingStatus: e.target.value })
+                }
               >
-                <option value="">Select status</option>
+                <option value="">Select Status</option>
                 <option value="Scheduled">Scheduled</option>
                 <option value="Rescheduled">Rescheduled</option>
-                <option value="Completed">Completed</option>
               </select>
             </div>
 
-            {/* Buttons */}
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
-                onClick={handleFilter}
-              >
-                Submit
-              </button>
+            <div>
+              <label className="text-sm font-medium text-[#444] dark:text-white mb-1 block">
+                From Date
+              </label>
+              <input
+                type="date"
+                className="w-full px-3 py-2 border rounded-lg text-sm 
+                text-[#5C5C5C] dark:text-white 
+                bg-white dark:bg-[#343434] 
+                border-gray-300 dark:border-[#5C5C5C]
+                [&::-webkit-calendar-picker-indicator]:dark:invert"
+                value={filters.fromDate}
+                onChange={(e) =>
+                  setFilters({ ...filters, fromDate: e.target.value })
+                }
+              />
             </div>
+
+            <div>
+              <label className="text-sm font-medium text-[#444] dark:text-white mb-1 block">
+                To Date
+              </label>
+              <input
+                type="date"
+                className="w-full px-3 py-2 border rounded-lg text-sm 
+                text-[#5C5C5C] dark:text-white 
+                bg-white dark:bg-[#343434] 
+                border-gray-300 dark:border-[#5C5C5C]
+                [&::-webkit-calendar-picker-indicator]:dark:invert"
+                value={filters.toDate}
+                onChange={(e) =>
+                  setFilters({ ...filters, toDate: e.target.value })
+                }
+              />
+            </div>
+        
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={handleResetFilters}
+              className="px-5 py-2 border border-[#576CBC] text-[#576CBC] bg-white rounded-lg text-sm font-medium hover:bg-[#f6f8ff]"
+            >
+              Reset
+            </button>
+            <button
+              onClick={() => {
+                handleApplyFilters();
+                setIsFilterModalOpen(false);
+              }}
+              className="px-5 py-2 bg-[#576CBC] text-white rounded-lg text-sm font-medium hover:bg-[#475ab1]"
+            >
+              Show {filteredMeetings.length} results
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
 
       {/* MeetingDetails Modal */}
       {isMeetingDetailsModalOpen && selectedMeetingDetails && (
@@ -945,7 +986,7 @@ const ScheduledClasses = () => {
 
             {/* Date and Time Row */}
             <div className="flex gap-4 mb-6">
-              <div className="w-1/2">
+              <div className="w-1/3">
                 <label className="block text-xs font-medium text-[#0D0E25] mb-1 dark:text-white">
                   Reschedule Date
                 </label>
@@ -959,15 +1000,29 @@ const ScheduledClasses = () => {
                 </div>
               </div>
 
-              <div className="w-1/2">
+              <div className="w-1/3">
                 <label className="block text-xs font-medium text-[#0D0E25] mb-1 dark:text-white">
-                  Reschedule Time
+                  Reschedule Start Time
                 </label>
                 <div className="relative">
                   <input
                     type="time"
                     value={rescheduleTime}
                     onChange={(e) => setRescheduleTime(e.target.value)}
+                    className="w-full text-sm px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="w-1/3">
+                <label className="block text-xs font-medium text-[#0D0E25] mb-1 dark:text-white">
+                  Reschedule End Time
+                </label>
+                <div className="relative">
+                  <input
+                    type="time"
+                    value={rescheduleEndTime}
+                    onChange={(e) => setRescheduleEndTime(e.target.value)}
                     className="w-full text-sm px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                   />
                 </div>
@@ -1003,4 +1058,6 @@ const ScheduledClasses = () => {
   );
 };
 
-export default ScheduledClasses;
+export default Meetings;
+
+

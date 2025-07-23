@@ -10,103 +10,106 @@ interface Teacher {
   teacherId: string;
   teacherName: string;
   teacherEmail: string;
-}
-
-interface Participant {
-  studentId: string;
-  studentName: string;
-  studentEmail: string;
   _id: string;
 }
 
-interface StudentMeeting {
-  teacher: Teacher;
+interface AdminMeeting {
   _id: string;
   meetingId: string;
   meetingName: string;
-  participants: Participant[];
+  teachers: Teacher[];
   selectedDate: string;
   startTime: string;
   endTime: string;
   description: string;
   meetingStatus: string;
-  status: string;
+  status?: string;
   createdDate: string;
   createdBy: string;
-  updatedDate: string;
-  updatedBy: string;
-  __v: number;
+  updatedDate?: string;
+  updatedBy?: string;
 }
 
 const NextMeetingSchedule = () => {
   const router = useRouter();
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-  const [classData, setClassData] = useState<StudentMeeting | null>(null);
+  const [classData, setClassData] = useState<AdminMeeting | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isTimeUp, setIsTimeUp] = useState(false);
-const [isMeetingOngoing, setIsMeetingOngoing] = useState(false);
-
+  const [isMeetingOngoing, setIsMeetingOngoing] = useState(false);
+  const [showTeacherList, setShowTeacherList] = useState(false);
 
   useEffect(() => {
     const fetchMeeting = async () => {
       setLoading(true);
       setError(null);
       try {
-        const teacherId = localStorage.getItem("SuperPortalId");
         const token =
           typeof window !== "undefined"
             ? localStorage.getItem("AdminAuthToken")
             : null;
 
         if (!token) {
-          console.error("❌ Teacher AuthToken not found");
           setLoading(false);
           return;
         }
 
-        const res = await axios.get("https://api.blackstoneinfomaticstech.com/teacherMeetinglist", {
-          params: { teacherId },
+        const res = await axios.get("https://api.blackstoneinfomaticstech.com/allAdminMeeting", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
 
-        const meetingList: StudentMeeting[] = res.data.students;
+        // Transform the response
+        const apiMeetings = res.data.data?.meetings || [];
+        const meetings: AdminMeeting[] = apiMeetings.map((group: any) => {
+          const firstRecord = group.records[0];
+          return {
+            _id: firstRecord._id,
+            meetingId: group.meetingId,
+            meetingName: firstRecord.meetingName,
+            meetingStatus: firstRecord.meetingStatus,
+            selectedDate: firstRecord.selectedDate,
+            startTime: firstRecord.startTime,
+            endTime: firstRecord.endTime,
+            description: firstRecord.description,
+            createdDate: firstRecord.createdDate,
+            createdBy: firstRecord.createdBy,
+            teachers: group.records.map((rec: any) => rec.teacher[0]),
+            status: firstRecord.status,
+            updatedDate: firstRecord.updatedDate,
+            updatedBy: firstRecord.updatedBy,
+          };
+        });
 
+        // Find the next upcoming meeting
         const now = new Date();
-    const upcoming = meetingList
-  .filter((m) => {
-    if (!m.startTime || !m.endTime || !m.selectedDate) return false;
-
-    const [startHour, startMinute] = m.startTime.split(":").map(Number);
-    const [endHour, endMinute] = m.endTime.split(":").map(Number);
-
-    const startDateTime = new Date(m.selectedDate);
-    startDateTime.setHours(startHour, startMinute, 0, 0);
-
-    const endDateTime = new Date(m.selectedDate);
-    endDateTime.setHours(endHour, endMinute, 0, 0);
-
-    return endDateTime > now; // We include meetings not ended yet
-  })
-  .sort((a, b) => {
-    const [aHour, aMinute] = a.startTime.split(":").map(Number);
-    const aDateTime = new Date(a.selectedDate);
-    aDateTime.setHours(aHour, aMinute, 0, 0);
-
-    const [bHour, bMinute] = b.startTime.split(":").map(Number);
-    const bDateTime = new Date(b.selectedDate);
-    bDateTime.setHours(bHour, bMinute, 0, 0);
-
-    return aDateTime.getTime() - bDateTime.getTime();
-  })[0] || null;
+        const upcoming = meetings
+          .filter((m) => {
+            if (!m.startTime || !m.endTime || !m.selectedDate) return false;
+            const [startHour, startMinute] = m.startTime.split(":").map(Number);
+            const [endHour, endMinute] = m.endTime.split(":").map(Number);
+            const startDateTime = new Date(m.selectedDate);
+            startDateTime.setHours(startHour, startMinute, 0, 0);
+            const endDateTime = new Date(m.selectedDate);
+            endDateTime.setHours(endHour, endMinute, 0, 0);
+            return endDateTime > now;
+          })
+          .sort((a, b) => {
+            const [aHour, aMinute] = a.startTime.split(":").map(Number);
+            const aDateTime = new Date(a.selectedDate);
+            aDateTime.setHours(aHour, aMinute, 0, 0);
+            const [bHour, bMinute] = b.startTime.split(":").map(Number);
+            const bDateTime = new Date(b.selectedDate);
+            bDateTime.setHours(bHour, bMinute, 0, 0);
+            return aDateTime.getTime() - bDateTime.getTime();
+          })[0] || null;
 
         setClassData(upcoming);
         setLoading(false);
       } catch (err: any) {
-        console.error(err);
         setError("Failed to fetch meeting data");
         setLoading(false);
       }
@@ -166,8 +169,7 @@ useEffect(() => {
 
 
   const handleStartClass = () => {
-router.push(`/teacher/ui/livemeeting?id=${classData?._id}`);
-    // router.push(`/teacher/livemeeting/${classData?.meetingId}`);
+router.push(`/admin-main/ui/livemeeting?id=${classData?.meetingId}`);
   };
 
   const formatTime = (time: number) => (time < 10 ? `0${time}` : time);
@@ -205,7 +207,7 @@ router.push(`/teacher/ui/livemeeting?id=${classData?._id}`);
     return <div className="text-center text-red-500">Error: {error}</div>;
   }
 
-  const isMeetingToday = (meeting: StudentMeeting | null) => {
+  const isMeetingToday = (meeting: AdminMeeting | null) => {
     if (!meeting || !meeting.selectedDate) return false;
     const today = new Date();
     const meetingDate = new Date(meeting.selectedDate);
@@ -243,6 +245,48 @@ router.push(`/teacher/ui/livemeeting?id=${classData?._id}`);
             <AiOutlineClockCircle className="w-[13px]" />
             <p className="text-[13px]">{classData?.startTime}</p>
           </div>
+          <div className="flex items-center space-x-2">
+            <p className="text-[13px]">
+              {classData?.selectedDate
+                ? new Date(classData.selectedDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "2-digit",
+                    year: "numeric",
+                  })
+                : ""}
+            </p>
+          </div>
+          {classData?.teachers && classData.teachers.length > 0 && (
+  <div className="relative">
+    <button
+      className="px-3 py-1 bg-[#576CBC] text-white rounded  shadow text-xs font-medium"
+      onClick={() => setShowTeacherList((prev) => !prev)}
+    >
+      View List
+    </button>
+
+    {showTeacherList && (
+      <div className="absolute mt-2 w-40 bg-white dark:bg-[#343434] border border-[#D4D4D4] rounded-lg overflow-hidden text-center">
+        <ul>
+          {classData.teachers.map((teacher, index) => (
+            <li
+              key={teacher.teacherId}
+              className={`py-2 text-[#010E30] dark:text-[#FFFFFF] text-sm ${
+                index !== classData.teachers.length - 1 ? 'border-b border-[#D4D4D4]' : ''
+              }`}
+            >
+              {teacher.teacherName}
+            </li>
+          ))}
+          <li className="py-2 text-[#010E30] dark:text-[#FFFFFF] text-sm border-t border-[#D4D4D4] cursor-pointer ">
+            Cancel
+          </li>
+        </ul>
+      </div>
+    )}
+  </div>
+)}
+
         </div>
         {/* {classData?.selectedDate && (
           <p className="text-[13px] mt-2 text-gray-300">
@@ -316,6 +360,7 @@ router.push(`/teacher/ui/livemeeting?id=${classData?._id}`);
           </>
         )}
       </div>
+
     </div>
   );
 };
