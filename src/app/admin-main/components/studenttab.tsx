@@ -357,10 +357,23 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
         }
       );
 
+      // Fetch class schedule to get courseId
+      const classScheduleRes = await fetch(
+        `http://localhost:5001/classShedule/students?studentId=${studentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const classScheduleData = await classScheduleRes.json();
+      const firstClass = classScheduleData.classSchedule?.[0];
+
       const student = response.data.studentDetails;
 
       const formatted: CourseRow = {
-        id: "1234",
+        id: firstClass?.course?.courseId || "", // Use actual courseId if available
         name: student.student.course,
         package: student.student.package,
         status: student.status,
@@ -1005,9 +1018,9 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
                         <td className="p-3">{row.package}</td>
                         <td className="p-3">
                           <span
-                            className={`inline-flex items-center justify-center w-16 h-6 px-3 py-1 rounded-2xl ${
+                            className={`inline-flex items-center justify-center w-16 h-6 px-3 py-1 rounded-xl ${
                               row.status === "Active"
-                                ? "bg-green-500 text-white"
+                                ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] dark:text-[#377E36] text-[#377E36]"
                                 : "bg-red-500 text-white"
                             }`}
                           >
