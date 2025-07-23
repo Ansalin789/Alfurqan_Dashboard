@@ -422,15 +422,15 @@ const Trailclasslist = () => {
       <Modal
         isOpen={isFilterModalOpen}
         onRequestClose={() => setIsFilterModalOpen(false)}
-        className="bg-white dark:bg-[#232323] rounded-lg p-6 w-full max-w-md mx-auto mt-20 shadow-xl outline-none"
+        className="bg-white dark:bg-[#252525] rounded-lg p-4 w-[400px] mx-auto mt-10 shadow-xl outline-none"
         overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center"
       >
-        <h2 className="text-lg font-bold mb-4 dark:text-white">Filter By</h2>
+        <h2 className="text-[14px] font-semibold mb-3 dark:text-white">Filter By</h2>
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium mb-1 dark:text-gray-200">course</label>
+            <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">course</label>
             <select
-              className="w-full rounded border px-3 py-2 dark:bg-[#232323] dark:text-white"
+              className="w-full rounded border dark:border dark:border-[#5c5c5c] px-3 py-2 dark:bg-[#343434] dark:text-white text-[11px]"
               value={filter.course}
               onChange={e => setFilter(f => ({ ...f, course: e.target.value }))}
             >
@@ -439,9 +439,9 @@ const Trailclasslist = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 dark:text-gray-200">country</label>
-            <select
-              className="w-full rounded border px-3 py-2 dark:bg-[#232323] dark:text-white"
+          <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">country</label>
+          <select
+              className="w-full rounded border dark:border dark:border-[#5c5c5c] px-3 py-2 dark:bg-[#343434] dark:text-white text-[11px]"
               value={filter.country}
               onChange={e => setFilter(f => ({ ...f, country: e.target.value }))}
             >
@@ -450,9 +450,9 @@ const Trailclasslist = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 dark:text-gray-200">preferred teacher</label>
-            <select
-              className="w-full rounded border px-3 py-2 dark:bg-[#232323] dark:text-white"
+          <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">preferred teacher</label>
+          <select
+              className="w-full rounded border dark:border dark:border-[#5c5c5c] px-3 py-2 dark:bg-[#343434] dark:text-white text-[11px]"
               value={filter.preferredTeacher}
               onChange={e => setFilter(f => ({ ...f, preferredTeacher: e.target.value }))}
             >
@@ -461,9 +461,9 @@ const Trailclasslist = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 dark:text-gray-200">Assigned Academic coach</label>
-            <select
-              className="w-full rounded border px-3 py-2 dark:bg-[#232323] dark:text-white"
+          <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">Assigned Teacher</label>
+          <select
+              className="w-full rounded border dark:border dark:border-[#5c5c5c] px-3 py-2 dark:bg-[#343434] dark:text-white text-[11px]"
               value={filter.assignedCoach}
               onChange={e => setFilter(f => ({ ...f, assignedCoach: e.target.value }))}
             >
@@ -473,36 +473,36 @@ const Trailclasslist = () => {
           </div>
           <div className="flex gap-2">
             <div className="flex-1">
-              <label className="block text-sm font-medium mb-1 dark:text-gray-200">From Date</label>
-              <input
+            <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">From Date</label>
+            <input
                 type="date"
-                className="w-full rounded border px-3 py-2 dark:bg-[#232323] dark:text-white"
+                className="w-full rounded border dark:border dark:border-[#5c5c5c] px-3 py-2 dark:bg-[#343434] dark:text-white text-[11px] [&::-webkit-calendar-picker-indicator]:dark:invert"
                 value={filter.fromDate}
                 onChange={e => setFilter(f => ({ ...f, fromDate: e.target.value }))}
               />
             </div>
             <div className="flex-1">
-              <label className="block text-sm font-medium mb-1 dark:text-gray-200">To Date</label>
-              <input
+            <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">To Date</label>
+            <input
                 type="date"
-                className="w-full rounded border px-3 py-2 dark:bg-[#232323] dark:text-white"
+                className="w-full rounded border dark:border dark:border-[#5c5c5c] px-3 py-2 dark:bg-[#343434] dark:text-white text-[11px] [&::-webkit-calendar-picker-indicator]:dark:invert"
                 value={filter.toDate}
                 onChange={e => setFilter(f => ({ ...f, toDate: e.target.value }))}
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 dark:text-gray-200">Time</label>
-            <input
+          <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">Time</label>
+          <input
               type="time"
-              className="w-full rounded border px-3 py-2 dark:bg-[#232323] dark:text-white"
+              className="w-full rounded border dark:border dark:border-[#5c5c5c]  px-3 py-2 dark:bg-[#343434] dark:text-white text-[11px] [&::-webkit-calendar-picker-indicator]:dark:invert"
               value={filter.time}
               onChange={e => setFilter(f => ({ ...f, time: e.target.value }))}
             />
           </div>
           <div className="flex justify-between mt-4">
             <button
-              className="px-4 py-2 rounded bg-gray-200 dark:bg-[#232323] text-gray-700 dark:text-white border dark:border-gray-600"
+              className="px-4 py-2 text-[12px] rounded bg-gray-200 dark:bg-[#232323] text-gray-700 dark:text-white border dark:border-gray-600"
               onClick={() => {
                 setFilter({
                   course: "",
@@ -519,7 +519,7 @@ const Trailclasslist = () => {
               Reset
             </button>
             <button
-              className="px-4 py-2 rounded bg-[#4C6993] text-white font-semibold"
+              className="px-4 py-2 text-[12px] rounded bg-[#23406a] text-white font-semibold"
               onClick={() => setIsFilterModalOpen(false)}
             >
               Apply
