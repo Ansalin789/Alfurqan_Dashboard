@@ -33,7 +33,7 @@ const StudentsCard: React.FC = () => {
       }
 
       const response = await axios.get<TeacherAnalyticsResponse>(
-        `http://localhost:5001/teacher-student-count?teacherId=${teacherId}`,
+        `https://api.blackstoneinfomaticstech.com/teacher-student-count?teacherId=${teacherId}`,
         {
           headers: {
             'Content-Type': 'application/json',

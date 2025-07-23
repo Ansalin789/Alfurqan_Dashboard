@@ -119,7 +119,7 @@ const [redirectTo, setRedirectTo] = useState<string | null>(null);
           return;
         }
 
-        const response = await axios.get(`http://localhost:5001/teacherMeeting/${meetingId}`, {
+        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/teacherMeeting/${meetingId}`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

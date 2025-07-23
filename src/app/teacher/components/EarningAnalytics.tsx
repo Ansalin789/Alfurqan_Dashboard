@@ -47,7 +47,7 @@ const EarningAnalytics = () => {
         console.log('[DEBUG] Fetching data for:', { teacherId, timePeriod });
 
         const response = await fetch(
-          `http://localhost:5001/teacher/earnings?teacherId=${teacherId}&dateRange=${timePeriod}`,
+          `https://api.blackstoneinfomaticstech.com/teacher/earnings?teacherId=${teacherId}&dateRange=${timePeriod}`,
           {
             headers: {
               'Authorization': `Bearer ${authToken}`,

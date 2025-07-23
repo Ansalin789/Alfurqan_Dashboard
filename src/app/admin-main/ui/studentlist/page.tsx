@@ -108,7 +108,7 @@ export default function StudentList() {
     setPaymentError(null);
     try {
       const response = await axios.get(
-        `http://localhost:5001/student/paymenthistory?userId=${userId}`,
+        `https://api.blackstoneinfomaticstech.com/student/paymenthistory?userId=${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

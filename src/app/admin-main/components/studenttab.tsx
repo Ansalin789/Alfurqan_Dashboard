@@ -268,7 +268,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
           return;
         }
   
-        const response = await axios.get(`http://localhost:5001/dashboard/student/counts`, {
+        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/dashboard/student/counts`, {
           params: { studentId, courseName },
           headers: {
             Authorization: `Bearer ${token}`,
@@ -349,7 +349,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
   const fetchStudentDetails = async (token: string, studentId: string) => {
     try {
       const response = await axios.get<StudentResponse>(
-        `http://localhost:5001/alstudents/${studentId}`,
+        `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -360,7 +360,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
 
       // Fetch class schedule to get courseId
       const classScheduleRes = await fetch(
-        `http://localhost:5001/classShedule/students?studentId=${studentId}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -402,7 +402,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
   const fetchStudentInvoice = async (token: string, studentId: string) => {
     try {
       const response = await axios.get(
-        `http://localhost:5001/studentinvoice/${studentId}`,
+        `https://api.blackstoneinfomaticstech.com/studentinvoice/${studentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -456,7 +456,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
   const fetchClassSchedule = async (token: string, studentId: string) => {
     try {
       const res = await fetch(
-        `http://localhost:5001/classShedule/students?studentId=${studentId}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -591,7 +591,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
           return;
         }
 
-        const res = await fetch(`http://localhost:5001/assignments/student?studentId=${studentId}`, {
+        const res = await fetch(`https://api.blackstoneinfomaticstech.com/assignments/student?studentId=${studentId}`, {
           headers: {
             "Authorization": `Bearer ${token}`,
           },
@@ -742,7 +742,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
         }
         // console.log("Fetching payment history for userId:", userId);
 
-        const response = await axios.get(`http://localhost:5001/student/paymenthistory?userId=${studentId}`, {
+        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/student/paymenthistory?userId=${studentId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

@@ -77,7 +77,7 @@ export default function Page() {
         }
 
         const response = await axios.get<Meeting>(
-          `http://localhost:5001/allAdminMeeting/meetingId?${meetingId}`,
+          `https://api.blackstoneinfomaticstech.com/allAdminMeeting/meetingId?${meetingId}`,
           {
             headers: {
               "Content-Type": "application/json",
