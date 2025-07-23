@@ -123,7 +123,7 @@ export default function Page() {
 
   // Function to handle API update
   const handleMeetingMinutesUpdate = async () => {
-    console.log("📌 Submit clicked");
+    console.log("\uD83D\uDCCC Submit clicked");
     let duration = "";
     if (startTime && endTime) {
       duration = calculateDuration(startTime, endTime);
@@ -132,7 +132,6 @@ export default function Page() {
     }
 
     const payload = {
-      meetingminutes: meetingMinutes,
       duration: duration,
       meetingStatus: "Completed",
       teacher: classData?.teacher.map((teacher) => {
@@ -152,20 +151,22 @@ export default function Page() {
           _id: teacher._id,
         };
       }),
+      // Optionally add updatedBy if you have the admin info
+      // updatedBy: classData?.admin?.adminId,
     };
 
     try {
       const token =
         typeof window !== "undefined"
-          ? localStorage.getItem("SupervisorAuthToken")
+          ? localStorage.getItem("AdminAuthToken")
           : null;
       if (!token) {
-        console.error("❌ TeacherAuthToken not found");
+        console.error("\u274C AdminAuthToken not found");
         return;
       }
 
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/meetingminutes/${meetingId}`,
+        `http://localhost:5001/allAdminMeeting/update/${meetingId}`,
         {
           method: "PUT",
           headers: {
@@ -182,11 +183,11 @@ export default function Page() {
       }
 
       const result = await response.json();
-      console.log("✅ Meeting Minutes Updated:", result);
+      console.log("\u2705 Meeting Minutes Updated:", result);
 
       setMeetingUpdate(false); // close modal
     } catch (error) {
-      console.error("❌ Error updating meeting minutes:", error);
+      console.error("\u274C Error updating meeting minutes:", error);
     }
   };
   const calculateDuration = (startTime: string, endTime: string): string => {
