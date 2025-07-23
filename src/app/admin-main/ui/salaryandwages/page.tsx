@@ -9,6 +9,17 @@ import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import AdminHeader from "../../components/AdminHeader";
 import axios from "axios";
+import moment from "moment";
+
+export const formatDateISO = (dateStr: string | undefined | null): string => {
+  if (!dateStr) return "-";
+
+  const date = new Date(dateStr);
+  const isValid = !isNaN(date.getTime());
+
+  return isValid ? date.toISOString().split("T")[0] : "-";
+};
+
 
 export interface ISalaryWage {
   _id?: string;
@@ -110,13 +121,16 @@ const SalaryCard = () => {
     }
     const fetchSalaryWages = async () => {
       try {
-        const response = await fetch("https://api.blackstoneinfomaticstech.com/salarywages", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          "https://api.blackstoneinfomaticstech.com/salarywages",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         const data: ISalaryWageResponse = await response.json();
         console.log("Fetched salary wages data:", data); // Debug log
         setSalaryWages(data.expenses);
@@ -338,8 +352,7 @@ const SalaryCard = () => {
                     {row.paymentMethod}
                   </td>
                   <td className="px-3 py-3 break-words text-[12px] text-left">
-                    {new Date(row.paymentDate).toLocaleDateString()}
-                  </td>
+                  {formatDateISO(row.paymentDate)}                  </td>
                   <td className="px-3 py-3 break-words text-[12px] text-left">
                     <span
                       className={`inline-flex items-center justify-center w-20 h-5 px-3 py-1 rounded-md
@@ -417,7 +430,13 @@ const SalaryCard = () => {
               ))}
             </tbody>
           </table>
+          
         </div>
+        <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
         {showPopup && selectedSalary && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
             <div className="bg-white rounded-xl shadow-lg w-full max-w-5xl p-6 relative dark:bg-[#3f3f3f]">
@@ -474,7 +493,7 @@ const SalaryCard = () => {
                 <div>
                   <label className="font-medium mb-1 block">Payment Date</label>
                   <input
-                    value={"March 10, 2024"} // Replace with dynamic if available
+                    value={selectedSalary.paymentDate}
                     readOnly
                     className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
                   />
@@ -485,7 +504,7 @@ const SalaryCard = () => {
                     Payment Received Date
                   </label>
                   <input
-                    value={"March 15, 2024"} // Replace with dynamic if available
+                    value={selectedSalary.paymentDate}
                     readOnly
                     className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
                   />
@@ -596,11 +615,21 @@ const SalaryCard = () => {
                 <div>
                   <label className="font-medium mb-1 block">Payment Date</label>
                   <input
-                    value={editForm.paymentDate}
+                    type="date"
+                    value={
+                      moment(
+                        editForm.paymentDate,
+                        moment.ISO_8601,
+                        true
+                      ).isValid()
+                        ? moment(editForm.paymentDate).format("YYYY-MM-DD")
+                        : ""
+                    }
                     onChange={(e) =>
                       setEditForm({ ...editForm, paymentDate: e.target.value })
                     }
-                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
+                    placeholder="-"
+                    className="w-full p-2 border rounded text-[13px] dark:bg-[#343434] dark:text-white"
                   />
                 </div>
 
@@ -625,6 +654,7 @@ const SalaryCard = () => {
                     }
                     className="w-full p-2 border rounded text-[13px] dark:bg-[#343434] dark:text-white"
                   >
+                    <option value="">Select Status</option>
                     <option value="Paid">Paid</option>
                     <option value="Pending">Pending</option>
                   </select>
@@ -668,9 +698,11 @@ const SalaryCard = () => {
                   onClick={async () => {
                     try {
                       const token = localStorage.getItem("AdminAuthToken");
-                      const computedSalaryAmount = editForm.salaryAmount && editForm.deductionAmount
-                        ? Number(editForm.salaryAmount) - Number(editForm.deductionAmount)
-                        : 0;
+                      const computedSalaryAmount =
+                        editForm.salaryAmount && editForm.deductionAmount
+                          ? Number(editForm.salaryAmount) -
+                            Number(editForm.deductionAmount)
+                          : 0;
                       const payload = {
                         amount: Number(editForm.salaryAmount), // This is the earning
                         deduction: Number(editForm.deductionAmount),
@@ -690,19 +722,40 @@ const SalaryCard = () => {
                       console.log("PUT response:", response);
                       if (response.data && response.data.success) {
                         setEditForm({
-                          salaryAmount: response.data.amount ? String(response.data.amount) : "",
-                          deductionAmount: response.data.deduction ? String(response.data.deduction) : "",
-                          paymentStatus: response.data.paymentStatus || editForm.paymentStatus,
-                          paymentDate: response.data.paymentDate ? response.data.paymentDate.split("T")[0] : editForm.paymentDate,
+                          salaryAmount: response.data.amount
+                            ? String(response.data.amount)
+                            : "",
+                          deductionAmount: response.data.deduction
+                            ? String(response.data.deduction)
+                            : "",
+                          paymentStatus:
+                            response.data.paymentStatus ||
+                            editForm.paymentStatus,
+                          paymentDate: response.data.paymentDate
+                            ? response.data.paymentDate.split("T")[0]
+                            : editForm.paymentDate,
                         });
-                        setSelectedSalarys((prev) => prev ? {
-                          ...prev,
-                          salaryAmount: response.data.amount ? String(response.data.amount) : prev.salaryAmount,
-                          deductionAmount: response.data.deduction ? String(response.data.deduction) : prev.deductionAmount,
-                          balanceAmount: response.data.balance ? String(response.data.balance) : prev.balanceAmount,
-                          paymentStatus: response.data.paymentStatus || prev.paymentStatus,
-                          paymentDate: response.data.paymentDate || prev.paymentDate,
-                        } : prev);
+                        setSelectedSalarys((prev) =>
+                          prev
+                            ? {
+                                ...prev,
+                                salaryAmount: response.data.amount
+                                  ? String(response.data.amount)
+                                  : prev.salaryAmount,
+                                deductionAmount: response.data.deduction
+                                  ? String(response.data.deduction)
+                                  : prev.deductionAmount,
+                                balanceAmount: response.data.balance
+                                  ? String(response.data.balance)
+                                  : prev.balanceAmount,
+                                paymentStatus:
+                                  response.data.paymentStatus ||
+                                  prev.paymentStatus,
+                                paymentDate:
+                                  response.data.paymentDate || prev.paymentDate,
+                              }
+                            : prev
+                        );
                       }
                       setShowPopups(false);
                     } catch (err) {
@@ -805,11 +858,7 @@ const SalaryCard = () => {
           </div>
         )}
       </div>
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
+    
     </BaseLayout4>
   );
 };
