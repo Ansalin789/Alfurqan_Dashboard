@@ -38,8 +38,6 @@ const StudentTeacherStaff = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [data, setData] = useState<GroupedData[]>([]);
 
-
-
   useEffect(() => {
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("AdminAuthToken");
@@ -53,13 +51,16 @@ const StudentTeacherStaff = () => {
 
   const fetchData = async (token: string) => {
     try {
-      const res = await fetch("https://api.blackstoneinfomaticstech.com/dashboard/admin/count", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        "https://api.blackstoneinfomaticstech.com/dashboard/admin/count",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       const json: DashboardCount = await res.json();
 
       const grouped: GroupedData[] = [
@@ -93,19 +94,23 @@ const StudentTeacherStaff = () => {
     const observer = new MutationObserver(() => {
       setIsDarkMode(document.documentElement.classList.contains("dark"));
     });
-  
+
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class"],
     });
-  
+
     return () => observer.disconnect();
   }, []);
 
-  
-
-  const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
-    const isDark = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
+  const CustomTooltip = ({
+    active,
+    payload,
+    label,
+  }: TooltipProps<any, any>) => {
+    const isDark =
+      typeof window !== "undefined" &&
+      document.documentElement.classList.contains("dark");
     if (active && payload && payload.length) {
       return (
         <div
@@ -115,10 +120,23 @@ const StudentTeacherStaff = () => {
               : "bg-white text-[#22223b] border-gray-200"
           }`}
         >
-          <div className={`font-normal ${isDark ? 'text-white' : 'text-[#22223b]'}`}>{payload[0].payload.name}</div>
+          <div
+            className={`font-normal ${
+              isDark ? "text-white" : "text-[#22223b]"
+            }`}
+          >
+            {payload[0].payload.name}
+          </div>
           <div>
             {payload.map((entry: any, idx: number) => (
-              <div key={idx} className={isDark ? 'text-white text-[10px]' : 'text-[#22223b] text-[10px]'}>
+              <div
+                key={idx}
+                className={
+                  isDark
+                    ? "text-white text-[10px]"
+                    : "text-[#22223b] text-[10px]"
+                }
+              >
                 [{entry.payload.value}]
               </div>
             ))}
@@ -161,7 +179,10 @@ const StudentTeacherStaff = () => {
 
           <div className="flex items-center justify-center w-[88px] h-[88px]">
             <PieChart width={90} height={90}>
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: "transparent" }} />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{ fill: "transparent" }}
+              />
 
               {/* Outer ring for male only */}
               <Pie

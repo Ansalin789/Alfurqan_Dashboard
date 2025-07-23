@@ -1,5 +1,6 @@
 "use client";
 import BaseLayout4 from "@/components/BaseLayout4";
+import Modal from "react-modal"; // Ensure you have this import
 import AdminHeader from "../../components/AdminHeader";
 import { useEffect, useState } from "react";
 import { MdTune } from "react-icons/md";
@@ -41,6 +42,15 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [meetingFilters, setMeetingFilters] = useState({
+    teacher: "",
+    course: "",
+    status: "",
+    fromDate: "",
+    toDate: "",
+    startTime: "",
+    endTime: "",
+  });
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -82,12 +92,62 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
   // Filtered and paginated data
   const filteredClassData = classData.filter((row) => {
     const search = searchQuery.toLowerCase();
+
+    // Format the date to match the search query in "Month Day, Year" format
+    const formattedDate = new Date(row.startDate).toLocaleString("en-US", {
+        month: "long",
+        day: "2-digit",
+        year: "numeric",
+    }).toLowerCase(); // Ensure the date is in lowercase for comparison
+
+    const matchesSearch =
+        row._id.toLowerCase().includes(search) || // Match Class ID
+        row.student?.studentFirstName?.toLowerCase().includes(search) || // Match Student First Name
+        row.teacher?.teacherName?.toLowerCase().includes(search) || // Match Teacher Name
+        row.course?.courseName?.toLowerCase().includes(search) || // Match Course Name
+        formattedDate.includes(search) || // Match Date
+        row.startTime[0].includes(search); // Match Start Time
+
+    const matchesTeacher = meetingFilters.teacher
+        ? row.teacher?.teacherName.toLowerCase().includes(meetingFilters.teacher.toLowerCase())
+        : true;
+
+    const matchesCourse = meetingFilters.course
+        ? row.course?.courseName.toLowerCase().includes(meetingFilters.course.toLowerCase())
+        : true;
+
+    const matchesStatus = meetingFilters.status
+        ? row.scheduleStatus === meetingFilters.status
+        : true;
+
+    const matchesStartDate = meetingFilters.fromDate
+        ? new Date(row.startDate) >= new Date(meetingFilters.fromDate)
+        : true;
+
+    const matchesEndDate = meetingFilters.toDate
+        ? new Date(row.startDate) <= new Date(meetingFilters.toDate)
+        : true;
+
+    const matchesStartTime = meetingFilters.startTime
+        ? row.startTime[0] >= meetingFilters.startTime
+        : true;
+
+    const matchesEndTime = meetingFilters.endTime
+        ? row.endTime[0] <= meetingFilters.endTime
+        : true;
+
     return (
-      row.student?.studentFirstName?.toLowerCase().includes(search) ||
-      row.teacher?.teacherName?.toLowerCase().includes(search) ||
-      row.course?.courseName?.toLowerCase().includes(search)
+        matchesSearch &&
+        matchesTeacher &&
+        matchesCourse &&
+        matchesStatus &&
+        matchesStartDate &&
+        matchesEndDate &&
+        matchesStartTime &&
+        matchesEndTime
     );
-  });
+});
+
   const totalPages = Math.ceil(filteredClassData.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -108,34 +168,52 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
     }
   };
 
+  const handleApplyMeetingFilters = () => {
+    setCurrentPage(1); // Reset to first page on filter apply
+    setIsFilterModalOpen(false); // Close the modal
+  };
+
+  const handleResetMeetingFilters = () => {
+    setMeetingFilters({
+      teacher: "",
+      course: "",
+      status: "",
+      fromDate: "",
+      toDate: "",
+      startTime: "",
+      endTime: "",
+    });
+    setIsFilterModalOpen(false); // Close the modal
+  };
+
   return (
     <BaseLayout4>
       <AdminHeader currentSection="Student Class" />
       <div>
         <div className="rounded-lg overflow-hidden">
-        <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-        <input
-                type="text"
-                placeholder="Search"
-                className="bg-transparent outline-none text-[12px] w-32 py-3"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1);
-                }}
-              />
+          <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+            <input
+              type="text"
+              placeholder="Search"
+              className="bg-transparent outline-none text-[12px] w-32 py-3"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
             <div className="relative">
               <div
-                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-3 border-r-2 border-l-2 px-48 cursor-pointer"
-                      onClick={() => setIsFilterModalOpen(true)}
+                className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-3 border-r-2 border-l-2 px-48 cursor-pointer"
+                onClick={() => setIsFilterModalOpen(true)}
               >
                 <MdTune className="w-4 h-4" />
                 <span>Filter</span>
               </div>
             </div>
             <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-            Showing {filteredClassData.length === 0 ? 0 : indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredClassData.length)} of {filteredClassData.length}
-              </span>
+              Showing {filteredClassData.length === 0 ? 0 : indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredClassData.length)} of {filteredClassData.length}
+            </span>
           </div>
           <div className="overflow-x-auto max-h-none">
             <table
@@ -195,6 +273,101 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
               totalPages={totalPages}
               onPageChange={setCurrentPage}
             />
+          </div>
+        )}
+
+        {/* Filter Modal */}
+        {isFilterModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
+<div className="bg-white p-6 rounded-xl w-[400px] relative dark:bg-[#252525] shadow-xl">
+              <button
+                className="absolute top-4 right-4 text-gray-400 text-2xl"
+                onClick={() => setIsFilterModalOpen(false)}
+              >
+                &times;
+              </button>
+              <h2 className="text-lg font-semibold mb-6 dark:text-white">Filter by</h2>
+              <div className="mb-4">
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Teacher Name</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                  value={meetingFilters.teacher}
+                  onChange={(e) => setMeetingFilters({ ...meetingFilters, teacher: e.target.value })}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="text-sm text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Course Name</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                  value={meetingFilters.course}
+                  onChange={(e) => setMeetingFilters({ ...meetingFilters, course: e.target.value })}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Date</label>
+                    <div className="flex gap-2">
+                <input
+                  type="date"
+                  className="w-1/2 border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                  value={meetingFilters.fromDate}
+                  onChange={(e) => setMeetingFilters({ ...meetingFilters, fromDate: e.target.value })}
+                />
+                <input
+                  type="date"
+                  className="w-1/2 border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                  value={meetingFilters.toDate}
+                  onChange={(e) => setMeetingFilters({ ...meetingFilters, toDate: e.target.value })}
+                />
+                </div>
+                </div>
+              <div className="mb-4">
+                <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">Start Time</label>
+                <input
+                  type="time"
+      className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                  value={meetingFilters.startTime}
+                  onChange={(e) => setMeetingFilters({ ...meetingFilters, startTime: e.target.value })}
+                />
+              </div>
+              {/* <div className="mb-4">
+                <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">End Time</label>
+                <input
+                  type="time"
+                  className="w-full border rounded-md p-2 text-[12px] dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                  value={meetingFilters.endTime}
+                  onChange={(e) => setMeetingFilters({ ...meetingFilters, endTime: e.target.value })}
+                />
+              </div> */}
+                            <div className="mb-6">
+                <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">Status</label>
+                <select
+                  className="w-full border rounded-md p-2 text-[12px] dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                  value={meetingFilters.status}
+                  onChange={(e) => setMeetingFilters({ ...meetingFilters, status: e.target.value })}
+                >
+                  <option value="">Select status</option>
+                  <option value="Scheduled">Scheduled</option>
+                  <option value="Rescheduled">Rescheduled</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={handleResetMeetingFilters}
+                  className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+                >
+                  Reset
+                </button>
+                <button
+                  className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                  onClick={handleApplyMeetingFilters}
+                >
+                  Apply Filters
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
