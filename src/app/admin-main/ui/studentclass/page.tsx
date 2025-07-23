@@ -156,13 +156,13 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Completed":
-        return "bg-[#DCFCE7] dark:bg-[#2E3C2E] dark:text-[#377E36] text-green-800 rounded-md";
+        return "bg-[#ECFDF3] dark:bg-[#2E3C2E] dark:text-[#377E36] text-[#377E36]";
       case "Cancelled":
         return "bg-red-100 text-red-500 border-red-500 border rounded-lg";
       case "Rescheduled":
-        return "bg-yellow-100 text-yellow-600 border-yellow-600 border rounded-lg";
+        return "bg-[#ececfd] text-[#002c5f] dark:bg-[#2e333c] dark:text-[#fff]";
       case "Scheduled":
-        return "bg-blue-100 text-blue-600 border-blue-600 border rounded-lg";
+        return "bg-[#ECFDF3] dark:bg-[#2E3C2E] dark:text-[#235522] text-[#235522]";
       default:
         return "bg-gray-100 text-gray-600";
     }
@@ -231,9 +231,7 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
                 </tr>
               </thead>
               <tbody className="text-[10px] text-[#1D2939]">
-                {loading ? (
-                  <tr><td colSpan={7} className="p-4 text-center">Loading...</td></tr>
-                ) : error ? (
+                {error ? (
                   <tr><td colSpan={7} className="p-4 text-center text-red-500">{error}</td></tr>
                 ) : paginatedClassData.length > 0 ? (
                   paginatedClassData.map((row, index) => (
@@ -251,7 +249,7 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
                       <td className="p-3">{new Date(row.startDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "2-digit" })}</td>
                       <td className="p-3">{row.startTime?.[0]} - {row.endTime?.[0]}</td>
                       <td className="p-3">
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-medium ${getStatusColor(row.scheduleStatus)}`}>
+                        <span className={`px-3 py-1 rounded-md text-[10px] font-medium ${getStatusColor(row.scheduleStatus)}`}>
                           {row.scheduleStatus}
                         </span>
                       </td>
@@ -297,7 +295,7 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
                 />
               </div>
               <div className="mb-4">
-                <label className="text-sm text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Course Name</label>
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Course Name</label>
                 <input
                   type="text"
                   className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"

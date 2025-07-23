@@ -204,7 +204,7 @@ const StudentsRecord = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row w-full gap-4 sm:gap-4 md:gap-3 lg:gap-4 xl:gap-4 w-full">
+    <div className="flex flex-col lg:flex-row gap-4 sm:gap-4 md:gap-3 lg:gap-4 xl:gap-4 w-full">
       {/* Student Record */}
       <div className="bg-[#F7FBFF] mx-auto dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[370px] md:max-w-[450px] lg:max-w-[620px] h-[250px]">
         <h2 className="text-[16px] font-semibold text-[#0B0F19] dark:text-white mb-4">

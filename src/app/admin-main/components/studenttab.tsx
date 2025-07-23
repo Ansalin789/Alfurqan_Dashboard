@@ -12,7 +12,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 type TabbedTableProps = {
   studentId: string;
   userId: string;
-  courseName : string;
+  courseName: string;
 };
 // types.ts (or wherever you define your types)
 interface ClassSchedule {
@@ -216,8 +216,9 @@ interface PaymentDetail {
   __v: number;
 }
 
-const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , userId}) => {
-  console.log(studentId);
+const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
+  console.log('TabbedTable studentId:', studentId);
+  // console.log('TabbedTable userId:', userId);
   const [activeTab, setActiveTab] = useState("Class");
   const tabs = [
     "Class",
@@ -487,7 +488,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
       date: "1/12/2024",
       score: "85%",
       grade: "A",
-      status: "Retake Required",
+      status: "Re-Scheduled",
     },
   ];
   // Filtered class data based on search
@@ -739,25 +740,30 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
           console.error("Missing token or student ID");
           return;
         }
+        // console.log("Fetching payment history for userId:", userId);
 
-        const response = await axios.get(`http://localhost:5001/student/paymenthistory`, {
-          params: { userId: userId },
+        const response = await axios.get(`http://localhost:5001/student/paymenthistory?userId=${studentId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
 
+        console.log("Payment history API response:", response.data);
+
         if (response.data.paymentDetails) {
           setPaymentHistory(response.data.paymentDetails);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to fetch payment history:", error);
+        if (error.response) {
+          console.error("API error response:", error.response.data);
+        }
       }
     };
 
     fetchPaymentHistory();
-  }, [studentId, userId]); // Added userId as a dependency
+  }, [studentId]); 
 
   return (
     <div className=" overflow-x-auto mt-4">
@@ -816,22 +822,22 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
               >
                 <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                   <tr className="font-medium">
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                      Class ID
                     </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Teacher Name
                     </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Course
                     </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Date
                     </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Time
                     </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Status
                     </th>
                   </tr>
@@ -841,7 +847,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
                     paginatedClassData.map((row, index) => (
                       <tr
                         key={row._id}
-                        className={`text-center dark:text-white ${
+                        className={`text-left dark:text-white ${
                           index % 2 === 0
                             ? "bg-[#fff] dark:bg-[#2C2C2C]"
                             : "bg-[#F8F8F8] dark:bg-[#303030]"
@@ -862,7 +868,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
                         </td>
                         <td className="p-3">
                           <span
-                            className={`inline-flex items-center justify-center w-24 h-6 px-3 py-1 rounded whitespace-nowrap ${
+                            className={`inline-flex items-center justify-center w-24 h-6 px-3 py-1 rounded-sm whitespace-nowrap ${
                               row.scheduleStatus === "Rescheduled"
                                 ? "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200"
                                 : row.scheduleStatus === "Scheduled"
@@ -901,7 +907,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
       {activeTab === "Courses" && (
         <div className="">
           {/* Donut/Progress Grid */}
-          <div className="grid grid-cols-4 gap-4 text-center mb-6">
+          <div className="grid grid-cols-4 gap-4 text-left mb-6">
         {data.map((item, idx) => (
           <div
             key={idx}
@@ -984,19 +990,19 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
               >
                 <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                   <tr className="font-medium">
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Course ID
                     </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Course Name
                     </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Start Date
                     </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Package
                     </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Status
                     </th>
                   </tr>
@@ -1006,7 +1012,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
                     paginatedCourseData.map((row, index) => (
                       <tr
                         key={row.id}
-                        className={`text-center dark:text-white ${
+                        className={`text-left dark:text-white ${
                           index % 2 === 0
                             ? "bg-[#fff] dark:bg-[#2C2C2C]"
                             : "bg-[#F8F8F8] dark:bg-[#303030]"
@@ -1018,10 +1024,10 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
                         <td className="p-3">{row.package}</td>
                         <td className="p-3">
                           <span
-                            className={`inline-flex items-center justify-center w-16 h-6 px-3 py-1 rounded-xl ${
+                            className={`inline-flex items-center justify-center w-16 h-6 px-3 py-1 rounded-sm ${
                               row.status === "Active"
-                                ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] dark:text-[#377E36] text-[#377E36]"
-                                : "bg-red-500 text-white"
+                                ? "bg-[#ECFDF3] dark:bg-[#5e735e] dark:text-[#377E36] text-[#377E36]"
+                                : "bg-[#ececfd] text-[#002c5f] dark:bg-[#2e333c] dark:text-[#fff]"
                             }`}
                           >
                             {row.status}
@@ -1089,23 +1095,23 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
               <table className="w-full min-w-[900px] text-sm text-left table-auto">
                 <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                   <tr className="font-medium">
-                    <th className="p-4 font-semibold text-[12px] text-center">Invoice ID</th>
-                    <th className="p-4 font-semibold text-[12px] text-center">Date</th>
-                    <th className="p-4 font-semibold text-[12px] text-center">Course</th>
-                    <th className="p-4 font-semibold text-[12px] text-center">Amount</th>
-                    <th className="p-4 font-semibold text-[12px] text-center">Status</th>
+                    <th className="p-4 font-semibold text-[12px] text-left">Invoice ID</th>
+                    <th className="p-4 font-semibold text-[12px] text-left">Date</th>
+                    <th className="p-4 font-semibold text-[12px] text-left">Course</th>
+                    <th className="p-4 font-semibold text-[12px] text-left">Amount</th>
+                    <th className="p-4 font-semibold text-[12px] text-left">Status</th>
                   </tr>
                 </thead>
                 <tbody className="text-[10px] text-[#1D2939]">
                   {paymentHistory.length > 0 ? (
                     paymentHistory.map((payment, index) => (
-                      <tr key={payment._id} className={`text-center dark:text-white ${index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"}`}>
+                      <tr key={payment._id} className={`text-left dark:text-white ${index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"}`}>
                         <td className="p-3">{payment.paymentResponse.id}</td>
                         <td className="p-3">{new Date(payment.paymentDate).toLocaleDateString()}</td>
                         <td className="p-3">{payment.userName}</td>
                         <td className="p-3">{payment.paymentAmount}</td>
                         <td className="p-3">
-                          <span className={`inline-flex items-center justify-center w-16 h-6 px-3 py-1 rounded-2xl ${payment.paymentStatus === "succeeded" ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}>
+                          <span className={`inline-flex items-center justify-center w-16 h-6 px-3 py-1 rounded-md ${payment.paymentStatus === "succeeded" ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] dark:text-[#377E36] text-[#377E36]" : "bg-[#ececfd] text-[#002c5f] dark:bg-[#2e333c] dark:text-[#fff]"}`}>
                             {payment.paymentStatus}
                           </span>
                         </td>
@@ -1159,19 +1165,19 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
               >
                 <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                   <tr className="font-medium">
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Subject
                     </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Date
                     </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Score
                     </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Grade
                     </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Status
                     </th>
                   </tr>
@@ -1182,16 +1188,16 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
                       let statusClass = "";
                       switch (row.status) {
                         case "Completed":
-                          statusClass = "bg-green-500 text-white";
+                          statusClass = "bg-[#ECFDF3] dark:bg-[#2E3C2E] dark:text-[#377E36] text-[#377E36]";
                           break;
-                        case "Retake Required":
-                          statusClass = "bg-red-500 text-white";
+                        case "Re-Scheduled":
+                          statusClass = "bg-[#ececfd] text-[#002c5f] dark:bg-[#2e333c] dark:text-[#fff]";
                           break;
                       }
                       return (
                         <tr
                           key={row.subject + row.date + index}
-                          className={`text-center dark:text-white ${
+                          className={`text-left dark:text-white ${
                             index % 2 === 0
                               ? "bg-[#fff] dark:bg-[#2C2C2C]"
                               : "bg-[#F8F8F8] dark:bg-[#303030]"
@@ -1203,7 +1209,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
                           <td className="p-3">{row.grade}</td>
                           <td className="p-3">
                             <span
-                              className={`inline-flex items-center justify-center w-28 h-6 px-3 py-1 rounded-2xl ${statusClass}`}
+                              className={`inline-flex items-center justify-center w-28 h-6 px-3 py-1 rounded-md ${statusClass}`}
                             >
                               {row.status}
                             </span>
@@ -1279,8 +1285,8 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
             </div>
             <div className="overflow-x-auto max-h-none">
             <table className="table-fixed w-full">
-                <thead className="text-[13px] bg-[#4C6993] text-white">
-                  <tr>
+                <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                  <tr className="font-medium">
                     {[
                       "Assignment ID",
                       "Assigned By",
@@ -1294,31 +1300,31 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId , courseName , user
                     ].map((header, idx) => (
                       <th
                         key={idx}
-                        className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
+                        className="p-4 font-semibold text-[12px] text-left border border-[#4C6993]"
                       >
                         {header}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="text-[10px] text-[#1D2939]">
                   {assignments.length > 0 ? (
                     assignments.map((assignment, index) => {
-                      const status = assignment.assignmentStatus; // Use the assignmentStatus directly
+                      const status = assignment.assignmentStatus;
                       const rowBgClass = index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]";
 
                       return (
-                        <tr key={assignment._id || index} className={`text-[10px] ${rowBgClass}`}>
-                          <td className="px-3 py-4 break-words text-[11px]">{assignment.assignmentId}</td>
-                          <td className="px-3 py-4 break-words text-[11px]">{assignment.assignedTeacher}</td>
-                          <td className="px-3 py-4 break-words text-[11px]">{assignment.courses}</td>
-                          <td className="px-3 py-4 break-words text-[11px]">{assignment.level}</td>
-                          <td className="px-3 py-4 break-words text-[11px]">{assignment.title}</td>
-                          <td className="px-3 py-4 break-words text-[11px]">{assignment.sessionClassType}</td>
-                          <td className="px-3 py-4 break-words text-[11px]">{assignment.assignedDate ? new Date(assignment.assignedDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}</td>
-                          <td className="px-3 py-4 break-words text-[11px]">{assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}</td>
-                          <td className="px-3 py-4 break-words text-[11px]">
-                            <span className={`py-1 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(mapStatus(assignment.assignmentStatus))}`}>
+                        <tr key={assignment._id || index} className={`text-left dark:text-white ${index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"} ${rowBgClass}`}>
+                          <td className="p-3">{assignment.assignmentId}</td>
+                          <td className="p-3">{assignment.assignedTeacher}</td>
+                          <td className="p-3">{assignment.courses}</td>
+                          <td className="p-3">{assignment.level}</td>
+                          <td className="p-3">{assignment.title}</td>
+                          <td className="p-3">{assignment.sessionClassType}</td>
+                          <td className="p-3">{assignment.assignedDate ? new Date(assignment.assignedDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}</td>
+                          <td className="p-3">{assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}</td>
+                          <td className="p-3">
+                            <span className={`py-2 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(mapStatus(assignment.assignmentStatus))}`}>
                               {mapStatus(assignment.assignmentStatus)}
                             </span>
                           </td>
