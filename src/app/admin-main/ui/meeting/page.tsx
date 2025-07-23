@@ -18,6 +18,7 @@ import AdminHeader from "../../components/AdminHeader";
 import BaseLayout4 from "@/components/BaseLayout4";
 import SuccessPopup from "../../components/successPopup";
 import FailedPopup from "../../components/failedPopup";
+import NextMeetingSchedule from "../../components/NextMeetingSchedule";
 interface ApiResponse {
   candidateFirstName: string;
   candidateLastName: string;
@@ -192,11 +193,31 @@ const ScheduledClasses = () => {
           }
         );
 
-        const allMeetings: Meeting[] = response.data.data?.meetings || [];
+        // --- Group meetings by meetingId and collect all teachers ---
+        const apiMeetings = response.data.data?.meetings || [];
+        const groupedMeetings = apiMeetings.map((group: any) => {
+          const firstRecord = group.records[0];
+          return {
+            _id: firstRecord._id, // or group.meetingId
+            meetingId: group.meetingId,
+            meetingName: firstRecord.meetingName,
+            meetingStatus: firstRecord.meetingStatus,
+            selectedDate: firstRecord.selectedDate,
+            startTime: firstRecord.startTime,
+            endTime: firstRecord.endTime,
+            description: firstRecord.description,
+            createdDate: firstRecord.createdDate,
+            createdBy: firstRecord.createdBy,
+            teachers: group.records.map((rec: any) => rec.teacher[0]),
+            // Add other fields as needed
+            duration: firstRecord.duration || '',
+            meetingminutes: firstRecord.meetingminutes || '',
+          };
+        });
 
-        const upcomingMeetings = allMeetings
-          .filter((meeting) => meeting.meetingStatus !== "Completed")
-          .sort((a, b) => {
+        const upcomingMeetings = groupedMeetings
+          .filter((meeting: any) => meeting.meetingStatus !== "Completed")
+          .sort((a: any, b: any) => {
             const aDate = new Date(a.selectedDate);
             const bDate = new Date(b.selectedDate);
             const aStartTimeStr = Array.isArray(a.startTime)
@@ -212,8 +233,8 @@ const ScheduledClasses = () => {
             return aDate.getTime() - bDate.getTime();
           });
 
-        const completedMeetings = allMeetings.filter(
-          (meeting) => meeting.meetingStatus === "Completed"
+        const completedMeetings = groupedMeetings.filter(
+          (meeting: any) => meeting.meetingStatus === "Completed"
         );
 
         setUpcomingClasses(upcomingMeetings);
@@ -392,7 +413,7 @@ const ScheduledClasses = () => {
   const handleFilter = async () => {
     setShowModal(false);
 
-    const token = localStorage.getItem("SupervisorAuthToken");
+    const token = localStorage.getItem("AdminAuthToken");
 
     const params: any = {};
     if (fromDate) params["dateRange.from"] = fromDate;
@@ -404,7 +425,7 @@ const ScheduledClasses = () => {
 
     try {
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/allMeetings", // Use your backend URL here
+        "https://api.blackstoneinfomaticstech.com/allAdminMeeting", // Use your backend URL here
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -435,6 +456,8 @@ const ScheduledClasses = () => {
       <div className="">
         <AdminHeader currentSection="meetings" />
         <div className="md:p-0 mx-auto">
+          <NextMeetingSchedule/>
+
           <div className="h-full w-full  flex flex-col justify-between">
             <div className="p-0 justify-between flex flex-col">
               <div
@@ -549,7 +572,7 @@ const ScheduledClasses = () => {
                           </td>
                           <td className="px-3 py-2 text-left text-[#17243E] dark:text-[#FDFDFD]">
                             <div className="relative">
-                              {item.teachers?.flat().length > 1 ? (
+                              {item.teachers?.length > 1 ? (
                                 <>
                                   <button
                                     onClick={() =>
@@ -563,7 +586,6 @@ const ScheduledClasses = () => {
                                   {openTeacherDropdownId === item._id && (
                                     <div className="absolute z-10 mt-2 w-48 bg-white rounded shadow-lg p-2 dark:bg-[#343434]">
                                       {item.teachers
-                                        .flat()
                                         .map((teacher, idx) => (
                                           <div
                                             key={idx}
@@ -581,8 +603,11 @@ const ScheduledClasses = () => {
                               ) : (
                                 <span className="flex items-center gap-2 font-medium">
                                   <IoPersonOutline />
-                                  {item.teachers?.flat()[0]?.teacherName ||
-                                    "No teacher assigned"}
+                                  {item.teachers?.length > 0 ? (
+                                    item.teachers[0].teacherName
+                                  ) : (
+                                    "No teacher assigned"
+                                  )}
                                 </span>
                               )}
                             </div>
@@ -617,7 +642,7 @@ const ScheduledClasses = () => {
                                       className="text-[10px] font-semibold px-[11px] py-1 rounded-lg bg-[#576cbc] text-white border  "
                                       onClick={() =>
                                         router.push(
-                                          `/supervisor/ui/meetingvideocall?id=${item._id}`
+                                          `/admin-main/ui/livemeeting?meetingId=${item.meetingId}`
                                         )
                                       }
                                     >
