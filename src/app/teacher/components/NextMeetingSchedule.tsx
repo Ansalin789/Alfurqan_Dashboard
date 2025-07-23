@@ -12,6 +12,63 @@ interface Teacher {
   teacherEmail: string;
 }
 
+interface Meeting {
+  _id: string;
+  meetingName: string;
+  meetingId: string;
+
+  selectedDate: string; // ISO date string
+  startTime: string;
+  endTime: string;
+  description?: string;
+
+  meetingStatus: "Completed" | "Scheduled" | "Pending" | string;
+  duration?: string;
+  status: "Active" | "Inactive" | string;
+
+  createdDate: string;
+  createdBy: string;
+  updatedDate?: string;
+  updatedBy?: string;
+  __v?: number;
+
+  // Optional supervisor (some meetings)
+  supervisor?: {
+    supervisorId: string;
+    supervisorName: string;
+    supervisorEmail: string;
+  };
+
+  // Optional admin (some meetings)
+  admin?: {
+    adminId: string;
+    adminName: string;
+    adminEmail: string;
+    adminRole: string;
+  };
+
+  // Optional single or multiple teachers
+  teacher:
+    | Array<{
+        teacherId: string;
+        teacherName: string;
+        teacherEmail: string;
+        attendee?: string;
+      }>
+    | {
+        teacherId: string;
+        teacherName: string;
+        teacherEmail: string;
+      };
+
+  // Optional participants (student meetings)
+  participants?: Array<{
+    studentId: string;
+    studentName: string;
+    studentEmail: string;
+  }>;
+}
+
 interface Participant {
   studentId: string;
   studentName: string;
@@ -41,7 +98,7 @@ interface StudentMeeting {
 const NextMeetingSchedule = () => {
   const router = useRouter();
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-  const [classData, setClassData] = useState<StudentMeeting | null>(null);
+  const [classData, setClassData] = useState<Meeting | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isTimeUp, setIsTimeUp] = useState(false);
@@ -65,7 +122,7 @@ const [isMeetingOngoing, setIsMeetingOngoing] = useState(false);
           return;
         }
 
-        const res = await axios.get("https://api.blackstoneinfomaticstech.com/teacherMeetinglist", {
+        const res = await axios.get("http://localhost:5001/teacherMeetinglist", {
           params: { teacherId },
           headers: {
             "Content-Type": "application/json",
@@ -73,7 +130,7 @@ const [isMeetingOngoing, setIsMeetingOngoing] = useState(false);
           },
         });
 
-        const meetingList: StudentMeeting[] = res.data.students;
+        const meetingList: Meeting[] = res.data.meetings;
 
         const now = new Date();
     const upcoming = meetingList
