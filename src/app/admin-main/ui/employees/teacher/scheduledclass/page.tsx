@@ -249,6 +249,11 @@ const page = () => {
   const [searchWages, setSearchWages] = useState("");
   const [searchWorkingHours, setSearchWorkingHours] = useState("");
   const [searchEarnings, setSearchEarnings] = useState("");
+  const [filterStudentName, setFilterStudentName] = useState("");
+  const [filterClassType, setFilterClassType] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterStartDate, setFilterStartDate] = useState("");
+  const [filterEndDate, setFilterEndDate] = useState("");
 
 
   const events = [
@@ -365,21 +370,38 @@ const page = () => {
     setCurrentPage(1);
   };
 
+  // Extract unique filter options
+  const studentNames = Array.from(new Set(scheduledclass.map(
+    s => s.student?.studentFirstName
+  ).filter(Boolean)));
+  const classTypes = Array.from(new Set(scheduledclass.map(
+    s => s.sessionClassType
+  ).filter(Boolean)));
+  const statuses = Array.from(new Set(scheduledclass.map(
+    s => s.scheduleStatus
+  ).filter(Boolean)));
+
   const filteredScheduledClass = scheduledclass.filter((event) => {
+    // Search logic
     const searchFields = [
       event.student.studentFirstName,
       event.student.studentId,
       event.sessionClassType,
       event.startDate,
     ];
-    return searchFields.some((field) =>
+    const matchesSearch = searchFields.some((field) =>
       field
-        ? field
-            .toString()
-            .toLowerCase()
-            .includes(searchScheduledClass.toLowerCase())
+        ? field.toString().toLowerCase().includes(searchScheduledClass.toLowerCase())
         : false
     );
+    // Filter logic
+    const matchesName = filterStudentName ? event.student.studentFirstName === filterStudentName : true;
+    const matchesClassType = filterClassType ? event.sessionClassType === filterClassType : true;
+    const matchesStatus = filterStatus ? event.scheduleStatus === filterStatus : true;
+    const matchesDate =
+      (!filterStartDate || new Date(event.startDate) >= new Date(filterStartDate)) &&
+      (!filterEndDate || new Date(event.startDate) <= new Date(filterEndDate));
+    return matchesSearch && matchesName && matchesClassType && matchesStatus && matchesDate;
   });
 
   const totalPages = Math.ceil(filteredScheduledClass.length / itemsPerPage);
@@ -411,6 +433,85 @@ const page = () => {
               Showing {filteredScheduledClass.length === 0 ? 0 : indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredScheduledClass.length)} of {filteredScheduledClass.length}
                 </span>
             </div>
+            {/* Filter Modal */}
+            {isFilterModalOpen && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-[#232323] p-6 rounded-lg w-96">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold text-white">Filter by</h2>
+                    <button onClick={() => setIsFilterModalOpen(false)} className="text-gray-300 text-2xl">&times;</button>
+                  </div>
+                  <label className="block mb-2 text-white text-sm">Student Name</label>
+                  <select
+                    className="w-full p-2 mb-4 rounded bg-[#343434] text-white text-xs"
+                    value={filterStudentName}
+                    onChange={e => setFilterStudentName(e.target.value)}
+                  >
+                    <option value="">Select Student Name</option>
+                    {studentNames.map(name => (
+                      <option className="text-white text-xs" key={name} value={name}>{name}</option>
+                    ))}
+                  </select>
+                  <label className="block mb-2 text-white text-sm">Class Type</label>
+                  <select
+                    className="w-full p-2 mb-4 rounded bg-[#343434] text-white text-xs"
+                    value={filterClassType}
+                    onChange={e => setFilterClassType(e.target.value)}
+                  >
+                    <option value="">Select Class Type</option>
+                    {classTypes.map(type => (
+                      <option className="text-white text-xs" key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                  <label className="block mb-2 text-white text-sm">Status</label>
+                  <select
+                    className="w-full p-2 mb-4 rounded bg-[#343434] text-white text-xs"
+                    value={filterStatus}
+                    onChange={e => setFilterStatus(e.target.value)}
+                  >
+                    <option value="">Select Status</option>
+                    {statuses.map(status => (
+                      <option className="text-white text-xs" key={status} value={status}>{status}</option>
+                    ))}
+                  </select>
+                  <label className="block mb-2 text-white text-sm">Date</label>
+                  <div className="flex gap-2 mb-4">
+                    <input
+                      type="date"
+                      className="w-1/2 p-2 rounded bg-[#343434] text-white text-xs"
+                      value={filterStartDate}
+                      onChange={e => setFilterStartDate(e.target.value)}
+                    />
+                    <input
+                      type="date"
+                      className="w-1/2 p-2 rounded bg-[#343434] text-white text-xs"
+                      value={filterEndDate}
+                      onChange={e => setFilterEndDate(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex justify-between">
+                    <button
+                      className="px-2 py-1 border rounded text-white text-sm"
+                      onClick={() => {
+                        setFilterStudentName("");
+                        setFilterClassType("");
+                        setFilterStatus("");
+                        setFilterStartDate("");
+                        setFilterEndDate("");
+                      }}
+                    >
+                      Reset
+                    </button>
+                    <button
+                      className="px-2 py-1 bg-[#576CBC] text-white rounded text-sm"
+                      onClick={() => setIsFilterModalOpen(false)}
+                    >
+                      Show results
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="overflow-x-auto max-h-none">
               <table
                 className="w-full min-w-[900px] text-sm text-left table-auto"

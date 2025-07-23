@@ -250,6 +250,11 @@ const page = () => {
   const [searchWorkingHours, setSearchWorkingHours] = useState("");
   const [searchEarnings, setSearchEarnings] = useState("");
 
+  // Place filter state hooks before filteredStudents logic
+  const [filterStudentName, setFilterStudentName] = useState("");
+  const [filterCountry, setFilterCountry] = useState("");
+  const [filterSubject, setFilterSubject] = useState("");
+
   const [earningsPage, setEarningsPage] = useState(1);
   const earningsPerPage = 5;
 
@@ -369,9 +374,19 @@ const page = () => {
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  // Extract unique filter options
+  const studentNames = Array.from(new Set(students.map(
+    s => s.studentDetails?.student?.studentFirstName
+  ).filter(Boolean)));
+  const countries = Array.from(new Set(students.map(
+    s => s.studentDetails?.student?.studentCountry
+  ).filter(Boolean)));
+  const subjects = Array.from(new Set(students.map(
+    s => s.studentDetails?.student?.learningInterest
+  ).filter(Boolean)));
   const filteredStudents = students.filter((item) => {
     const student = item.studentDetails?.student;
-    const searchFields = [
+    const matchesSearch = [
       item.studentId,
       student?.studentFirstName,
       student?.studentLastName,
@@ -379,12 +394,15 @@ const page = () => {
       student?.learningInterest,
       student?.preferredTeacher,
       student?.status,
-    ];
-    return searchFields.some((field) =>
+    ].some((field) =>
       field
         ? field.toString().toLowerCase().includes(searchTerm.toLowerCase())
         : false
     );
+    const matchesName = filterStudentName ? student?.studentFirstName === filterStudentName : true;
+    const matchesCountry = filterCountry ? student?.studentCountry === filterCountry : true;
+    const matchesSubject = filterSubject ? student?.learningInterest === filterSubject : true;
+    return matchesSearch && matchesName && matchesCountry && matchesSubject;
   });
   const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
   const currentItems = filteredStudents.slice(
@@ -421,12 +439,74 @@ const page = () => {
                 {filteredStudents.length}
               </span>
           </div>
+          {/* Filter Modal */}
+          {isFilterModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white dark:bg-[#232323] p-6 rounded-lg w-96">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold text-black dark:text-white">Filter by</h2>
+                  <button onClick={() => setIsFilterModalOpen(false)} className="text-gray-500 dark:text-gray-300 text-2xl">&times;</button>
+                </div>
+                <label className="block mb-2 text-black dark:text-white text-sm">Student Name</label>
+                <select
+                  className="w-full p-2 mb-4 rounded bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs"
+                  value={filterStudentName}
+                  onChange={e => setFilterStudentName(e.target.value)}
+                >
+                  <option value="" className="text-black dark:text-white text-xs">Select Student Name</option>
+                  {studentNames.map(name => (
+                    <option className="text-black dark:text-white text-xs" key={name} value={name}>{name}</option>
+                  ))}
+                </select>
+                <label className="block mb-2 text-black dark:text-white text-sm">Country</label>
+                <select
+                  className="w-full p-2 mb-4 rounded bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs"
+                  value={filterCountry}
+                  onChange={e => setFilterCountry(e.target.value)}
+                >
+                  <option value="">Select Country</option>
+                  {countries.map(country => (
+                    <option key={country} value={country}>{country}</option>
+                  ))}
+                </select>
+                <label className="block mb-2 text-black dark:text-white text-sm">Subject</label>
+                <select
+                  className="w-full p-2 mb-4 rounded bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs"
+                  value={filterSubject}
+                  onChange={e => setFilterSubject(e.target.value)}
+                >
+                  <option value="">Select Subject</option>
+                  {subjects.map(subject => (
+                    <option key={subject} value={subject}>{subject}</option>
+                  ))}
+                </select>
+                <div className="flex justify-between">
+                  <button
+                    className="px-2 py-1 border rounded text-black dark:text-white text-sm"
+                    onClick={() => {
+                      setFilterStudentName("");
+                      setFilterCountry("");
+                      setFilterSubject("");
+                    }}
+                  >
+                    Reset
+                  </button>
+                  <button
+                    className="px-2 py-1 bg-[#576CBC] text-white rounded text-sm"
+                    onClick={() => setIsFilterModalOpen(false)}
+                  >
+                    Show results
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="overflow-x-auto max-h-none">
             <table
               className="w-full min-w-[900px] text-sm text-left table-auto"
               style={{ width: "100%", tableLayout: "fixed" }}
             >
-              <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+              <thead className="text-[12px] bg-[#576CBC] text-white dark:bg-[#6087C0]">
                 <tr className="font-medium">
                   <th className="p-3 font-semibold text-[12px] text-center">
                     Student ID

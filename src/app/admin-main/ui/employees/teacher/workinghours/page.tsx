@@ -255,6 +255,9 @@ const page = () => {
   const [searchWages, setSearchWages] = useState("");
   const [searchWorkingHours, setSearchWorkingHours] = useState("");
   const [searchEarnings, setSearchEarnings] = useState("");
+  const [filterDay, setFilterDay] = useState("");
+  const [filterStartDate, setFilterStartDate] = useState("");
+  const [filterEndDate, setFilterEndDate] = useState("");
 
   const events = [
     {
@@ -402,15 +405,17 @@ const page = () => {
 
   // Filtered Working Hours
   const filteredWorkingHours = schedule.filter((item) => {
-    const searchFields = [item.day, item.date];
-    return searchFields.some((field) =>
-      field
-        ? field
-            .toString()
-            .toLowerCase()
-            .includes(searchWorkingHours.toLowerCase())
-        : false
+    // Search logic
+    const matchesSearch = [item.day, item.date, item.fromTime, item.toTime].some((field) =>
+      field ? field.toString().toLowerCase().includes(searchWorkingHours.toLowerCase()) : false
     );
+    // Day filter
+    const matchesDay = filterDay ? item.day === filterDay : true;
+    // Date range filter
+    const matchesDate =
+      (!filterStartDate || new Date(item.date) >= new Date(filterStartDate)) &&
+      (!filterEndDate || new Date(item.date) <= new Date(filterEndDate));
+    return matchesSearch && matchesDay && matchesDate;
   });
 
   const totalPages = Math.ceil(filteredWorkingHours.length / itemsPerPage);
@@ -427,28 +432,84 @@ const page = () => {
       <div>
         <div>
           <div className="rounded-xl overflow-hidden">
-          <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-          <input
-                  type="text"
-                  placeholder="Search"
-                  className="bg-transparent outline-none text-[12px] w-32 py-3"
-                  value={searchWorkingHours}
-                  onChange={(e) => setSearchWorkingHours(e.target.value)}
-                />
+            <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+              <input
+                type="text"
+                placeholder="Search"
+                className="bg-transparent outline-none text-[12px] w-32 py-3"
+                value={searchWorkingHours}
+                onChange={(e) => setSearchWorkingHours(e.target.value)}
+              />
               <div
-                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-3 border-r-2 border-l-2 px-48 cursor-pointer"
-                      onClick={() => setIsFilterModalOpen(true)}
+                className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-3 border-r-2 border-l-2 px-48 cursor-pointer"
+                onClick={() => setIsFilterModalOpen(true)}
               >
                 <MdTune className="w-4 h-4" />
                 <span>Filter</span>
               </div>
               <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-              Showing{" "}
-                  {filteredWorkingHours.length === 0 ? 0 : indexOfFirstItem + 1}{" "}
-                  to {Math.min(indexOfLastItem, filteredWorkingHours.length)} of{" "}
-                  {filteredWorkingHours.length}
-                </span>
+                Showing {filteredWorkingHours.length === 0 ? 0 : indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredWorkingHours.length)} of {filteredWorkingHours.length}
+              </span>
             </div>
+            {/* Filter Modal */}
+            {isFilterModalOpen && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white dark:bg-[#232323] p-6 rounded-lg w-96">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-semibold text-black dark:text-white">Filter by</h2>
+                    <button onClick={() => setIsFilterModalOpen(false)} className="text-gray-500 dark:text-gray-300 text-2xl">&times;</button>
+                  </div>
+                  <label className="block mb-2 text-black dark:text-white">Day</label>
+                  <select
+                    className="w-full p-2 mb-4 rounded bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs"
+                    value={filterDay}
+                    onChange={e => setFilterDay(e.target.value)}
+                  >
+                    <option value="" className="text-black dark:text-white text-xs">Select Day</option>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
+                  </select>
+                  <label className="block mb-2 text-black dark:text-white">Date</label>
+                  <div className="flex gap-2 mb-4">
+                    <input
+                      type="date"
+                      className="w-1/2 p-2 rounded bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs"
+                      value={filterStartDate}
+                      onChange={e => setFilterStartDate(e.target.value)}
+                    />
+                    <input
+                      type="date"
+                      className="w-1/2 p-2 rounded bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs"
+                      value={filterEndDate}
+                      onChange={e => setFilterEndDate(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex justify-between">
+                    <button
+                      className="px-4 py-2 border rounded text-black dark:text-white text-sm"
+                      onClick={() => {
+                        setFilterDay("");
+                        setFilterStartDate("");
+                        setFilterEndDate("");
+                      }}
+                    >
+                      Reset
+                    </button>
+                    <button
+                      className="px-4 py-2 bg-[#576CBC] text-white rounded text-sm"
+                      onClick={() => setIsFilterModalOpen(false)}
+                    >
+                      Show results
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="overflow-x-auto max-h-none">
               <table
                 className="w-full min-w-[900px] text-sm text-left table-auto"
