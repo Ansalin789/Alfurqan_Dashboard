@@ -99,7 +99,7 @@ const TeacherFilter = () => {
         if (!token || !teacherId) return;
 
         const response = await axios.get<MeetingResponse>(
-          `https://api.blackstoneinfomaticstech.com/teacherMeetinglist`,
+          `http://localhost:5001/teacherMeetinglist`,
           {
             params: { teacherId },
             headers: {
@@ -250,15 +250,61 @@ const TeacherFilter = () => {
     }
   };
 
-  
-
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredMeetings.slice(indexOfFirstItem, indexOfLastItem);
 
-    function handleRescheduleSubmit(event: React.MouseEvent<HTMLButtonElement>): void {
-        throw new Error("Function not implemented.");
+  async function handleRescheduleSubmit(event: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+    event.preventDefault();
+  
+    const meetingId = selectedMeetingDetails?._id;
+    if (!meetingId) {
+      console.error("Meeting ID is missing");
+      return;
     }
+  
+    const teacherId = localStorage.getItem("TeacherPortalId");
+    const token = localStorage.getItem("TeacherAuthToken");
+  
+    if (!token || !teacherId) {
+      console.error("Missing token or teacher ID");
+      setFailed(true);
+      setFailedMessage("Authentication failed. Please log in again.");
+      return;
+    }
+  
+    const payload = {
+      meetingName: selectedMeetingDetails?.meetingName,
+      selectedDate: rescheduleDate,
+      startTime: rescheduleTime,
+      description: rescheduleReason,
+    };
+  
+    console.log("Sending payload:", payload);
+  
+    try {
+      const response = await axios.put(
+        `http://localhost:5001/updateTeacherMeeting/${meetingId}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+  
+      console.log("Meeting rescheduled successfully:", response.data);
+      setSuccess(true);
+      setIsRescheduleModalOpen(false);
+      // Optionally refresh meeting list
+    } catch (error) {
+      setFailed(true);
+      setFailedMessage("Failed to reschedule the meeting. Please try again.");
+    }
+  }
+  
+
 
   return (
     <>
@@ -378,19 +424,17 @@ const TeacherFilter = () => {
                       {item.startTime}
                     </td>
                   <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[180px] break-words whitespace-normal">
-                  <span
-                  className={`px-2 text-[10px] text-center py-[3px] rounded-md ${
-                    item.meetingStatus === "Scheduled"
-                      ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
-                      : item.meetingStatus === "Rescheduled"
-                      ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE]"
-                      : item.meetingStatus === "Completed"
-                      ? "bg-green-100 text-[#377E36] text-[10px]"
-                      : "bg-gray-200 text-gray-700"
-                  }`}
-                >
-                  {(item.meetingStatus || "UNKNOWN").toUpperCase()}
-                </span>
+                      <span
+                        className={`px-2 text-[10px] text-center py-[3px] rounded-md ${
+                          item.meetingStatus === "Scheduled"
+                            ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
+                            : item.meetingStatus === "Rescheduled"
+                            ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE]"
+                            : ""
+                        }`}
+                      >
+                        {(item.meetingStatus || "UNKNOWN").toUpperCase()}
+                      </span>
                     </td>
                 <td className="px-3 py-2 relative ">
                                      {item.meetingStatus === "Scheduled" ||
@@ -412,8 +456,9 @@ const TeacherFilter = () => {
                                              <div className="py-1 text-sm text-gray-700 dark:text-white">
                                                <button
                                                  onClick={() => {
-                                                   setIsRescheduleModalOpen(true);
-                                                   setIsDetailsModalOpen(false);
+                                                  setSelectedMeetingDetails(item); // ✅ Set selected meeting first
+                                                  setIsRescheduleModalOpen(true);
+                                                  setIsDetailsModalOpen(false);
                                                  }}
                                                  className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-[#404040]"
                                                >
