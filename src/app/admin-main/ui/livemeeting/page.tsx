@@ -78,7 +78,7 @@ export default function Page() {
 
         // Use correct query string and expect array response
         const response = await axios.get<Meeting[]>(
-          `http://localhost:5001/allAdminMeeting/meetingId?meetingId=${meetingId}`,
+          `https://api.blackstoneinfomaticstech.com/allAdminMeeting/meetingId?meetingId=${meetingId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -166,7 +166,7 @@ export default function Page() {
       }
 
       const response = await fetch(
-        `http://localhost:5001/allAdminMeeting/update/${meetingId}`,
+        `https://api.blackstoneinfomaticstech.com/allAdminMeeting/update/${meetingId}`,
         {
           method: "PUT",
           headers: {

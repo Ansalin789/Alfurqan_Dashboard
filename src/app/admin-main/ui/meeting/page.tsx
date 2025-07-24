@@ -359,7 +359,7 @@ const Meetings = () => {
       );
       const meetingIdToSend = selectedMeeting?.meetingId;
       const response = await fetch(
-        `http://localhost:5001/allAdminMeeting/${meetingIdToSend}`,
+        `https://api.blackstoneinfomaticstech.com/allAdminMeeting/${meetingIdToSend}`,
         {
           method: "PUT",
           headers: {

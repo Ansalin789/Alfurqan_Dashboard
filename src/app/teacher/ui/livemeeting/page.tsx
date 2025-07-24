@@ -37,21 +37,59 @@ interface Attendance {
 
 interface Meeting {
   _id: string;
-  meetingId: string;
   meetingName: string;
-  teacher: Teacher;
-  participants: Participant[];
-  selectedDate: string;
+  meetingId: string;
+
+  selectedDate: string; // ISO date string
   startTime: string;
   endTime: string;
-  description: string;
-  meetingStatus: "Scheduled" | "Ongoing" | "Completed" | string;
+  description?: string;
+
+  meetingStatus: "Completed" | "Scheduled" | "Pending" | string;
+  duration?: string;
   status: "Active" | "Inactive" | string;
+
   createdDate: string;
   createdBy: string;
-  updatedDate: string;
-  updatedBy: string;
-  __v: number;
+  updatedDate?: string;
+  updatedBy?: string;
+  __v?: number;
+
+  // Optional supervisor (some meetings)
+  supervisor?: {
+    supervisorId: string;
+    supervisorName: string;
+    supervisorEmail: string;
+  };
+
+  // Optional admin (some meetings)
+  admin?: {
+    adminId: string;
+    adminName: string;
+    adminEmail: string;
+    adminRole: string;
+  };
+
+  // Optional single or multiple teachers
+  teacher:
+    | Array<{
+        teacherId: string;
+        teacherName: string;
+        teacherEmail: string;
+        attendee?: string;
+      }>
+    | {
+        teacherId: string;
+        teacherName: string;
+        teacherEmail: string;
+      };
+
+  // Optional participants (student meetings)
+  participants?: Array<{
+    studentId: string;
+    studentName: string;
+    studentEmail: string;
+  }>;
 }
 
 const LiveMeeting = () => {
@@ -65,6 +103,7 @@ const router = useRouter();
 const [redirectTo, setRedirectTo] = useState<string | null>(null);
   const startTimeRef = useRef<string>("");
   const attendanceRef = useRef(attendance);
+  const [meetingUpdate, setMeetingUpdate] = useState(false); // Define state for meeting update
 
   useEffect(() => {
     attendanceRef.current = attendance;
@@ -87,13 +126,13 @@ const [redirectTo, setRedirectTo] = useState<string | null>(null);
           },
         });
 
-        const meeting: Meeting = response.data;
+        const meeting: Meeting = response.data.meetings;
         if (meeting && meeting.meetingStatus !== "Completed") {
           setMeetingData(meeting);
           setRoomName(meeting.meetingId);
 
           // Build initial attendance
-          const initialAttendance = meeting.participants.map((p) => ({
+          const initialAttendance = meeting.participants?.map((p) => ({
             id: null,
             studentId: p.studentId,
             name: p.studentName,
@@ -103,7 +142,7 @@ const [redirectTo, setRedirectTo] = useState<string | null>(null);
             joinTime: "",
             leaveTime: "",
           }));
-          setAttendance(initialAttendance);
+          setAttendance(initialAttendance ?? []);
         }
       } catch (error) {
         console.error("Error fetching meeting data:", error);
@@ -190,6 +229,78 @@ const handleEndCall = async () => {
   }
 };
 
+const handleMeetingMinutesUpdate = async () => {
+  console.log("📌 Submit clicked");
+  // Ensure classData is defined and has the expected structure
+  const teachers = meetingData?.participants?.map((participant) => ({
+    teacherId: participant.studentId, // Assuming studentId is used for teacherId
+    teacherName: participant.studentName,
+    teacherEmail: participant.studentEmail,
+  })) || [];
+
+  const payload = {
+    meetingStatus: "Completed",
+    teacher: teachers.map((teacher) => {
+      const matchingAttendance = attendance.find(
+        (a) => a.studentId === teacher.teacherId
+      );
+      let attendee = "absent";
+      if (matchingAttendance) {
+        attendee = matchingAttendance.joined ? "present" : "absent";
+      }
+
+      return {
+        teacherId: teacher.teacherId,
+        teacherName: teacher.teacherName,
+        teacherEmail: teacher.teacherEmail,
+        attendee,
+        _id: teacher.teacherId, // Assuming teacherId is used for _id
+      };
+    }),
+
+    studentAttendance: attendance.map((student) => ({
+      studentId: student.studentId,
+      name: student.name,
+      attendee: student.joined ? "present" : "absent",
+      joinTime: student.joinTime,
+      leaveTime: student.leaveTime,
+    })),
+  };
+
+  try {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("teacherAuthToken")
+        : null;
+    if (!token) {
+      console.error("❌ TeacherAuthToken not found");
+      return;
+    }
+
+    const response = await fetch(
+      `https://localhost:5001/meetingattendence/${meetingId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to update meeting attendance");
+    }
+
+    const result = await response.json();
+    console.log("✅ Attendance Updated:", result);
+
+    setMeetingUpdate(false); // close modal
+  } catch (error) {
+    console.error("❌ Error updating meeting attendance:", error);
+  }
+};
 
 
   return (
