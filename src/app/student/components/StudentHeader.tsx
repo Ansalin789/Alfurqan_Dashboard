@@ -11,7 +11,7 @@ import { IoArrowBackCircleSharp } from "react-icons/io5";
 type Props = {
   readonly currentSection: string;
   readonly showBackButton?: boolean;
-  readonly showBackPath?:string;
+  readonly showBackPath?: string;
 };
 type NotificationType = {
   _id: string;
@@ -23,7 +23,11 @@ type NotificationType = {
   isRead: boolean;
 };
 
-export default function StudentHeader({ currentSection, showBackButton = false, showBackPath = '' }: Props) {
+export default function StudentHeader({
+  currentSection,
+  showBackButton = false,
+  showBackPath = "",
+}: Props) {
   const theme: any = useTheme();
   const darkMode = theme?.darkMode ?? false;
   const toggleDarkMode = theme?.toggleDarkMode ?? (() => {});
@@ -41,7 +45,7 @@ export default function StudentHeader({ currentSection, showBackButton = false, 
       try {
         const roleAccess = JSON.parse(roleAccessRaw);
         const modules = roleAccess?.studentmodules || roleAccess;
-  
+
         console.log("✅ Modules being used:", modules);
         console.log("🔐 Dashboard write:", modules?.dashboard?.write);
         console.log("🔐 Leave write:", modules?.leave);
@@ -53,19 +57,18 @@ export default function StudentHeader({ currentSection, showBackButton = false, 
     }
   }, []);
 
-
   // Fetch old notifications
-   const userId =
-        typeof window !== "undefined"
-          ? localStorage.getItem("StudentPortalId")
-          : null;
+  const userId =
+    typeof window !== "undefined"
+      ? localStorage.getItem("StudentPortalId")
+      : null;
   const fetchNotifications = async (token: string) => {
     try {
       const token =
         typeof window !== "undefined"
           ? localStorage.getItem("StudentAuthToken")
           : null;
-       const userId =
+      const userId =
         typeof window !== "undefined"
           ? localStorage.getItem("StudentPortalId")
           : null;
@@ -88,6 +91,26 @@ export default function StudentHeader({ currentSection, showBackButton = false, 
     } catch (error) {
       console.error("❌ Failed to fetch notifications:", error);
     }
+  };
+  const userName =
+    typeof window !== "undefined"
+      ? localStorage.getItem("StudentPortalName")
+      : null;
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
+  // Close dropdown if clicked outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !(menuRef.current as any).contains(e.target)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogOut = () => {
+    router.push("/student/ui/sign");
   };
 
   // Mark as Seen
@@ -133,7 +156,7 @@ export default function StudentHeader({ currentSection, showBackButton = false, 
 
   // Real-time notifications with Socket.IO
   useEffect(() => {
-    const socket = getSocket(userId ?? '');
+    const socket = getSocket(userId ?? "");
 
     const handleNotification = (newNotification: NotificationType) => {
       console.log("Received new notification:", newNotification);
@@ -162,29 +185,24 @@ export default function StudentHeader({ currentSection, showBackButton = false, 
       }
     }
   }, [userId]);
- const getNotificationIcon = (type: string) => {
-  switch (type) {
-    case "STUDENT_NOTIFICATION":
-      return "🎓";
-    case "TEACHER_ADDED":
-      return "👩‍🏫"; 
-    case "SYSTEM_ALERT":
-      return "⚠️";
-    case "MEETING_REMINDER":
-      return "📅";
-    case "MESSAGE":
-      return "💬";
-    case "ASSIGNMENT_ALERT":
-      return "📝";
-    default:
-      return "🔔";
-  }
-};
-
-
-
-
-
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case "STUDENT_NOTIFICATION":
+        return "🎓";
+      case "TEACHER_ADDED":
+        return "👩‍🏫";
+      case "SYSTEM_ALERT":
+        return "⚠️";
+      case "MEETING_REMINDER":
+        return "📅";
+      case "MESSAGE":
+        return "💬";
+      case "ASSIGNMENT_ALERT":
+        return "📝";
+      default:
+        return "🔔";
+    }
+  };
 
   return (
     <div>
@@ -230,11 +248,28 @@ export default function StudentHeader({ currentSection, showBackButton = false, 
               <Moon className="w-4 h-4 text-gray-800 dark:text-white" />
             )}
           </button>
-          <div className="p-2.5 bg-white dark:bg-gray-700 rounded-full">
+          <button
+            className="p-2.5 bg-white dark:bg-gray-700 rounded-full"
+            onClick={() => setOpen((prev) => !prev)}
+          >
             <User className="w-4 h-4 text-gray-800 dark:text-white" />
-          </div>
+          </button>
         </div>
       </div>
+      {open && (
+        <div className="absolute right-5 mt-2 w-40 bg-[#ffff] dark:bg-[#252525] shadow-lg rounded-lg py-2 z-50">
+          <div className="px-4 py-2 text-sm text-gray-800 dark:text-white font-semibold">
+            {userName}
+          </div>
+          <hr className="border-gray-300 dark:border-gray-600 my-1" />
+          <button
+            onClick={handleLogOut}
+            className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            Log Out
+          </button>
+        </div>
+      )}
 
       {showNotification && (
         <div
@@ -343,7 +378,6 @@ export default function StudentHeader({ currentSection, showBackButton = false, 
           </div>
         </div>
       )}
-
     </div>
   );
 }

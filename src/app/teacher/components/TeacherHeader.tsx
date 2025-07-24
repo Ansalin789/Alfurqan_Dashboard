@@ -13,7 +13,7 @@ import AddMeeting from "./AddMeeting";
 type Props = {
   readonly currentSection: string;
   readonly showBackButton?: boolean;
-  readonly showBackPath?:string;
+  readonly showBackPath?: string;
 };
 type NotificationType = {
   _id: string;
@@ -25,7 +25,11 @@ type NotificationType = {
   isRead: boolean;
 };
 
-export default function TeacherHeader({ currentSection, showBackButton = false, showBackPath = '' }: Props) {
+export default function TeacherHeader({
+  currentSection,
+  showBackButton = false,
+  showBackPath = "",
+}: Props) {
   const theme: any = useTheme();
   const darkMode = theme?.darkMode ?? false;
   const toggleDarkMode = theme?.toggleDarkMode ?? (() => {});
@@ -48,7 +52,7 @@ export default function TeacherHeader({ currentSection, showBackButton = false, 
       try {
         const roleAccess = JSON.parse(roleAccessRaw);
         const modules = roleAccess?.teachermodules || roleAccess;
-  
+
         console.log("✅ Modules being used:", modules);
         console.log("🔐 Dashboard write:", modules?.dashboard?.write);
         console.log("🔐 Leave write:", modules?.leave);
@@ -62,19 +66,18 @@ export default function TeacherHeader({ currentSection, showBackButton = false, 
     }
   }, []);
 
-
   // Fetch old notifications
-   const userId =
-        typeof window !== "undefined"
-          ? localStorage.getItem("TeacherPortalId")
-          : null;
+  const userId =
+    typeof window !== "undefined"
+      ? localStorage.getItem("TeacherPortalId")
+      : null;
   const fetchNotifications = async (token: string) => {
     try {
       const token =
         typeof window !== "undefined"
           ? localStorage.getItem("TeacherAuthToken")
           : null;
-       const userId =
+      const userId =
         typeof window !== "undefined"
           ? localStorage.getItem("TeacherPortalId")
           : null;
@@ -139,10 +142,30 @@ export default function TeacherHeader({ currentSection, showBackButton = false, 
       console.error("❌ Failed to mark as seen:", error);
     }
   };
+  const userName =
+    typeof window !== "undefined"
+      ? localStorage.getItem("TeacherPortalName")
+      : null;
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
+  // Close dropdown if clicked outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !(menuRef.current as any).contains(e.target)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogOut = () => {
+    router.push("/teacher/ui/sign");
+  };
 
   // Real-time notifications with Socket.IO
   useEffect(() => {
-    const socket = getSocket(userId ?? '');
+    const socket = getSocket(userId ?? "");
 
     const handleNotification = (newNotification: NotificationType) => {
       console.log("Received new notification:", newNotification);
@@ -171,58 +194,55 @@ export default function TeacherHeader({ currentSection, showBackButton = false, 
       }
     }
   }, [userId]);
- const getNotificationIcon = (type: string) => {
-  switch (type) {
-    case "STUDENT_NOTIFICATION":
-      return "🎓";
-    case "TEACHER_ADDED":
-      return "👩‍🏫"; 
-    case "SYSTEM_ALERT":
-      return "⚠️";
-    case "MEETING_REMINDER":
-      return "📅";
-    case "MESSAGE":
-      return "💬";
-    case "ASSIGNMENT_ALERT":
-      return "📝";
-    default:
-      return "🔔";
-  }
-};
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case "STUDENT_NOTIFICATION":
+        return "🎓";
+      case "TEACHER_ADDED":
+        return "👩‍🏫";
+      case "SYSTEM_ALERT":
+        return "⚠️";
+      case "MEETING_REMINDER":
+        return "📅";
+      case "MESSAGE":
+        return "💬";
+      case "ASSIGNMENT_ALERT":
+        return "📝";
+      default:
+        return "🔔";
+    }
+  };
 
+  const renderButton = () => {
+    if (currentSection === "Dashboard") {
+      return (
+        <button
+          onClick={() => setShowLeaveForm(true)}
+          className="bg-[#576CBC] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg"
+          disabled={!leaveWrite}
+        >
+          Request for Leave
+        </button>
+      );
+    }
 
-const renderButton = () => {
-  if (currentSection === "Dashboard") {
-    return (
-      <button
-        onClick={() => setShowLeaveForm(true)}
-        className="bg-[#576CBC] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg"
-        disabled = {!leaveWrite}
-      >
-        Request for Leave
-      </button>
-    );
-  }
+    if (
+      currentSection === "Scheduled Meeting" ||
+      currentSection === "Calender"
+    ) {
+      return (
+        <button
+          onClick={() => setAddMeetings(true)}
+          className="bg-[#576CBC] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg"
+          disabled={!addWrite}
+        >
+          Add Meeting
+        </button>
+      );
+    }
 
-  if (
-    (currentSection === "Scheduled Meeting" || currentSection === "Calender")
-  ) {
-    return (
-      <button
-        onClick={() => setAddMeetings(true)}
-        className="bg-[#576CBC] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg"
-        disabled = {!addWrite}
-      >
-        Add Meeting
-      </button>
-    );
-  }
-
-  return null;
-};
-
-
-
+    return null;
+  };
 
   return (
     <div>
@@ -269,14 +289,30 @@ const renderButton = () => {
               <Moon className="w-4 h-4 text-gray-800 dark:text-white" />
             )}
           </button>
-          <div className="p-2.5 bg-white dark:bg-gray-700 rounded-full">
+          <button
+            className="p-2.5 bg-white dark:bg-gray-700 rounded-full"
+            onClick={() => setOpen((prev) => !prev)}
+          >
             <User className="w-4 h-4 text-gray-800 dark:text-white" />
-          </div>
+          </button>
         </div>
       </div>
       {showLeaveForm && <LeaveForm onClose={() => setShowLeaveForm(false)} />}
       {showAddMeeting && <AddMeeting onClose={() => setAddMeetings(false)} />}
-
+      {open && (
+        <div className="absolute right-5 mt-2 w-40 bg-[#ffff] dark:bg-[#252525] shadow-lg rounded-lg py-2 z-50">
+          <div className="px-4 py-2 text-sm text-gray-800 dark:text-white font-semibold">
+            {userName}
+          </div>
+          <hr className="border-gray-300 dark:border-gray-600 my-1" />
+          <button
+            onClick={handleLogOut}
+            className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            Log Out
+          </button>
+        </div>
+      )}
       {showNotification && (
         <div
           ref={notificationRef}
@@ -384,7 +420,6 @@ const renderButton = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 }
