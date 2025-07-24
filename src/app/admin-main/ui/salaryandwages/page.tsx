@@ -11,14 +11,7 @@ import AdminHeader from "../../components/AdminHeader";
 import axios from "axios";
 import moment from "moment";
 
-export const formatDateISO = (dateStr: string | undefined | null): string => {
-  if (!dateStr) return "-";
 
-  const date = new Date(dateStr);
-  const isValid = !isNaN(date.getTime());
-
-  return isValid ? date.toISOString().split("T")[0] : "-";
-};
 
 
 export interface ISalaryWage {
@@ -38,7 +31,11 @@ export interface ISalaryWageResponse {
   totalCount: number;
   expenses: ISalaryWage[];
 }
-
+interface SalaryCardCounts {
+  totalSalaryPaid: number;
+  totalPendingSalary: number;
+  balanceSalary: number;
+}
 const SalaryCard = () => {
   const [duration, setDuration] = useState("Last month");
   const [currentPage, setCurrentPage] = useState(1);
@@ -66,12 +63,23 @@ const SalaryCard = () => {
     paymentStatus: "",
     paymentDate: "",
   });
-
-  interface SalaryCardCounts {
-    totalSalaryPaid: number;
-    totalPendingSalary: number;
-    balanceSalary: number;
-  }
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return "-";
+  
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "-";
+  
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+  
+    return `${year}-${month < 10 ? "0" + month : month}-${
+      day < 10 ? "0" + day : day
+    }`;
+  };
+  
+  
+  
 
   const [salaryCardData, setSalaryCardData] = useState<SalaryCardCounts>({
     totalSalaryPaid: 0,
@@ -352,7 +360,7 @@ const SalaryCard = () => {
                     {row.paymentMethod}
                   </td>
                   <td className="px-3 py-3 break-words text-[12px] text-left">
-                  {formatDateISO(row.paymentDate)}                  </td>
+                  {formatDate(row.paymentDate)}                  </td>
                   <td className="px-3 py-3 break-words text-[12px] text-left">
                     <span
                       className={`inline-flex items-center justify-center w-20 h-5 px-3 py-1 rounded-md
