@@ -85,6 +85,7 @@ const ScheduledClasses = () => {
   const [toDate, setToDate] = useState("");
   const [timing, setTiming] = useState("");
   const [status, setStatus] = useState("");
+  const [rescheduleEndTime, setRescheduleEndTime] = useState("");
 
   const toggleTeacherDropdown = (id: string) => {
     setOpenTeacherDropdownId((prev) => (prev === id ? null : id));
@@ -210,8 +211,8 @@ const ScheduledClasses = () => {
             createdBy: firstRecord.createdBy,
             teachers: group.records.map((rec: any) => rec.teacher[0]),
             // Add other fields as needed
-            duration: firstRecord.duration || '',
-            meetingminutes: firstRecord.meetingminutes || '',
+            duration: firstRecord.duration || "",
+            meetingminutes: firstRecord.meetingminutes || "",
           };
         });
 
@@ -304,19 +305,30 @@ const ScheduledClasses = () => {
 
   const handleRescheduleSubmit = async () => {
     if (
-      !rescheduleReason.trim() ||
       !rescheduleDate ||
       !rescheduleTime ||
+      !rescheduleEndTime ||
+      !rescheduleReason ||
       !selectedItemId
     ) {
       alert("Please fill all fields");
       return;
     }
 
+    const endTime = rescheduleEndTime;
+    if (!endTime) {
+      alert("End time is missing for this meeting.");
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("token"); // or use context/auth provider
+      const token = localStorage.getItem("AdminAuthToken");
+      const selectedMeeting = upcomingClasses.find(
+        (m) => m._id === selectedItemId
+      );
+      const meetingIdToSend = selectedMeeting?.meetingId;
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/allAdminMeeting/${selectedItemId}`,
+        `http://localhost:5001/allAdminMeeting/${meetingIdToSend}`,
         {
           method: "PUT",
           headers: {
@@ -326,6 +338,7 @@ const ScheduledClasses = () => {
           body: JSON.stringify({
             selectedDate: rescheduleDate,
             startTime: rescheduleTime,
+            endTime: rescheduleEndTime,
             description: rescheduleReason,
             meetingStatus: "Rescheduled",
           }),
@@ -337,20 +350,9 @@ const ScheduledClasses = () => {
       const result = await response.json();
 
       if (!response.ok) {
+        console.error("Backend error:", result);
         throw new Error(result.message || "Failed to update meeting");
       }
-
-      // Update frontend UI
-      setUpcomingClasses((prevClasses) =>
-        prevClasses.map((item) =>
-          item._id === selectedItemId
-            ? {
-                ...item,
-                meetingStatus: "Rescheduled" as Meeting["meetingStatus"],
-              }
-            : item
-        )
-      );
 
       setSuccess(true);
 
@@ -456,7 +458,7 @@ const ScheduledClasses = () => {
       <div className="">
         <AdminHeader currentSection="meetings" />
         <div className="md:p-0 mx-auto">
-          <NextMeetingSchedule/>
+          <NextMeetingSchedule />
 
           <div className="h-full w-full  flex flex-col justify-between">
             <div className="p-0 justify-between flex flex-col">
@@ -585,29 +587,26 @@ const ScheduledClasses = () => {
                                   </button>
                                   {openTeacherDropdownId === item._id && (
                                     <div className="absolute z-10 mt-2 w-48 bg-white rounded shadow-lg p-2 dark:bg-[#343434]">
-                                      {item.teachers
-                                        .map((teacher, idx) => (
-                                          <div
-                                            key={idx}
-                                            className="py-1 text-[#17243E] dark:text-[#FDFDFD]"
-                                          >
-                                            <span className="flex items-center gap-2">
-                                              <IoPersonOutline />
-                                              {teacher.teacherName}
-                                            </span>
-                                          </div>
-                                        ))}
+                                      {item.teachers.map((teacher, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="py-1 text-[#17243E] dark:text-[#FDFDFD]"
+                                        >
+                                          <span className="flex items-center gap-2">
+                                            <IoPersonOutline />
+                                            {teacher.teacherName}
+                                          </span>
+                                        </div>
+                                      ))}
                                     </div>
                                   )}
                                 </>
                               ) : (
                                 <span className="flex items-center gap-2 font-medium">
                                   <IoPersonOutline />
-                                  {item.teachers?.length > 0 ? (
-                                    item.teachers[0].teacherName
-                                  ) : (
-                                    "No teacher assigned"
-                                  )}
+                                  {item.teachers?.length > 0
+                                    ? item.teachers[0].teacherName
+                                    : "No teacher assigned"}
                                 </span>
                               )}
                             </div>
@@ -704,7 +703,8 @@ const ScheduledClasses = () => {
                                     <button
                                       onClick={() => {
                                         setIsRescheduleModalOpen(true);
-                                        setSelectedItemId(item._id);
+                                        setSelectedItemId(item._id); // Always use the MongoDB _id
+                                        setSelectedMeetingDetails(item); // Also set the full meeting details for reference
                                         setIsDetailsModalOpen(false); // Close dropdown after clicking
                                       }}
                                       className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
@@ -970,7 +970,7 @@ const ScheduledClasses = () => {
 
             {/* Date and Time Row */}
             <div className="flex gap-4 mb-6">
-              <div className="w-1/2">
+              <div className="w-1/3">
                 <label className="block text-xs font-medium text-[#0D0E25] mb-1 dark:text-white">
                   Reschedule Date
                 </label>
@@ -984,15 +984,29 @@ const ScheduledClasses = () => {
                 </div>
               </div>
 
-              <div className="w-1/2">
+              <div className="w-1/3">
                 <label className="block text-xs font-medium text-[#0D0E25] mb-1 dark:text-white">
-                  Reschedule Time
+                  Reschedule Start Time
                 </label>
                 <div className="relative">
                   <input
                     type="time"
                     value={rescheduleTime}
                     onChange={(e) => setRescheduleTime(e.target.value)}
+                    className="w-full text-sm px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="w-1/3">
+                <label className="block text-xs font-medium text-[#0D0E25] mb-1 dark:text-white">
+                  Reschedule End Time
+                </label>
+                <div className="relative">
+                  <input
+                    type="time"
+                    value={rescheduleEndTime}
+                    onChange={(e) => setRescheduleEndTime(e.target.value)}
                     className="w-full text-sm px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                   />
                 </div>
