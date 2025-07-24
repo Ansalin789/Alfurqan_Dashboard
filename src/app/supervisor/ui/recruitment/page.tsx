@@ -33,6 +33,7 @@ interface Applicant {
   applicationDate: string;
   candidateEmail: string;
   candidatePhoneNumber: number;
+  
   candidateCountry: string;
   candidateCity: string;
   positionApplied: string;
@@ -313,11 +314,6 @@ export default function ApplicantsPage() {
   const [resumeImages, setResumeImages] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(items.length / itemsPerPage);
-
-  const indexOfLast = currentPage * itemsPerPage;
-  const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentItems = items.slice(indexOfFirst, indexOfLast);
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [quranReading, setQuranReading] = useState("Medium");
   const [tajweed, setTajweed] = useState("Medium");
@@ -344,20 +340,22 @@ export default function ApplicantsPage() {
   const [positionApplied, setPositionApplied] = useState("");
   const [applicationStatus, setApplicationStatus] = useState("");
 
+  // State for dynamic filter options
+  const [positionOptions, setPositionOptions] = useState<string[]>(["Islamic Teacher", "Quran Teacher", "Arabic Teacher"]);
+  const [statusOptions, setStatusOptions] = useState<string[]>(["Shortlisted", "Rejected", "Waiting", "Approved", "NewApplication"]);
+
+  // Extract skills utility function (moved to top-level for ES5 strict mode)
   const extractSkills = (rawText: string): string[] => {
     // Only keep content before "Accomplishments" or "Certifications"
     const relevantSection = rawText.split(/Accomplishments|Certifications/i)[0];
-
     // Match all bullet point items (• React, etc.)
     const matches = relevantSection.match(/•\s*[^•\n]+/g);
-
     const skills = matches
       ? matches
           .map((skill) => skill.replace(/•\s*/, "").trim()) // remove bullet and whitespace
           .flatMap((s) => s.split(",").map((sub) => sub.trim())) // split comma-separated items
           .filter(Boolean) // remove empty strings
       : [];
-
     return skills;
   };
 
@@ -388,74 +386,16 @@ export default function ApplicantsPage() {
 
   pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
-  useEffect(() => {
+  // Fetch applicants with optional filters
+  const fetchApplicants = async (filters: any = {}) => {
     const token =
       typeof window !== "undefined"
         ? localStorage.getItem("SupervisorAuthToken")
         : null;
-
-    const supervisorId =
-      typeof window !== "undefined"
-        ? localStorage.getItem("SupervisorPortalId")
-        : null;
-
     if (!token) {
       console.error("❌ SupervisorAuthToken not found");
       return;
     }
-
-    if (!supervisorId) {
-      console.warn("⚠️ SupervisorId not found in localStorage");
-    } else {
-      console.log("✅ Supervisor ID from localStorage:", supervisorId);
-    }
-
-    axios
-      .get("https://api.blackstoneinfomaticstech.com/applicants", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        params: { params },
-      })
-      .then((response) => setApplicants(response.data.applicants))
-      .catch((error) => console.error("Error fetching applicants:", error));
-  }, []);
-  const handleFilter = async () => {
-    setShowModal(false);
-    console.log("button clicked");
-
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("SupervisorAuthToken")
-        : null;
-
-    const supervisorId =
-      typeof window !== "undefined"
-        ? localStorage.getItem("SupervisorPortalId")
-        : null;
-
-    if (!token) {
-      console.error("❌ SupervisorAuthToken not found");
-      return;
-    }
-
-    if (!supervisorId) {
-      console.warn("⚠️ SupervisorId not found in localStorage");
-    } else {
-      console.log("✅ Supervisor ID from localStorage:", supervisorId);
-    }
-
-    // ✅ Build params object here
-    const params: any = {};
-    if (searchText) params.searchText = searchText;
-    if (fromDate && toDate) {
-      params["dateRange.from"] = fromDate;
-      params["dateRange.to"] = toDate;
-    }
-    if (positionApplied) params.positionApplied = positionApplied;
-    if (applicationStatus) params.applicationStatus = applicationStatus;
-
     try {
       const response = await axios.get(
         "https://api.blackstoneinfomaticstech.com/applicants",
@@ -464,14 +404,82 @@ export default function ApplicantsPage() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          params, // ✅ Pass the object directly
+          params: filters,
         }
       );
-      console.log(response.data.applicants);
       setApplicants(response.data.applicants);
+      // Update filter dropdowns with unique values from API response
+      const applicantsList = response.data.applicants || [];
+      const uniquePositions = Array.from(
+        new Set(
+          applicantsList
+            .map((a: any) => a.positionApplied)
+            .filter((x: any): x is string => typeof x === 'string')
+        )
+      ) as string[];
+      const uniqueStatuses = Array.from(
+        new Set(
+          applicantsList
+            .map((a: any) => a.applicationStatus)
+            .filter((x: any): x is string => typeof x === 'string')
+        )
+      ) as string[];
+      if (uniquePositions.length > 0) setPositionOptions(uniquePositions);
+      if (uniqueStatuses.length > 0) setStatusOptions(uniqueStatuses);
     } catch (error) {
       console.error("Error fetching applicants:", error);
     }
+  };
+
+  // On mount, fetch all applicants
+  useEffect(() => {
+    fetchApplicants();
+  }, []);
+
+  // When Reset is clicked, clear filters and fetch all applicants
+  const handleResetFilter = () => {
+    setSearchText("");
+    setFromDate("");
+    setToDate("");
+    setPositionApplied("");
+    setApplicationStatus("");
+    fetchApplicants();
+  };
+
+  // When dropdowns change, fetch filtered applicants immediately
+  const handlePositionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setPositionApplied(value);
+    fetchApplicants({
+      ...(value ? { positionApplied: value } : {}),
+      ...(applicationStatus ? { applicationStatus } : {}),
+      ...(searchText ? { searchText } : {}),
+      ...(fromDate && toDate ? { "dateRange.from": fromDate, "dateRange.to": toDate } : {}),
+    });
+  };
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setApplicationStatus(value);
+    fetchApplicants({
+      ...(positionApplied ? { positionApplied } : {}),
+      ...(value ? { applicationStatus: value } : {}),
+      ...(searchText ? { searchText } : {}),
+      ...(fromDate && toDate ? { "dateRange.from": fromDate, "dateRange.to": toDate } : {}),
+    });
+  };
+
+  // Submit button for other filters (search, date)
+  const handleFilter = async () => {
+    setShowModal(false);
+    const params: any = {};
+    if (searchText) params.searchText = searchText;
+    if (fromDate && toDate) {
+      params["dateRange.from"] = fromDate;
+      params["dateRange.to"] = toDate;
+    }
+    if (positionApplied) params.positionApplied = positionApplied;
+    if (applicationStatus) params.applicationStatus = applicationStatus;
+    fetchApplicants(params);
   };
   useEffect(() => {
     const Id =
@@ -506,13 +514,6 @@ export default function ApplicantsPage() {
       socket.off("recruitmentlist", handleList);
     };
   }, []);
-
-  const params = new URLSearchParams();
-  if (searchText) params.append("searchText", searchText);
-  if (fromDate) params.append("dateRange.from", fromDate);
-  if (toDate) params.append("dateRange.to", toDate);
-  if (positionApplied) params.append("positionApplied", positionApplied);
-  if (applicationStatus) params.append("applicationStatus", applicationStatus);
 
   const tabs = ["All", "New Application", "Shortlisted", "Rejected", "Waiting"];
 
@@ -550,9 +551,11 @@ export default function ApplicantsPage() {
     searchText
   );
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentApplicants = filteredApplicants.slice(startIndex, endIndex);
+  // Calculate pagination variables at the top of the component so they are always in scope
+  const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentApplicants = filteredApplicants.slice(indexOfFirst, indexOfLast);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -746,42 +749,37 @@ export default function ApplicantsPage() {
                     {showModal && (
                       <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
                         <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
-                          {/* Close Icon */}
+                          {/* X Icon for close */}
                           <button
-                            className="absolute top-2 right-3 text-gray-400 text-xl"
+                            className="absolute top-2 right-3 text-gray-400 text-2xl font-bold hover:text-gray-600"
                             onClick={() => setShowModal(false)}
+                            aria-label="Close filter modal"
                           >
-                            &times;
+                            <IoCloseOutline />
                           </button>
-
                           <h2 className="text-lg font-semibold mb-4">
                             Filter by
                           </h2>
-
                           {/* Date Input */}
                           <div className="mb-4">
                             <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
                               Date Range
                             </label>
-
                             <div className="flex gap-2 mb-2">
                               <input
                                 type="date"
                                 className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                                // value={exp.fromDate}
                                 value={fromDate}
                                 onChange={(e) => setFromDate(e.target.value)}
                               />
                               <input
                                 type="date"
                                 className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                                // value={exp.toDate}
                                 value={toDate}
                                 onChange={(e) => setToDate(e.target.value)}
                               />
                             </div>
                           </div>
-
                           {/* Position Applied */}
                           <div className="mb-4">
                             <label
@@ -793,16 +791,14 @@ export default function ApplicantsPage() {
                             <select
                               className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
                               value={positionApplied}
-                              onChange={(e) =>
-                                setPositionApplied(e.target.value)
-                              }
+                              onChange={handlePositionChange}
                             >
-                              <option>Islamic Teacher</option>
-                              <option>Quran Teacher</option>
-                              <option>Arabic Teacher</option>
+                              <option value="">All</option>
+                              {positionOptions.map((option) => (
+                                <option key={option} value={option}>{option}</option>
+                              ))}
                             </select>
                           </div>
-
                           {/* Status */}
                           <div className="mb-6">
                             <label
@@ -814,25 +810,21 @@ export default function ApplicantsPage() {
                             <select
                               className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
                               value={applicationStatus}
-                              onChange={(e) =>
-                                setApplicationStatus(e.target.value)
-                              }
+                              onChange={handleStatusChange}
                             >
-                              <option>Shortlisted</option>
-                              <option>Rejected</option>
-                              <option>Waiting</option>
-                              <option>Approved</option>
-                              <option>NewApplication</option>
+                              <option value="">All</option>
+                              {statusOptions.map((option) => (
+                                <option key={option} value={option}>{option}</option>
+                              ))}
                             </select>
                           </div>
-
                           {/* Buttons */}
                           <div className="flex justify-end gap-3">
                             <button
-                              onClick={() => setShowModal(false)}
+                              onClick={handleResetFilter}
                               className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
                             >
-                              Cancel
+                              Reset
                             </button>
                             <button
                               className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
