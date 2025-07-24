@@ -14,7 +14,7 @@ import { IoArrowBackCircleSharp } from "react-icons/io5";
 type Props = {
   readonly currentSection: string;
   readonly showBackButton?: boolean;
-  readonly showBackPath?:string;
+  readonly showBackPath?: string;
 };
 type NotificationType = {
   _id: string;
@@ -26,7 +26,11 @@ type NotificationType = {
   isRead: boolean;
 };
 
-export default function SupervisorHeader({ currentSection, showBackButton = false, showBackPath = '' }: Props) {
+export default function SupervisorHeader({
+  currentSection,
+  showBackButton = false,
+  showBackPath = "",
+}: Props) {
   const theme: any = useTheme();
   const darkMode = theme?.darkMode ?? false;
   const toggleDarkMode = theme?.toggleDarkMode ?? (() => {});
@@ -40,17 +44,17 @@ export default function SupervisorHeader({ currentSection, showBackButton = fals
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
   // Fetch old notifications
-   const userId =
-        typeof window !== "undefined"
-          ? localStorage.getItem("SupervisorPortalId")
-          : null;
+  const userId =
+    typeof window !== "undefined"
+      ? localStorage.getItem("SupervisorPortalId")
+      : null;
   const fetchNotifications = async (token: string) => {
     try {
       const token =
         typeof window !== "undefined"
           ? localStorage.getItem("SupervisorAuthToken")
           : null;
-       const userId =
+      const userId =
         typeof window !== "undefined"
           ? localStorage.getItem("SupervisorPortalId")
           : null;
@@ -118,7 +122,7 @@ export default function SupervisorHeader({ currentSection, showBackButton = fals
 
   // Real-time notifications with Socket.IO
   useEffect(() => {
-    const socket = getSocket(userId ?? '');
+    const socket = getSocket(userId ?? "");
 
     const handleNotification = (newNotification: NotificationType) => {
       console.log("Received new notification:", newNotification);
@@ -135,6 +139,26 @@ export default function SupervisorHeader({ currentSection, showBackButton = fals
       socket.off("notification", handleNotification);
     };
   }, [userId]);
+  const userName =
+    typeof window !== "undefined"
+      ? localStorage.getItem("SupervisorPortalName")
+      : null;
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
+  // Close dropdown if clicked outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !(menuRef.current as any).contains(e.target)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogOut = () => {
+    router.push("/teacher/ui/sign");
+  };
 
   // Load on component mount
   useEffect(() => {
@@ -147,25 +171,24 @@ export default function SupervisorHeader({ currentSection, showBackButton = fals
       }
     }
   }, [userId]);
- const getNotificationIcon = (type: string) => {
-  switch (type) {
-    case "STUDENT_NOTIFICATION":
-      return "🎓";
-    case "TEACHER_ADDED":
-      return "👩‍🏫"; 
-    case "SYSTEM_ALERT":
-      return "⚠️";
-    case "MEETING_REMINDER":
-      return "📅";
-    case "MESSAGE":
-      return "💬";
-    case "ASSIGNMENT_ALERT":
-      return "📝";
-    default:
-      return "🔔";
-  }
-};
-
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case "STUDENT_NOTIFICATION":
+        return "🎓";
+      case "TEACHER_ADDED":
+        return "👩‍🏫";
+      case "SYSTEM_ALERT":
+        return "⚠️";
+      case "MEETING_REMINDER":
+        return "📅";
+      case "MESSAGE":
+        return "💬";
+      case "ASSIGNMENT_ALERT":
+        return "📝";
+      default:
+        return "🔔";
+    }
+  };
 
   const renderButton = () => {
     if (currentSection.startsWith("Dashboard")) {
@@ -267,13 +290,30 @@ export default function SupervisorHeader({ currentSection, showBackButton = fals
               <Moon className="w-4 h-4 text-gray-800 dark:text-white" />
             )}
           </button>
-          <div className="p-2.5 bg-white dark:bg-gray-700 rounded-full">
+          <button
+            className="p-2.5 bg-white dark:bg-gray-700 rounded-full"
+            onClick={() => setOpen((prev) => !prev)}
+          >
             <User className="w-4 h-4 text-gray-800 dark:text-white" />
-          </div>
+          </button>
         </div>
       </div>
       {showLeaveForm && <LeaveForm onClose={() => setShowLeaveForm(false)} />}
       {showAddMeeting && <AddMeeting onClose={() => setAddMeetings(false)} />}
+      {open && (
+        <div className="absolute right-5 mt-2 w-40 bg-[#ffff] dark:bg-[#252525] shadow-lg rounded-lg py-2 z-50">
+          <div className="px-4 py-2 text-sm text-gray-800 dark:text-white font-semibold">
+            {userName}
+          </div>
+          <hr className="border-gray-300 dark:border-gray-600 my-1" />
+          <button
+            onClick={handleLogOut}
+            className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            Log Out
+          </button>
+        </div>
+      )}
       {showAddApplicant && (
         <AddApplicants onClose={() => setAddApplicant(false)} />
       )}

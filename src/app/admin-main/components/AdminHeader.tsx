@@ -11,7 +11,6 @@ import { getSocket } from "@/app/utils/socket";
 import AddPackage from "./AddPackage";
 import AddMeeting from "./AddMeeting";
 import AddExpenses from "./AddExpenses";
-import AdminCalendar from "./AdminCalendar";
 import { toast } from "react-toastify";
 import AddEmployee from "./AddEmployee";
 import GenerateInvoice from "./GenerateInvoice";
@@ -26,7 +25,6 @@ type NotificationType = {
   isRead: boolean;
 };
 
-
 // In AdminHeader.tsx
 type AdminHeaderProps = {
   currentSection: string;
@@ -39,7 +37,7 @@ export default function AdminHeader({
   showBackButton = false,
   showBackPath = "",
   employeeActiveTab,
-}: AdminHeaderProps) {
+}: Readonly<AdminHeaderProps>) {
   const theme: any = useTheme();
   const darkMode = theme?.darkMode ?? false;
   const toggleDarkMode = theme?.toggleDarkMode ?? (() => {});
@@ -57,7 +55,7 @@ export default function AdminHeader({
   const [showAddExpenses, setShowAddExpenses] = useState(false);
   const [showAddEmployee, setShowAddEmployee] = useState(false);
   const [expenses, setExpenses] = useState([]);
-const [showGenerateInvoice, setShowGenerateInvoice] = useState(false);
+  const [showGenerateInvoice, setShowGenerateInvoice] = useState(false);
 
   const [permissions, setPermissions] = useState({
     leave: false,
@@ -68,7 +66,10 @@ const [showGenerateInvoice, setShowGenerateInvoice] = useState(false);
     employees: false,
   });
 
-  const userId = typeof window !== "undefined" ? localStorage.getItem("AdminPortalId") : null;
+  const userId =
+    typeof window !== "undefined"
+      ? localStorage.getItem("AdminPortalId")
+      : null;
 
   const refreshExpenses = async () => {
     try {
@@ -76,7 +77,7 @@ const [showGenerateInvoice, setShowGenerateInvoice] = useState(false);
       const response = await axios.get(
         "https://api.blackstoneinfomaticstech.com/expense",
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       setExpenses(response.data);
@@ -94,8 +95,10 @@ const [showGenerateInvoice, setShowGenerateInvoice] = useState(false);
           const parsed = JSON.parse(storedPermissions);
           setPermissions({
             leave: parsed?.leave?.write ?? parsed?.employees?.write ?? false,
-            packages: parsed?.packages?.write ?? parsed?.courses?.write ?? false,
-            expenses: parsed?.expenses?.write ?? parsed?.invoice?.write ?? false,
+            packages:
+              parsed?.packages?.write ?? parsed?.courses?.write ?? false,
+            expenses:
+              parsed?.expenses?.write ?? parsed?.invoice?.write ?? false,
             meetings: parsed?.meetings?.write ?? false,
             invoice: parsed?.invoice?.write ?? false,
             employees: parsed?.employees?.write ?? false,
@@ -123,7 +126,9 @@ const [showGenerateInvoice, setShowGenerateInvoice] = useState(false);
         );
         const notifications = data?.data?.notifications ?? [];
         setNotifications(notifications);
-        setNotificationCount(notifications.filter((n: any) => !n.isRead).length);
+        setNotificationCount(
+          notifications.filter((n: any) => !n.isRead).length
+        );
       } catch (error) {
         console.error("Failed to fetch notifications:", error);
       }
@@ -134,7 +139,10 @@ const [showGenerateInvoice, setShowGenerateInvoice] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (notificationRef.current && !notificationRef.current.contains(e.target as Node)) {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(e.target as Node)
+      ) {
         setShowNotification(false);
       }
     };
@@ -160,31 +168,35 @@ const [showGenerateInvoice, setShowGenerateInvoice] = useState(false);
 
   const getActionButton = () => {
     const path = pathname.toLowerCase();
-    
-if (
-  path.includes("employees") && 
-  permissions.employees &&
-  employeeActiveTab === "otheremployees" // Now using the correct prop
-)   if (
-    path.includes("employees") && 
-    permissions.employees &&
-    employeeActiveTab === "otheremployees" // Now using the correct prop
-  ) {
-    return (
-      <button
-        onClick={() => setShowAddEmployee(true)}
-        className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
-      >
-        Add New 
-      </button>
-    );
-  }
-    
-    if (path.includes("dashboard") && (permissions.leave || permissions.meetings)) {
+
+    if (
+      path.includes("employees") &&
+      permissions.employees &&
+      employeeActiveTab === "otheremployees" // Now using the correct prop
+    )
+      if (
+        path.includes("employees") &&
+        permissions.employees &&
+        employeeActiveTab === "otheremployees" // Now using the correct prop
+      ) {
+        return (
+          <button
+            onClick={() => setShowAddEmployee(true)}
+            className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-[13px] sm:px-4"
+          >
+            Add New
+          </button>
+        );
+      }
+
+    if (
+      path.includes("dashboard") &&
+      (permissions.leave || permissions.meetings)
+    ) {
       return (
         <button
           onClick={() => router.push("/admin-main/ui/employees")}
-          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
+          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-[13px] sm:px-4"
         >
           Leave Approval
         </button>
@@ -194,17 +206,20 @@ if (
       return (
         <button
           onClick={() => setShowAddPackage(true)}
-          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
+          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-[13px] sm:px-4"
         >
           Add Package
         </button>
       );
     }
-    if (path.includes("expenses") && (permissions.expenses || permissions.invoice)) {
+    if (
+      path.includes("expenses") &&
+      (permissions.expenses || permissions.invoice)
+    ) {
       return (
         <button
           onClick={() => setShowAddExpenses(true)}
-          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
+          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-[13px] sm:px-4"
         >
           Add Expenses
         </button>
@@ -214,23 +229,43 @@ if (
       return (
         <button
           onClick={() => setShowAddMeeting(true)}
-          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
+          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-[13px] sm:px-4"
         >
           Add Meeting
         </button>
       );
     }
-if (path.includes("invoice") && permissions.invoice) {
-  return (
-    <button
-      onClick={() => setShowGenerateInvoice(true)}
-      className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
-    >
-      Generate Invoice
-    </button>
-  );
-}
+    if (path.includes("invoice") && permissions.invoice) {
+      return (
+        <button
+          onClick={() => setShowGenerateInvoice(true)}
+          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-[12px] sm:text-base sm:px-4"
+        >
+          Generate Invoice
+        </button>
+      );
+    }
     return null;
+  };
+  const userName =
+    typeof window !== "undefined"
+      ? localStorage.getItem("AdminPortalName")
+      : null;
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
+  // Close dropdown if clicked outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !(menuRef.current as any).contains(e.target)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogOut = () => {
+    router.push("/admin-main/ui/login");
   };
 
   const handleNotificationClick = async (notificationId: string) => {
@@ -335,7 +370,10 @@ if (path.includes("invoice") && permissions.invoice) {
                       onClick={() => setShowNotification(false)}
                       className="text-white hover:text-gray-200"
                     >
-                      <X size={18} className="text-red-600 mr-3 font-semibold dark:text-white" />
+                      <X
+                        size={18}
+                        className="text-red-600 mr-3 font-semibold dark:text-white"
+                      />
                     </button>
                   </div>
 
@@ -396,22 +434,33 @@ if (path.includes("invoice") && permissions.invoice) {
                                   {notification.senderName || "Unknown"}
                                 </h4>
                                 <span className="text-xs text-gray-500 dark:text-[#bbb0b099] whitespace-nowrap ml-2">
-                                  {new Date(notification.createdDate).toLocaleTimeString([], {
+                                  {new Date(
+                                    notification.createdDate
+                                  ).toLocaleTimeString([], {
                                     hour: "2-digit",
                                     minute: "2-digit",
                                   })}
                                 </span>
                               </div>
                               <div className="text-xs mt-0.5 text-gray-800 flex items-center gap-1 dark:text-[#bbb0b099] dark:hover:text-white">
-                                <span>{getNotificationIcon(notification.notificationType)}</span>
-                                <span className="truncate">{notification.messages}</span>
+                                <span>
+                                  {getNotificationIcon(
+                                    notification.notificationType
+                                  )}
+                                </span>
+                                <span className="truncate">
+                                  {notification.messages}
+                                </span>
                               </div>
                             </div>
                           </button>
                         ))
                     ) : (
                       <div className="p-6 text-center text-gray-800 dark:text-gray-400">
-                        <Bell size={40} className="mx-auto text-gray-300 mb-2" />
+                        <Bell
+                          size={40}
+                          className="mx-auto text-gray-300 mb-2"
+                        />
                         <p>No notifications found</p>
                       </div>
                     )}
@@ -431,18 +480,36 @@ if (path.includes("invoice") && permissions.invoice) {
               )}
             </button>
 
-            <div className="p-2 bg-white dark:bg-gray-700 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600">
+            <button
+              className="p-2.5 bg-white dark:bg-gray-700 rounded-full"
+              onClick={() => setOpen((prev) => !prev)}
+            >
               <User className="w-4 h-4 text-gray-800 dark:text-white" />
-            </div>
+            </button>
           </div>
         </div>
       </div>
-
-      {showAddPackage && <AddPackage onClose={() => setShowAddPackage(false)} />}
+      {open && (
+        <div className="absolute right-5 mt-2 w-40 bg-[#ffff] dark:bg-[#252525] shadow-lg rounded-lg py-2 z-50">
+          <div className="px-4 py-2 text-sm text-gray-800 dark:text-white font-semibold">
+            {userName}
+          </div>
+          <hr className="border-gray-300 dark:border-gray-600 my-1" />
+          <button
+            onClick={handleLogOut}
+            className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            Log Out
+          </button>
+        </div>
+      )}
+      {showAddPackage && (
+        <AddPackage onClose={() => setShowAddPackage(false)} />
+      )}
 
       {showAddMeeting && (
-        <AddMeeting 
-          onClose={() => setShowAddMeeting(false)} 
+        <AddMeeting
+          onClose={() => setShowAddMeeting(false)}
           onMeetingCreated={() => {
             setShowAddMeeting(false);
           }}
@@ -450,21 +517,21 @@ if (path.includes("invoice") && permissions.invoice) {
       )}
 
       {showAddExpenses && (
-        <AddExpenses 
+        <AddExpenses
           onClose={() => setShowAddExpenses(false)}
           refreshExpenses={refreshExpenses}
         />
       )}
-{showGenerateInvoice && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-    <div className="relative bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-      <GenerateInvoice onClose={() => setShowGenerateInvoice(false)} />
-    </div>
-  </div>
-)}
+      {showGenerateInvoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="relative bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <GenerateInvoice onClose={() => setShowGenerateInvoice(false)} />
+          </div>
+        </div>
+      )}
 
       {showAddEmployee && (
-        <AddEmployee 
+        <AddEmployee
           onClose={() => setShowAddEmployee(false)}
           onSuccess={() => {
             setShowAddEmployee(false);

@@ -5,7 +5,6 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import AdminHeader from "@/app/admin-main/components/AdminHeader";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, MoreVertical } from "lucide-react";
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
 import {
@@ -20,7 +19,6 @@ import {
 import axios from "axios";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
-import ReactDOM from "react-dom";
 
 // Register chart.js modules
 ChartJS.register(
@@ -34,15 +32,7 @@ ChartJS.register(
 
 countries.registerLocale(enLocale);
 
-interface CountryStat {
-  country: string;
-  count: number;
-  percentage: number;
-}
-interface OtherEmpCountResponse {
-  totalOtherEmpCount: number;
-  otherEmpCount: OtherEmpEntry[];
-}
+
 
 interface StudentData {
   studentId: string;
@@ -221,6 +211,29 @@ interface LeaveRequestListResponse {
   leaveRequest: LeaveRequest[];
 }
 
+interface SalaryWageRecord {
+  _id: string;
+  status: string;
+  designation: string;
+  employeeId: string;
+  __v: number;
+  balanceAmount: number;
+  createdBy: string;
+  createdDate: string;
+  deductionAmount: number;
+  employeeMail: string;
+  employeeName: string;
+  isSalaryProcessed: boolean;
+  paymentMethod: string;
+  paymentStatus: string;
+  salaryAmount: number;
+}
+
+interface SalaryWagesResponse {
+  totalCount: number;
+  records: SalaryWageRecord[];
+}
+
 const page = () => {
   const [view, setView] = useState<"month" | "week" | "day" | "agenda">(
     "agenda"
@@ -236,8 +249,7 @@ const page = () => {
   const searchParams = useSearchParams();
   const employeeId = searchParams.get("teacherId");
 
-  const [scheduledclass, setScheduledClass] = useState<ScheduledClass[]>([]);
-  const [students, setStudents] = useState<StudentData[]>([]);
+  const [salaryWages, setSalaryWages] = useState<SalaryWageRecord[]>([]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -278,75 +290,33 @@ const page = () => {
   };
 
   useEffect(() => {
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("AdminAuthToken")
-        : null;
-
-    if (!token) {
-      console.error("❌ AdminAuthToken not found");
-      return;
-    }
-
-    if (token && employeeId && employeeId !== "null") {
-      fetchUsers(token);
-      fetchSchedule(token);
-      fetchClasses(token);
-    } else {
-      console.log("No auth token or employee ID found.");
-    }
-  }, [employeeId]); // re-run if employeeId changes
-
-  const fetchUsers = async (token: string) => {
-    try {
-      const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/users/${employeeId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      console.log(response.data);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    }
-  };
-
-  const fetchSchedule = async (token: string) => {
-    try {
-      const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setScheduledClass(response.data.classSchedule);
-    } catch (error) {
-      console.error("Error fetching schedule:", error);
-    }
-  };
-
-  const fetchClasses = async (token: string) => {
-    try {
-      const res = await axios.get<StudentData[]>(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacher/list?teacherId=${employeeId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setStudents(res.data);
-    } catch (error) {
-      console.error("Failed to fetch classes", error);
-    }
-  };
+    const fetchSalaryWages = async () => {
+      if (!employeeId) return;
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AdminAuthToken")
+          : null;
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
+      try {
+        const res = await axios.get(
+          `https://api.blackstoneinfomaticstech.com/salarywagesById?employeeId=${employeeId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setSalaryWages(res.data.records || []);
+      } catch (error) {
+        console.error("Error fetching salary wages:", error);
+      }
+    };
+    fetchSalaryWages();
+  }, [employeeId]);
 
   const router = useRouter();
 
@@ -367,23 +337,18 @@ const page = () => {
     setCurrentPage(1);
   };
 
-  // Extract unique status options from API response
-  const statuses = Array.from(new Set(scheduledclass.map(
-    item => item.amount === "0" ? "Pending" : "Paid"
-  )));
-
-  // Filtered Payments
-  const filteredPayments = scheduledclass.filter((item) => {
-    const paymentStatus = item.amount === "0" ? "Pending" : "Paid";
-    // Search logic
+  // Filtered and paginated salary wages
+  const filteredSalaryWages = salaryWages.filter((item) => {
     const searchFields = [
-      new Date(item.startDate).toLocaleDateString("en-US", {
+      new Date(item.createdDate).toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
         day: "numeric",
       }),
-      item.amount,
-      paymentStatus,
+      item.salaryAmount,
+      item.paymentStatus,
+      item.deductionAmount,
+      item.paymentMethod,
     ];
     const matchesSearch = searchFields.some((field) =>
       field
@@ -391,20 +356,21 @@ const page = () => {
         : false
     );
     // Filter logic
-    const matchesStatus = filterStatus ? paymentStatus === filterStatus : true;
+    const matchesStatus = filterStatus ? item.paymentStatus === filterStatus : true;
     const matchesDate =
-      (!filterStartDate || new Date(item.startDate) >= new Date(filterStartDate)) &&
-      (!filterEndDate || new Date(item.startDate) <= new Date(filterEndDate));
+      (!filterStartDate || new Date(item.createdDate) >= new Date(filterStartDate)) &&
+      (!filterEndDate || new Date(item.createdDate) <= new Date(filterEndDate));
     return matchesSearch && matchesStatus && matchesDate;
   });
 
-  const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredSalaryWages.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems: ScheduledClass[] = filteredPayments.slice(
+  const currentItems: SalaryWageRecord[] = filteredSalaryWages.slice(
     indexOfFirstItem,
     indexOfLastItem
   );
+  const statuses = Array.from(new Set(salaryWages.map(item => item.paymentStatus)));
 
   return (
     <BaseLayout4>
@@ -427,7 +393,7 @@ const page = () => {
               <span>Filter</span>
             </div>
             <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-            Showing {filteredPayments.length === 0 ? 0 : indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredPayments.length)} of {filteredPayments.length}
+            Showing {filteredSalaryWages.length === 0 ? 0 : indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredSalaryWages.length)} of {filteredSalaryWages.length}
               </span>
           </div>
           {/* Filter Modal */}
@@ -499,7 +465,7 @@ const page = () => {
                     Amount
                   </th>
                   <th className="p-4 font-semibold text-[12px] text-center">
-                    Description
+                    DeductionAmount
                   </th>
                   <th className="p-4 font-semibold text-[12px] text-center">
                     Payment Method
@@ -524,28 +490,28 @@ const page = () => {
                       }`}
                     >
                       <td className="p-3">
-                        {new Date(item.startDate).toLocaleDateString("en-US", {
+                        {new Date(item.createdDate).toLocaleDateString("en-US", {
                           year: "numeric",
                           month: "long",
                           day: "numeric",
                         })}
                       </td>
                       <td className="p-3">
-                        {item.amount === "0" ? "-" : item.amount}
+                        {item.salaryAmount}
                       </td>
-                      <td className="p-3">Monthly Salary</td>
-                      <td className="p-3">Bank Transfer</td>
+                      <td className="p-3">{item.deductionAmount}</td>
+                      <td className="p-3">{item.paymentMethod}</td>
                       <td className="p-3">
                         <span
                           className={`inline-flex items-center justify-center gap-1 px-3 py-[1px] rounded-md text-[10px] font-semibold
                                   ${
-                                    item.amount === "0"
+                                    item.paymentStatus.toLowerCase() === "pending"
                                       ? "bg-red-100 text-[#D34645] dark:bg-[#D3464533] dark:bg-opacity-20 dark:text-[#D34645]"
                                       : "bg-green-100 text-green-700 dark:bg-[#2E3C2E] dark:text-[#377E36] px-6"
                                   }
                                 `}
                         >
-                          {item.amount === "0" ? "Pending" : "Paid"}
+                          {item.paymentStatus}
                         </span>
                       </td>
                       <td className="p-3 text-center">

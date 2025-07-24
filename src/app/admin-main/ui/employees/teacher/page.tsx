@@ -218,6 +218,38 @@ interface ShiftSchedule {
   toTime: string;
 }
 
+interface TeacherOverview {
+  studentCount: number;
+  absentDays: number;
+  totalClasses: number;
+  totalEarned: number;
+  leave: number;
+  rescheduled: number;
+}
+
+interface SalaryWageRecord {
+  _id: string;
+  status: string;
+  designation: string;
+  employeeId: string;
+  __v: number;
+  balanceAmount: number;
+  createdBy: string;
+  createdDate: string;
+  deductionAmount: number;
+  employeeMail: string;
+  employeeName: string;
+  isSalaryProcessed: boolean;
+  paymentMethod: string;
+  paymentStatus: string;
+  salaryAmount: number;
+}
+
+interface SalaryWagesResponse {
+  totalCount: number;
+  records: SalaryWageRecord[];
+}
+
 const Teacher = () => {
   const [activeTab, setActiveTab] = useState("Studentslist");
   const [view, setView] = useState<"month" | "week" | "day" | "agenda">(
@@ -296,6 +328,9 @@ const Teacher = () => {
 
       return matchesSearch && matchesFilters;
     });
+
+  const [teacherOverview, setTeacherOverview] = useState<TeacherOverview | null>(null);
+  const [salaryWages, setSalaryWages] = useState<SalaryWageRecord[]>([]);
 
   const [earningsPage, setEarningsPage] = useState(1);
   const earningsPerPage = 5;
@@ -496,6 +531,64 @@ const Teacher = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchTeacherOverview = async () => {
+      if (!employeeId) return;
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AdminAuthToken")
+          : null;
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
+      try {
+        const res = await axios.get(
+          `https://api.blackstoneinfomaticstech.com/teacheroverview?teacherId=${employeeId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setTeacherOverview(res.data);
+      } catch (error) {
+        console.error("Error fetching teacher overview:", error);
+      }
+    };
+    fetchTeacherOverview();
+  }, [employeeId]);
+
+  useEffect(() => {
+    const fetchSalaryWages = async () => {
+      if (!employeeId) return;
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AdminAuthToken")
+          : null;
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
+      try {
+        const res = await axios.get(
+          `https://api.blackstoneinfomaticstech.com/salarywagesById?employeeId=${employeeId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setSalaryWages(res.data.records || []);
+      } catch (error) {
+        console.error("Error fetching salary wages:", error);
+      }
+    };
+    fetchSalaryWages();
+  }, [employeeId]);
+
   const CustomToolbar = (toolbar: any) => (
     <div className="flex justify-center items-center py-2 px-4">
       <h2 className="text-xl font-semibold text-center">{toolbar.label}</h2>
@@ -609,41 +702,42 @@ const Teacher = () => {
     return matchesSearch && matchesFilters;
   });
 
-  // Filtered Payments
-  const filteredPayments = scheduledclass.filter((item) => {
+  // Payments tab: filter salaryWages by search, status, and date range
+  const filteredSalaryWages = salaryWages.filter((item) => {
+    // Search logic
     const searchFields = [
-      new Date(item.startDate).toLocaleDateString("en-US", {
+      new Date(item.createdDate).toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
         day: "numeric",
       }),
-      item.amount,
-      item.amount === "0" ? "Pending" : "Paid",
+      item.salaryAmount,
+      item.deductionAmount,
+      item.paymentMethod,
+      item.paymentStatus,
+      item.employeeName,
+      item.designation,
     ];
-
-    let matchesFilters = true;
-    if (filters.status && (item.amount === "0" ? "Pending" : "Paid").toLowerCase() !== filters.status.toLowerCase()) {
-      matchesFilters = false;
-    }
-    if (filters.paymentDate) {
-      const paymentDate = new Date(item.startDate);
-      const from = filters.paymentDate.from ? new Date(filters.paymentDate.from) : null;
-      const to = filters.paymentDate.to ? new Date(filters.paymentDate.to) : null;
-      if (from && paymentDate < from) {
-        matchesFilters = false;
-      }
-      if (to && paymentDate > to) {
-        matchesFilters = false;
-      }
-    }
-
     const matchesSearch = searchFields.some((field) =>
       field
         ? field.toString().toLowerCase().includes(searchPayments.toLowerCase())
         : false
     );
-
-    return matchesSearch && matchesFilters;
+    // Status filter
+    let matchesStatus = true;
+    if (filters.status && filters.status.length > 0) {
+      matchesStatus = item.paymentStatus.toLowerCase() === filters.status.toLowerCase();
+    }
+    // Date range filter
+    let matchesDate = true;
+    if (filters.paymentDate && (filters.paymentDate.from || filters.paymentDate.to)) {
+      const itemDate = new Date(item.createdDate);
+      const from = filters.paymentDate.from ? new Date(filters.paymentDate.from) : null;
+      const to = filters.paymentDate.to ? new Date(filters.paymentDate.to) : null;
+      if (from && itemDate < from) matchesDate = false;
+      if (to && itemDate > to) matchesDate = false;
+    }
+    return matchesSearch && matchesStatus && matchesDate;
   });
 
   // Filtered Wages
@@ -889,26 +983,32 @@ const Teacher = () => {
               <span>Quran</span>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              {[
-                { value: "30", label: "Students" },
-                { value: "3", label: "Absent Days" },
-                { value: "20", label: "Total Classes" },
-                { value: "5", label: "Days On Leave" },
-                { value: "$500", label: "Total Earned" },
-                { value: "2", label: "Rescheduled" },
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className="border border-[#9DA4C4] rounded-lg p-2 bg-[#7689BD]"
-                >
-                  <p className="text-base font-semibold text-white">
-                    {item.value}
-                  </p>
-                  <p className="text-xs text-[#E0E2F1]">{item.label}</p>
-                </div>
-              ))}
+              {teacherOverview ? (
+                [
+                  { value: teacherOverview.studentCount, label: "Students" },
+                  { value: teacherOverview.absentDays, label: "Absent Days" },
+                  { value: teacherOverview.totalClasses, label: "Total Classes" },
+                  { value: teacherOverview.leave, label: "Days On Leave" },
+                  { value: `$${teacherOverview.totalEarned}`, label: "Total Earned" },
+                  { value: teacherOverview.rescheduled, label: "Rescheduled" },
+                ].map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="border border-[#9DA4C4] rounded-lg p-2 bg-[#7689BD]"
+                  >
+                    <p className="text-base font-semibold text-white">
+                      {item.value}
+                    </p>
+                    <p className="text-xs text-[#E0E2F1]">{item.label}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-2 text-center text-xs text-gray-200">Loading...</div>
+              )}
             </div>
           </div>
+
+          
         </div>
         
 
@@ -1302,9 +1402,8 @@ const Teacher = () => {
                       <span>Filter</span>
                     </div>
                     <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-                        Showing {filteredPayments.length === 0 ? 0 : 1} to{" "}
-                        {filteredPayments.length} of {filteredPayments.length}
-                      </span>
+                        Showing {filteredSalaryWages.length === 0 ? 0 : 1} to {filteredSalaryWages.length} of {filteredSalaryWages.length}
+                    </span>
                   </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
@@ -1320,7 +1419,7 @@ const Teacher = () => {
                             Amount
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
-                            Description
+                          DeductionAmount
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Payment Method
@@ -1334,53 +1433,61 @@ const Teacher = () => {
                         </tr>
                       </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
-                        {filteredPayments
-                          .slice(-5)
-                          .reverse()
-                          .map((item, index) => (
-                            <tr
-                              key={item._id}
-                              className={`text-center dark:text-white ${
-                                index % 2 === 0
-                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
-                            >
-                              <td className="p-3">
-                                {new Date(item.startDate).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                  }
-                                )}
-                              </td>
-                              <td className="p-3">
-                                {item.amount === "0" ? "-" : item.amount}
-                              </td>
-                              <td className="p-3">Monthly Salary</td>
-                              <td className="p-3">Bank Transfer</td>
-                              <td className="p-3">
-                                <span
-                                  className={`inline-flex items-center justify-center gap-1 px-3 py-[1px] rounded-md text-[10px] font-semibold
-                                  ${
-                                    item.amount === "0"
-                                      ? "bg-red-100 text-[#D34645] dark:bg-[#D3464533] dark:bg-opacity-20 dark:text-[#D34645]"
-                                      : "bg-green-100 text-green-700 dark:bg-[#2E3C2E] dark:text-[#377E36] px-6"
-                                  }
-                                `}
-                                >
-                                  {item.amount === "0" ? "Pending" : "Paid"}
-                                </span>
-                              </td>
-                              <td className="p-3 text-center">
-                                <button className="text-blue-500 text-[11px]">
-                                  Download
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
+                        {filteredSalaryWages.length > 0 ? (
+                          filteredSalaryWages
+                            .slice(-5)
+                            .reverse()
+                            .map((item, index) => (
+                              <tr
+                                key={item._id}
+                                className={`text-center dark:text-white ${
+                                  index % 2 === 0
+                                    ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                    : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                }`}
+                              >
+                                <td className="p-3">
+                                  {new Date(item.createdDate).toLocaleDateString(
+                                    "en-US",
+                                    {
+                                      year: "numeric",
+                                      month: "long",
+                                      day: "numeric",
+                                    }
+                                  )}
+                                </td>
+                                <td className="p-3">
+                                  {item.salaryAmount}
+                                </td>
+                                <td className="p-3">{item.deductionAmount}</td>
+                                <td className="p-3">{item.paymentMethod}</td>
+                                <td className="p-3">
+                                  <span
+                                    className={`inline-flex items-center justify-center gap-1 px-3 py-[1px] rounded-md text-[10px] font-semibold
+                                    ${
+                                      item.paymentStatus.toLowerCase() === "pending"
+                                        ? "bg-red-100 text-[#D34645] dark:bg-[#D3464533] dark:bg-opacity-20 dark:text-[#D34645]"
+                                        : "bg-green-100 text-green-700 dark:bg-[#2E3C2E] dark:text-[#377E36] px-6"
+                                    }
+                                  `}
+                                  >
+                                    {item.paymentStatus}
+                                  </span>
+                                </td>
+                                <td className="p-3 text-center">
+                                  <button className="text-blue-500 text-[11px]">
+                                    Download
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                        ) : (
+                          <tr>
+                            <td colSpan={6} className="p-4 text-center">
+                              No data available
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>

@@ -65,7 +65,7 @@ export default function AcademicHeader({
   const [showAddMeeting, setAddMeetings] = useState(false);
   const [showAddApplicant, setAddApplicant] = useState(false);
   const [showAssignGroupClass, setAssignGroupClass] = useState(false);
-  const [showUpgradeClass,setShowUpgradeClass] = useState(false);
+  const [showUpgradeClass, setShowUpgradeClass] = useState(false);
   const router = useRouter();
   const notificationRef = useRef(null);
   const [activeTab, setActiveTab] = useState<"Seen" | "Unseen">("Unseen");
@@ -78,43 +78,39 @@ export default function AcademicHeader({
   const [studentListWrite, setStudentListWrite] = useState(false); // For Assign Group Class
   const [teacherRescheduleWrite, setTeacherRescheduleWrite] = useState(false); // For Assign Group Class
 
-
-
   //roleAccessuseEffect
 
+  useEffect(() => {
+    const roleAccessRaw = localStorage.getItem("AcademicRolePermission");
+    if (roleAccessRaw) {
+      try {
+        const roleAccess = JSON.parse(roleAccessRaw);
+        const modules = roleAccess?.academicmodules || roleAccess;
 
-useEffect(() => {
-  const roleAccessRaw = localStorage.getItem("AcademicRolePermission");
-  if (roleAccessRaw) {
-    try {
-      const roleAccess = JSON.parse(roleAccessRaw);
-      const modules = roleAccess?.academicmodules || roleAccess;
+        console.log("✅ Modules being used:", modules);
+        console.log("🔐 Dashboard write:", modules?.dashboard?.write);
+        console.log("🔐 Leave write:", modules?.leave);
 
-      console.log("✅ Modules being used:", modules);
-      console.log("🔐 Dashboard write:", modules?.dashboard?.write);
-      console.log("🔐 Leave write:", modules?.leave);
-
-      setDashboardWrite(modules?.dashboard?.write ?? false);
-      setLeaveWrite(modules?.leave ?? modules?.dashboard?.write ?? false);
-      setTrailWrite(modules?.trailmanagement?.write ?? false);
-      setCalendarWrite(modules?.schedule?.write ?? false);
-      setStudentListWrite(modules?.managestudents?.write ?? false);
-      setTeacherRescheduleWrite(modules?.manageteachers?.write ?? false);
-    } catch (error) {
-      console.error("❌ Invalid AcademicRolePermission JSON", error);
+        setDashboardWrite(modules?.dashboard?.write ?? false);
+        setLeaveWrite(modules?.leave ?? modules?.dashboard?.write ?? false);
+        setTrailWrite(modules?.trailmanagement?.write ?? false);
+        setCalendarWrite(modules?.schedule?.write ?? false);
+        setStudentListWrite(modules?.managestudents?.write ?? false);
+        setTeacherRescheduleWrite(modules?.manageteachers?.write ?? false);
+      } catch (error) {
+        console.error("❌ Invalid AcademicRolePermission JSON", error);
+      }
     }
-  }
-}, []);
-
-
-
-
-
+  }, []);
 
   // Fetch old notifications
   const userId =
     typeof window !== "undefined"
       ? localStorage.getItem("AcademicCoachPortalId")
+      : null;
+  const userName =
+    typeof window !== "undefined"
+      ? localStorage.getItem("AcademicCoachPortalName")
       : null;
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -189,6 +185,22 @@ useEffect(() => {
       console.error("❌ Failed to mark as seen:", error);
     }
   };
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
+  // Close dropdown if clicked outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !(menuRef.current as any).contains(e.target)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogOut = () => {
+    router.push("/Academic-coach/ui/login");
+  };
   // Real-time notifications with Socket.IO
   useEffect(() => {
     const socket = getSocket(userId ?? "");
@@ -227,65 +239,64 @@ useEffect(() => {
     }
   };
 
-const renderButton = () => {
-if (currentSection === ("Dashboard") ){
+  const renderButton = () => {
+    if (currentSection === "Dashboard") {
       return (
-      <button
-        onClick={() => setShowLeaveForm(true)}
-        className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
-         disabled={!leaveWrite}
-      >
-        Request for Leave
-      </button>
-    );
-  }
-  if (currentSection === ("Trail Management")) {
-    return (
-      <button
-        onClick={() => setAddApplicant(true)}
-        className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
-        disabled={!trailWrite}
-      >
-        Add New Student
-      </button>
-    );
-  }
-  if (currentSection === ("Calendar")) {
-    return (
-      <button
-        onClick={() => setAddMeetings(true)}
-        className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
-        disabled={!calendarWrite}
-      >
-        Add Meeting
-      </button>
-    );
-  }
-  if (currentSection === ("Student List")) {
-    return (
-      <button
-        onClick={() => setAssignGroupClass(true)}
-        className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
-        disabled={!studentListWrite}
-      >
-        Assign Group Class
-      </button>
-    );
-  }
-  if (currentSection === ("Student")){
-    return (
-      <button
-        onClick={() => setShowUpgradeClass(true)}
-        className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
-        disabled={!studentListWrite}
-      >
-        Upgrade Class
-      </button>
-    );
-  }
-  return null;
-};
-
+        <button
+          onClick={() => setShowLeaveForm(true)}
+          className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
+          disabled={!leaveWrite}
+        >
+          Request for Leave
+        </button>
+      );
+    }
+    if (currentSection === "Trail Management") {
+      return (
+        <button
+          onClick={() => setAddApplicant(true)}
+          className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
+          disabled={!trailWrite}
+        >
+          Add New Student
+        </button>
+      );
+    }
+    if (currentSection === "Calendar") {
+      return (
+        <button
+          onClick={() => setAddMeetings(true)}
+          className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
+          disabled={!calendarWrite}
+        >
+          Add Meeting
+        </button>
+      );
+    }
+    if (currentSection === "Student List") {
+      return (
+        <button
+          onClick={() => setAssignGroupClass(true)}
+          className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
+          disabled={!studentListWrite}
+        >
+          Assign Group Class
+        </button>
+      );
+    }
+    if (currentSection === "Student") {
+      return (
+        <button
+          onClick={() => setShowUpgradeClass(true)}
+          className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
+          disabled={!studentListWrite}
+        >
+          Upgrade Class
+        </button>
+      );
+    }
+    return null;
+  };
 
   return (
     <div>
@@ -332,9 +343,12 @@ if (currentSection === ("Dashboard") ){
               <Moon className="w-4 h-4 text-gray-800 dark:text-white" />
             )}
           </button>
-          <div className="p-2.5 bg-white dark:bg-gray-700 rounded-full">
+          <button
+            className="p-2.5 bg-white dark:bg-gray-700 rounded-full"
+            onClick={() => setOpen((prev) => !prev)}
+          >
             <User className="w-4 h-4 text-gray-800 dark:text-white" />
-          </div>
+          </button>
         </div>
       </div>
       {showLeaveForm && <LeaveForm onClose={() => setShowLeaveForm(false)} />}
@@ -352,6 +366,20 @@ if (currentSection === ("Dashboard") ){
       )}
       {showUpgradeClass && (
         <UpgradeClassForm onClose={() => setShowUpgradeClass(false)} />
+      )}
+      {open && (
+        <div className="absolute right-5 mt-2 w-40 bg-[#ffff] dark:bg-[#252525] shadow-lg rounded-lg py-2 z-50">
+          <div className="px-4 py-2 text-sm text-gray-800 dark:text-white font-semibold">
+            {userName}
+          </div>
+          <hr className="border-gray-300 dark:border-gray-600 my-1" />
+          <button
+            onClick={handleLogOut}
+            className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            Log Out
+          </button>
+        </div>
       )}
       {showNotification && (
         <div
@@ -410,7 +438,7 @@ if (currentSection === ("Dashboard") ){
                         handleNotificationClick(notification._id);
                       }
                     }}
-                     disabled={!dashboardWrite}
+                    disabled={!dashboardWrite}
                     className={`w-full text-left p-2   flex items-start gap-3 transition-all duration-200 border-b border-[#D9D9D9]  ${
                       notification.notificationStatus === "Seen"
                         ? "bg-white/20 text-gray-900 hover:bg-white/50 dark:bg-[#252525]"

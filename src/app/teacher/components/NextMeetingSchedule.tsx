@@ -223,7 +223,7 @@ useEffect(() => {
 
 
   const handleStartClass = () => {
-router.push(`/teacher/ui/livemeeting?id=${classData?._id}`);
+router.push(`/teacher/ui/livemeeting?id=${classData?.meetingId}`);
     // router.push(`/teacher/livemeeting/${classData?.meetingId}`);
   };
 

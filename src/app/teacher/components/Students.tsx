@@ -76,6 +76,18 @@ const StudentsCard: React.FC = () => {
   const malePercent = getPercentage(teacher.maleCount, teacher.studentCount);
   const femalePercent = 100 - malePercent;
 
+  // Calculate angles
+  const femaleAngle = (femalePercent / 100) * 360;
+  const maleAngle = 360 - femaleAngle;
+
+  // Position female label (starts from 0 deg)
+  const femaleX = 50 + 35 * Math.cos((femaleAngle / 2) * (Math.PI / 180));
+  const femaleY = 50 - 35 * Math.sin((femaleAngle / 2) * (Math.PI / 180));
+
+  // Position male label (starts after female ends)
+  const maleX = 50 + 35 * Math.cos((femaleAngle + maleAngle / 2) * (Math.PI / 180));
+  const maleY = 50 - 35 * Math.sin((femaleAngle + maleAngle / 2) * (Math.PI / 180));
+
   return (
     <div className="bg-white dark:bg-[#343434] rounded-xl shadow-md w-full max-w-sm p-4">
       {/* Header */}
@@ -99,46 +111,47 @@ const StudentsCard: React.FC = () => {
         <div
           className="w-full h-full rounded-full"
           style={{
-            background: `conic-gradient(#83DBFC 0% ${malePercent}%, #F2A9F3 ${malePercent}% 100%)`,
+            background: `conic-gradient(#F2A9F3 0% ${femalePercent}%, #83DBFC ${femalePercent}% 100%)`,
           }}
         ></div>
 
-        {/* Inner White Circle */}
+        {/* Inner Circle */}
         <div className="absolute top-1/2 left-1/2 w-[60%] h-[60%] bg-white dark:bg-[#343434] rounded-full flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
           <span className="text-lg font-bold text-[#010E30] dark:text-white">
             100%
           </span>
         </div>
 
-        {/* Male % */}
-        {malePercent > 0 && malePercent < 100 && (
-          <div
-            className="absolute text-[10px] font-semibold text-[#010E30] dark:text-white"
-            style={{ top: '22%', left: '70%', transform: 'translate(-50%, -50%)' }}
-          >
-            {malePercent}%
-          </div>
-        )}
-
-        {/* Female % */}
+        {/* Female % label */}
         {femalePercent > 0 && femalePercent < 100 && (
           <div
-            className="absolute text-[10px] font-semibold text-[#010E30] dark:text-white"
-            style={{ top: '78%', left: '32%', transform: 'translate(-50%, -50%)' }}
+            className="absolute text-[10px] font-semibold"
+            style={{
+              top: `${femaleY}%`,
+              left: `${femaleX}%`,
+              transform: 'translate(-50%, -50%)',
+              color: femalePercent > 50 ? 'white' : '#010E30',
+            }}
           >
             {femalePercent}%
           </div>
         )}
-      </div>
 
-      {/* Optional summary (can be removed if not needed) */}
-      {/* 
-      <div className="mt-4 text-xs text-[#010E30] dark:text-white">
-        <p>Total Students: {teacher.studentCount}</p>
-        <p>Male: {teacher.maleCount}</p>
-        <p>Female: {teacher.femaleCount}</p>
-      </div> 
-      */}
+        {/* Male % label */}
+        {malePercent > 0 && malePercent < 100 && (
+          <div
+            className="absolute text-[10px] font-semibold"
+            style={{
+              top: `${maleY}%`,
+              left: `${maleX}%`,
+              transform: 'translate(-50%, -50%)',
+              color: malePercent > 50 ? 'white' : '#010E30',
+            }}
+          >
+            {malePercent}%
+          </div>
+        )}
+      </div>
     </div>
   );
 };
