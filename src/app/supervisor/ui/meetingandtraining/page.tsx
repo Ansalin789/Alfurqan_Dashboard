@@ -207,7 +207,7 @@ useEffect(() => {
 
     try {
       const response = await axios.get(
-        `http://localhost:5001/allMeetings?supervisorId=${supervisorId}`,
+        `https://api.blackstoneinfomaticstech.com/allMeetings?supervisorId=${supervisorId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

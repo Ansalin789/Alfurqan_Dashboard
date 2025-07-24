@@ -152,7 +152,7 @@ const TeacherFilter = () => {
         if (!token || !teacherId) return;
 
         const response = await axios.get<MeetingResponse>(
-          `http://localhost:5001/teacherMeetinglist`,
+          `https://api.blackstoneinfomaticstech.com/teacherMeetinglist`,
           {
             params: { teacherId, meetingId },
             headers: {
@@ -353,7 +353,7 @@ const TeacherFilter = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:5001/updateTeacherMeeting/${meetingId}`,
+        `https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${meetingId}`,
         payload,
         {
           headers: {

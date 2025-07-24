@@ -81,7 +81,7 @@ const [isMeetingOngoing, setIsMeetingOngoing] = useState(false);
         }
 
         const res = await axios.get<StudentMeetingApiResponse>(
-          "http://localhost:5001/StudentMeetinglist",
+          "https://api.blackstoneinfomaticstech.com/StudentMeetinglist",
           {
             params: { studentId },
             headers: {

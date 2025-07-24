@@ -222,7 +222,7 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
 
       const url = meetingToEdit?._id 
         ? `https://api.blackstoneinfomaticstech.com/allAdminMeeting/${meetingToEdit._id}`
-        : "http://localhost:5001/addadminMeeting";
+        : "https://api.blackstoneinfomaticstech.com/addadminMeeting";
 
       const method = meetingToEdit?._id ? "PUT" : "POST";
 

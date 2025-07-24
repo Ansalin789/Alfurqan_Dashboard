@@ -121,7 +121,7 @@ const ScheduledMeetings = () => {
         if (!token || !teacherId) return;
 
         const response = await axios.get<MeetingApiResponse>(
-          "http://localhost:5001/StudentMeetinglist",
+          "https://api.blackstoneinfomaticstech.com/StudentMeetinglist",
           {
             params: { studentId: teacherId },
             headers: {
