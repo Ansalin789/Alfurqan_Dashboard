@@ -167,81 +167,46 @@ return ()=>{
 
 useEffect(() => {
   const fetchMeetings = async () => {
+    const supervisorId = "67a467bcc346aaaea402f760"; // Replace with dynamic value if needed
+    const token = localStorage.getItem("SupervisorAuthToken"); // Retrieve the token
+
+    if (!token) {
+      console.error("❌ SupervisorAuthToken not found");
+      return;
+    }
+
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("SupervisorAuthToken")
-          : null;
-
-      if (!token) {
-        console.error("❌ SupervisorAuthToken not found");
-        return;
-      }
-
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/allMeetings",
+        `http://localhost:5001/allMeetings?supervisorId=${supervisorId}`,
         {
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // Include the token in the headers
           },
         }
       );
 
-      console.log("🌐 Full API Response:", response.data);
-
-      if (
-        !response.data?.meetings ||
-        !Array.isArray(response.data.meetings)
-      ) {
-        console.error("🚨 Meetings array missing or not an array:", response.data);
-        return;
-      }
-
       const allMeetings: Meeting[] = response.data.meetings;
-
-      console.log("✅ Extracted Meetings:", allMeetings);
 
       const today = new Date();
       today.setHours(0, 0, 0, 0); // Normalize for comparison
 
-      const upcomingMeetings = allMeetings
-        .filter((meeting) => {
-          if (!meeting.selectedDate || !meeting.meetingStatus) return false;
-
-          const meetingDate = new Date(meeting.selectedDate);
-          return (
-            (meeting.meetingStatus === "Scheduled" ||
-              meeting.meetingStatus === "Rescheduled") &&
-            meetingDate >= today
-          );
-        })
-        .sort(
-          (a, b) =>
-            new Date(a.selectedDate).getTime() -
-            new Date(b.selectedDate).getTime()
+      const upcomingMeetings = allMeetings.filter((meeting) => {
+        const meetingDate = new Date(meeting.selectedDate);
+        return (
+          (meeting.meetingStatus === "Scheduled" ||
+            meeting.meetingStatus === "Rescheduled") &&
+          meetingDate >= today
         );
+      });
 
       const completedMeetings = allMeetings.filter(
         (meeting) => meeting.meetingStatus === "Completed"
       );
 
-      const teachersMap: Record<string, any[]> = {};
-      allMeetings.forEach((meeting) => {
-        if (meeting.teacher && Array.isArray(meeting.teacher)) {
-          teachersMap[meeting.meetingId] = meeting.teacher;
-        }
-      });
-
       setUpcomingClasses(upcomingMeetings);
       setCompletedData(completedMeetings);
-      setTeachersByMeetingId(teachersMap);
-
-      console.log("✅ Teachers Mapped by Meeting ID:", teachersMap);
-      console.log("✅ Upcoming Meetings Set to State:", upcomingMeetings);
-      console.log("✅ Completed Meetings Set to State:", completedMeetings);
     } catch (error) {
-      console.error("🚨 Error fetching meetings:", error);
+      console.error("Error fetching meetings:", error);
     }
   };
 
@@ -291,9 +256,7 @@ useEffect(() => {
     });
   };
 
-  const dataToShow = filterMeetingsBySearch(
-    activeTab === "upcoming" ? upcomingClasses || [] : completedData || []
-  );
+  const dataToShow = upcomingClasses; // Directly bind upcoming classes
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
