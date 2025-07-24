@@ -26,29 +26,59 @@ interface ApiResponse {
 }
 interface Meeting {
   _id: string;
-  meetingId: string;
   meetingName: string;
-  meetingStatus: "Scheduled" | "Rescheduled" | "Completed";
-  selectedDate: string;
+  meetingId: string;
+
+  selectedDate: string; // ISO date string
   startTime: string;
   endTime: string;
-  duration:string;
-  description: string;
-  meetingminutes: string;
+  description?: string;
+
+  meetingStatus: "Completed" | "Scheduled" | "Pending" | string;
+  duration?: string;
+  status: "Active" | "Inactive" | string;
+
   createdDate: string;
   createdBy: string;
-  supervisor: {
+  updatedDate?: string;
+  updatedBy?: string;
+  __v?: number;
+
+  // Optional supervisor (some meetings)
+  supervisor?: {
     supervisorId: string;
     supervisorName: string;
     supervisorEmail: string;
-    supervisorRole: string;
   };
-  teacher: {
-    teacherId: string;
-    teacherName: string;
-    teacherEmail: string;
-    attendee?: string;
-  }[];
+
+  // Optional admin (some meetings)
+  admin?: {
+    adminId: string;
+    adminName: string;
+    adminEmail: string;
+    adminRole: string;
+  };
+
+  // Optional single or multiple teachers
+  teacher:
+    | Array<{
+        teacherId: string;
+        teacherName: string;
+        teacherEmail: string;
+        attendee?: string;
+      }>
+    | {
+        teacherId: string;
+        teacherName: string;
+        teacherEmail: string;
+      };
+
+  // Optional participants (student meetings)
+  participants?: Array<{
+    studentId: string;
+    studentName: string;
+    studentEmail: string;
+  }>;
 }
 
 const ScheduledClasses = () => {
@@ -167,8 +197,8 @@ return ()=>{
 
 useEffect(() => {
   const fetchMeetings = async () => {
-    const supervisorId = "67a467bcc346aaaea402f760"; // Replace with dynamic value if needed
-    const token = localStorage.getItem("SupervisorAuthToken"); // Retrieve the token
+    const supervisorId = "67a467bcc346aaaea402f760";
+    const token = localStorage.getItem("SupervisorAuthToken");
 
     if (!token) {
       console.error("❌ SupervisorAuthToken not found");
@@ -180,23 +210,25 @@ useEffect(() => {
         `http://localhost:5001/allMeetings?supervisorId=${supervisorId}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Include the token in the headers
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       const allMeetings: Meeting[] = response.data.meetings;
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Normalize for comparison
+      console.log("✅ All Meetings:", allMeetings);
 
       const upcomingMeetings = allMeetings.filter((meeting) => {
         const meetingDate = new Date(meeting.selectedDate);
-        return (
-          (meeting.meetingStatus === "Scheduled" ||
-            meeting.meetingStatus === "Rescheduled") &&
-          meetingDate >= today
+        const statusOk =
+          meeting.meetingStatus === "Scheduled" ||
+          meeting.meetingStatus === "Rescheduled";
+
+        console.log(
+          `🔍 Checking meeting: ${meeting.meetingName} | Date: ${meetingDate.toISOString()} | Status: ${meeting.meetingStatus} `
         );
+
+        return statusOk;
       });
 
       const completedMeetings = allMeetings.filter(
@@ -205,6 +237,9 @@ useEffect(() => {
 
       setUpcomingClasses(upcomingMeetings);
       setCompletedData(completedMeetings);
+
+      console.log("📌 Final Upcoming:", upcomingMeetings);
+      console.log("📌 Final Completed:", completedMeetings);
     } catch (error) {
       console.error("Error fetching meetings:", error);
     }
@@ -212,6 +247,7 @@ useEffect(() => {
 
   fetchMeetings();
 }, []);
+
 
 
   interface Teacher {
@@ -256,7 +292,7 @@ useEffect(() => {
     });
   };
 
-  const dataToShow = upcomingClasses; // Directly bind upcoming classes
+  const dataToShow = activeTab === "upcoming" ? upcomingClasses : completedData; 
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -530,7 +566,7 @@ console.log("Reschedule Time:", rescheduleTime);
                           }`}
                         >
                           <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left w-[180px] break-words whitespace-normal">
-                            {item._id}
+                            {item.meetingId}
                           </td>
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left w-[250px] break-words whitespace-normal">
                             {item.meetingName}

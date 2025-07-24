@@ -36,20 +36,57 @@ interface Meeting {
   _id: string;
   meetingName: string;
   meetingId: string;
-  supervisor: Supervisor;
-  selectedDate: string;
+
+  selectedDate: string; // ISO date string
   startTime: string;
   endTime: string;
-  teacher: Teacher[];
-  description: string;
-  duration: string;
-  meetingStatus: string;
-  meetingMinutes: string;
-  status: string;
+  description?: string;
+
+  meetingStatus: "Completed" | "Scheduled" | "Pending" | string;
+  duration?: string;
+  status: "Active" | "Inactive" | string;
+
   createdDate: string;
   createdBy: string;
-  updatedDate: string;
-  __v: number;
+  updatedDate?: string;
+  updatedBy?: string;
+  __v?: number;
+
+  // Optional supervisor (some meetings)
+  supervisor?: {
+    supervisorId: string;
+    supervisorName: string;
+    supervisorEmail: string;
+  };
+
+  // Optional admin (some meetings)
+  admin?: {
+    adminId: string;
+    adminName: string;
+    adminEmail: string;
+    adminRole: string;
+  };
+
+  // Optional single or multiple teachers
+  teacher:
+    | Array<{
+        teacherId: string;
+        teacherName: string;
+        teacherEmail: string;
+        attendee?: string;
+      }>
+    | {
+        teacherId: string;
+        teacherName: string;
+        teacherEmail: string;
+      };
+
+  // Optional participants (student meetings)
+  participants?: Array<{
+    studentId: string;
+    studentName: string;
+    studentEmail: string;
+  }>;
 }
 
 export default function Page() {
@@ -76,8 +113,8 @@ export default function Page() {
           return;
         }
 
-        const response = await axios.get<Meeting>(
-          `https://api.blackstoneinfomaticstech.com/allAdminMeeting/meetingId?${meetingId}`,
+        const response = await axios.get(
+          `http://localhost:5001/allmeeting/${meetingId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -90,20 +127,20 @@ export default function Page() {
           console.log("Setting classData to:", response.data);
           setClassData(response.data);
           setRoomName(response.data.meetingId);
-          const teacherAttendance = response.data.teacher.map(
-            (teacher: Teacher) => ({
-              id: null,
-              studentId: teacher.teacherId,
-              name: teacher.teacherName,
-              startTime: null,
-              endTime: null,
-              joined: false,
-              joinTime: "",
-              leaveTime: "",
-            })
-          );
+          // const teacherAttendance = response.data.teacher.map(
+          //   (teacher: Teacher) => ({
+          //     id: null,
+          //     studentId: teacher.teacherId,
+          //     name: teacher.teacherName,
+          //     startTime: null,
+          //     endTime: null,
+          //     joined: false,
+          //     joinTime: "",
+          //     leaveTime: "",
+          //   })
+          // );
 
-          setAttendance(teacherAttendance);
+          // setAttendance(teacherAttendance);
         } else {
           console.log("No upcoming class found.");
           setClassData(null);
