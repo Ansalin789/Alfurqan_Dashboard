@@ -10,6 +10,14 @@ interface User {
   name: string;
   email: string;
   role?: string;
+  isTeacher?: boolean;
+}
+
+interface MeetingTeacher {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+  attendee: string;
 }
 
 interface MeetingData {
@@ -19,12 +27,7 @@ interface MeetingData {
   startTime: string;
   endTime: string;
   description: string;
-  teachers: Array<{
-    teacherId: string;
-    teacherName: string;
-    teacherEmail: string;
-    attendee: string;
-  }>;
+  teachers: MeetingTeacher[];
   meetingminutes: string;
   status?: string;
   meetingStatus?: string;
@@ -48,7 +51,7 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
     endTime: meetingToEdit?.endTime || "",
     description: meetingToEdit?.description || "",
     teachers: meetingToEdit?.teachers || [],
-    meetingminutes: meetingToEdit?.meetingminutes || "Default meeting minutes",
+    meetingminutes: meetingToEdit?.meetingminutes || "",
     status: "Active",
     meetingStatus: "Scheduled",
     createdBy: "Admin",
@@ -57,7 +60,7 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
 
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
   const [showUserList, setShowUserList] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [success, setSuccess] = useState(false);
@@ -71,35 +74,40 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
           return;
         }
 
-        console.log("Fetching users from API...");
         const response = await axios.get(
           "https://api.blackstoneinfomaticstech.com/users",
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        console.log("API Response:", response.data);
-
-        let usersArray = Array.isArray(response.data) 
+        const usersArray = Array.isArray(response.data) 
           ? response.data 
           : response.data.users || response.data.data || [];
 
+        const processedUsers = usersArray
+          .filter((user: any) => {
+            const roles = Array.isArray(user.role) ? user.role : [user.role];
+            return !roles.some((r: string) => r?.toString().toLowerCase() === 'admin');
+          })
+          .map((user: any) => {
+            const isTeacher = user.role?.toString().toLowerCase() === 'teacher';
+            const id = isTeacher ? user.userId : user._id;
 
-const users = usersArray
-  .filter((user: any) => {
+            if (!id) {
+              console.error(`Missing ID for ${isTeacher ? 'teacher' : 'user'}:`, user);
+              return null;
+            }
 
-    const roles = Array.isArray(user.role) ? user.role : [user.role];
-    return !roles.some((r: string) => r?.toString().toLowerCase() === 'admin');
-  })
-  .map((user: any) => ({
-    id: user._id,
-    name: user.userName || user.name,
-    email: user.email || "no-email@example.com",
-    role: Array.isArray(user.role) ? user.role[0] : user.role
-  }));
-        console.log("Filtered non-admin users:", users);
-        setAvailableUsers(users);
+            return {
+              id,
+              name: user.userName || user.name || "Unknown",
+              email: user.email || "no-email@example.com",
+              role: Array.isArray(user.role) ? user.role[0] : user.role,
+              isTeacher
+            };
+          })
+          .filter(Boolean) as User[];
+
+        setAvailableUsers(processedUsers);
       } catch (err) {
         console.error("Error fetching users:", err);
         setError("Failed to load users. Please try again.");
@@ -212,15 +220,11 @@ const users = usersArray
         duration: calculateDuration(formData.startTime, formData.endTime)
       };
 
-      console.log("Preparing to send payload:", payload);
-
       const url = meetingToEdit?._id 
         ? `https://api.blackstoneinfomaticstech.com/allAdminMeeting/${meetingToEdit._id}`
         : "https://api.blackstoneinfomaticstech.com/addadminMeeting";
 
       const method = meetingToEdit?._id ? "PUT" : "POST";
-
-      console.log(`Making ${method} request to ${url}`);
 
       const response = await axios({
         method,
@@ -232,10 +236,7 @@ const users = usersArray
         }
       });
 
-      console.log("API Response:", response.data);
-
       if ([200, 201].includes(response.status)) {
-        console.log("Meeting successfully saved/updated");
         setSuccess(true);
         setTimeout(() => {
           onMeetingCreated();
@@ -273,15 +274,15 @@ const users = usersArray
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div className="p-4 border-b flex justify-between items-center">
-          <h2 className="text-lg font-semibold">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4">
+        <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+          <h2 className="text-lg font-semibold dark:text-white">
             {meetingToEdit ? "Edit Meeting" : "Add Meeting"}
           </h2>
           <button 
             onClick={onClose} 
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100"
             disabled={loading}
           >
             <X size={20} />
@@ -290,18 +291,18 @@ const users = usersArray
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {error && (
-            <div className="p-2 text-sm text-red-600 bg-red-100 rounded-md">
+            <div className="p-2 text-sm text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 rounded-md">
               {error}
             </div>
           )}
           
           {success && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="bg-white rounded-xl shadow-lg max-w-sm w-full text-center px-6 py-8 relative">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg max-w-sm w-full text-center px-6 py-8 relative">
                 <div className="flex justify-center mb-4">
-                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                     <svg
-                      className="w-6 h-6 text-green-600"
+                      className="w-6 h-6 text-green-600 dark:text-green-400"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth={2}
@@ -311,8 +312,8 @@ const users = usersArray
                     </svg>
                   </div>
                 </div>
-                <h2 className="text-lg font-semibold text-gray-800">Scheduled successfully</h2>
-                <p className="text-sm text-gray-500 mt-1 mb-4">
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Scheduled successfully</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-4">
                   You have successfully sent the schedule
                 </p>
                 <div className="h-1 bg-green-500 rounded-full w-20 mx-auto my-4"></div>
@@ -332,25 +333,25 @@ const users = usersArray
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Meeting Name *</label>
+              <label className="block text-sm font-medium mb-1 dark:text-gray-300">Meeting Name *</label>
               <input
                 type="text"
                 name="meetingName"
                 value={formData.meetingName}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm dark:bg-gray-700 dark:text-white"
                 required
                 disabled={loading}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Meeting Date *</label>
+              <label className="block text-sm font-medium mb-1 dark:text-gray-300">Meeting Date *</label>
               <input
                 type="date"
                 name="selectedDate"
                 value={formData.selectedDate}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm dark:bg-gray-700 dark:text-white"
                 required
                 disabled={loading}
               />
@@ -359,26 +360,26 @@ const users = usersArray
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Start Time </label>
+              <label className="block text-sm font-medium mb-1 dark:text-gray-300">Start Time</label>
               <input
                 type="time"
                 name="startTime"
                 value={formatTimeValue(formData.startTime)}
                 onChange={handleTimeChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm dark:bg-gray-700 dark:text-white"
                 required
                 step="300"
                 pattern="[0-9]{2}:[0-9]{2}"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">End Time </label>
+              <label className="block text-sm font-medium mb-1 dark:text-gray-300">End Time</label>
               <input
                 type="time"
                 name="endTime"
                 value={formatTimeValue(formData.endTime)}
                 onChange={handleTimeChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm dark:bg-gray-700 dark:text-white"
                 required
                 step="300"
                 pattern="[0-9]{2}:[0-9]{2}"
@@ -387,7 +388,7 @@ const users = usersArray
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Add Participants *</label>
+            <label className="block text-sm font-medium mb-1 dark:text-gray-300">Add Participants *</label>
             <div className="relative">
               <input
                 type="text"
@@ -398,20 +399,20 @@ const users = usersArray
                     ? `${formData.teachers.length} selected`
                     : "Add"
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm cursor-pointer"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm cursor-pointer dark:bg-gray-700 dark:text-white"
                 disabled={loading}
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Description</label>
+            <label className="block text-sm font-medium mb-1 dark:text-gray-300">Description</label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleInputChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm dark:bg-gray-700 dark:text-white"
               placeholder="Write a description here."
               disabled={loading}
             />
@@ -421,7 +422,7 @@ const users = usersArray
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white"
               disabled={loading}
             >
               Cancel
@@ -437,13 +438,14 @@ const users = usersArray
         </form>
 
         {showUserList && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[80vh] flex flex-col">
-              <div className="p-4 border-b flex justify-between items-center">
-                <h3 className="font-medium">Select Attendees</h3>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md max-h-[80vh] flex flex-col">
+              <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+                <h3 className="font-medium dark:text-white">Select Attendees</h3>
                 <button 
                   onClick={() => setShowUserList(false)}
                   disabled={loading}
+                  className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100"
                 >
                   <X size={20} />
                 </button>
@@ -455,52 +457,56 @@ const users = usersArray
                   placeholder="Search attendees..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md mb-4 text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md mb-4 text-sm dark:bg-gray-700 dark:text-white"
                   disabled={loading}
                 />
 
-                <div className="overflow-y-auto max-h-[50vh]">
+                <div className="overflow-y-auto max-h-[50vh] pr-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
                   {filteredUsers.length > 0 ? (
-                    filteredUsers.map((user) => (
-                      <div
-                        key={user.id}
-                        className="flex items-center justify-between p-3 border-b hover:bg-gray-50"
-                      >
-                        <div className="flex items-center gap-3">
-                          <FaUserCircle className="text-gray-400" size={20} />
-                          <div>
-                            <p className="text-sm font-medium">{user.name}</p>
-                            <p className="text-xs text-gray-500">
-                              {user.email} {user.role && `(${user.role})`}
-                            </p>
+                    <div className="space-y-2">
+                      {filteredUsers.map((user) => (
+                        <div
+                          key={user.id}
+                          className="flex items-center justify-between p-3 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-md"
+                        >
+                          <div className="flex items-center gap-3">
+                            <FaUserCircle className="text-gray-400 dark:text-gray-500" size={20} />
+                            <div>
+                              <p className="text-sm font-medium dark:text-white">
+                                {user.name} {user.isTeacher && "(Teacher)"}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {user.email} {user.role && `(${user.role})`}
+                              </p>
+                            </div>
                           </div>
+                          <input
+                            type="checkbox"
+                            checked={isUserSelected(user.id)}
+                            onChange={() => toggleUser(user)}
+                            className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 dark:ring-offset-gray-800"
+                            disabled={loading}
+                          />
                         </div>
-                        <input
-                          type="checkbox"
-                          checked={isUserSelected(user.id)}
-                          onChange={() => toggleUser(user)}
-                          className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500"
-                          disabled={loading}
-                        />
-                      </div>
-                    ))
+                      ))}
+                    </div>
                   ) : (
-                    <div className="text-center py-4 text-gray-500 text-sm">
+                    <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
                       No attendees found
                     </div>
                   )}
                 </div>
-              </div>
 
-              <div className="p-4 border-t flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setShowUserList(false)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
-                  disabled={loading}
-                >
-                  Done
-                </button>
+                <div className="pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowUserList(false)}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                    disabled={loading}
+                  >
+                    Done
+                  </button>
+                </div>
               </div>
             </div>
           </div>
