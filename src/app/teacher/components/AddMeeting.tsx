@@ -238,7 +238,7 @@ endTime,
       }
 
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/teacherMeeting", // ✅ NEW LOCAL API ENDPOINT
+        "http://localhost:5001/teacherMeeting", // ✅ NEW LOCAL API ENDPOINT
         requestData,
         {
           headers: {

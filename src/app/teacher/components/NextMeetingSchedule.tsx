@@ -122,7 +122,7 @@ const [isMeetingOngoing, setIsMeetingOngoing] = useState(false);
           return;
         }
 
-        const res = await axios.get("https://api.blackstoneinfomaticstech.com/teacherMeetinglist", {
+        const res = await axios.get("http://localhost:5001/teacherMeetinglist", {
           params: { teacherId },
           headers: {
             "Content-Type": "application/json",
@@ -223,7 +223,7 @@ useEffect(() => {
 
 
   const handleStartClass = () => {
-router.push(`/teacher/ui/livemeeting?id=${classData?._id}`);
+router.push(`/teacher/ui/livemeeting?id=${classData?.meetingId}`);
     // router.push(`/teacher/livemeeting/${classData?.meetingId}`);
   };
 
