@@ -76,17 +76,17 @@ const StudentsCard: React.FC = () => {
   const malePercent = getPercentage(teacher.maleCount, teacher.studentCount);
   const femalePercent = 100 - malePercent;
 
-  // Calculate positions for the percentage labels
-  const maleAngle = (malePercent / 100) * 360;
-  const femaleAngle = 360 - maleAngle;
+  // Calculate angles
+  const femaleAngle = (femalePercent / 100) * 360;
+  const maleAngle = 360 - femaleAngle;
 
-  // Position male percentage
-  const maleX = 50 + 35 * Math.cos((maleAngle / 2) * (Math.PI / 180));
-  const maleY = 50 - 35 * Math.sin((maleAngle / 2) * (Math.PI / 180));
+  // Position female label (starts from 0 deg)
+  const femaleX = 50 + 35 * Math.cos((femaleAngle / 2) * (Math.PI / 180));
+  const femaleY = 50 - 35 * Math.sin((femaleAngle / 2) * (Math.PI / 180));
 
-  // Position female percentage
-  const femaleX = 50 + 35 * Math.cos((maleAngle + femaleAngle / 2) * (Math.PI / 180));
-  const femaleY = 50 - 35 * Math.sin((maleAngle + femaleAngle / 2) * (Math.PI / 180));
+  // Position male label (starts after female ends)
+  const maleX = 50 + 35 * Math.cos((femaleAngle + maleAngle / 2) * (Math.PI / 180));
+  const maleY = 50 - 35 * Math.sin((femaleAngle + maleAngle / 2) * (Math.PI / 180));
 
   return (
     <div className="bg-white dark:bg-[#343434] rounded-xl shadow-md w-full max-w-sm p-4">
@@ -111,44 +111,44 @@ const StudentsCard: React.FC = () => {
         <div
           className="w-full h-full rounded-full"
           style={{
-            background: `conic-gradient(#83DBFC 0% ${malePercent}%, #F2A9F3 ${malePercent}% 100%)`,
+            background: `conic-gradient(#F2A9F3 0% ${femalePercent}%, #83DBFC ${femalePercent}% 100%)`,
           }}
         ></div>
 
-        {/* Inner White Circle */}
+        {/* Inner Circle */}
         <div className="absolute top-1/2 left-1/2 w-[60%] h-[60%] bg-white dark:bg-[#343434] rounded-full flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
           <span className="text-lg font-bold text-[#010E30] dark:text-white">
             100%
           </span>
         </div>
 
-        {/* Male % - positioned inside the blue segment */}
-        {malePercent > 0 && malePercent < 100 && (
-          <div
-            className="absolute text-[10px] font-semibold text-[#010E30] dark:text-white"
-            style={{
-              top: `${maleY}%`,
-              left: `${maleX}%`,
-              transform: 'translate(-50%, -50%)',
-              color: malePercent > 50 ? 'white' : '#010E30', // Change text color based on segment size
-            }}
-          >
-            {malePercent}%
-          </div>
-        )}
-
-        {/* Female % - positioned inside the pink segment */}
+        {/* Female % label */}
         {femalePercent > 0 && femalePercent < 100 && (
           <div
-            className="absolute text-[10px] font-semibold text-[#010E30] dark:text-white"
+            className="absolute text-[10px] font-semibold"
             style={{
               top: `${femaleY}%`,
               left: `${femaleX}%`,
               transform: 'translate(-50%, -50%)',
-              color: femalePercent > 50 ? 'white' : '#010E30', // Change text color based on segment size
+              color: femalePercent > 50 ? 'white' : '#010E30',
             }}
           >
             {femalePercent}%
+          </div>
+        )}
+
+        {/* Male % label */}
+        {malePercent > 0 && malePercent < 100 && (
+          <div
+            className="absolute text-[10px] font-semibold"
+            style={{
+              top: `${maleY}%`,
+              left: `${maleX}%`,
+              transform: 'translate(-50%, -50%)',
+              color: malePercent > 50 ? 'white' : '#010E30',
+            }}
+          >
+            {malePercent}%
           </div>
         )}
       </div>
