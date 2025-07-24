@@ -173,7 +173,7 @@ if (
     return (
       <button
         onClick={() => setShowAddEmployee(true)}
-        className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
+        className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-[13px] sm:px-4"
       >
         Add New 
       </button>
@@ -184,7 +184,7 @@ if (
       return (
         <button
           onClick={() => router.push("/admin-main/ui/employees")}
-          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
+          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-[13px] sm:px-4"
         >
           Leave Approval
         </button>
@@ -194,7 +194,7 @@ if (
       return (
         <button
           onClick={() => setShowAddPackage(true)}
-          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
+          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-[13px] sm:px-4"
         >
           Add Package
         </button>
@@ -204,7 +204,7 @@ if (
       return (
         <button
           onClick={() => setShowAddExpenses(true)}
-          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
+          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-[13px] sm:px-4"
         >
           Add Expenses
         </button>
@@ -214,7 +214,7 @@ if (
       return (
         <button
           onClick={() => setShowAddMeeting(true)}
-          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
+          className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-[13px] sm:px-4"
         >
           Add Meeting
         </button>
@@ -224,7 +224,7 @@ if (path.includes("invoice") && permissions.invoice) {
   return (
     <button
       onClick={() => setShowGenerateInvoice(true)}
-      className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-sm sm:text-base sm:px-4"
+      className="bg-[#576CBC] text-white px-3 py-1 rounded-lg transition hover:bg-[#3a4f8a] text-[12px] sm:text-base sm:px-4"
     >
       Generate Invoice
     </button>

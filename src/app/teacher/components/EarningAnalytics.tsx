@@ -13,16 +13,16 @@ interface PeriodData {
 
 interface ApiResponse {
   currentPeriod: {
-    totalEarnings: number;
-    regularClass: number;
-    groupClass: number;
-    trialClass: number;
+    totalEarnings: number | null;
+    regularClass: number | null;
+    groupClass: number | null;
+    trialClass: number | null;
   };
   lastPeriod: {
-    totalEarnings: number;
-    regularClass: number;
-    groupClass: number;
-    trialClass: number;
+    totalEarnings: number | null;
+    regularClass: number | null;
+    groupClass: number | null;
+    trialClass: number | null;
   };
 }
 
@@ -65,13 +65,23 @@ const EarningAnalytics = () => {
         const data: ApiResponse = await response.json();
         console.log('[DEBUG] API Response:', data);
 
-        // Validate data structure
-        if (!data || typeof data.currentPeriod?.totalEarnings !== 'number') {
-          console.error('[DEBUG] Invalid data structure:', data);
-          throw new Error('Invalid data received from server');
-        }
+        // Process null values - convert to 0
+        const processedData: ApiResponse = {
+          currentPeriod: {
+            totalEarnings: data.currentPeriod?.totalEarnings ?? 0,
+            regularClass: data.currentPeriod?.regularClass ?? 0,
+            groupClass: data.currentPeriod?.groupClass ?? 0,
+            trialClass: data.currentPeriod?.trialClass ?? 0
+          },
+          lastPeriod: {
+            totalEarnings: data.lastPeriod?.totalEarnings ?? 0,
+            regularClass: data.lastPeriod?.regularClass ?? 0,
+            groupClass: data.lastPeriod?.groupClass ?? 0,
+            trialClass: data.lastPeriod?.trialClass ?? 0
+          }
+        };
 
-        setApiData(data);
+        setApiData(processedData);
       } catch (err) {
         console.error('[DEBUG] Fetch error:', err);
         setError(err instanceof Error ? err.message : 'Failed to load earnings');
@@ -98,7 +108,7 @@ const EarningAnalytics = () => {
     return `${change > 0 ? '+' : ''}${change.toFixed(1)}%`;
   };
 
-  const getCurrentTabEarnings = (data: ApiResponse, tab: ClassType) => {
+  const getCurrentTabEarnings = (data: ApiResponse | null, tab: ClassType) => {
     const result = {
       current: 0,
       previous: 0
@@ -126,8 +136,6 @@ const EarningAnalytics = () => {
   };
 
   const getTimePeriodData = (): PeriodData[] => {
-    if (!apiData) return [];
-
     const currentTabData = getCurrentTabEarnings(apiData, activeTab);
 
     const periodLabels = {
@@ -178,8 +186,6 @@ const EarningAnalytics = () => {
     );
   }
 
-  console.log('[DEBUG] Rendering with data:', apiData);
-
   return (
     <div className="w-full h-full bg-white dark:bg-[#343434] rounded-2xl shadow-md p-4 flex flex-col justify-between">
       <div className="flex justify-between items-center mb-4">
@@ -198,7 +204,7 @@ const EarningAnalytics = () => {
       </div>
 
       <h3 className="text-2xl font-semibold text-[#010E30] dark:text-white mb-4 -mt-2">
-        {apiData ? formatCurrency(apiData.currentPeriod.totalEarnings) : '$0.00'}
+        {apiData ? formatCurrency(apiData.currentPeriod.totalEarnings ?? 0) : '$0.00'}
       </h3>
 
       <div className="flex flex-wrap gap-2 mb-4">

@@ -33,7 +33,7 @@ const StudentsCard: React.FC = () => {
       }
 
       const response = await axios.get<TeacherAnalyticsResponse>(
-        `https://api.blackstoneinfomaticstech.com/teacher-student-count?teacherId=${teacherId}`,
+        `http://localhost:5001/teacher-student-count?teacherId=${teacherId}`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -76,6 +76,18 @@ const StudentsCard: React.FC = () => {
   const malePercent = getPercentage(teacher.maleCount, teacher.studentCount);
   const femalePercent = 100 - malePercent;
 
+  // Calculate positions for the percentage labels
+  const maleAngle = (malePercent / 100) * 360;
+  const femaleAngle = 360 - maleAngle;
+
+  // Position male percentage
+  const maleX = 50 + 35 * Math.cos((maleAngle / 2) * (Math.PI / 180));
+  const maleY = 50 - 35 * Math.sin((maleAngle / 2) * (Math.PI / 180));
+
+  // Position female percentage
+  const femaleX = 50 + 35 * Math.cos((maleAngle + femaleAngle / 2) * (Math.PI / 180));
+  const femaleY = 50 - 35 * Math.sin((maleAngle + femaleAngle / 2) * (Math.PI / 180));
+
   return (
     <div className="bg-white dark:bg-[#343434] rounded-xl shadow-md w-full max-w-sm p-4">
       {/* Header */}
@@ -110,35 +122,36 @@ const StudentsCard: React.FC = () => {
           </span>
         </div>
 
-        {/* Male % */}
+        {/* Male % - positioned inside the blue segment */}
         {malePercent > 0 && malePercent < 100 && (
           <div
             className="absolute text-[10px] font-semibold text-[#010E30] dark:text-white"
-            style={{ top: '22%', left: '70%', transform: 'translate(-50%, -50%)' }}
+            style={{
+              top: `${maleY}%`,
+              left: `${maleX}%`,
+              transform: 'translate(-50%, -50%)',
+              color: malePercent > 50 ? 'white' : '#010E30', // Change text color based on segment size
+            }}
           >
             {malePercent}%
           </div>
         )}
 
-        {/* Female % */}
+        {/* Female % - positioned inside the pink segment */}
         {femalePercent > 0 && femalePercent < 100 && (
           <div
             className="absolute text-[10px] font-semibold text-[#010E30] dark:text-white"
-            style={{ top: '78%', left: '32%', transform: 'translate(-50%, -50%)' }}
+            style={{
+              top: `${femaleY}%`,
+              left: `${femaleX}%`,
+              transform: 'translate(-50%, -50%)',
+              color: femalePercent > 50 ? 'white' : '#010E30', // Change text color based on segment size
+            }}
           >
             {femalePercent}%
           </div>
         )}
       </div>
-
-      {/* Optional summary (can be removed if not needed) */}
-      {/* 
-      <div className="mt-4 text-xs text-[#010E30] dark:text-white">
-        <p>Total Students: {teacher.studentCount}</p>
-        <p>Male: {teacher.maleCount}</p>
-        <p>Female: {teacher.femaleCount}</p>
-      </div> 
-      */}
     </div>
   );
 };
