@@ -13,43 +13,63 @@ import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
 import { getSocket } from "@/app/utils/socket";
 
+// Interfaces based on your API response
 interface Teacher {
   teacherId: string;
   teacherName: string;
   teacherEmail: string;
+  attendee?: string; // Only present in teacher array under supervisor meetings
+  _id?: string;
+}
+
+interface Supervisor {
+  supervisorId: string;
+  supervisorName: string;
+  supervisorEmail: string;
 }
 
 interface Participant {
   studentId: string;
   studentName: string;
   studentEmail: string;
+  _id: string;
 }
 
-interface Meeting {
-  meetingminutes: string | number | readonly string[] | undefined;
-  duration: string | number | readonly string[] | undefined;
-  endTime: string;
-  startTime: string;
+interface StudentMeeting {
+  teacher?: Teacher | Teacher[]; // Can be object or array
+  supervisor?: Supervisor;
   _id: string;
-  meetingId: string;
+  meetingId?: string;
   meetingName: string;
-  selectedDate: string; // ISO string
-  description: string;
-  meetingStatus: "Scheduled" | "Rescheduled" | "Completed";
-  status: string;
-  createdDate: string;
-  createdBy: string;
-  updatedDate: string;
-  updatedBy: string;
-  teacher: Teacher;
-  participants: Participant[];
+  participants?: Participant[];
+  selectedDate: string;
+  startTime: string;
+  endTime: string;
+  description?: string;
+  meetingStatus?: string;
+  meetingminutes?: string;
+  duration?: string;
+  status?: string;
+  createdDate?: string;
+  createdBy?: string;
+  updatedDate?: string;
+  updatedBy?: string;
   __v?: number;
 }
 
-interface MeetingResponse {
+interface MeetingApiResponse {
   totalCount: number;
-  students: Meeting[];
+  records: StudentMeeting[];
 }
+
+// Helper to get teacher name from object or array
+const getTeacherName = (teacher: Teacher | Teacher[] | undefined): string => {
+  if (!teacher) return "";
+  if (Array.isArray(teacher)) {
+    return teacher.map((t) => t.teacherName).join(", ");
+  }
+  return teacher.teacherName;
+};
 
 const ScheduledMeetings = () => {
   const router = useRouter();
@@ -64,9 +84,9 @@ const ScheduledMeetings = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const [upcomingClasses, setUpcomingClasses] = useState<Meeting[]>([]);
-  const [completedData, setCompletedData] = useState<Meeting[]>([]);
-  const [filteredMeetings, setFilteredMeetings] = useState<Meeting[]>([]);
+  const [upcomingClasses, setUpcomingClasses] = useState<StudentMeeting[]>([]);
+  const [completedData, setCompletedData] = useState<StudentMeeting[]>([]);
+  const [filteredMeetings, setFilteredMeetings] = useState<StudentMeeting[]>([]);
 
   // Filter modal state
   const [showMeetingFilterModal, setShowMeetingFilterModal] = useState(false);
@@ -87,7 +107,7 @@ const ScheduledMeetings = () => {
   const [failed, setFailed] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
   const [selectedMeetingDetails, setSelectedMeetingDetails] =
-    useState<Meeting | null>(null);
+    useState<StudentMeeting | null>(null);
   const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] =
     useState(false);
 
@@ -100,10 +120,10 @@ const ScheduledMeetings = () => {
         const token = localStorage.getItem("StudentAuthToken");
         if (!token || !teacherId) return;
 
-        const response = await axios.get<MeetingResponse>(
-          `https://api.blackstoneinfomaticstech.com/teacherMeetinglist`,
+        const response = await axios.get<MeetingApiResponse>(
+          "http://localhost:5001/StudentMeetinglist",
           {
-            params: { teacherId },
+            params: { studentId: teacherId },
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
@@ -111,20 +131,12 @@ const ScheduledMeetings = () => {
           }
         );
 
-        const meetings = response.data.students;
+        const meetings = response.data.records;
         const now = new Date();
-
-        // Helper to get end time as Date
-        const getEndDate = (meeting: Meeting) => {
-          const date = new Date(meeting.selectedDate);
-          const [endH, endM] = meeting.endTime.split(":").map(Number);
-          date.setHours(endH, endM, 0, 0);
-          return date;
-        };
 
         // Only show as upcoming if end time is in the future and not completed
         const upcoming = meetings.filter((m) =>
-          ["Scheduled", "Rescheduled"].includes(m.meetingStatus)
+          ["Scheduled", "Rescheduled"].includes(m.meetingStatus || "")
         );
 
         // Show as completed if status is completed or end time is in the past
@@ -148,12 +160,12 @@ const ScheduledMeetings = () => {
         : null;
     if (!studentId) return;
     const socket = getSocket(studentId);
-    const handleList = (data: Meeting) => {
+    const handleList = (data: StudentMeeting) => {
       console.log("log for new meeting WS");
       const participants = Array.isArray(data.participants)
         ? data.participants
         : [data.participants];
-      const found = participants.find((app) => app.studentId === studentId);
+      const found = participants.find((app) => app && app.studentId === studentId);
       if (found) {
         setUpcomingClasses((prev) =>
           prev.some((m) => m.meetingId === data.meetingId)
@@ -179,7 +191,7 @@ const ScheduledMeetings = () => {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     const filtered = dataToShow.filter((item) => {
-      const teacherName = item.teacher.teacherName?.toLowerCase() || "";
+      const teacherName = getTeacherName(item.teacher).toLowerCase();
       const meetingName = item.meetingName?.toLowerCase() || "";
       const meetingId = item.meetingId?.toLowerCase() || "";
       return (
@@ -205,7 +217,7 @@ const ScheduledMeetings = () => {
     }
     if (meetingFilters.teacher) {
       filtered = filtered.filter((m) =>
-        m.teacher.teacherName
+        getTeacherName(m.teacher)
           .toLowerCase()
           .includes(meetingFilters.teacher.toLowerCase())
       );
@@ -610,7 +622,7 @@ const ScheduledMeetings = () => {
               <div className="divide-y max-h-40 overflow-y-auto text-sm">
                 <div className="flex justify-between items-center px-4 py-2">
                   <span className="text-[#4F46E5]">
-                    {selectedMeetingDetails.teacher.teacherName}
+                    {getTeacherName(selectedMeetingDetails.teacher)}
                   </span>
                   {/* <span
                     className={`text-lg ${

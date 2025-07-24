@@ -173,7 +173,7 @@ const handleEndCall = async () => {
   };
 
   try {
-    const token = localStorage.getItem("TeacherAuthToken");
+    const token = localStorage.getItem("StudentAuthToken");
     await axios.put(`https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${meetingId}`, payload, {
       headers: {
         "Content-Type": "application/json",
