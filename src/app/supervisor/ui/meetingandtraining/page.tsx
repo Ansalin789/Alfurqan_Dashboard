@@ -33,11 +33,11 @@ interface Meeting {
   startTime: string;
   endTime: string;
   description?: string;
-
+meetingminutes?:string;
   meetingStatus: "Completed" | "Scheduled" | "Pending" | string;
   duration?: string;
   status: "Active" | "Inactive" | string;
-
+  
   createdDate: string;
   createdBy: string;
   updatedDate?: string;
@@ -71,6 +71,7 @@ interface Meeting {
         teacherId: string;
         teacherName: string;
         teacherEmail: string;
+        attendee?: string;
       };
 
   // Optional participants (student meetings)
@@ -575,7 +576,7 @@ console.log("Reschedule Time:", rescheduleTime);
                             <div className="relative">
                               {" "}
                               {/* Ensure dropdown is scoped */}
-                              {item.teacher.length > 1 ? (
+                              {Array.isArray(item.teacher) && item.teacher.length > 1 ? (
                                 <>
                                   <button
                                     onClick={() =>
@@ -606,7 +607,11 @@ console.log("Reschedule Time:", rescheduleTime);
                               ) : (
                                 <span className="flex items-center gap-2 font-medium">
                                   <IoPersonOutline />
-                                  {item.teacher[0]?.teacherName}
+                                  {
+      Array.isArray(item.teacher)
+        ? item.teacher[0]?.teacherName
+        : item.teacher.teacherName
+    }
                                 </span>
                               )}
                             </div>
@@ -910,25 +915,39 @@ console.log("Reschedule Time:", rescheduleTime);
                 <span>Attendance</span>
               </div>
               <div className="divide-y max-h-40 overflow-y-auto text-sm">
-                {selectedMeetingDetails.teacher.map((teacher, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center px-4 py-2"
-                  >
-                    <span className="text-[#4F46E5]">
-                      {teacher.teacherName}
-                    </span>
-                    <span
-                      className={`text-lg ${
-                        teacher.attendee === "present"
-                          ? "text-green-600"
-                          : "text-red-500"
-                      }`}
-                    >
-                      {teacher.attendee === "present" ? "✔" : "✘"}
-                    </span>
-                  </div>
-                ))}
+               {Array.isArray(selectedMeetingDetails.teacher) ? (
+  selectedMeetingDetails.teacher.map((teacher, index) => (
+    <div
+      key={index}
+      className="flex justify-between items-center px-4 py-2"
+    >
+      <span className="text-[#4F46E5]">{teacher.teacherName}</span>
+      <span
+        className={`text-lg ${
+          teacher.attendee === "present" ? "text-green-600" : "text-red-500"
+        }`}
+      >
+        {teacher.attendee === "present" ? "✔" : "✘"}
+      </span>
+    </div>
+  ))
+) : (
+  <div className="flex justify-between items-center px-4 py-2">
+    <span className="text-[#4F46E5]">
+      {selectedMeetingDetails.teacher.teacherName}
+    </span>
+    <span
+      className={`text-lg ${
+        selectedMeetingDetails.teacher.attendee === "present"
+          ? "text-green-600"
+          : "text-red-500"
+      }`}
+    >
+      {selectedMeetingDetails.teacher.attendee === "present" ? "✔" : "✘"}
+    </span>
+  </div>
+)}
+
               </div>
             </div>
             <div className="mb-6">
