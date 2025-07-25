@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdTune, MdFormatListBulleted } from "react-icons/md";
 import { Search } from "lucide-react";
 import { IoMdList } from "react-icons/io";
 import { useRouter } from "next/navigation";
 import Pagination from "@/components/Pagination";
+import { AnimatePresence, motion } from "framer-motion";
+import SuccessPopup from "@/app/admin-main/components/successPopup";
+import FailedPopup from "@/app/admin-main/components/failedPopup";
 export interface AssignmentItem {
   assignmentId?: string;
   assignmentType: string;
@@ -18,7 +21,36 @@ export interface AssignmentItem {
   assignedDate: string;
   dueDate: string;
 }
+interface GroupedAssignment {
+  assignmentId: string;
+  assignmentName: string;
+  questionCount: number;
+  assignments: AssignmentQuestion[];
+}
 
+interface AssignmentQuestion {
+  _id: string;
+  levelId: string;
+  levelName: string;
+  courseId: string;
+  courseName: string;
+  assignmentId: string;
+  assignmentName: string;
+  assignmentType: string;
+  questionName: string;
+  chooseType: boolean;
+  trueorfalseType: boolean;
+  question?: string;
+  options?: string[];
+  audioFile?: string | Buffer | Uint8Array;
+  uploadFile?: string | Buffer | Uint8Array;
+  answerValidation: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  __v: number;
+}
 
 export interface StudentCoreInfo {
   studentId: string;
@@ -119,6 +151,23 @@ export interface StudentWithAssignments extends StudentCoreInfo {
 }
 
 const GroupStudents = () => {
+    const [openModal, setOpenModal] = useState(false);
+    const [step, setStep] = useState(1);
+    const [adminTitle, setAdminTitle] = useState("");
+    const [adminAssignedDate, setAdminAssignedDate] = useState("");
+    const [adminDueDate, setAdminDueDate] = useState("");
+    const [adminComment, setAdminComment] = useState("");
+    const [selectedAssignments, setSelectedAssignments] = useState<string[]>([]);
+    const [success, setSucces] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [failedMessage, setFailedMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [openModalId, setOpenModalId] = useState<string | null>(null);
+  const [title, setTitle] = useState("");
+  const [assignedDate, setAssignedDate] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [comment, setComment] = useState("");
   const [groupStudents, setGroupStudents] = useState<StudentWithAssignments[]>(
     []
   );
@@ -133,14 +182,29 @@ const GroupStudents = () => {
   const [filteredGroups, setFilteredGroups] = useState<
     Record<string, StudentWithAssignments[]>
   >({});
-    const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
-  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-  const [openModalId, setOpenModalId] = useState<string | null>(null);
-  const [title, setTitle] = useState("");
-  const [assignedDate, setAssignedDate] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [comment, setComment] = useState("");
+  const [adminAssignmentList, setAdminAssignmentList] = useState<
+    {
+      assignmentId: string;
+      assignmentName: string;
+      questionCount: number;
+    }[]
+  >([]);
+
+  const [assignmentMap, setAssignmentMap] = useState<
+    Record<string, AssignmentQuestion[]>
+  >({});
+  const [assignData, setAssignData] = useState<{
+    studentId: string;
+    studentFirstName: string;
+    course: string;
+    level: string;
+  }>({
+    studentId: "",
+    studentFirstName: "",
+    course: "",
+    level: "",
+  });
   const [openGroupId, setOpenGroupId] = useState<string | null>(null);
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
   // Add these to your existing state declarations
@@ -490,6 +554,347 @@ const GroupStudents = () => {
     setExpandedGroupId(expandedGroupId === groupId ? null : groupId);
   };
 
+
+  const handleAssign = async (
+    studentId: string,
+    studentFirstName: string,
+    course: string,
+    level: string
+  ) => {
+    try {
+      setAssignData({ studentId, studentFirstName, course, level });
+      setOpenModal(true);
+
+      const response = await axios.get(
+        "https://api.blackstoneinfomaticstech.com/adminassignment/assignment",
+        {
+          params: {
+            courseName: course,
+            levelName: level,
+          },
+        }
+      );
+
+      console.log("[GET ASSIGNMENT] Raw API response:", response.data);
+      const data: GroupedAssignment[] = response.data.data.assignments;
+      console.log("[GET ASSIGNMENT] Parsed assignments:", data);
+
+      const commonList = data.map((item) => ({
+        assignmentId: item.assignmentId,
+        assignmentName: item.assignmentName,
+        questionCount: item.questionCount,
+      }));
+      console.log("[GET ASSIGNMENT] commonList:", commonList);
+
+      const assignmentMapData: Record<string, AssignmentQuestion[]> = {};
+      data.forEach((item) => {
+        assignmentMapData[item.assignmentId] = item.assignments;
+        // Check file types for each question
+        item.assignments.forEach((q, idx) => {
+          if (q.uploadFile) {
+            const isArrayBuffer = q.uploadFile instanceof ArrayBuffer;
+            const isUint8Array = q.uploadFile instanceof Uint8Array;
+            let isBase64 = false;
+            if (typeof q.uploadFile === "string") {
+              isBase64 = /^[A-Za-z0-9+/=]+$/.test((q.uploadFile as string).replace(/\s/g, ""));
+            }
+            console.log(`[GET ASSIGNMENT] AssignmentId: ${item.assignmentId}, Question ${idx} uploadFile type:`, {
+              isArrayBuffer,
+              isUint8Array,
+              isBase64,
+              typeof: typeof q.uploadFile,
+              value: q.uploadFile
+            });
+          }
+          if (q.audioFile) {
+            const isArrayBuffer = q.audioFile instanceof ArrayBuffer;
+            const isUint8Array = q.audioFile instanceof Uint8Array;
+            let isBase64 = false;
+            if (typeof q.audioFile === "string") {
+              isBase64 = /^[A-Za-z0-9+/=]+$/.test((q.audioFile as string).replace(/\s/g, ""));
+            }
+            console.log(`[GET ASSIGNMENT] AssignmentId: ${item.assignmentId}, Question ${idx} audioFile type:`, {
+              isArrayBuffer,
+              isUint8Array,
+              isBase64,
+              typeof: typeof q.audioFile,
+              value: q.audioFile
+            });
+          }
+        });
+      });
+
+      console.log("[GET ASSIGNMENT] assignmentMapData:", assignmentMapData);
+      setAdminAssignmentList(commonList);
+      setAssignmentMap(assignmentMapData);
+    } catch (error) {
+      console.error("❌ Failed to fetch assignments:", error);
+    }
+  };
+
+  const toggleAssignment = (id: string) => {
+    setSelectedAssignments((prev) =>
+      prev.includes(id) ? prev.filter((aid) => aid !== id) : [...prev, id]
+    );
+  };
+
+  const handleAdminClose = () => {
+    setOpenModal(false);
+    setAssignData({
+      studentId: "",
+      studentFirstName: "",
+      course: "",
+      level: "",
+    });
+    setStep(1);
+    setAdminTitle("");
+    setAdminAssignedDate("");
+    setAdminDueDate("");
+    setAdminComment("");
+    setSelectedAssignments([]);
+    setAdminAssignmentList([]);
+    setAssignmentMap({});
+  };
+
+ const handleSaveAssignment = async ({
+  adminTitle,
+  adminAssignedDate,
+  adminDueDate,
+  adminComment,
+  selectedAssignments,
+}: {
+  adminTitle: string;
+  adminAssignedDate: string;
+  adminDueDate: string;
+  adminComment: string;
+  selectedAssignments: string[];
+}) => {
+  try {
+    if (!selectedAssignments.length) {
+      setFailedMessage("Please select at least one assignment");
+      setFailed(true);
+      return;
+    }
+
+    const formData = new FormData();
+    const token = localStorage.getItem("TeacherAuthToken") || "";
+    const teacherName = localStorage.getItem("TeacherPortalName") || "";
+    const teacherId = localStorage.getItem("TeacherPortalId") || "";
+
+    // Add shared fields that will be merged with each assignment
+    formData.append("studentId", assignData.studentId);
+    formData.append("studentName", assignData.studentFirstName);
+    formData.append("title", adminTitle.trim());
+    formData.append("assignedTeacher", teacherName);
+    formData.append("assignedTeacherId", teacherId);
+    formData.append("sessionClassType", "REGULARCLASS");
+    formData.append("createdBy", "System");
+    formData.append("updatedBy", teacherName);
+    formData.append("assignmentStatus", "Assigned");
+    formData.append("commends", adminComment?.trim() || "");
+    formData.append("score", "0");
+
+    // Process each assignment
+    selectedAssignments.forEach((assignmentId, index) => {
+      const questions = assignmentMap[assignmentId] || [];
+      questions.forEach((q: AssignmentQuestion, qIndex) => {
+        const prefix = `assignments[${index}]`;
+
+        // Debug: Log question file info before appending
+        console.log(`[SAVE ASSIGNMENT] Question ${qIndex} uploadFile:`, q.uploadFile);
+
+        // ...existing code for assignmentTypeValue and fields...
+        let assignmentTypeValue;
+        try {
+          assignmentTypeValue = JSON.stringify({
+            type: q.assignmentType?.toLowerCase() === "image" 
+              ? "image identification" 
+              : q.assignmentType?.toLowerCase() === "wordmatch" 
+                ? "word match" 
+                : q.assignmentType?.toLowerCase(),
+            name: q.assignmentType
+          });
+        } catch (err) {
+          console.error("Error stringifying assignmentType:", err);
+          assignmentTypeValue = JSON.stringify({
+            type: "quiz",
+            name: "quiz"
+          });
+        }
+
+        formData.append(`${prefix}[questionName]`, q.questionName || "");
+        formData.append(`${prefix}[questionType]`, q.chooseType ? "choose" : q.trueorfalseType ? "truefalse" : "noOption");
+        formData.append(`${prefix}[typeofQuestion]`, q.chooseType ? "choose" : q.trueorfalseType ? "truefalse" : "noOption");
+        formData.append(`${prefix}[assignmentName]`, q.assignmentName || "");
+        formData.append(`${prefix}[assignmentType]`, assignmentTypeValue);
+        formData.append(`${prefix}[chooseType]`, String(q.chooseType));
+        formData.append(`${prefix}[trueorfalseType]`, String(q.trueorfalseType));
+        formData.append(`${prefix}[question]`, q.question || q.questionName || "");
+        formData.append(`${prefix}[hasOptions]`, String(q.chooseType || q.trueorfalseType));
+
+        try {
+          const optionsValue = JSON.stringify({
+            optionOne: q.options?.[0] ?? "",
+            optionTwo: q.options?.[1] ?? "",
+            optionThree: q.options?.[2] ?? "",
+            optionFour: q.options?.[3] ?? ""
+          });
+          formData.append(`${prefix}[options]`, optionsValue);
+        } catch (err) {
+          console.error("Error stringifying options:", err);
+          formData.append(`${prefix}[options]`, JSON.stringify({}));
+        }
+
+        formData.append(`${prefix}[status]`, "active");
+        formData.append(`${prefix}[createdDate]`, new Date().toISOString());
+        formData.append(`${prefix}[updatedDate]`, new Date().toISOString());
+        formData.append(`${prefix}[level]`, q.levelName || "");
+        formData.append(`${prefix}[courses]`, q.courseName || "");
+        formData.append(`${prefix}[assignedDate]`, new Date(adminAssignedDate).toISOString());
+        formData.append(`${prefix}[dueDate]`, new Date(adminDueDate).toISOString());
+        formData.append(`${prefix}[answer]`, "");
+        formData.append(`${prefix}[answerValidation]`, q.answerValidation || "");
+        formData.append(`${prefix}[rating]`, "");
+
+        // Handle file uploads - critical change for backend compatibility
+        if (q.uploadFile) {
+          try {
+            if (q.uploadFile instanceof File) {
+              console.log(`[SAVE ASSIGNMENT] Appending File object for question ${qIndex}`);
+              formData.append(`${prefix}[uploadFile]`, q.uploadFile, `assignment_${index}_${qIndex}.${q.uploadFile.name.split('.').pop()}`);
+            } else if (typeof q.uploadFile === 'string') {
+              let base64Data = q.uploadFile;
+              let mimeType = 'application/octet-stream';
+              if (q.uploadFile.startsWith('data:')) {
+                mimeType = q.uploadFile.match(/^data:(.*?);/)?.[1] || mimeType;
+                base64Data = q.uploadFile.split(',')[1];
+              } else {
+                base64Data = q.uploadFile;
+              }
+              if (/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
+                console.log(`[SAVE ASSIGNMENT] Appending raw base64 string as Blob for question ${qIndex}`);
+                const byteCharacters = atob(base64Data);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let j = 0; j < byteCharacters.length; j++) {
+                  byteNumbers[j] = byteCharacters.charCodeAt(j);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: mimeType });
+                formData.append(
+                  `${prefix}[uploadFile]`, 
+                  blob, 
+                  `assignment_${index}_${qIndex}.jpg`
+                );
+              } else {
+                console.warn(`[SAVE ASSIGNMENT] Unknown string file type for question ${qIndex}:`, q.uploadFile);
+              }
+            } else {
+              console.warn(`[SAVE ASSIGNMENT] Unknown file type for question ${qIndex}:`, q.uploadFile);
+            }
+          } catch (err) {
+            console.error('Error processing file:', err);
+            // Continue without file if processing fails
+          }
+        }
+
+        // Handle audio file uploads for word match and other types
+        if (q.audioFile) {
+          try {
+            if (q.audioFile instanceof File) {
+              console.log(`[SAVE ASSIGNMENT] Appending audio File object for question ${qIndex}`);
+              formData.append(`${prefix}[audioFile]`, q.audioFile, `assignment_${index}_${qIndex}.mp3`);
+            } else if (typeof q.audioFile === 'string') {
+              let base64Data = q.audioFile;
+              let mimeType = 'audio/mpeg';
+              if (q.audioFile.startsWith('data:')) {
+                mimeType = q.audioFile.match(/^data:(.*?);/)?.[1] || mimeType;
+                base64Data = q.audioFile.split(',')[1];
+              } else {
+                base64Data = q.audioFile;
+              }
+              if (/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
+                console.log(`[SAVE ASSIGNMENT] Appending raw base64 audio string as Blob for question ${qIndex}`);
+                const byteCharacters = atob(base64Data);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let j = 0; j < byteCharacters.length; j++) {
+                  byteNumbers[j] = byteCharacters.charCodeAt(j);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: mimeType });
+                formData.append(
+                  `${prefix}[audioFile]`, 
+                  blob, 
+                  `assignment_${index}_${qIndex}.mp3`
+                );
+              } else {
+                console.warn(`[SAVE ASSIGNMENT] Unknown string audio file type for question ${qIndex}:`, q.audioFile);
+              }
+            } else {
+              console.warn(`[SAVE ASSIGNMENT] Unknown audio file type for question ${qIndex}:`, q.audioFile);
+            }
+          } catch (err) {
+            console.error('Error processing audio file:', err);
+            // Continue without audio if processing fails
+          }
+        }
+
+        // Debug: Log FormData after file append
+        if (q.uploadFile) {
+          const lastKey = `${prefix}[uploadFile]`;
+          const lastValue = formData.get(lastKey);
+          console.log(`[SAVE ASSIGNMENT] FormData after file append for ${lastKey}:`, lastValue);
+        }
+      });
+    });
+
+    // Debug: Log FormData contents (remove in production)
+    formData.forEach((value, key) => {
+      console.log(key, value instanceof Blob ? `[Blob ${(value as Blob).type}]` : value);
+    });
+
+    // Submit to API
+    const res = await axios.post(
+      "https://api.blackstoneinfomaticstech.com/assignments",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    if ([200, 201].includes(res.status)) {
+      setSucces(true);
+      handleAdminClose();
+    }
+  } catch (err) {
+    console.error('Submission error:', err);
+    const error = err as AxiosError;
+    
+    let errorMessage = "Failed to submit assignment";
+    if (error.response) {
+      switch (error.response.status) {
+        case 400: 
+          errorMessage = "Invalid request data - please check all fields";
+          break;
+        case 401: 
+          errorMessage = "Session expired - please login again";
+          break;
+        case 403: 
+          errorMessage = "You don't have permission to perform this action";
+          break;
+        case 500: 
+          errorMessage = "Server error - please try again later";
+          break;
+      }
+    }
+    
+    setFailedMessage(errorMessage);
+    setFailed(true);
+  }
+};
+
   return (
     <div className="md:p-0 mx-auto w-full">
       <div className="flex flex-col h-full w-full justify-between">
@@ -506,7 +911,6 @@ const GroupStudents = () => {
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
                 />
-              </div>
 
               <div className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
                 <MdTune className="w-4 h-4" />
@@ -1254,15 +1658,193 @@ const GroupStudents = () => {
               </tbody>
             </table>
           </div>
+              {openModal && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                      transition={{ duration: 0.3 }}
+                      className="bg-white dark:bg-[#1f1f1f] text-gray-900 dark:text-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-gray-200 dark:border-gray-700"
+                    >
+                      <h2 className="text-2xl font-bold mb-6 text-center">
+                        Assign to {assignData.studentFirstName}
+                      </h2>
+          
+                      <AnimatePresence mode="wait">
+                        {step === 1 && (
+                          <motion.div
+                            key="step1"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <div className="space-y-4">
+                              <InputField
+                                label="Title"
+                                value={adminTitle}
+                                onChange={setAdminTitle}
+                                placeholder="Enter assignment title"
+                              />
+          
+                              <div className="flex gap-4">
+                                <InputField
+                                  label="Assigned Date"
+                                  type="date"
+                                  value={adminAssignedDate}
+                                  onChange={setAdminAssignedDate}
+                                />
+                                <InputField
+                                  label="Due Date"
+                                  type="date"
+                                  value={adminDueDate}
+                                  onChange={setAdminDueDate}
+                                />
+                              </div>
+          
+                              <div>
+                                <label className="block text-sm mb-1 text-gray-800 dark:text-gray-300">
+                                  Comment
+                                </label>
+                                <textarea
+                                  value={adminComment}
+                                  onChange={(e) => setAdminComment(e.target.value)}
+                                  className="w-full p-3 rounded-lg text-[13px] bg-gray-100 dark:bg-[#2d2d2d] border border-gray-300 dark:border-gray-700 resize-none h-24"
+                                  placeholder="Write your comment here..."
+                                />
+                              </div>
+                            </div>
+          
+                            <div className="mt-6 flex justify-end gap-3">
+                              <button
+                                onClick={handleAdminClose}
+                                className="px-4 py-1 rounded-md border border-gray-400 dark:border-[#576CBC] text-[#576CBC] dark:bg-[#576CBC]/10 hover:bg-gray-100 dark:hover:bg-[#576CBC]/20 transition"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() => setStep(2)}
+                                className="px-4 py-1 rounded-md bg-[#576CBC] text-white hover:bg-[#475aa1] transition"
+                              >
+                                Next
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
+          
+                        {step === 2 && (
+                          <motion.div
+                            key="step2"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <div className="space-y-4 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
+                              {adminAssignmentList.map((assignment) => (
+                                <div
+                                  key={assignment.assignmentId}
+                                  className={`flex items-center justify-between p-4 rounded-lg border dark:border-gray-700 transition ${
+                                    selectedAssignments.includes(assignment.assignmentId)
+                                      ? "bg-green-100 dark:bg-green-900"
+                                      : "bg-white dark:bg-[#262626]"
+                                  }`}
+                                >
+                                  <div>
+                                    <p className="font-medium">
+                                      {assignment.assignmentName}
+                                    </p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                      Questions: {assignment.questionCount}
+                                    </p>
+                                  </div>
+                                  <button
+                                    onClick={() =>
+                                      toggleAssignment(assignment.assignmentId)
+                                    }
+                                    className="text-sm font-semibold text-red-500 hover:opacity-80"
+                                  >
+                                    {selectedAssignments.includes(assignment.assignmentId)
+                                      ? "Remove"
+                                      : "Add"}
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+          
+                            <div className="mt-6 flex justify-between gap-3">
+                              <button
+                                onClick={() => setStep(1)}
+                                className="px-4 py-2 rounded-lg border text-[#576CBC] dark:border-[#576CBC] dark:bg-[#576CBC]/10 hover:bg-gray-100 dark:hover:bg-[#576CBC]/20 transition"
+                              >
+                                Back
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleSaveAssignment({
+                                    adminTitle,
+                                    adminAssignedDate,
+                                    adminDueDate,
+                                    adminComment,
+                                    selectedAssignments,
+                                  })
+                                }
+                                className="px-4 py-2 rounded-lg bg-[#576CBC] text-white hover:bg-[#475aa1] transition"
+                              >
+                                Save
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  </div>
+                )}
+                {success && (
+                  <SuccessPopup onClose={() => setSucces(false)} title="Assignment" />
+                )}
+                {failed && (
+                  <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
+                )}
                 <Pagination
                   currentPage={currentPage}
                   totalPages={Math.ceil(displayList.length / itemsPerPage)}
                   onPageChange={setCurrentPage}
                 />
         </div>
+   
+  </div>
+);
       </div>
     </div>
   );
 };
+const InputField = ({
+  label,
+  type = "text",
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  type?: string;
+  value: string;
+  onChange: (val: string) => void;
+  placeholder?: string;
+}) => (
+  <div className="flex-1">
+    <label className="block text-sm mb-1 text-gray-800 dark:text-gray-300">
+      {label}
+    </label>
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full px-3 py-2 rounded-lg text-[13px] bg-gray-100 dark:bg-[#2d2d2d] border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+    />
+  </div>
+);
 
 export default GroupStudents;
