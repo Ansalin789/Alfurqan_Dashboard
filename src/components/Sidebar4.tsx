@@ -77,7 +77,7 @@ export default function Sidebar4() {
 
   return (
     <div className="sidebar__wrapper bg-[#0e2231] h-full overflow-y-auto" style={{ width: "240px" }}>
-      <aside className="sidebar bg-[#0e2536] dark:bg-[#242424] p-4 h-full flex flex-col" style={{ width: "240px" }}>
+      <aside className="sidebar bg-[#0e2536] dark:bg-[#1D1D1D] p-4 h-full flex flex-col" style={{ width: "240px" }}>
 
         {/* Logo Section */}
         <div className='flex items-center gap-3 mt-5 mb-6 px-2'>
@@ -106,19 +106,34 @@ export default function Sidebar4() {
                     onClick={() => subItems && toggleSubItems(name)}
                     className={`w-full flex items-center gap-3 px-3 py-3 text-[14px] cursor-pointer rounded-md border-l-4 transition-all duration-200
                       ${isParentActive ? 'bg-[#576CBC] border-[#576CBC] text-white font-semibold'
-                        : 'border-transparent text-[#818790]'}
+                        : 'border-transparent text-[#6C6C6C]'}
                     `}
                   >
-                    <span className="text-[18px] w-5 flex justify-center" style={{ color: isParentActive ? '#a0c4ff' : '#818790' }}>
+                    {/* Icon */}
+                    <span
+                      className={`text-[18px] w-5 flex justify-center 
+                        ${isParentActive ? 'text-white' : 'text-[#6C6C6C]'}
+                      `}
+                    >
                       {typeof Icon === 'string' ? (
-                        <Image src={Icon} width={20} height={20} alt={name} />
+                        <Image 
+                          src={Icon} 
+                          width={20} 
+                          height={20} 
+                          alt={name} 
+                          className="dark:invert"
+                        />
                       ) : (
                         <Icon size={20} />
                       )}
                     </span>
+
+                    {/* Title */}
                     <span className="flex-1 text-left">{name}</span>
+
+                    {/* Dropdown Arrow */}
                     {subItems && (
-                      <span className="text-sm">
+                      <span className="text-sm text-[#6C6C6C]">
                         {expandedItem === name ? <IoIosArrowDown /> : <IoIosArrowForward />}
                       </span>
                     )}
@@ -136,7 +151,7 @@ export default function Sidebar4() {
                             href={subItem.href}
                             className={`block text-[14px] no-underline py-1.5 px-3 rounded-md border-l-4 transition-all duration-150
                               ${isActive ? 'bg-[#576CBC] border-[#576CBC] text-white font-medium'
-                                : 'border-transparent text-[#818790]'}
+                                : 'border-transparent text-[#6C6C6C]'}
                             `}
                           >
                             {subItem.name}
