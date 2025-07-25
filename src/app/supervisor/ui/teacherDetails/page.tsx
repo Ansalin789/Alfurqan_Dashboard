@@ -4,52 +4,54 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { FaRegEdit } from "react-icons/fa";
 import { VscGraphLeft } from "react-icons/vsc";
-import { IoMdAttach } from "react-icons/io";
+import { ImAttachment } from "react-icons/im";
 
 import BaseLayout3 from "@/components/BaseLayout3";
 import SupervisorHeader from "../../components/supervisorHeader";
 
 const TeacherDetails = () => {
   interface IProfessionalExperience {
-  jobRole: string;
-  organizationName: string;
-  jobLocation: string;
-  fromDate: string | null;
-  toDate: string | null;
-  jobDescription: string;
-  _id: string;
-}
+    jobRole: string;
+    organizationName: string;
+    jobLocation: string;
+    fromDate: string | null;
+    toDate: string | null;
+    jobDescription: string;
+    _id: string;
+  }
 
- interface ICandidateApplication {
-  _id: string;
-  candidateFirstName: string;
-  candidateLastName: string;
-  supervisor: {
-    supervisorId: string;
-    supervisorName: string;
-    supervisorEmail: string;
-    supervisorRole: string;
-  };
-  gender: string;
-  applicationDate: string; // ISO date string
-  candidateEmail: string;
-  candidatePhoneNumber: number;
-  candidateCountry: string;
-  candidateCity: string;
-  positionApplied: string;
-  currency: string;
-  expectedSalary: number;
-  preferedWorkingHours: string;
-  comments: string;
-  applicationStatus: string;
-  overallRating: number;
-  professionalExperience: IProfessionalExperience[];
-  skills: string;
-  status: string;
-  createdDate: string; // ISO date string
-  createdBy: string;
-  __v: number;
-}
+  interface ICandidateApplication {
+    _id: string;
+    candidateFirstName: string;
+    candidateLastName: string;
+    supervisor: {
+      supervisorId: string;
+      supervisorName: string;
+      supervisorEmail: string;
+      supervisorRole: string;
+    };
+    gender: string;
+    applicationDate: string;
+    candidateEmail: string;
+    candidatePhoneNumber: number;
+    candidateCountry: string;
+    candidateCity: string;
+    positionApplied: string;
+    currency: string;
+    expectedSalary: number;
+    preferedWorkingHours: string;
+    uploadResume: { type: string; data: number[] } | string;
+    comments: string;
+    applicationStatus: string;
+    overallRating: number;
+    professionalExperience: IProfessionalExperience[];
+    skills: string;
+    status: string;
+    createdDate: string;
+    createdBy: string;
+    __v: number;
+  }
+
   interface Student {
     studentId: string;
     studentFirstname: string;
@@ -64,10 +66,13 @@ const TeacherDetails = () => {
     overallPerformance: number;
     students: Student[];
   }
+
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [teachers, setTeachers] = useState<ICandidateApplication>();
+  const [resumeBlobUrl, setResumeBlobUrl] = useState<string | null>(null);
   const search = useSearchParams();
   const teacherId = search.get("teacherId");
+
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
@@ -85,55 +90,52 @@ const TeacherDetails = () => {
           {
             headers: {
               Authorization: `Bearer ${token}`,
-              "Content-Type": "appliation/json",
+              "Content-Type": "application/json",
             },
           }
         );
         const data = await response.json();
-
         console.log("Fetched data:", data);
         setTeachers(data);
       } catch (error) {
         console.error("Error fetching teachers:", error);
       }
     };
+
     const fetchStats = async () => {
-    try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("SupervisorAuthToken")
-          : null;
-      if (!token) {
-        console.error("❌ SupervisorAuthToken not found");
-        return;
-      }
-
-      const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/classstudentsattendancecounts?teacherId=${teacherId}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("SupervisorAuthToken")
+            : null;
+        if (!token) {
+          console.error("❌ SupervisorAuthToken not found");
+          return;
         }
-      );
 
-      if (!response.ok) throw new Error("Failed to fetch data");
-      const data: StatsResponse = await response.json();
-      console.log("Fetched stats:", data);
-      setStats(data);
-    } catch (err: any) {
-      console.log(err.message ?? "Unknown error");
-    } 
-  };
+        const response = await fetch(
+          `https://api.blackstoneinfomaticstech.com/classstudentsattendancecounts?teacherId=${teacherId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) throw new Error("Failed to fetch data");
+        const data: StatsResponse = await response.json();
+        console.log("Fetched stats:", data);
+        setStats(data);
+      } catch (err: any) {
+        console.log(err.message ?? "Unknown error");
+      }
+    };
+
     fetchStats();
     fetchTeachers();
-  }, []);
-
- 
-
-
+  }, [teacherId]);
 
   // Format working hours like "32h 40m"
   const formatWorkingHours = (hours: number | string) => {
@@ -144,6 +146,53 @@ const TeacherDetails = () => {
     }
     return hours;
   };
+
+  // Resume viewing functions (same as recruitment page)
+  function base64ToBlob(base64: string, contentType = 'application/pdf'): Blob {
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: contentType });
+  }
+
+  function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[] }): string | undefined {
+    if (!uploadResume) return undefined;
+
+    if (typeof uploadResume === 'string') {
+      const base64Data = uploadResume.includes('base64,')
+        ? uploadResume.split('base64,')[1]
+        : uploadResume;
+      const blob = base64ToBlob(base64Data);
+      return URL.createObjectURL(blob);
+    } else if (uploadResume.data && uploadResume.type) {
+      const byteArray = new Uint8Array(uploadResume.data);
+      const blob = new Blob([byteArray], { type: uploadResume.type });
+      return URL.createObjectURL(blob);
+    }
+    return undefined;
+  }
+
+  const handleResumeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!teachers?.uploadResume) return;
+    
+    const url = getResumeBlobUrl(teachers.uploadResume);
+    if (url) {
+      setResumeBlobUrl(url);
+      window.open(url, '_blank');
+    }
+  };
+
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (resumeBlobUrl) URL.revokeObjectURL(resumeBlobUrl);
+    };
+  }, [resumeBlobUrl]);
+
   return (
     <BaseLayout3>
       <SupervisorHeader
@@ -158,10 +207,6 @@ const TeacherDetails = () => {
           <div className="bg-white dark:bg-[#3b3b3b] shadow-lg rounded-xl p-0 h-[616px] w-[400px]">
             {/* Header with edit icon */}
             <div className="bg-[#5e6578] h-[200px] rounded-t-xl relative">
-              {/* Edit icon */}
-              <button className="absolute top-8 right-6 text-white rounded-full p-1 hover:bg-white/40">
-                <FaRegEdit className="w-10" />
-              </button>
               {/* Profile image */}
               <div className="absolute left-1/2 -bottom-16 transform -translate-x-1/2">
                 <Image
@@ -200,7 +245,7 @@ const TeacherDetails = () => {
                 </li>
                 <li className="flex justify-between">
                   <span className="font-normal text-gray-600 dark:text-[#fff] opacity-[90%]">
-                   Email
+                    Email
                   </span>
                   <span className="text-gray-500 text-[12px] dark:text-[#a1a1a1]">
                     {teachers?.candidateEmail}
@@ -211,7 +256,7 @@ const TeacherDetails = () => {
                     Country
                   </span>
                   <span className="text-gray-500 text-[12px] dark:text-[#a1a1a1]">
-                   {teachers?.candidateCountry}
+                    {teachers?.candidateCountry}
                   </span>
                 </li>
                 <li className="flex justify-between">
@@ -242,12 +287,14 @@ const TeacherDetails = () => {
                   <span className="font-normal text-gray-600 dark:text-[#fff] opacity-[90%]">
                     BioData
                   </span>
-                  <a
-                    href="/"
-                    className="text-[#5183ca] underline flex items-center gap-1"
+                  <button
+                    onClick={handleResumeClick}
+                    className="text-[#5183ca] underline flex items-center gap-1 hover:text-[#3a6cb3]"
+                    disabled={!teachers?.uploadResume}
                   >
-                    <IoMdAttach className="rotate-45" /> Resume
-                  </a>
+                    <ImAttachment className="w-4 h-4" />
+                    Resume
+                  </button>
                 </li>
               </ul>
             </div>
@@ -274,29 +321,28 @@ const TeacherDetails = () => {
             </div>
             {/* Stats Cards */}
             <div className="grid grid-cols-2 gap-2 mt-2">
-           {[
-          {
-            title: "Total Students",
-            value: stats?.totalStudents?.toString() ?? "-",
-            sub: "60% increase than Last Month",
-          },
-          {
-            title: "Total Classes",
-            value: stats?.totalClasses?.toString() ?? "-",
-            sub: "80% increase than Last Month",
-          },
-          {
-            title: "Total Attendance",
-            value: stats?.totalAttendance?.toString() ?? "-",
-            sub: "90% Progressive than Last Month",
-          },
-          {
-            title: "Total Working Hours",
-            value: formatWorkingHours(stats?.totalWorkingHours ?? "-"),
-            sub: "95% Progressive than Last Month",
-          },
-        ].map((item) => (
-         
+              {[
+                {
+                  title: "Total Students",
+                  value: stats?.totalStudents?.toString() ?? "-",
+                  sub: "60% increase than Last Month",
+                },
+                {
+                  title: "Total Classes",
+                  value: stats?.totalClasses?.toString() ?? "-",
+                  sub: "80% increase than Last Month",
+                },
+                {
+                  title: "Total Attendance",
+                  value: stats?.totalAttendance?.toString() ?? "-",
+                  sub: "90% Progressive than Last Month",
+                },
+                {
+                  title: "Total Working Hours",
+                  value: formatWorkingHours(stats?.totalWorkingHours ?? "-"),
+                  sub: "95% Progressive than Last Month",
+                },
+              ].map((item) => (
                 <div
                   key={item.title}
                   className="bg-[#7689bd] text-white p-6 rounded-2xl shadow-lg"
