@@ -870,15 +870,6 @@ const RegularStudents = () => {
     <div className="md:p-0 mx-auto w-full">
       <div className="flex flex-col h-full w-full justify-between">
         <div className="flex flex-col">
-          {/* Header */}
-          {/* <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
-            <div className="flex flex-wrap gap-4 font-semibold">
-              <h2 className="text-[#576CBC] border-b-2 text-[16px] border-[#576CBC]">
-                Regular Students ({regularStudents.length})
-              </h2>
-            </div>
-          </div> */}
-
           {/* Search + Filter */}
           <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-lg">
             <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">

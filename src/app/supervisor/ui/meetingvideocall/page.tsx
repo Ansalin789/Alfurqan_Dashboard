@@ -166,28 +166,33 @@ export default function Page() {
       console.warn("Missing start or end time for duration calculation");
     }
 
-    const payload = {
-      meetingminutes: meetingMinutes,
-      duration: duration,
-      meetingStatus: "Completed",
-      teacher: classData?.teacher.map((teacher) => {
-        const matchingAttendance = attendance.find(
-          (a) => a.studentId === teacher.teacherId
-        );
-        let attendee = "absent";
-        if (matchingAttendance) {
-          attendee = matchingAttendance.joined ? "present" : "absent";
-        }
+    const normalizedTeachers = Array.isArray(classData?.teacher)
+  ? classData.teacher
+  : [classData?.teacher];
 
-        return {
-          teacherId: teacher.teacherId,
-          teacherName: teacher.teacherName,
-          teacherEmail: teacher.teacherEmail,
-          attendee: attendee,
-          _id: teacher._id,
-        };
-      }),
+const payload = {
+  meetingminutes: meetingMinutes,
+  duration: duration,
+  meetingStatus: "Completed",
+  teacher: normalizedTeachers.map((teacher) => {
+    const matchingAttendance = attendance.find(
+      (a) => a.studentId === teacher?.teacherId
+    );
+    let attendee = "absent";
+    if (matchingAttendance) {
+      attendee = matchingAttendance.joined ? "present" : "absent";
+    }
+
+    return {
+      teacherId: teacher?.teacherId,
+      teacherName: teacher?.teacherName,
+      teacherEmail: teacher?.teacherEmail,
+      attendee: attendee,
+      _id: (teacher as any)._id, 
     };
+  }),
+};
+
 
     try {
       const token =

@@ -232,10 +232,20 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
   const [coursesData, setCoursesData] = useState<CourseRow[]>([]);
 
   const [transactions, setTransactions] = useState<PaymentRow[]>([]);
-  const [searchClass, setSearchClass] = useState("");
+  const [searchClass, setSearchClass] = useState(""); // For search query
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false); // For filter modal visibility
+  const [meetingFilters, setMeetingFilters] = useState({
+    teacher: "",      // For Teacher Name
+    course: "",       // For Course
+    fromDate: "",     // For From Date
+    toDate: "",       // For To Date
+    startTime: "",    // For Start Time
+    endTime: "",      // For End Time
+    status: "",       // For Status
+  });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 5; // Define itemsPerPage only once
   const handleLogin = (studentId: string, courseName: string) => {
     localStorage.setItem("StudentPortalId", studentId);
     localStorage.setItem("StudentCourseName", courseName);
@@ -251,6 +261,20 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
   });
 
   const [paymentHistory, setPaymentHistory] = useState<PaymentDetail[]>([]); // State to hold payment history
+
+  // New state variables for Courses, Payment History, and Assignments
+  const [searchCourse, setSearchCourse] = useState(""); // For course search
+  const [searchPayment, setSearchPayment] = useState(""); // For payment search
+  const [searchAssignment, setSearchAssignment] = useState(""); // For assignment search
+
+  const [courseFilters, setCourseFilters] = useState({
+    courseName: "",
+    startDate: "",
+    endDate: "",
+    status: "",
+  });
+
+  const [isCourseFilterModalOpen, setIsCourseFilterModalOpen] = useState(false); // For Courses tab filter modal
 
 
   useEffect(() => {
@@ -494,30 +518,50 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
   // Filtered class data based on search
   const filteredClassData = classData.filter((row) => {
     const search = searchClass.toLowerCase();
-    return (
-      row.student.studentId.toLowerCase().includes(search) ||
-      row.teacher.teacherName.toLowerCase().includes(search) ||
-      row.package.toLowerCase().includes(search)
-    );
+    const formattedDate = new Date(row.startDate).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "2-digit",
+    }).toLowerCase(); // Format date for comparison
+
+    const matchesSearch =
+      row._id.toLowerCase().includes(search) || // Match Class ID
+      row.teacher.teacherName.toLowerCase().includes(search) || // Match Teacher Name
+      row.course.courseName.toLowerCase().includes(search) || // Match Course Name
+      formattedDate.includes(search) || // Match Date
+      row.startTime[0].includes(search); // Match Start Time
+
+    // Add additional filtering logic based on meetingFilters if needed
+
+    return matchesSearch; // Return true if any match is found
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredClassData.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const displayedItemsCount = filteredClassData.length;
+
+  // Calculate the display range
+  const startItem = displayedItemsCount === 0 ? 0 : indexOfFirstItem + 1;
+  const endItem = Math.min(indexOfLastItem, displayedItemsCount);
+
   // Calculate paginated assignments
-  const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedClassData = filteredClassData.slice(
-    startIndex,
-    startIndex + itemsPerPage
+    indexOfFirstItem,
+    indexOfLastItem
   );
   const paginatedCourseData = coursesData.slice(
-    startIndex,
-    startIndex + itemsPerPage
+    indexOfFirstItem,
+    indexOfLastItem
   );
   const paginatedPaymentData = transactions.slice(
-    startIndex,
-    startIndex + itemsPerPage
+    indexOfFirstItem,
+    indexOfLastItem
   );
   const paginatedAssessmentData = assessment.slice(
-    startIndex,
-    startIndex + itemsPerPage
+    indexOfFirstItem,
+    indexOfLastItem
   );
 
   const donutColors = [
@@ -586,6 +630,13 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
       try {
         const token = localStorage.getItem("AdminAuthToken");
 
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const displayedItemsCount = filteredClassData.length;
+
+  // Calculate the display range
         if (!token || !studentId) {
           console.error("Missing token or student ID");
           return;
@@ -765,6 +816,89 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
     fetchPaymentHistory();
   }, [studentId]); 
 
+  // Function to apply filters
+  const handleApplyFilters = () => {
+    setCurrentPage(1); // Reset to first page on filter apply
+    setIsFilterModalOpen(false); // Close the modal
+  };
+
+  // Function to reset filters
+  const handleResetFilters = () => {
+    setMeetingFilters({
+      teacher: "",
+      course: "",
+      status: "",
+      fromDate: "",
+      toDate: "",
+      startTime: "",
+      endTime: "",
+    });
+    setIsFilterModalOpen(false); // Close the modal
+  };
+
+  // Filtered data for Courses
+  const filteredCourseData = coursesData.filter((course) => {
+    const searchTerm = searchCourse.toLowerCase();
+    const formattedDate = new Date(course.date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }).toLowerCase(); // Format the date for comparison
+
+    return (
+      course.id.toLowerCase().includes(searchTerm) || // Match Course ID
+      course.name.toLowerCase().includes(searchTerm) || // Match Course Name
+      formattedDate.includes(searchTerm) || // Match formatted Start Date
+      course.package.toLowerCase().includes(searchTerm) // Match Package
+    );
+  });
+
+  // Filtered data for Payment History
+  const filteredPaymentData = paymentHistory.filter((payment) => {
+    return payment.userName.toLowerCase().includes(searchPayment.toLowerCase());
+    // Add more filtering logic based on paymentFilters if needed
+  });
+
+  // Fetch assignments data
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      try {
+        const token = localStorage.getItem("AdminAuthToken");
+        if (!token || !studentId) {
+          console.error("Missing token or student ID");
+          return;
+        }
+
+        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/assignments/student?studentId=${studentId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setAssignments(response.data.data || []); // Ensure data is set correctly
+      } catch (error) {
+        console.error("Failed to fetch assignments:", error);
+      }
+    };
+
+    fetchAssignments();
+  }, [studentId]);
+
+  // Filtered data for Assignments
+  const filteredAssignmentData = assignments.filter((assignment) => {
+    const searchTerm = searchAssignment.toLowerCase();
+
+    return (
+      (assignment.assignmentId && assignment.assignmentId.toLowerCase().includes(searchTerm)) || // Match Assignment ID
+      (assignment.assignedTeacher && assignment.assignedTeacher.toLowerCase().includes(searchTerm)) || // Match Assigned By
+      (assignment.courses && assignment.courses.toLowerCase().includes(searchTerm)) || // Match Course
+      (assignment.level && assignment.level.toLowerCase().includes(searchTerm)) || // Match Level
+      (assignment.title && assignment.title.toLowerCase().includes(searchTerm)) || // Match Assignment Name
+      (assignment.sessionClassType && assignment.sessionClassType.toLowerCase().includes(searchTerm)) // Match Class Type
+
+    );
+  });
+
   return (
     <div className=" overflow-x-auto mt-4">
       {/* Tabs */}
@@ -800,19 +934,13 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
               />
               <div
                 className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
-                // onClick={() => setIsFilterModalOpen(true)}
+                onClick={() => setIsFilterModalOpen(true)}
               >
                 <MdTune className="w-4 h-4" />
                 <span>Filter</span>
               </div>
               <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-                Showing{" "}
-                {filteredClassData.length === 0
-                  ? 0
-                  : (currentPage - 1) * itemsPerPage + 1}{" "}
-                to{" "}
-                {Math.min(currentPage * itemsPerPage, filteredClassData.length)}{" "}
-                of {filteredClassData.length}
+                Showing {startItem} to {endItem} of {displayedItemsCount}
               </span>
             </div>
             <div className="overflow-x-auto max-h-none">
@@ -892,6 +1020,105 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
               </table>
             </div>
           </div>
+          {/* Filter Modal */}
+          {isFilterModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
+              <div className="bg-white p-6 rounded-xl w-[400px] relative dark:bg-[#252525] shadow-xl">
+                <button
+                  className="absolute top-4 right-4 text-gray-400 text-2xl"
+                  onClick={() => setIsFilterModalOpen(false)}
+                >
+                  &times;
+                </button>
+                <h2 className="text-lg font-semibold mb-6 dark:text-white">Filter by</h2>
+                
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Teacher Name</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={meetingFilters.teacher}
+                    onChange={(e) => setMeetingFilters({ ...meetingFilters, teacher: e.target.value })}
+                  />
+                </div>
+                
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Course</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={meetingFilters.course}
+                    onChange={(e) => setMeetingFilters({ ...meetingFilters, course: e.target.value })}
+                  />
+                </div>
+                
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Date</label>
+                  <div className="flex gap-2">
+                  <input
+                    type="date"
+                    className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                    value={meetingFilters.fromDate}
+                    onChange={(e) => setMeetingFilters({ ...meetingFilters, fromDate: e.target.value })}
+                  />
+              <input
+                    type="date"
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={meetingFilters.toDate}
+                    onChange={(e) => setMeetingFilters({ ...meetingFilters, toDate: e.target.value })}
+                  />
+                </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Time</label>
+                  <div className="flex gap-2">
+                  <input
+                    type="time"
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={meetingFilters.startTime}
+                    onChange={(e) => setMeetingFilters({ ...meetingFilters, startTime: e.target.value })}
+                  />
+                
+                  <input
+                    type="time"
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={meetingFilters.endTime}
+                    onChange={(e) => setMeetingFilters({ ...meetingFilters, endTime: e.target.value })}
+                  />
+                </div>
+                </div>
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Status</label>
+                  <select
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={meetingFilters.status}
+                    onChange={(e) => setMeetingFilters({ ...meetingFilters, status: e.target.value })}
+                  >
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                    <option value="Rescheduled">Rescheduled</option>
+                  </select>
+                </div>
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={handleResetFilters}
+                    className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                    onClick={handleApplyFilters}
+                  >
+                    Apply Filters
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="flex justify-end mt-4">
                   <button
                     className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
@@ -905,7 +1132,83 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
 
       {/* Courses Tab */}
       {activeTab === "Courses" && (
-        <div className="">
+        <div>
+
+          {isCourseFilterModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
+              <div className="bg-white p-6 rounded-xl w-[400px] relative dark:bg-[#252525] shadow-xl">
+                <button
+                  className="absolute top-4 right-4 text-gray-400 text-2xl"
+                  onClick={() => setIsCourseFilterModalOpen(false)}
+                >
+                  &times;
+                </button>
+                <h2 className="text-lg font-semibold mb-6 dark:text-white">Filter by</h2>
+                
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Course Name</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={courseFilters.courseName}
+                    onChange={(e) => setCourseFilters({ ...courseFilters, courseName: e.target.value })}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Start Date</label>
+                  <input
+                    type="date"
+                    className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                    value={courseFilters.startDate}
+                    onChange={(e) => setCourseFilters({ ...courseFilters, startDate: e.target.value })}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">End Date</label>
+                  <input
+                    type="date"
+                    className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                    value={courseFilters.endDate}
+                    onChange={(e) => setCourseFilters({ ...courseFilters, endDate: e.target.value })}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Status</label>
+                  <select
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={courseFilters.status}
+                    onChange={(e) => setCourseFilters({ ...courseFilters, status: e.target.value })}
+                  >
+                    <option value="">All</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                    {/* Add more status options as needed */}
+                  </select>
+                </div>
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setCourseFilters({ courseName: "", startDate: "", endDate: "", status: "" })} // Reset filters
+                    className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                    onClick={() => {
+                      setIsCourseFilterModalOpen(false);
+                      // Apply filters logic here
+                    }}
+                  >
+                    Apply Filters
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           {/* Donut/Progress Grid */}
           <div className="grid grid-cols-4 gap-4 text-left mb-6">
         {data.map((item, idx) => (
@@ -963,20 +1266,22 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
                 type="text"
                 placeholder="Search"
                 className="bg-transparent outline-none text-[12px] w-32 py-3"
-                // value and onChange can be implemented if you want search for courses
-                disabled
+                value={searchCourse}
+                onChange={(e) => {
+                  setSearchCourse(e.target.value);
+                  setCurrentPage(1);
+                }}
               />
-              <div
-                className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
-                // onClick={() => setIsFilterModalOpen(true)}
-              >
-                <MdTune className="w-4 h-4" />
-
-                <span>Filter</span>
-              </div>
+          <div
+            className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+            onClick={() => setIsCourseFilterModalOpen(true)} // Open filter modal on click
+          >
+            <MdTune className="w-4 h-4" />
+            <span>Filter</span>
+          </div>
               <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
                 Showing{" "}
-                {paginatedCourseData.length === 0
+                {filteredCourseData.length === 0
                   ? 0
                   : (currentPage - 1) * itemsPerPage + 1}{" "}
                 to {Math.min(currentPage * itemsPerPage, coursesData.length)} of{" "}
@@ -1008,8 +1313,8 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
                   </tr>
                 </thead>
                 <tbody className="text-[10px] text-[#1D2939]">
-                  {paginatedCourseData.length > 0 ? (
-                    paginatedCourseData.map((row, index) => (
+                  {filteredCourseData.length > 0 ? (
+                    filteredCourseData.map((row, index) => (
                       <tr
                         key={row.id}
                         className={`text-left dark:text-white ${
@@ -1020,7 +1325,13 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
                       >
                         <td className="p-3">{row.id}</td>
                         <td className="p-3">{row.name}</td>
-                        <td className="p-3">{row.date}</td>
+                        <td className="p-3">
+                          {new Date(row.date).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </td>
                         <td className="p-3">{row.package}</td>
                         <td className="p-3">
                           <span
@@ -1080,15 +1391,18 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
                 type="text"
                 placeholder="Search"
                 className="bg-transparent outline-none text-[12px] w-32 py-3"
-                // Implement search functionality if needed
-                disabled
+                value={searchPayment}
+                onChange={(e) => {
+                  setSearchPayment(e.target.value);
+                  setCurrentPage(1);
+                }}
               />
               <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer">
                 <MdTune className="w-4 h-4" />
                 <span>Filter</span>
               </div>
               <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-                Showing {paymentHistory.length} of {paymentHistory.length}
+                Showing {filteredPaymentData.length} of {paymentHistory.length}
               </span>
             </div>
             <div className="overflow-x-auto max-h-none">
@@ -1103,8 +1417,8 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
                   </tr>
                 </thead>
                 <tbody className="text-[10px] text-[#1D2939]">
-                  {paymentHistory.length > 0 ? (
-                    paymentHistory.map((payment, index) => (
+                  {filteredPaymentData.length > 0 ? (
+                    filteredPaymentData.map((payment, index) => (
                       <tr key={payment._id} className={`text-left dark:text-white ${index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"}`}>
                         <td className="p-3">{payment.paymentResponse.id}</td>
                         <td className="p-3">{new Date(payment.paymentDate).toLocaleDateString()}</td>
@@ -1262,8 +1576,11 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
                 type="text"
                 placeholder="Search"
                 className="bg-transparent outline-none text-[12px] w-32 py-3"
-                // value and onChange can be implemented if you want search for assignments
-                disabled
+                value={searchAssignment}
+                onChange={(e) => {
+                  setSearchAssignment(e.target.value);
+                  // Reset pagination if needed
+                }}
               />
               
               <div
@@ -1271,20 +1588,14 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
                 // onClick={() => setIsFilterModalOpen(true)}
               >
                 <MdTune className="w-4 h-4" />
-
                 <span>Filter</span>
               </div>
               <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-                Showing{" "}
-                {paginatedAssessmentData.length === 0
-                  ? 0
-                  : (currentPage - 1) * itemsPerPage + 1}{" "}
-                to {Math.min(currentPage * itemsPerPage, assessment.length)} of{" "}
-                {assessment.length}
+                Showing {filteredAssignmentData.length} of {assignments.length}
               </span>
             </div>
             <div className="overflow-x-auto max-h-none">
-            <table className="table-fixed w-full">
+              <table className="table-fixed w-full">
                 <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                   <tr className="font-medium">
                     {[
@@ -1292,8 +1603,8 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
                       "Assigned By",
                       "Course",
                       "Level",
-                      "Assignemnt Name",
-                       "Class Type",
+                      "Assignment Name",
+                      "Class Type",
                       "Assigned Date",
                       "Due Date",
                       "Status"
@@ -1308,32 +1619,27 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
                   </tr>
                 </thead>
                 <tbody className="text-[10px] text-[#1D2939]">
-                  {assignments.length > 0 ? (
-                    assignments.map((assignment, index) => {
-                      const status = assignment.assignmentStatus;
-                      const rowBgClass = index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]";
-
-                      return (
-                        <tr key={assignment._id || index} className={`text-left dark:text-white ${index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"} ${rowBgClass}`}>
-                          <td className="p-3">{assignment.assignmentId}</td>
-                          <td className="p-3">{assignment.assignedTeacher}</td>
-                          <td className="p-3">{assignment.courses}</td>
-                          <td className="p-3">{assignment.level}</td>
-                          <td className="p-3">{assignment.title}</td>
-                          <td className="p-3">{assignment.sessionClassType}</td>
-                          <td className="p-3">{assignment.assignedDate ? new Date(assignment.assignedDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}</td>
-                          <td className="p-3">{assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}</td>
-                          <td className="p-3">
-                            <span className={`py-2 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(mapStatus(assignment.assignmentStatus))}`}>
-                              {mapStatus(assignment.assignmentStatus)}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })
+                  {filteredAssignmentData.length > 0 ? (
+                    filteredAssignmentData.map((assignment, index) => (
+                      <tr key={assignment._id || index} className={`text-left dark:text-white ${index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"}`}>
+                        <td className="p-3">{assignment.assignmentId}</td>
+                        <td className="p-3">{assignment.assignedTeacher}</td>
+                        <td className="p-3">{assignment.courses}</td>
+                        <td className="p-3">{assignment.level}</td>
+                        <td className="p-3">{assignment.title}</td>
+                        <td className="p-3">{assignment.sessionClassType}</td>
+                        <td className="p-3">{assignment.assignedDate ? new Date(assignment.assignedDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}</td>
+                        <td className="p-3">{assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}</td>
+                        <td className="p-3">
+                          <span className={`py-2 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(mapStatus(assignment.assignmentStatus))}`}>
+                            {mapStatus(assignment.assignmentStatus)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
                   ) : (
                     <tr>
-                      <td colSpan={10} className="p-4 text-center">
+                      <td colSpan={9} className="p-4 text-center">
                         No data available
                       </td>
                     </tr>
