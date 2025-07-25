@@ -28,7 +28,7 @@ const ApplicationChart = () => {
 
   const fetchData = async (fromDate: string, toDate: string) => {
     try {
-     const token =
+      const token =
         typeof window !== "undefined"
           ? localStorage.getItem("SupervisorAuthToken")
           : null;
@@ -42,9 +42,9 @@ const ApplicationChart = () => {
         `https://api.blackstoneinfomaticstech.com/application?fromDate=${fromDate}&toDate=${toDate}`,
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
       );
 
@@ -53,10 +53,10 @@ const ApplicationChart = () => {
       }
 
       const data = await res.json();
-      console.log(data)
+      console.log(data);
       // Get last 7 days of data
       const last7Days = data.slice(-7);
-      
+
       // Transform to expected format
       const transformed = last7Days.map((item: any) => ({
         date: format(new Date(item.date), "dd MMM"),
@@ -79,7 +79,7 @@ const ApplicationChart = () => {
       // Ensure the range is not more than 7 days
       const diffTime = Math.abs(end.getTime() - start.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
+
       if (diffDays > 7) {
         // If more than 7 days, adjust the end date to be 7 days from start
         const newEnd = new Date(start);
@@ -89,7 +89,10 @@ const ApplicationChart = () => {
 
       setDateRange([ranges.selection]);
       setShowCalendar(false);
-      fetchData(format(ranges.selection.startDate, "yyyy-MM-dd"), format(ranges.selection.endDate, "yyyy-MM-dd"));
+      fetchData(
+        format(ranges.selection.startDate, "yyyy-MM-dd"),
+        format(ranges.selection.endDate, "yyyy-MM-dd")
+      );
     }
   };
 
@@ -194,6 +197,8 @@ const ApplicationChart = () => {
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 8, fill: "currentColor" }}
+                domain={[0, 20]}
+                ticks={[0, 5, 10, 15, 20]}
               />
               <Tooltip
                 cursor={{ fill: "transparent" }}
