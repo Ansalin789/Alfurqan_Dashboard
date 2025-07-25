@@ -268,9 +268,9 @@ useEffect(() => {
       const nameMatch = meeting.meetingName.toLowerCase().includes(searchLower);
       
       // Search in attendees (teacher names)
-      const attendeeMatch = meeting.teacher.some(teacher => 
-        teacher.teacherName.toLowerCase().includes(searchLower)
-      );
+      // const attendeeMatch = meeting.teacher.some(teacher => 
+      //   teacher.teacherName.toLowerCase().includes(searchLower)
+      // );
       
       // Search in date
       const dateMatch = new Date(meeting.selectedDate)
@@ -288,7 +288,7 @@ useEffect(() => {
       // Search in status
       const statusMatch = meeting.meetingStatus.toLowerCase().includes(searchLower);
 
-      return nameMatch || attendeeMatch || dateMatch || timingMatch || statusMatch;
+      return nameMatch  || dateMatch || timingMatch || statusMatch;
     });
   };
 
