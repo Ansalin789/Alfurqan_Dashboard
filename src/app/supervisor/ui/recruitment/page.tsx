@@ -560,15 +560,17 @@ export default function ApplicantsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "NEWAPPLICATION":
-        return "bg-[#F9E7FF] text-[#BE36D5] dark:bg-[#4C3151] dark:text-[#BE36D5] rounded-md px-2 text-[10px]";
+        return "bg-[#DDF6FC] text-[#35A0D5] dark:bg-[#2E3F42] dark:text-[#35A0D5] rounded-md px-4 text-[9px]";
       case "SHORTLISTED":
-        return "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36] rounded-md px-6 text-[10px]";
+        return "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36] rounded-md px-6 text-[9px]";
       case "REJECTED":
-        return "bg-[#FDECEC] dark:bg-[#503434] dark:text-[#D34645] text-[#D34645] rounded-md px-8 text-[10px]";
+        return "bg-[#FDECEC] dark:bg-[#503434] dark:text-[#D34645] text-[#D34645] rounded-md px-8 text-[9px]";
+       case "SENDAPPROVAL":
+        return "bg-[#FDF9D9] dark:bg-[#4f4b29] dark:text-[#d0c02f] text-[#d0c02f] rounded-md px-6 text-[9px]";
       case "WAITING":
-        return "bg-[#FDF6EC] dark:bg-[#534634] dark:text-[#F0AD4E] text-[#F0AD4E] rounded-md px-8 text-[10px]";
+        return "bg-[#FDF6EC] dark:bg-[#534634] dark:text-[#F0AD4E] text-[#F0AD4E] rounded-md px-8 text-[9px]";
       case "APPROVED":
-        return "bg-[#EEEEFF] text-[#38619A] dark:bg-[#2F3642] dark:text-[#225BAA] rounded-md px-8 text-[10px]";
+        return "bg-[#EEEEFF] text-[#38619A] dark:bg-[#2F3642] dark:text-[#225BAA] rounded-md px-8 text-[9px]";
     }
   };
 
@@ -957,10 +959,8 @@ export default function ApplicantsPage() {
                                   <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10 dark:bg-[#252525] dark:text-[#fff]">
                                     {/* Show Edit only if supervisorId matches */}
                                     {supervisorId &&
-                                      supervisorId ===
-                                        String(
-                                          applicant.supervisor?.supervisorId
-                                        ) && (
+                                      supervisorId === String(applicant.supervisor?.supervisorId) &&
+                                      applicant.applicationStatus !== "APPROVED" && (
                                         <button
                                           onClick={() => handleEdit(applicant)}
                                           className="block w-full px-4 py-2 text-left text-[12px] text-slate-600 dark:text-[#fff]"
@@ -1407,7 +1407,7 @@ export default function ApplicantsPage() {
                     onClick={() =>
                       handlesendupdate(
                         Applicantbyid?._id ?? "",
-                        applicationStatus
+                        "SEND APPROVAL"
                       )
                     }
                     className="px-4 py-2 text-[12px] text-[#4E91F0] bg-[#ECF3FD] rounded-lg dark:bg-[#39475A]"
