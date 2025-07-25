@@ -113,7 +113,9 @@ const ViewSchedule = () => {
   }, [searchQuery, uniqueStudentSchedules]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    fetchData();
+  }, []);
+   const fetchData = async () => {
       try {
         const token =
           typeof window !== "undefined"
@@ -231,9 +233,6 @@ const ViewSchedule = () => {
       }
     };
 
-    fetchData();
-  }, []);
-
   const handleFilter = async () => {
     setShowModal(false);
     console.log("✅ Filter button clicked");
@@ -324,6 +323,11 @@ console.log("currentItems", currentItems);
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const handleReset =()=>{
+ setShowModal(false)
+  fetchData();
+  }
   const isToday = (date: string) => {
     const today = new Date();
     const classDate = new Date(date);
@@ -594,9 +598,9 @@ console.log("currentItems", currentItems);
                 <div className="flex justify-between">
                   <button
                     className="px-4 py-2 rounded-md border border-[#576cbc] text-indigo-600 text-sm"
-                    onClick={() => setShowModal(false)}
+                    onClick={handleReset}
                   >
-                    Cancel
+                    reset
                   </button>
                   <button
                     className="px-4 py-2 rounded-md bg-[#576cbc] text-white hover:bg-indigo-700 text-sm"
