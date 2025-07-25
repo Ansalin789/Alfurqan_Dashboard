@@ -568,7 +568,7 @@ export default function Dashboard() {
                 value: dashboardCounts.shortlisted,
                 ringColor: "#9AD7D6",
                 bgColor: "#CDD5E2",
-                percentage: dashboardCounts.shortlistedPercentage.toFixed(0),
+                percentage: (dashboardCounts.shortlistedPercentage??0).toFixed(0),
                 pieData: [
                   { value: dashboardCounts.shortlistedPercentage },
                   { value: 100 - dashboardCounts.shortlistedPercentage },
@@ -579,7 +579,7 @@ export default function Dashboard() {
                 value: dashboardCounts.rejected,
                 ringColor: "#8B93D2",
                 bgColor: "#CDD5E2",
-                percentage: dashboardCounts.rejectedPercentage.toFixed(0),
+                percentage: (dashboardCounts.rejectedPercentage?? 0).toFixed(0),
                 pieData: [
                   { value: dashboardCounts.rejectedPercentage },
                   { value: 100 - dashboardCounts.rejectedPercentage },
