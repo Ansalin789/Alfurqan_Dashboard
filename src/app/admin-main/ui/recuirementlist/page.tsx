@@ -14,6 +14,33 @@ import { TiAttachment } from "react-icons/ti";
 import ReactDOM from "react-dom";
 import DatePicker from "react-datepicker";
 
+function getResumeBlobUrl(
+  uploadResume?: string | { type: string; data: any[] }
+): string | undefined {
+  if (!uploadResume) return undefined;
+
+  if (typeof uploadResume === "string") {
+    // Assume base64 string, strip possible data URI prefix
+    const base64Data = uploadResume.includes("base64,")
+      ? uploadResume.split("base64,")[1]
+      : uploadResume;
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: "application/pdf" });
+    return URL.createObjectURL(blob);
+  } else if (uploadResume.data && uploadResume.type) {
+    const byteArray = new Uint8Array(uploadResume.data);
+    const blob = new Blob([byteArray], { type: uploadResume.type });
+    return URL.createObjectURL(blob);
+  }
+
+  return undefined;
+}
+
 interface Supervisor {
   supervisorId: string;
   supervisorName: string;
@@ -370,153 +397,158 @@ export default function ApplicantsPage() {
                     </thead>
                     <tbody className="text-[10px] text-[#1D2939]">
                       {currentApplicants.length > 0 ? (
-                        currentApplicants.map((applicant, index) => (
-                          <tr
-                            key={applicant._id}
-                            className={`text-[12px] ${
-                              index % 2 === 0
-                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
-                            }`}
-                          >
-                            <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                              {formatDate(applicant.applicationDate)}
-                            </td>
-                            <td className="px-4 py-3 text-center overflow-hidden text-ellipsis whitespace-nowrap w-[12%] align-middle">
-                              <span className="px-3 py-3 text-[#3D8FDE] font-medium text-left">
-                                {applicant.candidateFirstName}{" "}
-                                {applicant.candidateLastName}
-                              </span>
-                            </td>
-                            <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                              {applicant.candidatePhoneNumber}
-                            </td>
-                            <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                              {applicant.candidateEmail}
-                            </td>
-                            <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                              {applicant.positionApplied}
-                            </td>
-                            <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                              <a
-                                href="/path-to-resume.pdf"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1 text-xs  text-[#17243E] dark:text-[#FDFDFD] ml-8"
-                              >
-                                <TiAttachment className="w-4 h-4" />
-                                <span className="text-xs text-center">
-                                  Resume
+                        currentApplicants.map((applicant, index) => {
+                          const resumeUrl = getResumeBlobUrl(applicant.uploadResume);
+                          return (
+                            <tr
+                              key={applicant._id}
+                              className={`text-[12px] ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
+                            >
+                              <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
+                                {formatDate(applicant.applicationDate)}
+                              </td>
+                              <td className="px-4 py-3 text-center overflow-hidden text-ellipsis whitespace-nowrap w-[12%] align-middle">
+                                <span className="px-3 py-3 text-[#3D8FDE] font-medium text-left">
+                                  {applicant.candidateFirstName}{" "}
+                                  {applicant.candidateLastName}
                                 </span>
-                              </a>
-                            </td>
-
-                            <td className="px-4 py-3 whitespace-nowrap align-middle">
-                              <span
-                                className={`text-[10px] font-semibold py-1 px-2 rounded-lg inline-block w-[120px] text-center leading-tight break-words ${getStatusClass(
-                                  applicant.applicationStatus
-                                )}`}
-                              >
-                                {applicant.applicationStatus}
-                              </span>
-                            </td>
-
-                            <td className="px-3 py-3 text-center">
-                              <button
-                                id={`action-btn-${applicant._id}`}
-                                className={`text-[10px] font-semibold dark:text-white ${
-                                  ["APPROVED", "REJECTED"].includes(
-                                    applicant.applicationStatus
-                                  )
-                                    ? "cursor-not-allowed opacity-40"
-                                    : "cursor-pointer"
-                                }`}
-                                disabled={["APPROVED", "REJECTED"].includes(
-                                  applicant.applicationStatus
+                              </td>
+                              <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
+                                {applicant.candidatePhoneNumber}
+                              </td>
+                              <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
+                                {applicant.candidateEmail}
+                              </td>
+                              <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
+                                {applicant.positionApplied}
+                              </td>
+                              <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
+                                {resumeUrl ? (
+                                  <a
+                                    href={resumeUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1 text-xs  text-[#17243E] dark:text-[#669ee2] ml-8"
+                                  >
+                                    <TiAttachment className="w-4 h-4" />
+                                    <span className="text-[11px] text-center ">View Resume</span>
+                                  </a>
+                                ) : (
+                                  <span className="text-gray-400 italic ml-8">No Resume</span>
                                 )}
-                                onClick={(e) => {
-                                  if (
+                              </td>
+
+                              <td className="px-4 py-3 whitespace-nowrap align-middle">
+                                <span
+                                  className={`text-[10px] font-semibold py-1 px-2 rounded-lg inline-block w-[120px] text-center leading-tight break-words ${getStatusClass(
+                                    applicant.applicationStatus
+                                  )}`}
+                                >
+                                  {applicant.applicationStatus}
+                                </span>
+                              </td>
+
+                              <td className="px-3 py-3 text-center">
+                                <button
+                                  id={`action-btn-${applicant._id}`}
+                                  className={`text-[10px] font-semibold dark:text-white ${
                                     ["APPROVED", "REJECTED"].includes(
                                       applicant.applicationStatus
                                     )
-                                  )
-                                    return; // prevent dropdown
+                                      ? "cursor-not-allowed opacity-40"
+                                      : "cursor-pointer"
+                                  }`}
+                                  disabled={["APPROVED", "REJECTED"].includes(
+                                    applicant.applicationStatus
+                                  )}
+                                  onClick={(e) => {
+                                    if (
+                                      ["APPROVED", "REJECTED"].includes(
+                                        applicant.applicationStatus
+                                      )
+                                    )
+                                      return; // prevent dropdown
 
-                                  if (actionDropdown === applicant._id) {
-                                    setActionDropdown(null);
-                                    setDropdownPos(null);
-                                  } else {
-                                    const rect = (
-                                      e.target as HTMLElement
-                                    ).getBoundingClientRect();
-                                    setDropdownPos({
-                                      top: rect.bottom + window.scrollY,
-                                      left: rect.left + window.scrollX,
-                                    });
-                                    setActionDropdown(applicant._id);
-                                  }
-                                }}
-                              >
-                                <MoreVertical size={16} />
-                              </button>
+                                    if (actionDropdown === applicant._id) {
+                                      setActionDropdown(null);
+                                      setDropdownPos(null);
+                                    } else {
+                                      const rect = (
+                                        e.target as HTMLElement
+                                      ).getBoundingClientRect();
+                                      setDropdownPos({
+                                        top: rect.bottom + window.scrollY,
+                                        left: rect.left + window.scrollX,
+                                      });
+                                      setActionDropdown(applicant._id);
+                                    }
+                                  }}
+                                >
+                                  <MoreVertical size={16} />
+                                </button>
 
-                              {actionDropdown === applicant._id &&
-                                dropdownPos &&
-                                typeof window !== "undefined" &&
-                                ReactDOM.createPortal(
-                                  <div
-                                    style={{
-                                      position: "absolute",
-                                      top: dropdownPos.top + 4,
-                                      left: dropdownPos.left - 50,
-                                      zIndex: 9999,
-                                      width: "7.5rem",
-                                    }}
-                                    className="bg-white dark:bg-[#3b3b3b] shadow-md text-center rounded-sm"
-                                  >
-                                    <button
-                                      className="w-full px-2 py-1 text-[10px] text-[#17243E] rounded-t-xl dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
-                                      onClick={() => {
-                                        updateApplicationStatus(
-                                          applicant._id,
-                                          "APPROVED"
-                                        );
-                                        setActionDropdown(null);
-                                        setDropdownPos(null);
+                                {actionDropdown === applicant._id &&
+                                  dropdownPos &&
+                                  typeof window !== "undefined" &&
+                                  ReactDOM.createPortal(
+                                    <div
+                                      style={{
+                                        position: "absolute",
+                                        top: dropdownPos.top + 4,
+                                        left: dropdownPos.left - 50,
+                                        zIndex: 9999,
+                                        width: "7.5rem",
                                       }}
+                                      className="bg-white dark:bg-[#3b3b3b] shadow-md text-center rounded-sm"
                                     >
-                                      Approve
-                                    </button>
+                                      <button
+                                        className="w-full px-2 py-1 text-[10px] text-[#17243E] rounded-t-xl dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
+                                        onClick={() => {
+                                          updateApplicationStatus(
+                                            applicant._id,
+                                            "APPROVED"
+                                          );
+                                          setActionDropdown(null);
+                                          setDropdownPos(null);
+                                        }}
+                                      >
+                                        Approve
+                                      </button>
 
-                                    <button
-                                      className="w-full px-2 py-1 text-[10px] text-[#17243E] dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
-                                      onClick={() => {
-                                        updateApplicationStatus(
-                                          applicant._id,
-                                          "REJECTED"
-                                        );
-                                        setActionDropdown(null);
-                                        setDropdownPos(null);
-                                      }}
-                                    >
-                                      Reject
-                                    </button>
+                                      <button
+                                        className="w-full px-2 py-1 text-[10px] text-[#17243E] dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
+                                        onClick={() => {
+                                          updateApplicationStatus(
+                                            applicant._id,
+                                            "REJECTED"
+                                          );
+                                          setActionDropdown(null);
+                                          setDropdownPos(null);
+                                        }}
+                                      >
+                                        Reject
+                                      </button>
 
-                                    <button
-                                      className="w-full px-2 py-1 text-[10px] text-[#17243E] dark:text-[#FDFDFD] rounded-b-xl dark:bg-[#3b3b3b]"
-                                      onClick={() => {
-                                        setActionDropdown(null);
-                                        setDropdownPos(null);
-                                      }}
-                                    >
-                                      Cancel
-                                    </button>
-                                  </div>,
-                                  document.body
-                                )}
-                            </td>
-                          </tr>
-                        ))
+                                      <button
+                                        className="w-full px-2 py-1 text-[10px] text-[#17243E] dark:text-[#FDFDFD] rounded-b-xl dark:bg-[#3b3b3b]"
+                                        onClick={() => {
+                                          setActionDropdown(null);
+                                          setDropdownPos(null);
+                                        }}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>,
+                                    document.body
+                                  )}
+                              </td>
+                            </tr>
+                          );
+                        })
                       ) : (
                         <tr>
                           <td colSpan={8} className="p-4 text-center">
