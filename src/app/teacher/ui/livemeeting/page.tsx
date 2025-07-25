@@ -60,7 +60,7 @@ const LiveMeeting = () => {
           return;
         }
 
-        const response = await axios.get(`http://localhost:5001/teacherMeeting`, {
+        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/teacherMeeting`, {
           params: { meetingId },
           headers: {
             "Content-Type": "application/json",
@@ -137,7 +137,7 @@ const LiveMeeting = () => {
 
     try {
       const token = localStorage.getItem("TeacherAuthToken");
-      await axios.put(`http://localhost:5001/updateTeacherMeeting/${meetingId}`, payload, {
+      await axios.put(`https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${meetingId}`, payload, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,

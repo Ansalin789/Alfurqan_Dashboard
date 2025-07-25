@@ -92,6 +92,7 @@ const ViewSchedule = () => {
   const [completedClasses, setCompletedClasses] = useState<Schedule[]>([]);
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
   // Remove the filterData function and replace with useMemo
   const filteredData = useMemo(() => {
@@ -99,19 +100,20 @@ const ViewSchedule = () => {
     
     const query = searchQuery.toLowerCase();
     return uniqueStudentSchedules.filter((item) => {
-      const timeStr = item.formattedTimes?.[0] || '';
-      
+      // Search across all relevant fields
       return (
         item.teacher.teacherName.toLowerCase().includes(query) ||
+        (item._id || '').toLowerCase().includes(query) ||
         (item.course?.courseName || '').toLowerCase().includes(query) ||
-        'Regular Class'.toLowerCase().includes(query) ||
+        'Regular Class'.toLowerCase().includes(query) || // Since course type is hardcoded as "Regular Class"
         new Date(item.startDate).toDateString().toLowerCase().includes(query) ||
-        timeStr.toLowerCase().includes(query) ||
+        item.startTime.some(time => time.toLowerCase().includes(query)) ||
+        item.endTime.some(time => time.toLowerCase().includes(query)) ||
         item.scheduleStatus.toLowerCase().includes(query)
       );
     });
   }, [searchQuery, uniqueStudentSchedules]);
-
+  
   useEffect(() => {
     const fetchData = async () => {
       try {

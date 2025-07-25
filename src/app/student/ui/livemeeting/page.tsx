@@ -9,6 +9,7 @@ import Link from "next/link";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { JitsiMeeting } from "@jitsi/react-sdk";
+import BaseLayout2 from "@/components/BaseLayout2";
 
 interface Teacher {
   teacherId: string;
@@ -173,7 +174,7 @@ const handleEndCall = async () => {
   };
 
   try {
-    const token = localStorage.getItem("TeacherAuthToken");
+    const token = localStorage.getItem("StudentAuthToken");
     await axios.put(`https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${meetingId}`, payload, {
       headers: {
         "Content-Type": "application/json",
@@ -192,7 +193,7 @@ const handleEndCall = async () => {
 
 
   return (
-    <BaseLayout>
+    <BaseLayout2>
       {/* <TeacherHeader currentSection="Live Meeting" /> */}
       <div className="flex h-screen">
         <div className="flex flex-col w-full min-h-screen px-4 sm:px-6 md:px-8">
@@ -317,7 +318,7 @@ const handleEndCall = async () => {
           </div>
         </div>
       </div>
-    </BaseLayout>
+    </BaseLayout2>
   );
 };
 

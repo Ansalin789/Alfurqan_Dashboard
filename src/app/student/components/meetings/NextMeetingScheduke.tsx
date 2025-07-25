@@ -10,6 +10,14 @@ interface Teacher {
   teacherId: string;
   teacherName: string;
   teacherEmail: string;
+  attendee?: string; // Only present in teacher array under supervisor meetings
+  _id?: string;
+}
+
+interface Supervisor {
+  supervisorId: string;
+  supervisorName: string;
+  supervisorEmail: string;
 }
 
 interface Participant {
@@ -20,22 +28,30 @@ interface Participant {
 }
 
 interface StudentMeeting {
-  teacher: Teacher;
+  teacher?: Teacher | Teacher[]; // Can be object or array
+  supervisor?: Supervisor;
   _id: string;
-  meetingId: string;
+  meetingId?: string;
   meetingName: string;
-  participants: Participant[];
+  participants?: Participant[];
   selectedDate: string;
   startTime: string;
   endTime: string;
-  description: string;
-  meetingStatus: string;
-  status: string;
-  createdDate: string;
-  createdBy: string;
-  updatedDate: string;
-  updatedBy: string;
-  __v: number;
+  description?: string;
+  meetingStatus?: string;
+  meetingminutes?: string;
+  duration?: string;
+  status?: string;
+  createdDate?: string;
+  createdBy?: string;
+  updatedDate?: string;
+  updatedBy?: string;
+  __v?: number;
+}
+
+interface StudentMeetingApiResponse {
+  totalCount: number;
+  records: StudentMeeting[];
 }
 
 const NextMeetingSchedule = () => {
@@ -52,7 +68,7 @@ const [isMeetingOngoing, setIsMeetingOngoing] = useState(false);
       setLoading(true);
       setError(null);
       try {
-        const teacherId = localStorage.getItem("StudentPortalId");
+        const studentId = localStorage.getItem("StudentPortalId");
         const token =
           typeof window !== "undefined"
             ? localStorage.getItem("StudentAuthToken")
@@ -64,18 +80,24 @@ const [isMeetingOngoing, setIsMeetingOngoing] = useState(false);
           return;
         }
 
-        const res = await axios.get("https://api.blackstoneinfomaticstech.com/teacherMeetinglist", {
-          params: { teacherId },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await axios.get<StudentMeetingApiResponse>(
+          "https://api.blackstoneinfomaticstech.com/StudentMeetinglist",
+          {
+            params: { studentId },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-        const meetingList: StudentMeeting[] = res.data.students;
+        const meetingList: StudentMeeting[] = res.data.records;
+        const filteredMeetings = meetingList.filter(meeting =>
+          meeting.participants?.some(participant => participant.studentId === studentId)
+        );
 
         const now = new Date();
-    const upcoming = meetingList
+    const upcoming = filteredMeetings
   .filter((m) => {
     if (!m.startTime || !m.endTime || !m.selectedDate) return false;
 
