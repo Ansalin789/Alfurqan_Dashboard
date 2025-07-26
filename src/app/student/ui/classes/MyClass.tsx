@@ -55,6 +55,7 @@ const NextClass = () => {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isCountdownFinished, setIsCountdownFinished] = useState(false);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [sessionNumber, setSessionNumber] = useState<number>(0);
   const router = useRouter();
 
   const filterUpcomingClass = (response: ApiResponse): ClassData | null => {
@@ -89,6 +90,36 @@ const NextClass = () => {
     return upcomingClasses.length > 0 ? upcomingClasses[0] : null;
   };
 
+  const calculateSessionNumber = (response: ApiResponse, currentClass: ClassData): number => {
+    if (!currentClass) return 0;
+
+    // Get all classes for this student (excluding completed ones)
+    const allClasses = response.classSchedule.filter((cls) => {
+      if (cls.scheduleStatus === "Completed") return false;
+      return true;
+    });
+
+    // Sort all classes by date and time
+    allClasses.sort((a, b) => {
+      const dateA = new Date(a.startDate);
+      const dateB = new Date(b.startDate);
+
+      const [hoursA, minutesA] = a.startTime[0].split(":").map(Number);
+      const [hoursB, minutesB] = b.startTime[0].split(":").map(Number);
+
+      dateA.setHours(hoursA, minutesA, 0, 0);
+      dateB.setHours(hoursB, minutesB, 0, 0);
+
+      return dateA.getTime() - dateB.getTime();
+    });
+
+    // Find the index of the current class in the sorted list
+    const currentIndex = allClasses.findIndex(cls => cls._id === currentClass._id);
+    
+    // Return session number (1-based index)
+    return currentIndex >= 0 ? currentIndex + 1 : 0;
+  };
+
   useEffect(() => {
     const fetchClassData = async () => {
       try {
@@ -115,7 +146,14 @@ const NextClass = () => {
             },
           }
         );
-        setClassData(filterUpcomingClass(response.data));
+        const nextClass = filterUpcomingClass(response.data);
+        setClassData(nextClass);
+        
+        // Calculate session number
+        if (nextClass) {
+          const sessionNum = calculateSessionNumber(response.data, nextClass);
+          setSessionNumber(sessionNum);
+        }
       } catch (err) {
         console.log("Error loading class details:", err);
       }
@@ -150,6 +188,12 @@ const NextClass = () => {
         );
         const next = filterUpcomingClass(response.data);
         setClassData(next);
+        
+        // Update session number when class data changes
+        if (next) {
+          const sessionNum = calculateSessionNumber(response.data, next);
+          setSessionNumber(sessionNum);
+        }
       } catch (error) {
         console.error("Failed to fetch next class:", error);
       }
@@ -204,7 +248,7 @@ const NextClass = () => {
 
           <span className="flex items-center gap-1">
             <MdDateRange className="text-white/90 text-base sm:text-sm" />
-            Session–06
+            Session–{sessionNumber.toString().padStart(2, '0')}
           </span>
 
           <span className="flex items-center gap-1">
