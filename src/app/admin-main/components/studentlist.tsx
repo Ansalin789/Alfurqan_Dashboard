@@ -334,7 +334,7 @@ const TrailManagement = () => {
                     student.level.toString().includes(search)
                   );
                 })
-                .map((student, index) => (
+                .slice(-5).reverse().map((student, index) => (
                   <tr
                     key={student.student.studentId}
                     className={`dark:text-white ${

@@ -259,7 +259,7 @@ const Page: React.FC = () => {
                   key={emp._id}
                   className="text-[11px] odd:bg-white even:bg-[#F8F8F8] dark:odd:bg-[#2C2C2C] dark:even:bg-[#303030]"
                 >
-                  <td className="px-2 py-5 text-left text-[#17243E] break-words w-[14%] max-w-[120px] dark:text-[#FDFDFD] w-[10%]">
+                  <td className="px-2 py-5 text-left text-[#17243E] break-words w-[14%] max-w-[120px] dark:text-[#FDFDFD]">
                     {emp.userId}
                   </td>
                   <td className="px-2 py-5 text-left text-[#17243E] dark:text-[#FDFDFD] w-[10%]">
@@ -278,10 +278,10 @@ const Page: React.FC = () => {
                       day: "numeric",
                     })}
                   </td>
-                  <td className="py-4 px-2 text-left text-left text-[#17243E] dark:text-[#FDFDFD] w-[10%]">
+                  <td className="py-4 px-2 text-left text-[#17243E] dark:text-[#FDFDFD] w-[10%]">
                     {emp.role}
                   </td>
-                  <td className="py-1 px-2 w-28 w-[10%]">
+                  <td className="py-1 px-2 w-[10%]">
                     <button
                       className="w-full py-[6px] px-[3px] rounded-md bg-[#576CBC] text-[#fff] text-[9px]"
                       onClick={() => handleChanges(emp._id, emp.role)}

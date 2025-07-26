@@ -110,7 +110,7 @@ const TeacherFilter = () => {
 
   const [activeTab, setActiveTab] = useState("upcoming");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 8;
 
   const [upcomingClasses, setUpcomingClasses] = useState<Meeting[]>([]);
   const [completedData, setCompletedData] = useState<Meeting[]>([]);
@@ -750,7 +750,7 @@ const TeacherFilter = () => {
                 <span>Name</span>
                 <span>Attendance</span>
               </div>
-              <div className="divide-y max-h-40 overflow-y-auto text-sm">
+              {/* <div className="divide-y max-h-40 overflow-y-auto text-sm">
                 {attendance && attendance.length > 0 ? (
                   attendance.map((student) => (
                     <div
@@ -770,7 +770,7 @@ const TeacherFilter = () => {
                 ) : (
                   <div>No attendance data available.</div>
                 )}
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
