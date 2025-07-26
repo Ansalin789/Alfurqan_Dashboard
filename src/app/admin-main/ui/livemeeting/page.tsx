@@ -60,7 +60,7 @@ export default function Page() {
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const attendanceRef = useRef(attendance);
   const seacrh = useSearchParams();
-  const meetingId = seacrh.get("id");
+  const meetingId = seacrh.get("meetingId");
   const [meetingUpdate, setMeetingUpdate] = useState(false);
   const [meetingMinutes, setMeetingMinutes] = useState<string>("");
 
