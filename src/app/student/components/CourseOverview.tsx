@@ -46,7 +46,7 @@ const CourseOverview = () => {
           return;
         }
 
-        const response = await axios.get("http://localhost:5001/dashboard/student/counts", {
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/dashboard/student/counts", {
           params: { studentId, courseName },
           headers: {
             "Content-Type": "application/json",

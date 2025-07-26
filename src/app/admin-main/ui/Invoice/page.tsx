@@ -131,7 +131,7 @@ export default function Page() {
 
   const fetchInvoice = (token: string) => {
     axios
-      .get("http://localhost:5001/studentinvoice/list", {
+      .get("https://api.blackstoneinfomaticstech.com/studentinvoice/list", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
