@@ -62,7 +62,7 @@ const Subjectcard: React.FC = () => {
           }
         });
 
-        const total = completedHours + pendingHours;
+        const total = completedHours;
 
         setTotalHours(total);
 
@@ -89,6 +89,66 @@ const Subjectcard: React.FC = () => {
   }, []);
 
   const totalValue = data.reduce((sum, item) => sum + item.value, 0);
+
+  const [dashboardCounts, setDashboardCounts] = useState({
+    totalLevel: 0,
+    totalAttendance: 0,
+    totalClasses: 0,
+    presentCount: 0,
+    totalDuration: 0,
+  });
+  const [courseName, setCourseName] = useState<string>("");
+  const [maxDuration, setMaxDuration] = useState<number | undefined>(undefined); // No default value
+  const [maxClasses, setMaxClasses] = useState<number | undefined>(undefined); // No default value
+
+  useEffect(() => {
+    const storedCourseName = localStorage.getItem("StudentcourseName"); // Check the casing
+    if (storedCourseName) {
+      setCourseName(storedCourseName);
+    } else {
+      console.warn("⚠️ No courseName found in localStorage");
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("StudentAuthToken");
+        const studentId = localStorage.getItem("StudentPortalId");
+        const courseName = localStorage.getItem("StudentcourseName"); // check exact key
+
+        if (!token || !studentId || !courseName) {
+          console.error("❌ studentId or courseName missing in localStorage");
+          return;
+        }
+
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/dashboard/student/counts", {
+          params: { studentId, courseName },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setDashboardCounts({
+          totalLevel: Number(response.data.totalLevel) || 0,
+          totalAttendance: Number(response.data.totalAttendance) || 0,
+          totalClasses: Number(response.data.totalClasses) || 0,
+          presentCount: 0,
+          totalDuration: Number(response.data.totalDuration) || 0,
+        });
+
+        // Set maximum values based on current totals
+        setMaxDuration(Number(response.data.totalDuration)); // Set maxDuration to current totalDuration
+        setMaxClasses(Number(response.data.totalClasses)); // Set maxClasses to current totalClasses
+
+      } catch (error) {
+        console.error("❌ Error fetching dashboard counts:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="bg-white dark:bg-[#343434] rounded-xl shadow p-4 h-[265px] w-[320px]">
@@ -161,7 +221,8 @@ const Subjectcard: React.FC = () => {
 
       {/* Bottom Summary */}
       <p className="text-center text-[12px] text-[#4178C4] dark:text-white mt-2">
-        Total Class Hours - {totalHours} Hours
+        Total Class Hours - {Math.floor(dashboardCounts.totalDuration)} {""}
+        Hours
       </p>
     </div>
   );

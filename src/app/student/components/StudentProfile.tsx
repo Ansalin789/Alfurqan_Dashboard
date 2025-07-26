@@ -40,6 +40,9 @@ const StudentProfile = () => {
   // ✅ Move this line INSIDE the component
   const [invoices, setInvoices] = useState<IStudentInvoice[]>([]);
 
+  // Define paymentStatus
+  const paymentStatus = "Pending"; // Set this to the desired status
+
   useEffect(() => {
     const studentId = localStorage.getItem("StudentPortalId");
     const token = localStorage.getItem("StudentAuthToken");
@@ -60,7 +63,7 @@ const StudentProfile = () => {
         const response = await axios.get(
           "https://api.blackstoneinfomaticstech.com/studentinvoiceById",
           {
-            params: { studentId },
+            params: { studentId, paymentStatus }, // Include paymentStatus here
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
@@ -70,17 +73,10 @@ const StudentProfile = () => {
 
         console.log("API response:", response.data);
 
-        if (Array.isArray(response.data?.data)) {
-          setInvoices(response.data.data);
-          
-          // Extract student info from the first invoice if available
-          if (response.data.data.length > 0) {
-            const firstInvoice = response.data.data[0];
-            if (firstInvoice.student) {
-              setStudentName(firstInvoice.student.studentName);
-              setStudentEmail(firstInvoice.student.studentEmail);
-            }
-          }
+        // Check if the response contains data
+        if (response.data && Array.isArray(response.data.data)) {
+          setInvoices(response.data.data); // Set the invoices state
+          console.log("Invoices:", response.data.data); // Log the invoices
         } else {
           console.warn("Invalid data format from API:", response.data);
         }
@@ -93,10 +89,6 @@ const StudentProfile = () => {
   }, []);
   const [dashboardCounts, setDashboardCounts] = useState({
     totalLevel: 0,
-    // totalAttendance: 0,
-    // totalClasses: 0,
-    // presentCount: 0,
-    // totalDuration: "0 Hr",
   });
 
   useEffect(() => {

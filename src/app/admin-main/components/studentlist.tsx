@@ -383,15 +383,15 @@ const TrailManagement = () => {
                             className="absolute right-0 mt-2 w-32 bg-white dark:bg-[#343434] shadow-md rounded-lg z-50 text-[11px]"
                           >
                             <button
-                              className="w-full text-left px-4 py-2 hover:bg-gray-600 rounded-lg"
+                              className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg"
                               onClick={() => handleViewDetails(student._id)}
                             >
                               View Details
                             </button>
-                            <button className="w-full text-left px-4 py-2 hover:bg-gray-600 rounded-lg">
+                            <button className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg">
                               Edit
                             </button>
-                            <button className="w-full text-left px-4 py-2 hover:bg-gray-600 rounded-lg">
+                            <button className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg">
                               Delete
                             </button>
                           </div>
