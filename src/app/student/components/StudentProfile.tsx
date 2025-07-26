@@ -158,9 +158,9 @@ const StudentProfile = () => {
         <h3 className="text-[#010E30] font-bold text-[16px] dark:text-white text-center">
           {studentName ?? "Loading..."}
         </h3>
-        <p className="text-gray-500 text-[12px] text-center">
+        {/* <p className="text-gray-500 text-[12px] text-center">
           {studentEmail ?? "Loading..."}
-        </p>
+        </p> */}
         <p className="text-gray-500 text-[12px] mb-2 text-center">Level {dashboardCounts.totalLevel}</p>
 
         <div className="flex justify-center space-x-1 mb-2">

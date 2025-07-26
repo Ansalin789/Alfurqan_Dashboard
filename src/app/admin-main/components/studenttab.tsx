@@ -259,6 +259,9 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
     presentCount: 0,
     totalDuration: 0,
   });
+  const [maxDuration, setMaxDuration] = useState<number | undefined>(undefined); // No default value
+  const [maxClasses, setMaxClasses] = useState<number | undefined>(undefined); // No default value
+
 
   const [paymentHistory, setPaymentHistory] = useState<PaymentDetail[]>([]); // State to hold payment history
 
@@ -311,6 +314,11 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
           presentCount: 0,
           totalDuration: Number(response.data.totalDuration) || 0,
         });
+
+        // Set maximum values based on current totals
+        setMaxDuration(Number(response.data.totalDuration)); // Set maxDuration to current totalDuration
+        setMaxClasses(Number(response.data.totalClasses)); // Set maxClasses to current totalClasses
+
       } catch (error) {
         console.error("❌ Error fetching dashboard counts:", error);
       }
@@ -340,19 +348,14 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
     {
       title: "Total Classes",
       value: `${Math.floor(dashboardCounts.totalClasses)}`, // No % sign here
-      // Cap percentage to 100 for pie chart to avoid overflow
-      percentage:
-        dashboardCounts.totalClasses > 100
-          ? 100
-          : Math.floor(dashboardCounts.totalClasses),
+      percentage: maxClasses ? Math.max(0, Math.min(100, Math.floor((dashboardCounts.totalClasses / maxClasses) * 100))) : 0, // Calculate percentage
       ringColor: "#8B93D2",
       bgColor: "#E7EFF2",
     },
-
     {
       title: "Duration",
       value: `${Math.floor(dashboardCounts.totalDuration)} Hr`,
-      percentage: Math.floor(dashboardCounts.totalDuration),
+      percentage: maxDuration ? Math.max(0, Math.floor((dashboardCounts.totalDuration / maxDuration) * 100)) : 0, // Calculate percentage
       ringColor: "#B690D5",
       bgColor: "#E7EFF2",
     },

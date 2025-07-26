@@ -17,7 +17,7 @@ const Dashboard = () => {
     <BaseLayout4>
       <AdminHeader currentSection="Student List" />
 
-      <div className="min-h-screen w-full max-w-8xl mx-auto ">
+      <div className="min-h-screen w-full mx-auto ">
         <div className=" p-2">
           <div className="mb-4">
             <div className="flex flex-wrap gap-2">

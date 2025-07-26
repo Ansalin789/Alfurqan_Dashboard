@@ -50,7 +50,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
     if (Id) {
       const token = typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
       axios
-        .get(`http://localhost:5001/leaverequest?employeeId=${Id}`, {
+        .get(`https://api.blackstoneinfomaticstech.com/leaverequest?employeeId=${Id}`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

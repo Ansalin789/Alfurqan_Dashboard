@@ -71,12 +71,12 @@ export default function AcademicHeader({
   const [activeTab, setActiveTab] = useState<"Seen" | "Unseen">("Unseen");
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
-  const [dashboardWrite, setDashboardWrite] = useState(false); // For Notifications
-  const [leaveWrite, setLeaveWrite] = useState(false); // For Leave Request
-  const [trailWrite, setTrailWrite] = useState(false); // For Add New Student
-  const [calendarWrite, setCalendarWrite] = useState(false); // For Add Meeting
-  const [studentListWrite, setStudentListWrite] = useState(false); // For Assign Group Class
-  const [teacherRescheduleWrite, setTeacherRescheduleWrite] = useState(false); // For Assign Group Class
+  const [dashboardWrite, setDashboardWrite] = useState(true); // For Notifications - Default true
+  const [leaveWrite, setLeaveWrite] = useState(true); // For Leave Request - Default true
+  const [trailWrite, setTrailWrite] = useState(true); // For Add New Student - Default true
+  const [calendarWrite, setCalendarWrite] = useState(true); // For Add Meeting - Default true
+  const [studentListWrite, setStudentListWrite] = useState(true); // For Assign Group Class - Default true
+  const [teacherRescheduleWrite, setTeacherRescheduleWrite] = useState(true); // For Assign Group Class - Default true
 
   //roleAccessuseEffect
 
@@ -91,16 +91,20 @@ export default function AcademicHeader({
         console.log("🔐 Dashboard write:", modules?.dashboard?.write);
         console.log("🔐 Leave write:", modules?.leave);
 
-        setDashboardWrite(modules?.dashboard?.write ?? false);
-        setLeaveWrite(modules?.leave ?? modules?.dashboard?.write ?? false);
-        setTrailWrite(modules?.trailmanagement?.write ?? false);
-        setCalendarWrite(modules?.schedule?.write ?? false);
-        setStudentListWrite(modules?.managestudents?.write ?? false);
-        setTeacherRescheduleWrite(modules?.manageteachers?.write ?? false);
+        // Only apply restrictions if admin has explicitly set them
+        // Default is true (full access) unless admin sets to false
+        setDashboardWrite(modules?.dashboard?.write !== false);
+        setLeaveWrite(modules?.leave !== false);
+        setTrailWrite(modules?.trailmanagement?.write !== false);
+        setCalendarWrite(modules?.schedule?.write !== false);
+        setStudentListWrite(modules?.managestudents?.write !== false);
+        setTeacherRescheduleWrite(modules?.manageteachers?.write !== false);
       } catch (error) {
         console.error("❌ Invalid AcademicRolePermission JSON", error);
+        // Keep default true values if JSON parsing fails
       }
     }
+    // If no roleAccessRaw exists, keep the default true values
   }, []);
 
   // Fetch old notifications

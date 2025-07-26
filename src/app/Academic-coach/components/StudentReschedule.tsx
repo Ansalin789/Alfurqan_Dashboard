@@ -133,7 +133,7 @@ interface TeacherSlot {
 const SchedulePage = () => {
   const searchParams = useSearchParams();
   const selectedClassId = searchParams?.get("id"); // ✅ ID from URL param
-
+  const position = searchParams?.get("course");
   const [studentId, setStudentId] = useState<string | null>(null);
   const tabs = ["monthly", "weekly", "daily"] as const;
   const [activeView, setActiveView] = useState<"monthly" | "weekly" | "daily">(
@@ -210,7 +210,7 @@ const SchedulePage = () => {
     }
   }, [studentId]);
 
-  const handleDateClick = async (date: Date, position: string) => {
+  const handleDateClick = async (date: Date, position1: string) => {
     setSelectedDate(date);
     setSelectedTeacher(null); // Clear previously selected
     setAvailableTeachers([]);
@@ -223,10 +223,12 @@ const SchedulePage = () => {
       console.warn("⚠️ Missing token");
       return;
     }
-
+   console.log(position1);
     try {
+       const adjustedPosition =
+     position === "Islamic Studies" ? "Islamic" : position + " Teacher";
       const url = `https://api.blackstoneinfomaticstech.com/teacher/availabletime?scheduleDate=${formattedDate}&position=${encodeURIComponent(
-        position + " Teacher"
+        adjustedPosition + " Teacher"
       )}`;
 
       const res = await fetch(url, {

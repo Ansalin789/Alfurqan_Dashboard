@@ -22,6 +22,8 @@ const CourseOverview = () => {
     totalDuration: 0,
   });
   const [courseName, setCourseName] = useState<string>("");
+  const [maxDuration, setMaxDuration] = useState<number | undefined>(undefined); // No default value
+  const [maxClasses, setMaxClasses] = useState<number | undefined>(undefined); // No default value
 
   useEffect(() => {
     const storedCourseName = localStorage.getItem("StudentcourseName"); // Check the casing
@@ -31,22 +33,19 @@ const CourseOverview = () => {
       console.warn("⚠️ No courseName found in localStorage");
     }
   }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("StudentAuthToken");
         const studentId = localStorage.getItem("StudentPortalId");
         const courseName = localStorage.getItem("StudentcourseName"); // check exact key
-  
-        console.log("✅ token:", token);
-        console.log("✅ studentId:", studentId);
-        console.log("✅ courseName:", courseName);
-  
+
         if (!token || !studentId || !courseName) {
           console.error("❌ studentId or courseName missing in localStorage");
           return;
         }
-  
+
         const response = await axios.get("https://api.blackstoneinfomaticstech.com/dashboard/student/counts", {
           params: { studentId, courseName },
           headers: {
@@ -54,10 +53,7 @@ const CourseOverview = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-  
-        console.log("✅ FULL API response:", response);
-        console.log("✅ Final Data:", JSON.stringify(response.data, null, 2));
-  
+
         setDashboardCounts({
           totalLevel: Number(response.data.totalLevel) || 0,
           totalAttendance: Number(response.data.totalAttendance) || 0,
@@ -65,14 +61,18 @@ const CourseOverview = () => {
           presentCount: 0,
           totalDuration: Number(response.data.totalDuration) || 0,
         });
+
+        // Set maximum values based on current totals
+        setMaxDuration(Number(response.data.totalDuration)); // Set maxDuration to current totalDuration
+        setMaxClasses(Number(response.data.totalClasses)); // Set maxClasses to current totalClasses
+
       } catch (error) {
         console.error("❌ Error fetching dashboard counts:", error);
       }
     };
-  
+
     fetchData();
   }, []);
-  
 
   const data = [
     {
@@ -82,7 +82,6 @@ const CourseOverview = () => {
       ringColor: "#7DB5CB",
       bgColor: "#E7EFF2",
     },
-
     {
       title: "Attendance",
       value: `${Math.floor(dashboardCounts.totalAttendance)}%`,
@@ -90,23 +89,17 @@ const CourseOverview = () => {
       ringColor: "#9AD7D6",
       bgColor: "#E7EFF2",
     },
-
     {
       title: "Total Classes",
       value: `${Math.floor(dashboardCounts.totalClasses)}`, // No % sign here
-      // Cap percentage to 100 for pie chart to avoid overflow
-      percentage:
-        dashboardCounts.totalClasses > 100
-          ? 100
-          : Math.floor(dashboardCounts.totalClasses),
+      percentage: maxClasses ? Math.max(0, Math.min(100, Math.floor((dashboardCounts.totalClasses / maxClasses) * 100))) : 0, // Calculate percentage
       ringColor: "#8B93D2",
       bgColor: "#E7EFF2",
     },
-
     {
       title: "Duration",
       value: `${Math.floor(dashboardCounts.totalDuration)} Hr`,
-      percentage: Math.floor(dashboardCounts.totalDuration),
+      percentage: maxDuration ? Math.max(0, Math.floor((dashboardCounts.totalDuration / maxDuration) * 100)) : 0, // Calculate percentage
       ringColor: "#B690D5",
       bgColor: "#E7EFF2",
     },
@@ -131,7 +124,7 @@ const CourseOverview = () => {
               <div className="relative w-[80px] h-[80px]">
                 <PieChart width={80} height={80}>
                   <Pie
-                    data={[{ value: 100 }]}
+                    data={[{ value: 100 }]} // Inner circle always 100%
                     dataKey="value"
                     innerRadius={26}
                     outerRadius={35}
@@ -144,8 +137,8 @@ const CourseOverview = () => {
                   </Pie>
                   <Pie
                     data={[
-                      { value: item.percentage },
-                      { value: 100 - item.percentage },
+                      { value: item.percentage }, // Outer circle based on total classes
+                      { value: 100 - item.percentage }, // Remaining part to complete 100%
                     ]}
                     dataKey="value"
                     innerRadius={24}

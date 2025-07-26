@@ -123,7 +123,7 @@ const TeacherModuleAccess = () => {
     "Schedule",
     "Liveclass",
     "Assignment",
-    "Message",
+    "messages",
     "Analytics",
     "Support",
   ];

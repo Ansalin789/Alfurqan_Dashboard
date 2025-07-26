@@ -157,7 +157,7 @@ export default function SupervisorHeader({
   }, []);
 
   const handleLogOut = () => {
-    router.push("/teacher/ui/sign");
+    router.push("/supervisor/ui/sign");
   };
 
   // Load on component mount
