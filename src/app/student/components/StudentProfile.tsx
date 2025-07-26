@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { BsPersonPlus } from "react-icons/bs";
 import { IoDiamondSharp } from "react-icons/io5";
+import { useRouter } from "next/navigation";
 
 export interface IStudentInvoice {
   _id: string;
@@ -32,13 +33,18 @@ export interface IStudentInvoice {
   __v: number;
 }
 
+
 const StudentProfile = () => {
   const [studentName, setStudentName] = useState<string | null>(null);
   const [studentEmail, setStudentEmail] = useState<string | null>(null);
   const [studentImage, setStudentImage] = useState<string | null>(null);
+  const router = useRouter();
 
   // ✅ Move this line INSIDE the component
   const [invoices, setInvoices] = useState<IStudentInvoice[]>([]);
+
+  // Define paymentStatus
+  const paymentStatus = "Pending"; // Set this to the desired status
 
   useEffect(() => {
     const studentId = localStorage.getItem("StudentPortalId");
@@ -60,7 +66,7 @@ const StudentProfile = () => {
         const response = await axios.get(
           "https://api.blackstoneinfomaticstech.com/studentinvoiceById",
           {
-            params: { studentId },
+            params: { studentId, paymentStatus }, // Include paymentStatus here
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
@@ -70,17 +76,10 @@ const StudentProfile = () => {
 
         console.log("API response:", response.data);
 
-        if (Array.isArray(response.data?.data)) {
-          setInvoices(response.data.data);
-          
-          // Extract student info from the first invoice if available
-          if (response.data.data.length > 0) {
-            const firstInvoice = response.data.data[0];
-            if (firstInvoice.student) {
-              setStudentName(firstInvoice.student.studentName);
-              setStudentEmail(firstInvoice.student.studentEmail);
-            }
-          }
+        // Check if the response contains data
+        if (response.data && Array.isArray(response.data.data)) {
+          setInvoices(response.data.data); // Set the invoices state
+          console.log("Invoices:", response.data.data); // Log the invoices
         } else {
           console.warn("Invalid data format from API:", response.data);
         }
@@ -93,10 +92,6 @@ const StudentProfile = () => {
   }, []);
   const [dashboardCounts, setDashboardCounts] = useState({
     totalLevel: 0,
-    // totalAttendance: 0,
-    // totalClasses: 0,
-    // presentCount: 0,
-    // totalDuration: "0 Hr",
   });
 
   useEffect(() => {
@@ -143,7 +138,7 @@ const StudentProfile = () => {
   }, []);
 
   return (
-    <div className="w-[310px] flex flex-col gap-4">
+    <div className="w-[310px] flex flex-col gap-4 cursor-pointer" onClick={() => router.push("student-profile")} >
       <div className="rounded-xl shadow-lg bg-white h-[280px] dark:bg-[#343434] p-4 relative">
         <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">
           Student Profile

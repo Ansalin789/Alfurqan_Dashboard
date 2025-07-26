@@ -1340,7 +1340,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
                           <span
                             className={`inline-flex items-center justify-center w-16 h-6 px-3 py-1 rounded-sm ${
                               row.status === "Active"
-                                ? "bg-[#ECFDF3] dark:bg-[#5e735e] dark:text-[#377E36] text-[#377E36]"
+                                ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] dark:text-[#377E36] text-[#377E36]"
                                 : "bg-[#ececfd] text-[#002c5f] dark:bg-[#2e333c] dark:text-[#fff]"
                             }`}
                           >

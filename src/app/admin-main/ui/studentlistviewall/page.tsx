@@ -44,13 +44,15 @@ export interface StudentsResponse {
   students: Student[];
 }
 
-
 const TrailManagement = () => {
   const [openPopup, setOpenPopup] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const popupRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
+  const handleCancel = () => {
+    setOpenPopup(null);
+  };
 
   // Fetch students data from API
   const [students, setStudents] = useState<Student[]>([]); // Initialize as an empty array
@@ -59,17 +61,19 @@ const TrailManagement = () => {
 
   useEffect(() => {
     const search = searchQuery.toLowerCase();
-  
+
     const filtered = students.filter((student) => {
       const joiningDate = student.evaluation?.[0]?.joiningDate;
       const formattedJoiningDate = joiningDate
-        ? new Date(joiningDate).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          }).toLowerCase()
+        ? new Date(joiningDate)
+            .toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+            .toLowerCase()
         : "";
-  
+
       return (
         student._id?.toLowerCase().includes(search) ||
         student.username?.toLowerCase().includes(search) ||
@@ -83,23 +87,25 @@ const TrailManagement = () => {
           student.level.toString().includes(search))
       );
     });
-  
+
     setFilteredStudents(filtered);
     setCurrentPage(1); // Reset to page 1 when search changes
   }, [searchQuery, students]);
   useEffect(() => {
     const search = searchQuery.toLowerCase();
-  
+
     const filtered = students.filter((student) => {
       const joiningDate = student.evaluation?.[0]?.joiningDate;
       const formattedJoiningDate = joiningDate
-        ? new Date(joiningDate).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          }).toLowerCase()
+        ? new Date(joiningDate)
+            .toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+            .toLowerCase()
         : "";
-  
+
       return (
         student._id?.toLowerCase().includes(search) ||
         student.username?.toLowerCase().includes(search) ||
@@ -113,11 +119,10 @@ const TrailManagement = () => {
           student.level.toString().includes(search))
       );
     });
-  
+
     setFilteredStudents(filtered);
     setCurrentPage(1); // Reset to page 1 when search changes
   }, [searchQuery, students]);
-    
 
   useEffect(() => {
     const token =
@@ -195,39 +200,38 @@ const TrailManagement = () => {
     <BaseLayout4>
       <AdminHeader currentSection="Student Lists" />
 
-      <div className="w-full mx-auto bg-[#FAFAFB] rounded-lg">
+      <div className="rounded-xl overflow-hidden">
         {/* Top Bar: Search / Filter / Showing Info */}
-        <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
-          {/* Search */}
-          <div className="flex justify-between items-center px-4 py-0">
-            <Search className="w-3 h-3 text-gray-400 dark:text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by keyword"
-              className="bg-transparent outline-none text-[12px] ml-1 w-52 py-3"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+        <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+          <input
+            type="text"
+            placeholder="Search by keyword"
+            className="bg-transparent outline-none text-[12px] w-32 py-3"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
 
           {/* Filter */}
-          <div className="flex justify-left gap-2 text-[12px] text-gray-500 dark:border-[#606060] border-r-2 border-l-2 px-48 cursor-pointer">
+          <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer">
             <MdTune className="w-4 h-4" />
             <span>Filter</span>
           </div>
 
           {/* Showing Info */}
-          <div className="text-[12px] justify-left text-gray-500">
+          <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
             Showing{" "}
             {Math.min(startIndex + itemsPerPage, filteredStudents.length)} of{" "}
             {filteredStudents.length}
-          </div>
+          </span>
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto w-full max-w-[1255px] rounded-b-lg bg-white border border-gray-200">
-          <table className="w-full min-w-[900px] text-[12px] table-auto">
-            <thead className="bg-[#4C6993] text-white justify-left sticky top-0">
+        <div className="overflow-x-auto max-h-none">
+          <table
+            className="w-full min-w-[900px] text-sm text-left table-auto"
+            style={{ width: "100%", tableLayout: "fixed" }}
+          >
+            <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
               <tr>
                 {[
                   "Student ID",
@@ -242,51 +246,52 @@ const TrailManagement = () => {
                 ].map((header) => (
                   <th
                     key={header}
-                    className="py-4 px-2 font-semibold text-[12px] text-left"
+                    className="p-4 font-semibold text-[12px] text-left"
                   >
                     {header}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="text-[10px] text-[#1D2939]">
               {paginatedStudent.length > 0 ? (
                 paginatedStudent.map((student, index) => (
                   <tr
                     key={student.student.studentId}
-                    className={`${
-                      index % 2 === 0 ? "bg-[#FAFAFB]" : "bg-[#F1F3F9]"
-                    } text-center text-[11px]`}
+                    className={` dark:text-white break-words w-[8%] ${
+                      index % 2 === 0
+                        ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                        : "bg-[#F8F8F8] dark:bg-[#303030]"
+                    }`}
                   >
-                    <td className="py-3 px-2 text-left ">{student._id}</td>
-                    <td className="py-3 px-2 text-left text-blue-600 cursor-pointer">
+                    <td className="p-3">{student._id}</td>
+                    <td className="p-3 text-blue-600 cursor-pointer">
                       {student.username}
                     </td>
-            <td className="py-3 px-2 text-left">
-  {new Date(student.evaluation[0].joiningDate).toString() !== "Invalid Date"
-    ? new Date(student.evaluation[0].joiningDate).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : ""} {/* Display "N/A" if the date is invalid */}
-</td>
+                    <td className="p-3">
+                      {new Date(
+                        student.evaluation[0].joiningDate
+                      ).toString() !== "Invalid Date"
+                        ? new Date(
+                            student.evaluation[0].joiningDate
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })
+                        : ""}{" "}
+                      {/* Display "N/A" if the date is invalid */}
+                    </td>
 
-                    <td className="py-3 px-2 text-left">{student.teacherName}</td>
-                    <td className="py-3 px-2 text-left">
-                      {student.student.course}
-                    </td>
-                    <td className="py-3 px-2 text-left">
-                      {student.student.studentPhone}
-                    </td>
-                    <td className="py-3 px-2 text-left">
-                      {student.classScheduleCount}
-                    </td>
-                    <td className="py-3 px-2 text-left">{student.level}</td>
+                    <td className="p-3">{student.teacherName}</td>
+                    <td className="p-3">{student.student.course}</td>
+                    <td className="p-3">{student.student.studentPhone}</td>
+                    <td className="p-3">{student.classScheduleCount}</td>
+                    <td className="p-3">{student.level}</td>
                     <td className="py-3 px-2 text-left relative">
                       <div className="relative inline-block">
                         <button
-                          className="text-gray-600 hover:text-black"
+                          className="text-gray-500"
                           onClick={() =>
                             setOpenPopup(
                               openPopup === student._id ? null : student._id
@@ -298,19 +303,19 @@ const TrailManagement = () => {
                         {openPopup === student._id && (
                           <div
                             ref={popupRef}
-                            className="absolute right-0 mt-2 w-32 bg-white shadow-md border rounded-lg z-50 text-[11px]"
+                            className="absolute right-0 mt-2 w-28 bg-white dark:bg-[#343434] shadow-md  rounded-lg z-50 text-[11px]"
                           >
                             <button
-                              className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                              className="w-full text-left px-4 py-2 hover:bg-[#404040]"
                               onClick={() => handleViewDetails(student._id)}
                             >
                               View Details
                             </button>
-                            <button className="w-full text-left px-4 py-2 hover:bg-gray-100">
-                              Edit
-                            </button>
-                            <button className="w-full text-left px-4 py-2 hover:bg-gray-100">
-                              Delete
+                            <button
+                              className="w-full text-left px-4 py-2 hover:bg-[#404040]"
+                              onClick={handleCancel}
+                            >
+                              Cancel
                             </button>
                           </div>
                         )}

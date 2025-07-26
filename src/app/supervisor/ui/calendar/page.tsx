@@ -11,7 +11,6 @@ interface Meeting {
   _id: string;
   meetingId: string;
   meetingName: string;
-  // meetingStatus: "Scheduled" | "Reschedule" | "Completed";
   selectedDate: string;
   startTime: string;
   endTime: string;
@@ -39,11 +38,9 @@ const SchedulePage = () => {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [filteredMeetings, setFilteredMeetings] = useState<Meeting[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState<Date | null>(null);
 
   const tabs = ["monthly", "weekly", "daily"] as const;
 
-  // Add meeting type colors
   const meetingTypeColors = {
     "Group Meeting": {
       text: "text-[#21BAFF]",
@@ -62,7 +59,6 @@ const SchedulePage = () => {
     },
   };
 
-  // Helper function to get meeting type color
   const getMeetingTypeColor = (meetingName: string) => {
     const lowerName = meetingName.toLowerCase();
     if (lowerName.includes("group")) return meetingTypeColors["Group Meeting"];
@@ -70,16 +66,13 @@ const SchedulePage = () => {
       return meetingTypeColors["Teacher Meeting"];
     if (lowerName.includes("weekly"))
       return meetingTypeColors["Weekly Meeting"];
-    return meetingTypeColors["Group Meeting"]; // default color
+    return meetingTypeColors["Group Meeting"];
   };
 
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("SupervisorAuthToken")
-            : null;
+        const token = localStorage.getItem("SupervisorAuthToken");
         if (!token) {
           console.error("❌ SupervisorAuthToken not found");
           return;
@@ -94,7 +87,7 @@ const SchedulePage = () => {
             },
           }
         );
-       console.log("response",response);
+
         if (response.data?.meetings) {
           const sortedMeetings = response.data.meetings.sort(
             (a: Meeting, b: Meeting) =>
@@ -102,6 +95,7 @@ const SchedulePage = () => {
               new Date(b.selectedDate).getTime()
           );
           setMeetings(sortedMeetings);
+          setFilteredMeetings(sortedMeetings);
         }
       } catch (error) {
         console.error("Error fetching meetings:", error);
@@ -142,7 +136,7 @@ const SchedulePage = () => {
     const today = new Date();
     return (
       day === today.getDate() &&
-           currentDate.getMonth() === today.getMonth() && 
+      currentDate.getMonth() === today.getMonth() && 
       currentDate.getFullYear() === today.getFullYear()
     );
   };
@@ -160,14 +154,7 @@ const SchedulePage = () => {
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
-    const dayMeetings = meetings.filter((meeting) => {
-      const meetingDate = new Date(meeting.selectedDate);
-      return (
-        meetingDate.getDate() === date.getDate() &&
-        meetingDate.getMonth() === date.getMonth() &&
-        meetingDate.getFullYear() === date.getFullYear()
-      );
-    });
+    const dayMeetings = getMeetingsForDate(date);
     setFilteredMeetings(dayMeetings);
   };
 
@@ -179,13 +166,26 @@ const SchedulePage = () => {
   const WeeklyView = () => {
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
-    // Get start and end of current week
-    const startOfWeek = moment().startOf("week").toDate();
-    const endOfWeek = moment().endOf("week").toDate();
+    // Get start and end of current week based on currentDate
+    const startOfWeek = moment(currentDate).startOf("week");
+    const endOfWeek = moment(currentDate).endOf("week");
+
+    // Create an array of days in the week with their dates
+    const daysInWeek = [];
+    let currentDay = startOfWeek.clone();
+    
+    while (currentDay <= endOfWeek) {
+      daysInWeek.push({
+        name: currentDay.format("dddd"),
+        date: currentDay.format("YYYY-MM-DD"),
+        formattedDate: currentDay.format("MMMM D, YYYY")
+      });
+      currentDay = currentDay.clone().add(1, 'days');
+    }
 
     // Filter meetings for current week
     const weekMeetings = meetings.filter((meeting) => {
-      const meetingDate = new Date(meeting.selectedDate);
+      const meetingDate = moment(meeting.selectedDate);
       return meetingDate >= startOfWeek && meetingDate <= endOfWeek;
     });
 
@@ -207,54 +207,30 @@ const SchedulePage = () => {
       <div className="space-y-4 h-[540px] overflow-y-scroll scrollbar-none">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[16px] font-semibold">
-            {moment(startOfWeek).format("MMM D")} -{" "}
-            {moment(endOfWeek).format("MMM D, YYYY")}
+            {startOfWeek.format("MMM D")} -{" "}
+            {endOfWeek.format("MMM D, YYYY")}
           </h3>
         </div>
 
         <div className="space-y-2">
-          {[
-            "Sunday",
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-          ].map((day) => {
-            const dayMeetings = meetingsByDay[day] || [];
-            const isSelected = selectedDay === day;
-            const date = moment(
-              weekMeetings.find(
-                (m) => moment(m.selectedDate).format("dddd") === day
-              )?.selectedDate
-            );
+          {daysInWeek.map((dayInfo) => {
+            const dayMeetings = meetingsByDay[dayInfo.name] || [];
+            const isSelected = selectedDay === dayInfo.name;
 
             return (
-              <div key={day} className="flex flex-col">
+              <div key={dayInfo.name} className="flex flex-col">
                 <button
-                  onClick={() => handleDayClick(day)}
+                  onClick={() => handleDayClick(dayInfo.name)}
                   className={`w-full p-4 rounded-xl cursor-pointer transition-all duration-200 ${
                     isSelected
                       ? "dark:bg-[#414141] bg-[#f7f7f7] dark:text-white text-black"
                       : dayMeetings.length > 0
-                      ? " dark:bg-[#414141] bg-[#f7f7f7] shadow-md hover:shadow-lg text-black"
+                      ? "dark:bg-[#414141] bg-[#f7f7f7] hover:shadow-lg text-black"
                       : "bg-[#f7f7f7] dark:bg-[#414141] text-black"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      {/* <div
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                          isSelected
-                            ? "dark:bg-[#555555] dark:text-white text-[#000] bg-[#eae9e9]"
-                            : "dark:bg-[#555555] dark:text-white text-[#000] bg-[#eae9e9]"
-                        }`}
-                      >
-                        <span className="text-sm font-semibold">
-                          {day.substring(0, 3)}
-                        </span>
-                      </div> */}
                       <div>
                         <div
                           className={`text-base font-semibold ${
@@ -263,7 +239,7 @@ const SchedulePage = () => {
                               : "text-gray-800 dark:text-white"
                           }`}
                         >
-                          {day}
+                          {dayInfo.name}
                         </div>
                         <div
                           className={`text-[10px] ${
@@ -272,7 +248,7 @@ const SchedulePage = () => {
                               : "text-gray-500 dark:text-gray-400"
                           }`}
                         >
-                          {date.format("MMMM D, YYYY")}
+                          {dayInfo.formattedDate}
                         </div>
                       </div>
                     </div>
@@ -280,7 +256,7 @@ const SchedulePage = () => {
                       <div
                         className={`text-[10px] px-3 py-1 rounded-lg ${
                           isSelected
-                            ? "dark:bg-[#555555] dark:text-white text-black  bg-[#eae9e9]"
+                            ? "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]"
                             : "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]"
                         }`}
                       >
@@ -291,7 +267,6 @@ const SchedulePage = () => {
                   </div>
                 </button>
 
-                {/* Meeting Details */}
                 {isSelected && dayMeetings.length > 0 && (
                   <div className="w-full mt-2 space-y-2 pl-4">
                     {dayMeetings.map((meeting, idx) => {
@@ -310,9 +285,6 @@ const SchedulePage = () => {
                                 {meeting.meetingName}
                               </div>
                             </div>
-                            {/* <div className="text-[10px] bg-[#576cbc] text-white px-2 py-1 rounded-lg">
-                              {meeting.meetingStatus}
-                            </div> */}
                             <div className="flex items-center gap-2 mt-1">
                               <div className="flex items-center gap-1 text-[10px] text-gray-600 dark:text-gray-300">
                                 <Clock size={12} />
@@ -328,8 +300,8 @@ const SchedulePage = () => {
                     })}
                   </div>
                 )}
-    </div>
-  );
+              </div>
+            );
           })}
         </div>
       </div>
@@ -364,8 +336,8 @@ const SchedulePage = () => {
             </div>
           );
         })}
-    </div>
-  );
+      </div>
+    );
   };
 
   const MonthlyView = () => {
@@ -431,7 +403,7 @@ const SchedulePage = () => {
                 className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${
                   hasMeetings
                     ? `${colors?.border} ${colors?.text} ${colors?.bg} border text-[10px]`
-                      : isToday(day)
+                    : isToday(day)
                     ? "bg-[#27176518] text-white"
                     : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"
                 } ${isSelected ? "ring-2 ring-[#576cbc]" : ""}`}
@@ -451,7 +423,7 @@ const SchedulePage = () => {
                     <div className="text-[8px] truncate px-1">
                       {dayMeetings[0].startTime} - {dayMeetings[0].endTime}
                     </div>
-                      </div>
+                  </div>
                 )}
               </button>
             );
@@ -502,39 +474,38 @@ const SchedulePage = () => {
             </div>
             <div className="space-y-6 overflow-y-scroll scrollbar-none h-[600px]">
               {filteredMeetings.length > 0 ? (
-  filteredMeetings.map((meeting) => {
-    const colors = getMeetingTypeColor(meeting.meetingName);
-    return (
-      <div
-        key={meeting.meetingId}
-        className="border-b dark:border-[#414141] pb-4"
-      >
-        <div className="flex justify-between">
-          <h4 className={`font-medium w-40 text-[12px] ${colors.text}`}>
-            {meeting.meetingName}
-          </h4>
-          <div className="flex items-center text-gray-400 text-[9px] mt-1 gap-2">
-            <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
-              <Clock size={10} /> {meeting.startTime} - {meeting.endTime}
-            </span>
-            <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
-              <CalendarDays size={10} />{" "}
-              {moment(meeting.selectedDate).format("DD/MM/YYYY")}
-            </span>
-          </div>
-        </div>
-        <p className="text-gray-500 dark:text-[#f9f9f9] text-[9px] mt-2">
-          {meeting.description}
-        </p>
-      </div>
-    );
-  })
-) : (
-  <p className="text-sm text-gray-500 dark:text-gray-300 text-center py-4">
-    📅 Click a date to view meetings!
-  </p>
-)}
-
+                filteredMeetings.map((meeting) => {
+                  const colors = getMeetingTypeColor(meeting.meetingName);
+                  return (
+                    <div
+                      key={meeting.meetingId}
+                      className="border-b dark:border-[#414141] pb-4"
+                    >
+                      <div className="flex justify-between">
+                        <h4 className={`font-medium w-40 text-[12px] ${colors.text}`}>
+                          {meeting.meetingName}
+                        </h4>
+                        <div className="flex items-center text-gray-400 text-[9px] mt-1 gap-2">
+                          <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
+                            <Clock size={10} /> {meeting.startTime} - {meeting.endTime}
+                          </span>
+                          <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
+                            <CalendarDays size={10} />{" "}
+                            {moment(meeting.selectedDate).format("DD/MM/YYYY")}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-gray-500 dark:text-[#f9f9f9] text-[9px] mt-2">
+                        {meeting.description}
+                      </p>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-sm text-gray-500 dark:text-gray-300 text-center py-4">
+                  📅 Click a date to view meetings!
+                </p>
+              )}
             </div>
           </div>
         </div>

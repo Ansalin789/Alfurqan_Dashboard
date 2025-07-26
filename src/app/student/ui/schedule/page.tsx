@@ -8,7 +8,6 @@ import { FaClock } from "react-icons/fa";
 import { BsFillCalendar2WeekFill } from "react-icons/bs";
 import StudentHeader from "../../components/StudentHeader";
 
-// --- New interfaces for class schedule API ---
 interface Student {
   studentId: string;
   studentFirstName: string;
@@ -67,7 +66,7 @@ interface Event {
   end: string;
   description: string;
   date: string;
-  status?: string; // Add status field
+  status?: string;
 }
 
 const StudentSchedulePage = () => {
@@ -83,7 +82,6 @@ const StudentSchedulePage = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [classSchedule, setClassSchedule] = useState<ClassSchedule[]>([]);
-
 
   const tabs = ["monthly", "weekly", "daily"] as const;
 
@@ -114,7 +112,6 @@ const StudentSchedulePage = () => {
       .catch((error) => console.error("Error fetching class schedule: ", error));
   }, []);
 
-  // Map classSchedule to events with status
   useEffect(() => {
     setEvents(
       classSchedule.map((item) => ({
@@ -190,12 +187,25 @@ const StudentSchedulePage = () => {
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
     // Get start and end of current week
-    const startOfWeek = moment().startOf("week").toDate();
-    const endOfWeek = moment().endOf("week").toDate();
+    const startOfWeek = moment(currentDate).startOf("week");
+    const endOfWeek = moment(currentDate).endOf("week");
+
+    // Create an array of days in the week with their dates
+    const daysInWeek = [];
+    let currentDay = startOfWeek.clone();
+    
+    while (currentDay <= endOfWeek) {
+      daysInWeek.push({
+        name: currentDay.format("dddd"),
+        date: currentDay.format("YYYY-MM-DD"),
+        formattedDate: currentDay.format("MMMM D, YYYY")
+      });
+      currentDay = currentDay.clone().add(1, 'days');
+    }
 
     // Filter events for current week
     const weekEvents = events.filter((event) => {
-      const eventDate = new Date(event.date);
+      const eventDate = moment(event.date);
       return eventDate >= startOfWeek && eventDate <= endOfWeek;
     });
 
@@ -217,32 +227,20 @@ const StudentSchedulePage = () => {
       <div className="space-y-4 h-[540px] overflow-y-scroll scrollbar-none">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[16px] font-semibold">
-            {moment(startOfWeek).format("MMM D")} -{" "}
-            {moment(endOfWeek).format("MMM D, YYYY")}
+            {startOfWeek.format("MMM D")} -{" "}
+            {endOfWeek.format("MMM D, YYYY")}
           </h3>
         </div>
 
         <div className="space-y-2">
-          {[
-            "Sunday",
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-          ].map((day) => {
-            const dayEvents = eventsByDay[day] || [];
-            const isSelected = selectedDay === day;
-            const date = moment(
-              weekEvents.find((e) => moment(e.date).format("dddd") === day)
-                ?.date
-            );
+          {daysInWeek.map((dayInfo) => {
+            const dayEvents = eventsByDay[dayInfo.name] || [];
+            const isSelected = selectedDay === dayInfo.name;
 
             return (
-              <div key={day} className="flex flex-col">
+              <div key={dayInfo.name} className="flex flex-col">
                 <button
-                  onClick={() => handleDayClick(day)}
+                  onClick={() => handleDayClick(dayInfo.name)}
                   className={`w-full p-4 rounded-xl cursor-pointer transition-all duration-200 ${
                     isSelected
                       ? "dark:bg-[#414141] bg-[#f7f7f7] dark:text-white text-black"
@@ -261,7 +259,7 @@ const StudentSchedulePage = () => {
                               : "text-gray-800 dark:text-white"
                           }`}
                         >
-                          {day}
+                          {dayInfo.name}
                         </div>
                         <div
                           className={`text-[10px] ${
@@ -270,7 +268,7 @@ const StudentSchedulePage = () => {
                               : "text-gray-500 dark:text-gray-400"
                           }`}
                         >
-                          {date && typeof date.format === 'function' ? date.format("MMMM D, YYYY") : ''}
+                          {dayInfo.formattedDate}
                         </div>
                       </div>
                     </div>
@@ -388,24 +386,6 @@ const StudentSchedulePage = () => {
 
     return (
       <>
-        {/* <div className="flex items-end justify-end mb-4 gap-2">
-          <button 
-            onClick={handlePrevMonth}
-            className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
-          >
-            &lt;
-          </button>
-          <h2 className="text-[16px] font-semibold">
-            {formatMonthYear(currentDate)}
-          </h2>
-          <button 
-            onClick={handleNextMonth}
-            className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
-          >
-            &gt;
-          </button>
-        </div> */}
-
         <div className="grid grid-cols-7 gap-2 text-center text-sm font-medium text-gray-500 mb-2 dark:bg-[#414141] bg-gray-100 rounded-xl p-2 dark:text-[#fff]">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
             <div key={day}>{day}</div>

@@ -118,6 +118,7 @@ export interface StudentWithAssignments extends StudentCoreInfo {
   groupClassId: string;
   assignment: AssignmentItem[];
   level?: string;
+  course : string;
 }
 interface AssignmentQuestion {
   _id: string;
@@ -392,14 +393,16 @@ const RegularStudents = () => {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            params: { teacherId },
+            params: { 
+              teacherId
+             },
           }
         );
 
         const allStudents = res.data;
         console.log("API Response:", allStudents);
 
-        // Filter for regular students only
+        // Filter for regular students
         const regular = allStudents.filter(
           (student) => student.classType?.toUpperCase() === "REGULARCLASS"
         );
@@ -557,12 +560,14 @@ const RegularStudents = () => {
     formData.append("assignedTeacher", teacherName);
     formData.append("assignedTeacherId", teacherId);
     formData.append("sessionClassType", "REGULARCLASS");
+    formData.append("course", assignData.course?.trim() || "");
+formData.append("level", assignData.level?.trim() || "");
     formData.append("createdBy", "System");
     formData.append("updatedBy", teacherName);
     formData.append("assignmentStatus", "Assigned");
     formData.append("commends", adminComment?.trim() || "");
     formData.append("score", "0");
-
+  
     // Process each assignment
     selectedAssignments.forEach((assignmentId, index) => {
       const questions = assignmentMap[assignmentId] || [];
@@ -618,7 +623,7 @@ const RegularStudents = () => {
         formData.append(`${prefix}[createdDate]`, new Date().toISOString());
         formData.append(`${prefix}[updatedDate]`, new Date().toISOString());
         formData.append(`${prefix}[level]`, q.levelName || "");
-        formData.append(`${prefix}[courses]`, q.courseName || "");
+        // Do not append courses as a field in each assignment; only use root-level course
         formData.append(`${prefix}[assignedDate]`, new Date(adminAssignedDate).toISOString());
         formData.append(`${prefix}[dueDate]`, new Date(adminDueDate).toISOString());
         formData.append(`${prefix}[answer]`, "");
@@ -1441,11 +1446,16 @@ const RegularStudents = () => {
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(
-                                              student.studentId,
-                                              assignmentItem.assignmentId || ""
-                                            )
-                                          }
+                                  handleAssign(
+                                    student.studentId,
+                                    student.studentDetails.student
+                                      .studentFirstName,
+                                    student.studentDetails.student
+                                      .learningInterest,
+                                    student.level || "",
+                                    // student.course || ''
+                                  )
+                                }
                                         >
                                           Assign
                                         </button>
@@ -1596,9 +1606,7 @@ const RegularStudents = () => {
                                         type="text"
                                         placeholder="Enter title"
                                         value={title}
-                                        onChange={(e) =>
-                                          setTitle(e.target.value)
-                                        }
+                                        onChange={(e) => setTitle(e.target.value)}
                                         className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
                                       />
                                     </div>

@@ -95,7 +95,7 @@ interface Teacher {
 interface TeacherSlot {
   fromTime: string;
   toTime: string;
-  teacherName: string;
+  name: string;
   teacherId: string;
   isStatus: boolean;
 }
@@ -225,8 +225,8 @@ const TeachersSchedule = () => {
     }
      
     try {
-      const adjustedPosition =
-    position === "Islamic Studies" ? "Islamic" : position + " Teacher";
+    const adjustedPosition =
+     position === "Islamic Studies" ? "Islamic" : position;
       const url = `https://api.blackstoneinfomaticstech.com/teacher/availabletime?scheduleDate=${formattedDate}&position=${encodeURIComponent(
         adjustedPosition + " Teacher"
       )}`;
@@ -403,7 +403,7 @@ const TeachersSchedule = () => {
         ],
 
         teacherId: selectedTeacher.teacherId,
-        teacherName: selectedTeacher.teacherName,
+        teacherName: selectedTeacher.name,
         scheduleStatus: "Rescheduled",
         lastUpdatedDate: new Date().toISOString(),
         rescheduleReason,
@@ -967,7 +967,7 @@ const TeachersSchedule = () => {
             Available Teachers
           </h3>
 
-          <div className="divide-y divide-gray-200 dark:divide-gray-600">
+          <div className="divide-y divide-gray-200 dark:divide-gray-600 overflow-y-auto scrollbar-none ">
             {availableTeachers.length === 0 ? (
               <p className="text-sm text-gray-500 dark:text-gray-300 py-4 text-center">
                 No teachers available.
@@ -986,12 +986,12 @@ const TeachersSchedule = () => {
                     {/* Left Side */}
                     <div className="flex items-center gap-3">
                       <img
-                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${teacher.teacherName}`}
-                        alt={teacher.teacherName}
+                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${teacher.name}`}
+                        alt={teacher.name}
                         className="w-10 h-10 rounded-full"
                       />
                       <p className="text-sm font-medium text-gray-800 dark:text-white truncate max-w-[120px] sm:max-w-[200px]">
-                        {teacher.teacherName}
+                        {teacher.name}
                       </p>
                     </div>
 

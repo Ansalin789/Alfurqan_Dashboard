@@ -137,14 +137,30 @@ const AdminCalendar = () => {
   const WeeklyView = () => {
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
-    const startOfWeek = moment(currentDate).startOf("week").toDate();
-    const endOfWeek = moment(currentDate).endOf("week").toDate();
+    // Get start and end of current week based on currentDate
+    const startOfWeek = moment(currentDate).startOf("week");
+    const endOfWeek = moment(currentDate).endOf("week");
 
+    // Create an array of days in the week with their dates
+    const daysInWeek = [];
+    let currentDay = startOfWeek.clone();
+    
+    while (currentDay <= endOfWeek) {
+      daysInWeek.push({
+        name: currentDay.format("dddd"),
+        date: currentDay.format("YYYY-MM-DD"),
+        formattedDate: currentDay.format("MMMM D, YYYY")
+      });
+      currentDay = currentDay.clone().add(1, 'days');
+    }
+
+    // Filter events for current week
     const weekEvents = events.filter((event) => {
-      const eventDate = new Date(event.date);
+      const eventDate = moment(event.date);
       return eventDate >= startOfWeek && eventDate <= endOfWeek;
     });
 
+    // Group events by day
     const eventsByDay = weekEvents.reduce((acc, event) => {
       const day = moment(event.date).format("dddd");
       if (!acc[day]) {
@@ -162,23 +178,20 @@ const AdminCalendar = () => {
       <div className="space-y-4 h-[540px] overflow-y-scroll scrollbar-none">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[16px] font-semibold">
-            {moment(startOfWeek).format("MMM D")} -{" "}
-            {moment(endOfWeek).format("MMM D, YYYY")}
+            {startOfWeek.format("MMM D")} -{" "}
+            {endOfWeek.format("MMM D, YYYY")}
           </h3>
         </div>
 
         <div className="space-y-2">
-          {["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map((day) => {
-            const dayEvents = eventsByDay[day] || [];
-            const isSelected = selectedDay === day;
-            const date = moment(
-              weekEvents.find((e) => moment(e.date).format("dddd") === day)?.date
-            );
+          {daysInWeek.map((dayInfo) => {
+            const dayEvents = eventsByDay[dayInfo.name] || [];
+            const isSelected = selectedDay === dayInfo.name;
 
             return (
-              <div key={day} className="flex flex-col">
+              <div key={dayInfo.name} className="flex flex-col">
                 <button
-                  onClick={() => handleDayClick(day)}
+                  onClick={() => handleDayClick(dayInfo.name)}
                   className={`w-full p-4 rounded-xl cursor-pointer transition-all duration-200 ${
                     isSelected
                       ? "dark:bg-[#414141] bg-[#f7f7f7] dark:text-white text-black"
@@ -197,7 +210,7 @@ const AdminCalendar = () => {
                               : "text-gray-800 dark:text-white"
                           }`}
                         >
-                          {day}
+                          {dayInfo.name}
                         </div>
                         <div
                           className={`text-[10px] ${
@@ -206,7 +219,7 @@ const AdminCalendar = () => {
                               : "text-gray-500 dark:text-gray-400"
                           }`}
                         >
-                          {date.format("MMMM D, YYYY")}
+                          {dayInfo.formattedDate}
                         </div>
                       </div>
                     </div>
@@ -480,26 +493,24 @@ const AdminCalendar = () => {
                           {item.description || ""}
                         </p>
 
-                     <div className="mt-2">
-  <p className="text-[10px] font-semibold">Attendees:</p>
-
-  {Array.isArray(item.teachers) ? (
-    item.teachers.length > 0 ? (
-      <ul className="text-[9px] space-y-1 mt-1">
-        {item.teachers.map((teacher) => (
-          <li key={teacher.teacherId}>
-            {teacher.teacherName} ({teacher.teacherEmail})
-          </li>
-        ))}
-      </ul>
-    ) : (
-      <p className="text-[9px] text-gray-500 italic mt-1">No results</p>
-    )
-  ) : (
-    <p className="text-[9px] text-gray-500 italic mt-1">No results</p>
-  )}
-</div>
-
+                        <div className="mt-2">
+                          <p className="text-[10px] font-semibold">Attendees:</p>
+                          {Array.isArray(item.teachers) ? (
+                            item.teachers.length > 0 ? (
+                              <ul className="text-[9px] space-y-1 mt-1">
+                                {item.teachers.map((teacher) => (
+                                  <li key={teacher.teacherId}>
+                                    {teacher.teacherName} ({teacher.teacherEmail})
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-[9px] text-gray-500 italic mt-1">No attendees</p>
+                            )
+                          ) : (
+                            <p className="text-[9px] text-gray-500 italic mt-1">No attendees</p>
+                          )}
+                        </div>
 
                         {item.meetingStatus && (
                           <div className="mt-2">

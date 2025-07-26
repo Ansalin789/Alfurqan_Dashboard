@@ -169,49 +169,62 @@ const Classes = () => {
     currentPage * itemsPerPage
   );
 
-  useEffect(() => {
-    const query = searchQuery.toLowerCase();
+ useEffect(() => {
+  const query = searchQuery.toLowerCase();
 
-    const filtered = filteredClasses.filter((cls) => {
-      const teacherName = cls.teacher?.teacherName?.toLowerCase() ?? "";
-      const courseName = cls.course?.courseName?.toLowerCase() ?? "";
-      const classDate = new Date(cls.startDate);
-      const classTime = cls.startTime[0] ?? "";
-      const status = cls.scheduleStatus;
+ 
+  const fromDate = filterFromDate ? new Date(filterFromDate) : null;
+  const toDate = filterToDate ? new Date(filterToDate) : null;
 
-      const matchesSearch = teacherName.includes(query);
-      const matchesCourse = filterCourse
-        ? courseName === filterCourse.toLowerCase()
-        : true;
-      const matchesStatus = filterStatus ? status === filterStatus : true;
-      const matchesDate =
-        (!filterFromDate || classDate >= new Date(filterFromDate)) &&
-        (!filterToDate || classDate <= new Date(filterToDate));
-      const matchesTime =
-        (!filterFromTime || classTime >= filterFromTime) &&
-        (!filterToTime || classTime <= filterToTime);
+  if (fromDate) fromDate.setHours(0, 0, 0, 0); 
+  if (toDate) toDate.setHours(23, 59, 59, 999); 
 
-      return (
-        matchesSearch &&
-        matchesCourse &&
-        matchesStatus &&
-        matchesDate &&
-        matchesTime
-      );
-    });
+  const filtered = filteredClasses.filter((cls) => {
+    const teacherName = cls.teacher?.teacherName?.toLowerCase() ?? "";
+    const courseName = cls.course?.courseName?.toLowerCase() ?? "";
+    const status = cls.scheduleStatus;
 
-    setFilteredClass(filtered);
-    setCurrentPage(1);
-  }, [
-    searchQuery,
-    filteredClasses,
-    filterCourse,
-    filterFromDate,
-    filterToDate,
-    filterFromTime,
-    filterToTime,
-    filterStatus,
-  ]);
+   
+    const classDate = new Date(cls.startDate);
+    const [hour, minute] = cls.startTime?.[0]?.split(":").map(Number) ?? [0, 0];
+    classDate.setHours(hour, minute, 0, 0); 
+
+    const classTime = cls.startTime[0] ?? "";
+
+    const matchesSearch = teacherName.includes(query);
+    const matchesCourse = filterCourse
+      ? courseName === filterCourse.toLowerCase()
+      : true;
+    const matchesStatus = filterStatus ? status === filterStatus : true;
+    const matchesDate =
+      (!fromDate || classDate >= fromDate) &&
+      (!toDate || classDate <= toDate);
+    const matchesTime =
+      (!filterFromTime || classTime >= filterFromTime) &&
+      (!filterToTime || classTime <= filterToTime);
+
+    return (
+      matchesSearch &&
+      matchesCourse &&
+      matchesStatus &&
+      matchesDate &&
+      matchesTime
+    );
+  });
+
+  setFilteredClass(filtered);
+  setCurrentPage(1);
+}, [
+  searchQuery,
+  filteredClasses,
+  filterCourse,
+  filterFromDate,
+  filterToDate,
+  filterFromTime,
+  filterToTime,
+  filterStatus,
+]);
+
 
   const getStatusClass = (status: string) => {
     if (status === "Scheduled" || status === "Completed") {
@@ -291,8 +304,8 @@ const Classes = () => {
             >
               {tab} (
               {tab === "Scheduled"
-                ? upcomingClasses.length
-                : completedClasses.length}
+                ? filteredClasses.length
+                : filteredClasses.filter(cls => cls.status === "Completed").length}
               )
               {activeTab === tab && (
                 <span className="absolute left-0 -bottom-1 w-full h-[2px] rounded-full bg-[#576CBC]" />
@@ -509,7 +522,7 @@ const Classes = () => {
                   <option value="">Select Course</option>
                   <option value="Quran">Quran</option>
                   <option value="Arabic">Arabic</option>
-                  <option value="Islamic">Islamic</option>
+                  <option value="Islamic Studies">Islamic </option>
                 </select>
               </div>
 
