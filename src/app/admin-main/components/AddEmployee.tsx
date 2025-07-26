@@ -120,13 +120,12 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
   };
 
   const formatTime = (value: string): string => {
-    if (!value) return "";
-    const [hour, minute] = value.split(":");
-    const h = parseInt(hour, 10);
-    const suffix = h >= 12 ? "PM" : "AM";
-    const formattedHour = h % 12 === 0 ? 12 : h % 12;
-    return `${formattedHour.toString().padStart(2, "0")}:${minute} ${suffix}`;
-  };
+  if (!value) return "";
+  const [hour, minute] = value.split(":");
+  const h = parseInt(hour, 10);
+  const formattedHour = h.toString().padStart(2, "0");
+  return `${formattedHour}:${minute}`;
+};
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -274,28 +273,30 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
             onChange={handleTimeChange}
             className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-xs"
           />
-        ) : field.type === "select" ? (
-          <select
-            name={field.name}
-            value={fieldValue as string}
-            onChange={handleChange}
-            className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-xs"
-          >
-            <option value="">Select {field.label}</option>
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="INR">INR</option>
-            <option value="AED">AED</option>
-          </select>
-        ) : (
-          <input
-            type={field.type}
-            name={field.name}
-            value={fieldValue as string | number}
-            onChange={handleChange}
-            className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-xs"
-          />
-        )}
+        ): field.type === "select" && field.options ? (
+  <select
+    name={field.name}
+    value={fieldValue as string}
+    onChange={handleChange}
+    className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-xs"
+  >
+    <option value="">Select {field.label}</option>
+    {field.options.map((option) => (
+      <option key={option} value={option}>
+        {option}
+      </option>
+    ))}
+  </select>
+) : (
+  <input
+    type={field.type}
+    name={field.name}
+    value={fieldValue as string | number}
+    onChange={handleChange}
+    className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-xs"
+  />
+)}
+
         {error && (
           <p className="text-red-500 text-xs mt-1">{error as string}</p>
         )}
@@ -352,8 +353,8 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
       type: "text",
     },
     { label: "Address", name: "address", type: "text", full: true },
-    { label: "Designation", name: "designation", type: "text" },
-    { label: "Department", name: "department", type: "text" },
+    { label: "Designation", name: "designation", type: "select" ,options: ["SUPERVISOR", "ACADEMICCOACH"] },
+    { label: "Department", name: "department", type: "text"  },
     {
       label: "Preferred Working Hours",
       name: "preferedWorkingHours",
@@ -367,7 +368,7 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
       type: "text",
       full: true,
     },
-    { label: "Currency", name: "currency", type: "select" },
+    { label: "Currency", name: "currency", type: "select" , options: ["USD", "EUR", "INR", "AED"] },
     { label: "Expected Salary", name: "expectedSalary", type: "number" },
     {
       label: "Preferred Working Days",
