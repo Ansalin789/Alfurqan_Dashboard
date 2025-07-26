@@ -334,7 +334,7 @@ const TeachersSchedule = () => {
       if ([200, 201].includes(response.status)) {
         setSucces(true);
         setTimeout(()=>{
-          router.push(`student/ui/classes`)
+          router.push(`/student/ui/classes`)
         },3000);
       }
     } catch (err) {

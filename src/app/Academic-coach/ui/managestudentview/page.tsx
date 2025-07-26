@@ -374,9 +374,9 @@ const ManageStudentView = () => {
     setActiveDropdown(activeDropdown === index ? null : index);
   };
 
-  const handleReschedule = (_id: string) => {
+  const handleReschedule = (_id: string,course:string) => {
     console.log("Navigating to reschedule page");
-    router.push(`studentreschedule?id=${_id}`);
+    router.push(`studentreschedule?id=${_id}&course=${course}`);
 
     setTimeout(() => {
       setActiveDropdown(null);
@@ -929,7 +929,7 @@ const ManageStudentView = () => {
                               }`}
                               onClick={
                                 studentListWrite
-                                  ? () => handleReschedule(item._id)
+                                  ? () => handleReschedule(item._id,item.course.courseName)
                                   : undefined
                               }
                               disabled={!studentListWrite}

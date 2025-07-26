@@ -223,10 +223,12 @@ const TeachersSchedule = () => {
       console.warn("⚠️ Missing token");
       return;
     }
-
+     
     try {
+      const adjustedPosition =
+    position === "Islamic Studies" ? "Islamic" : position + " Teacher";
       const url = `https://api.blackstoneinfomaticstech.com/teacher/availabletime?scheduleDate=${formattedDate}&position=${encodeURIComponent(
-        position + " Teacher"
+        adjustedPosition + " Teacher"
       )}`;
 
       const res = await fetch(url, {
