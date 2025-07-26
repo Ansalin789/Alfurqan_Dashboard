@@ -28,6 +28,7 @@ interface Invoice {
   lastUpdatedBy: string;
   dueDate?: string;
   student: Student;
+  paymentStatus: string;
 }
 import {
   Chart as ChartJS,
@@ -130,7 +131,7 @@ export default function Page() {
 
   const fetchInvoice = (token: string) => {
     axios
-      .get("https://api.blackstoneinfomaticstech.com/studentinvoice/list", {
+      .get("http://localhost:5001/studentinvoice/list", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -448,7 +449,7 @@ export default function Page() {
                       <td className="p-3 break-word w-[10%]">{row.courseName}</td>
                       <td className="p-3 break-word w-[10%]">{calculateDueDays(row.dueDate)}</td>
                       <td className="p-3 break-word w-[10%]">
-                        {row.invoiceStatus === "Paid"
+                        {row.paymentStatus === "Paid"
                           ? new Date(row.lastUpdatedDate).toLocaleDateString(
                               undefined,
                               {
@@ -463,17 +464,17 @@ export default function Page() {
                         <span
                           className={`inline-flex items-center justify-center w-20 h-6 px-3 py-1 rounded-md
                             ${
-                              row.invoiceStatus === "Paid"
+                              row.paymentStatus === "Paid"
                                 ? "bg-[#ECFDF3] text-[#377E36]"
-                                : row.invoiceStatus === "Pending"
+                                : row.paymentStatus === "Pending"
                                 ? "bg-[#F0AD4E33] text-[#F0AD4E]"
-                                : row.invoiceStatus === "Failed"
+                                : row.paymentStatus === "Failed"
                                 ? "bg-red-100 text-red-500"
                                 : "bg-gray-200 text-gray-700"
                             }
                           `}
                         >
-                          {row.invoiceStatus}
+                          {row.paymentStatus}
                         </span>
                       </td>
                     </tr>
