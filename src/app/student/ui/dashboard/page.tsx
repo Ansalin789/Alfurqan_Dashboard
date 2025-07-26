@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { PieChart, Pie, Cell } from "recharts";
 import BaseLayout2 from "../../../../components/BaseLayout2";
-import NextScheduledClass from "@/app/student/components/NextScheduledClass";
 import ApplicationChart from "../../components/Growth";
 import axios from "axios";
 import Subject from "../../components/SubjectCard";
@@ -11,6 +10,7 @@ import CourseOverview from "../../components/CourseOverview";
 import UpcomingTable from "../../components/UpcomingTable";
 import StudentProfile from "../../components/StudentProfile";
 import StudentHeader from "../../components/StudentHeader";
+import MyClass from "../classes/MyClass";
 
 const Dashboard = () => {
   return (
@@ -22,7 +22,7 @@ const Dashboard = () => {
         <div className="flex-1 flex flex-col gap-4">
           {/* Next Class Schedule */}
           <div className="grid grid-cols-1 gap-4">
-            <NextScheduledClass />
+            <MyClass />
           </div>
 
           {/* Course Overview */}
