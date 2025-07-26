@@ -557,7 +557,7 @@ function Analytics() {
                 </div>
                 <div className="w-16 h-16 rounded-full bg-[#E3FAFF] dark:bg-[#2C2C2C] flex items-center justify-center">
                   <Image
-                    src="/assets/images/Classes.svg"
+                    src="/assets/images/classes.svg"
                     alt="Classes Icon"
                     width={32}
                     height={32}
