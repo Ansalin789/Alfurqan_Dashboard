@@ -222,7 +222,7 @@ const NextClass = () => {
 
       if (now < classStart) {
         const timeToStart = classStart.getTime() - now.getTime();
-        setTimeRemaining(Math.floor(timeToStart / (1000 * 60)));
+        setTimeRemaining(Math.floor(timeToStart / 1000));
         setIsCountdownFinished(false);
       } else if (now >= classStart && now < classEnd) {
         setTimeRemaining(-1);
@@ -245,10 +245,10 @@ const NextClass = () => {
         <div className="flex flex-col gap-2 w-full sm:w-auto">
           <h3 className="text-[15px] font-semibold">
             Your Next Scheduled Class (
-            <span className="inline-flex items-center gap-1">
+            <div className="inline-flex items-center gap-1">
               <FaUser className="w-[10px] h-[10px]" />
               {classData?.teacher?.teacherName}
-            </span>
+            </div>
             )
           </h3>
           <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm sm:text-sm md:text-sm">
@@ -359,10 +359,16 @@ const NextClass = () => {
                 })()}
               </svg>
 
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] rounded-full bg-white flex items-center justify-center text-[#1B1B1B] text-xs sm:text-sm font-semibold shadow-sm">
-                {`${Math.floor(timeRemaining / 60)}:${String(
-                  timeRemaining % 60
-                ).padStart(2, "0")}`}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] rounded-full bg-white flex items-center justify-center text-[#1B1B1B] text-[10px] sm:text-[11px] font-semibold shadow-sm text-center leading-snug">
+                {(() => {
+                  const hours = Math.floor(timeRemaining / 3600);
+                  const minutes = Math.floor((timeRemaining % 3600) / 60); // ✅ stays within 0–59
+                  const seconds = timeRemaining % 60;
+
+                  return `${String(hours).padStart(2, "0")}:${String(
+                    minutes
+                  ).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+                })()}
               </div>
             </div>
           )}
