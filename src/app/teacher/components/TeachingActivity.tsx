@@ -87,7 +87,7 @@ const TeachingActivity: React.FC = () => {
   const areaPath = `${curvePath} L${width},${height} L0,${height} Z`;
 
   return (
-    <div className="bg-white dark:bg-[#343434] rounded-xl p-5 shadow-sm">
+    <div className="bg-white h-full dark:bg-[#343434] rounded-xl p-5 shadow-sm">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-[16px] dark:text-white font-semibold text-[#0f172a]">

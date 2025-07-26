@@ -1,189 +1,146 @@
-'use client';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
-import { useEffect, useState } from "react";
-import axios from "axios";
-
-interface Student {
-  studentId: string;
-  studentFirstName: string;
-  studentLastName: string;
-  studentEmail: string;
-  gender: "MALE" | "FEMALE";
+interface StatsData {
+  scheduled: number;
+  completed: number;
+  absent: number;
+  rescheduled?: number;
 }
 
-interface Teacher {
-  teacherId: string;
-  teacherName: string;
-  teacherEmail: string;
+interface ArcData {
+  path: string;
+  dashArray: string;
 }
 
-interface ClassSchedule {
-  _id: string;
-  student: Student;
-  teacher: Teacher;
-  classDay: string[];
-  package: string;
-  preferedTeacher: string;
-  totalHourse: number;
-  startDate: string;
-  endDate: string;
-  startTime: string[];
-  endTime: string[];
-  scheduleStatus: string;
-  classLink: string;
-  status: string;
-  classStatus: string;
-  createdBy: string;
-  createdDate: string;
-  lastUpdatedDate: string;
-  __v: number;
-  teacherAttendee: string;
-}
-
-const COLORS = ["#B4B6FD", "#6BE7A4", "#F7A9A8"]; // Scheduled, Completed, Absent
+const COLORS = {
+  scheduled: '#B1A7F2',
+  completed: '#6BE6C1',
+  absent: '#FFA9A9',
+};
 
 const ClassAnalytics = () => {
-  const [chartData, setChartData] = useState<number[]>([]);
-  const [totalClasses, setTotalClasses] = useState<number>(0);
+  const [data, setData] = useState<StatsData>({ scheduled: 0, completed: 0, absent: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchData = async () => {
+    try {
+      const teacherId = localStorage.getItem("TeacherPortalId");
+      const token = localStorage.getItem("TeacherAuthToken");
+
+      if (!teacherId || !token) throw new Error("Authentication info missing");
+
+      const response = await axios.get<StatsData>(
+        `http://localhost:5001/classShedule/teacher/count?teacherId=${teacherId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setData({
+        scheduled: response.data.scheduled || 0,
+        completed: response.data.completed || 0,
+        absent: response.data.absent || 0,
+      });
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err.message || 'API Error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchClassData = async () => {
-      try {
-        const teacherId = localStorage.getItem("TeacherPortalId");
-        const token = localStorage.getItem("TeacherAuthToken");
-
-        if (!teacherId || !token) {
-          setError("Authentication data missing.");
-          setLoading(false);
-          return;
-        }
-
-        const response = await axios.get<{ classSchedule: ClassSchedule[] }>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
-          {
-            params: { teacherId },
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const classSchedule = response.data.classSchedule;
-        const statusCount: Record<string, number> = {
-          Scheduled: 0,
-          Completed: 0,
-          Absent: 0,
-        };
-
-        classSchedule.forEach((cls) => {
-          if (cls.classStatus?.toLowerCase() === "pending") {
-            statusCount["Scheduled"] += 1;
-          } else if (cls.classStatus?.toLowerCase() === "completed") {
-            statusCount["Completed"] += 1;
-          }
-          if (cls.teacherAttendee?.toLowerCase() === "absent") {
-            statusCount["Absent"] += 1;
-          }
-        });
-
-        const total =
-          statusCount["Scheduled"] +
-          statusCount["Completed"] +
-          statusCount["Absent"];
-
-        setChartData([
-          statusCount["Scheduled"],
-          statusCount["Completed"],
-          statusCount["Absent"],
-        ]);
-        setTotalClasses(total);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An unexpected error occurred");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchClassData();
+    fetchData();
   }, []);
 
-  // SVG chart calculations
-  const radiusOffset = [65, 50, 35]; // Outer to inner rings
-  const total = chartData.reduce((a, b) => a + b, 0);
-  const circleData = chartData.map((value, i) => {
-    const percent = total ? (value / total) * 100 : 0;
-    const radius = radiusOffset[i];
-    const circumference = 2 * Math.PI * radius;
-    const dash = (percent / 100) * circumference;
-    return { radius, color: COLORS[i], dash, circumference };
-  });
+  const total = data.scheduled + data.completed + data.absent;
 
-  if (loading) return <p className="text-center text-gray-500">Loading...</p>;
-  if (error) return <p className="text-red-500 text-center">{error}</p>;
+  const circleConfig = [
+    { radius: 100, color: COLORS.scheduled, value: data.scheduled },
+    { radius: 75, color: COLORS.completed, value: data.completed },
+    { radius: 60, color: COLORS.absent, value: data.absent },
+  ];
+
+  const getArcPath = (value: number, total: number, radius: number): ArcData | null => {
+    if (total === 0) return null;
+    const circumference = 2 * Math.PI * radius;
+    const dashLength = (value / total) * circumference;
+    const gapLength = circumference - dashLength;
+    return {
+      path: `M ${radius},0 A ${radius},${radius} 0 1,1 ${-radius},0`,
+      dashArray: `${dashLength} ${gapLength}`,
+    };
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6 rounded-xl bg-white shadow-sm text-center text-gray-600">
+        Loading...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 rounded-xl bg-white shadow-sm text-center text-red-600">
+        {error}
+      </div>
+    );
+  }
 
   return (
-    
-       <div className="bg-white dark:bg-[#343434] shadow-md rounded-2xl px-6 py-4 w-full h-full">
-    {/* Header */}
-    <h3 className="text-[#0E1B3D] dark:text-white font-semibold text-[16px] mb-4">
-      Class Analytics
-    </h3>
+    <div className="w-full h-full bg-white rounded-2xl shadow-md p-4">
+      <h2 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 mb-6 text-center md:text-left">
+        Class Analytics
+      </h2>
 
-    {/* Chart and Legend */}
-    <div className="flex flex-col md:flex-row  items-center justify-between">
-      {/* Left: SVG Chart */}
-      <div className="relative w-[160px] h-[160px] flex items-center justify-center">
-        <svg viewBox="0 0 160 160" className="w-full h-full">
-          {circleData.map(({ radius, color, dash, circumference }, i) => (
-            <circle
-              key={i}
-              cx="140"
-              cy="80"
-              r={radius - 2} // space around center text
-              fill="transparent"
-              stroke={color}
-              strokeWidth="10"
-              strokeDasharray={`${dash} ${circumference - dash}`}
-              strokeLinecap="round"
-              transform="rotate(-90 80 80)"
-            />
+      <div className="flex flex-col md:flex-row items-center mt-14 justify-between gap-6 w-full">
+        {/* Donut Chart */}
+        <div className="relative w-full max-w-[260px] aspect-square mx-auto">
+          <svg viewBox="-100 -100 200 200" className="w-full h-full">
+            {circleConfig.map((circle, i) => {
+              const arc = getArcPath(circle.value, total || 1, circle.radius);
+              return arc ? (
+                <path
+                  key={i}
+                  d={arc.path}
+                  stroke={circle.color}
+                  strokeWidth="10"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={arc.dashArray}
+                />
+              ) : null;
+            })}
+          </svg>
+
+          {/* Center Text */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="text-[22px] sm:text-[26px] font-bold text-gray-900">{total}</div>
+            <div className="text-[9px] sm:text-[10px] text-center text-gray-800 leading-tight">
+              TOTAL<br />CLASS<br />ASSIGNED
+            </div>
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="w-full flex-1 max-w-sm md:max-w-xs space-y-4">
+          {[
+            { label: 'Scheduled', value: data.scheduled, color: COLORS.scheduled },
+            { label: 'Completed', value: data.completed, color: COLORS.completed },
+            { label: 'Absent', value: data.absent, color: COLORS.absent },
+          ].map((item, i) => (
+            <div key={i} className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                <span className="text-sm text-gray-800">{item.label}</span>
+              </div>
+              <span className="font-semibold text-sm text-gray-900">{item.value}</span>
+            </div>
           ))}
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <p className="text-[28px] font-bold text-[#0E1B3D] dark:text-white leading-none">
-            {totalClasses}
-          </p>
-          <p className="text-[11px] text-black dark:text-gray-300 font-normal text-center leading-tight mt-3">
-            TOTAL<br />CLASS<br />ASSIGNED
-          </p>
         </div>
       </div>
-
-      {/* Right: Legend */}
-      <div className="flex flex-col justify-center mt-6 md:mt-0 md:ml-6 w-full max-w-[220px] space-y-3">
-        {["Scheduled", "Completed", "Absent"].map((label, index) => (
-          <div key={label} className="flex justify-between items-center">
-            <div className="flex items-center">
-              <span
-                className="inline-block w-3 h-3  rounded-full mr-2"
-                style={{ backgroundColor: COLORS[index] }}
-              />
-              <span className="text-sm font-medium text-[#1E2B4B] dark:text-white/80">
-                {label}
-              </span>
-            </div>
-            <span className="text-sm font-semibold text-[#1E2B4B] ml-2 dark:text-white/80">
-              {chartData[index]}
-            </span>
-          </div>
-        ))}
-      </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default ClassAnalytics;
