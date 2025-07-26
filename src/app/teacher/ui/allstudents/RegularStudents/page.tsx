@@ -402,7 +402,7 @@ const RegularStudents = () => {
         const allStudents = res.data;
         console.log("API Response:", allStudents);
 
-        // Filter for regular students only
+        // Filter for regular students
         const regular = allStudents.filter(
           (student) => student.classType?.toUpperCase() === "REGULARCLASS"
         );
@@ -560,12 +560,14 @@ const RegularStudents = () => {
     formData.append("assignedTeacher", teacherName);
     formData.append("assignedTeacherId", teacherId);
     formData.append("sessionClassType", "REGULARCLASS");
+    formData.append("course", assignData.course?.trim() || "");
+formData.append("level", assignData.level?.trim() || "");
     formData.append("createdBy", "System");
     formData.append("updatedBy", teacherName);
     formData.append("assignmentStatus", "Assigned");
     formData.append("commends", adminComment?.trim() || "");
     formData.append("score", "0");
-
+  
     // Process each assignment
     selectedAssignments.forEach((assignmentId, index) => {
       const questions = assignmentMap[assignmentId] || [];
@@ -621,7 +623,7 @@ const RegularStudents = () => {
         formData.append(`${prefix}[createdDate]`, new Date().toISOString());
         formData.append(`${prefix}[updatedDate]`, new Date().toISOString());
         formData.append(`${prefix}[level]`, q.levelName || "");
-        formData.append(`${prefix}[courses]`, q.courseName || "");
+        // Do not append courses as a field in each assignment; only use root-level course
         formData.append(`${prefix}[assignedDate]`, new Date(adminAssignedDate).toISOString());
         formData.append(`${prefix}[dueDate]`, new Date(adminDueDate).toISOString());
         formData.append(`${prefix}[answer]`, "");
@@ -726,7 +728,7 @@ const RegularStudents = () => {
 
     // Submit to API
     const res = await axios.post(
-      "https://api.blackstoneinfomaticstech.com/assignments",
+      "http://localhost:5001/assignments",
       formData,
       {
         headers: {
@@ -1451,7 +1453,7 @@ const RegularStudents = () => {
                                     student.studentDetails.student
                                       .learningInterest,
                                     student.level || "",
-                                    student.course || ''
+                                    // student.course || ''
                                   )
                                 }
                                         >
@@ -1604,9 +1606,7 @@ const RegularStudents = () => {
                                         type="text"
                                         placeholder="Enter title"
                                         value={title}
-                                        onChange={(e) =>
-                                          setTitle(e.target.value)
-                                        }
+                                        onChange={(e) => setTitle(e.target.value)}
                                         className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
                                       />
                                     </div>

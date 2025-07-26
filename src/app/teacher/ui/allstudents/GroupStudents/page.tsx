@@ -697,6 +697,8 @@ const GroupStudents = () => {
       formData.append("assignedTeacher", teacherName);
       formData.append("assignedTeacherId", teacherId);
       formData.append("sessionClassType", "REGULARCLASS");
+          formData.append("course", assignData.course?.trim() || "");
+formData.append("level", assignData.level?.trim() || "");
       formData.append("createdBy", "System");
       formData.append("updatedBy", teacherName);
       formData.append("assignmentStatus", "Assigned");
