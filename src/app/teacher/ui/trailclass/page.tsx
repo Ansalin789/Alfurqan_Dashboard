@@ -1004,7 +1004,7 @@ function LiveClass() {
                     <textarea
                       name="comments"
                       placeholder="Write your comment here..."
-                      className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300 rounded-md text-[12px] dark:text-[#FFF] text-[#FFF] focus:outline-none focus:ring-2 focus:ring-[#576CBC] h-24 resize-none"
+                      className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300 rounded-md text-[12px] dark:text-[#FFF] text-[#000] focus:outline-none focus:ring-2 focus:ring-[#576CBC] h-24 resize-none"
                     />
                   </div>
 
