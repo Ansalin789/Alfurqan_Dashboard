@@ -118,6 +118,7 @@ export interface StudentWithAssignments extends StudentCoreInfo {
   groupClassId: string;
   assignment: AssignmentItem[];
   level?: string;
+  course : string;
 }
 interface AssignmentQuestion {
   _id: string;
@@ -392,7 +393,9 @@ const RegularStudents = () => {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            params: { teacherId },
+            params: { 
+              teacherId
+             },
           }
         );
 
@@ -1441,11 +1444,16 @@ const RegularStudents = () => {
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(
-                                              student.studentId,
-                                              assignmentItem.assignmentId || ""
-                                            )
-                                          }
+                                  handleAssign(
+                                    student.studentId,
+                                    student.studentDetails.student
+                                      .studentFirstName,
+                                    student.studentDetails.student
+                                      .learningInterest,
+                                    student.level || "",
+                                    student.course || ''
+                                  )
+                                }
                                         >
                                           Assign
                                         </button>

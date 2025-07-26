@@ -712,16 +712,16 @@ const EmployeePage = () => {
                     >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Class Name
                       </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Rate
                       </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Currency
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Duration
                       </th>
                     </tr>
@@ -755,7 +755,7 @@ const EmployeePage = () => {
                           ))
                     ) : (
                       <tr>
-                        <td colSpan={4} className="p-4 text-center">
+                        <td colSpan={4} className="p-4 text-left">
                               No data available
                         </td>
                       </tr>
