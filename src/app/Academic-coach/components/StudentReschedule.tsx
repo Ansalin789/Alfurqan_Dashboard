@@ -125,7 +125,7 @@ interface TeacherShiftResponse {
 interface TeacherSlot {
   fromTime: string;
   toTime: string;
-  teacherName: string;
+  name: string;
   teacherId: string;
   isStatus: boolean;
 }
@@ -226,7 +226,7 @@ const SchedulePage = () => {
    console.log(position1);
     try {
        const adjustedPosition =
-     position === "Islamic Studies" ? "Islamic" : position + " Teacher";
+     position === "Islamic Studies" ? "Islamic" : position;
       const url = `https://api.blackstoneinfomaticstech.com/teacher/availabletime?scheduleDate=${formattedDate}&position=${encodeURIComponent(
         adjustedPosition + " Teacher"
       )}`;
@@ -242,6 +242,7 @@ const SchedulePage = () => {
 
       const data = await res.json();
       setAvailableTeachers(data);
+      console.log("name",data);
     } catch (err) {
       console.error("❌ Network error:", err);
     }
@@ -399,7 +400,7 @@ const SchedulePage = () => {
         ],
 
         teacherId: selectedTeacher.teacherId,
-        teacherName: selectedTeacher.teacherName,
+        teacherName: selectedTeacher.name,
         scheduleStatus: "Rescheduled",
         lastUpdatedDate: new Date().toISOString(),
         rescheduleReason,
@@ -799,7 +800,7 @@ const SchedulePage = () => {
               Available Teachers
             </h3>
 
-            <div className="divide-y divide-gray-200 dark:divide-gray-600 max-h-[600px] ">
+            <div className="divide-y divide-gray-200 dark:divide-gray-600 max-h-[600px] overflow-y-auto scrollbar-none ">
               {availableTeachers.length === 0 ? (
                 <p className="text-sm text-gray-500 dark:text-gray-300 py-4">
                   No teachers available.
@@ -818,13 +819,13 @@ const SchedulePage = () => {
                       {/* Left Side */}
                       <div className="flex items-center gap-4">
                         <img
-                          src={`https://api.dicebear.com/7.x/initials/svg?seed=${teacher.teacherName}`}
-                          alt={teacher.teacherName}
+                          src={`https://api.dicebear.com/7.x/initials/svg?seed=${teacher.name}`}
+                          alt={teacher.name}
                           className="w-10 h-10 rounded-full"
                         />
                         <div>
                           <p className="text-sm font-medium text-gray-800 dark:text-white">
-                            {teacher.teacherName}
+                            {teacher.name}
                           </p>
                         </div>
                       </div>

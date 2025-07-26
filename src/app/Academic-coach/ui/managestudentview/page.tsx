@@ -355,7 +355,8 @@ const ManageStudentView = () => {
           allSchedules.filter(
             (c) =>
               c.scheduleStatus === "Scheduled" ||
-              c.scheduleStatus === "Rescheduled"
+              c.scheduleStatus === "Rescheduled" || 
+              c.scheduleStatus === "RequestReschedule"
           )
         );
 
