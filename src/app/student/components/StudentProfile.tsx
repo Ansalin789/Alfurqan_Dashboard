@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { BsPersonPlus } from "react-icons/bs";
 import { IoDiamondSharp } from "react-icons/io5";
+import { useRouter } from "next/navigation";
 
 export interface IStudentInvoice {
   _id: string;
@@ -32,10 +33,12 @@ export interface IStudentInvoice {
   __v: number;
 }
 
+
 const StudentProfile = () => {
   const [studentName, setStudentName] = useState<string | null>(null);
   const [studentEmail, setStudentEmail] = useState<string | null>(null);
   const [studentImage, setStudentImage] = useState<string | null>(null);
+  const router = useRouter();
 
   // ✅ Move this line INSIDE the component
   const [invoices, setInvoices] = useState<IStudentInvoice[]>([]);
@@ -135,7 +138,7 @@ const StudentProfile = () => {
   }, []);
 
   return (
-    <div className="w-[310px] flex flex-col gap-4">
+    <div className="w-[310px] flex flex-col gap-4 cursor-pointer" onClick={() => router.push("student-profile")} >
       <div className="rounded-xl shadow-lg bg-white h-[280px] dark:bg-[#343434] p-4 relative">
         <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">
           Student Profile
