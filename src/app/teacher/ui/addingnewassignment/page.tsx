@@ -612,37 +612,42 @@ const NewAssignment = () => {
         `Blob (${value.size} bytes, ${value.type})` :
         value);
     }
+ const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("TeacherAuthToken")
+          : null;
 
+      if (!token) {
+        console.error("❌ TeacherAuthToken not found");
+        return;
+      }
     try {
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/assignments", {
+      const response = await fetch("http://localhost:5001/assignments", {
         method: "POST",
         body: formData, // ✅ Use FormData directly
 
-        // headers: {
-        //   "Content-Type": "application/json",
-        // },
-        // body: JSON.stringify({
-        //   // ... other data ...
-        //   assignments: assignments.map(assignment => ({
-        //     ...assignment,
-        //     // Convert buffers to the format your backend expects
-        //     audioFile: assignment.audioFile ? Buffer.from(assignment.audioFile) : undefined,
-        //     uploadFile: assignment.uploadFile ? Buffer.from(assignment.uploadFile) : undefined
-        //   }))
-        // }),
+        headers: {
+          Authorization: `Bearer ${token}`,
+
+        },
       });
 
       if (response.status === 201 || response.status === 200) {
         setSuccess(true);
         setSuccessMessage('Assignment submitted successfully!');
         setTimeout(() => (false), 3000);
-      } else {
-        console.log("Failed to submit Assignment. Please try again.");
-        setFailedMessage('Check Inputs');
-      }
+      }else {
+      const errorData = await response.json(); // Try to get error message from response
+      setFailed(true);
+      setFailedMessage(errorData.message || 'Failed to submit assignment. Please try again.');
+      setTimeout(() => setFailed(false), 3000);
+    }
     } catch (error) {
       console.error("Error submitting Assignment:", error);
       console.log("Error submitting Assignment. Please try again.");
+      setFailed(true);
+    setFailedMessage('Network error. Please check your connection and try again.');
+    setTimeout(() => setFailed(false), 3000);
     }
   };
 
