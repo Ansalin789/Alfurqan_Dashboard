@@ -745,12 +745,12 @@ const TeacherFilter = () => {
             </div>
 
             {/* Attendance */}
-            <div className="mb-6 rounded-xl overflow-hidden dark:bg-[#343434] text-white border ">
+            {/* <div className="mb-6 rounded-xl overflow-hidden dark:bg-[#343434] text-white border ">
               <div className="flex justify-between items-center bg-[#576CBC] text-white px-6 py-3 text-sm font-semibold">
                 <span>Name</span>
                 <span>Attendance</span>
               </div>
-              {/* <div className="divide-y max-h-40 overflow-y-auto text-sm">
+              <div className="divide-y max-h-40 overflow-y-auto text-sm">
                 {attendance && attendance.length > 0 ? (
                   attendance.map((student) => (
                     <div
@@ -770,8 +770,8 @@ const TeacherFilter = () => {
                 ) : (
                   <div>No attendance data available.</div>
                 )}
-              </div> */}
-            </div>
+              </div>
+            </div> */}
           </div>
         </div>
       )}
