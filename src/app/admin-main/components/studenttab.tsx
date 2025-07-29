@@ -278,6 +278,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
   });
 
   const [isCourseFilterModalOpen, setIsCourseFilterModalOpen] = useState(false); // For Courses tab filter modal
+  const [isAssignmentFilterModalOpen, setIsAssignmentFilterModalOpen] = useState(false); // For Assignments tab filter modal
 
 
   useEffect(() => {
@@ -597,7 +598,8 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
     assignedDateTo: "",
     dueDateFrom: "",
     dueDateTo: "",
-    status: ""
+    status: "",
+    classType: "" // Added classType to filters state
   });
 
   // Get unique values for filter options
@@ -726,6 +728,10 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
           return false;
         }
       }
+      // Class Type filter
+      if (filters.classType && assignment.sessionClassType !== filters.classType) {
+        return false;
+      }
       return true;
     });
   };
@@ -777,7 +783,8 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
       assignedDateTo: "",
       dueDateFrom: "",
       dueDateTo: "",
-      status: ""
+      status: "",
+      classType: "" // Reset classType
     });
   };
 
@@ -1588,7 +1595,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
               
               <div
                 className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
-                // onClick={() => setIsFilterModalOpen(true)}
+                onClick={() => setIsAssignmentFilterModalOpen(true)} // Open filter modal on click
               >
                 <MdTune className="w-4 h-4" />
                 <span>Filter</span>
@@ -1651,6 +1658,120 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
               </table>
             </div>
           </div>
+
+          {/* Filter Modal for Assignments */}
+          {isAssignmentFilterModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
+              <div className="bg-white p-6 rounded-xl w-[400px] relative dark:bg-[#252525] shadow-xl">
+                <button
+                  className="absolute top-4 right-4 text-gray-400 text-2xl"
+                  onClick={() => setIsAssignmentFilterModalOpen(false)}
+                >
+                  &times;
+                </button>
+                <h2 className="text-lg font-semibold mb-6 dark:text-white">Filter by</h2>
+                
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Assignment Name</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={filters.assignmentName}
+                    onChange={(e) => handleFilterChange('assignmentName', e.target.value)}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Course</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={filters.course}
+                    onChange={(e) => handleFilterChange('course', e.target.value)}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Level</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={filters.level}
+                    onChange={(e) => handleFilterChange('level', e.target.value)}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Class Type</label>
+                  <select
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={filters.classType} // Assuming you have a classType in your filters state
+                    onChange={(e) => handleFilterChange('classType', e.target.value)}
+                  >
+                    <option value="REGULARCLASS">Regular Class</option>
+                    <option value="GROUPCLASS">Group Class</option>
+                    {/* Add more class type options as needed */}
+                  </select>
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Assigned Date</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                      value={filters.assignedDateFrom}
+                      onChange={(e) => handleFilterChange('assignedDateFrom', e.target.value)}
+                    />
+                    <input
+                      type="date"
+                      className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                      value={filters.assignedDateTo}
+                      onChange={(e) => handleFilterChange('assignedDateTo', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Due Date</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                      value={filters.dueDateFrom}
+                      onChange={(e) => handleFilterChange('dueDateFrom', e.target.value)}
+                    />
+                    <input
+                      type="date"
+                      className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                      value={filters.dueDateTo}
+                      onChange={(e) => handleFilterChange('dueDateTo', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={resetFilters}
+                    className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                    onClick={() => {
+                      setIsAssignmentFilterModalOpen(false);
+                      // Apply filters logic here
+                    }}
+                  >
+                    Apply Filters
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
