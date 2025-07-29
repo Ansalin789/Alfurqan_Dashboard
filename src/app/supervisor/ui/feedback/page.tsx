@@ -275,7 +275,7 @@ const FeedbackDetails: React.FC = () => {
   return (
     <BaseLayout3>
       <SupervisorHeader
-        currentSection="Feedback"
+        currentSection="Teachers and Students Feedback"
         showBackButton={true}
         showBackPath="/supervisor/ui/teachers"
       />
@@ -380,7 +380,7 @@ const FeedbackDetails: React.FC = () => {
             <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
               <tr className="font-medium">
                 {[
-                  "Review",
+                  "Student Name",
                   "Teacher Name",
                   "Feedback",
                   "Class",
