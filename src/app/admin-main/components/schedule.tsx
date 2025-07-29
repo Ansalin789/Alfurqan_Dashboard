@@ -128,7 +128,7 @@ const DashboardClasses = () => {
 
         const formattedData = [
           {
-            label: "Pending",
+            label: "Upcoming",
             value: parseFloat(data.pendingPercentage),
             color: "bg-[#8B93D2]",
           },
@@ -143,7 +143,7 @@ const DashboardClasses = () => {
             color: "bg-[#B48BD2]",
           },
           {
-            label: "total",
+            label: "Total Classes",
             value: data.total,
             color: "bg-[#87AFFF]",
           },
@@ -317,7 +317,7 @@ const DashboardClasses = () => {
 
         {/* Donut Chart Panel (unchanged) */}
         <Card className="p-3 rounded-lg shadow-md bg-[#FAFAFB] dark:bg-[#343434] h-[250px] flex flex-col justify-between min-w-0 text-[#010E30] dark:text-[#FFFFFF]">
-          <h2 className="font-semibold text-sm mb-2 text-[#010E30] dark:text-[#FFFFFF]">Total Classes</h2>
+          <h2 className="font-semibold text-sm mb-2 text-[#010E30] dark:text-[#FFFFFF]">Total Classes - Class Wise</h2>
           <div className="flex items-center justify-center h-full">
             <div className="relative flex flex-col items-center justify-center w-[130px] h-[130px] ">
               <PieChart width={130} height={130}>
