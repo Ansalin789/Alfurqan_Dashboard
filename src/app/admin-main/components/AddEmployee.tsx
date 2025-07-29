@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { Country, State, City, ICountry, ICity } from "country-state-city";
 
 interface EmployeeFormData {
   firstName: string;
@@ -90,6 +91,26 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
 
   const [errors, setErrors] = useState<Partial<EmployeeFormData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [countries, setCountries] = useState<ICountry[]>([]);
+  const [cities, setCities] = useState<ICity[]>([]);
+
+  useEffect(() => {
+    const allCountries = Country.getAllCountries();
+    setCountries(allCountries);
+  }, []);
+
+  useEffect(() => {
+    if (formData.country) {
+      const selectedCountry = countries.find(c => c.name === formData.country);
+      if (selectedCountry) {
+        const allStates = State.getStatesOfCountry(selectedCountry.isoCode);
+        const allCities = allStates.flatMap(state => City.getCitiesOfState(selectedCountry.isoCode, state.isoCode));
+        setCities(allCities);
+      } else {
+        setCities([]);
+      }
+    }
+  }, [formData.country, countries]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<EmployeeFormData> = {};
@@ -330,10 +351,10 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
     { label: "Last name", name: "lastName", type: "text" },
     { label: "Email", name: "email", type: "email" },
     { label: "Phone number", name: "phoneNumber", type: "number" },
-    { label: "City", name: "city", type: "text" },
     { label: "Nationality", name: "nationality", type: "text" },
     { label: "Date of Birth", name: "dateOfBirth", type: "date" },
     { label: "Country", name: "country", type: "text" },
+    { label: "City", name: "city", type: "text" },
     { label: "Gender", name: "gender", type: "text" },
     {
       label: "Residential Address",
@@ -438,9 +459,422 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
 
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {formFields.map((field, index) => renderFormField(field, index))}
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="email" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="phoneNumber" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Phone Number
+                </label>
+                <input
+                  type="number"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="nationality" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Nationality
+                </label>
+                <input
+                  type="text"
+                  name="nationality"
+                  value={formData.nationality}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="dateOfBirth" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Date of Birth
+                </label>
+                <input
+                  type="date"
+                  name="dateOfBirth"
+                  value={formData.dateOfBirth}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="country" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Country
+                </label>
+                <select
+                  name="country"
+                  value={formData.country}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                >
+                  <option value="">Select Country</option>
+                  {countries.map(country => (
+                    <option key={country.isoCode} value={country.name}>
+                      {country.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="city" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  City
+                </label>
+                <select
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                >
+                  <option value="">Select City</option>
+                  {cities.map(city => (
+                    <option key={city.name} value={city.name}>
+                      {city.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="gender" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Gender
+                </label>
+                <input
+                  type="text"
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="residentialAddress" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Residential Address
+                </label>
+                <input
+                  type="text"
+                  name="residentialAddress"
+                  value={formData.residentialAddress}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="higherQualification" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Highest Qualification
+                </label>
+                <input
+                  type="text"
+                  name="higherQualification"
+                  value={formData.higherQualification}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="universityName" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  University/Institute Name
+                </label>
+                <input
+                  type="text"
+                  name="universityName"
+                  value={formData.universityName}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="previousJob" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Previous Job Title
+                </label>
+                <input
+                  type="text"
+                  name="previousJob"
+                  value={formData.previousJob}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="experience" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Experience (in years)
+                </label>
+                <input
+                  type="text"
+                  name="experience"
+                  value={formData.experience}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="bankName" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Bank Name
+                </label>
+                <input
+                  type="text"
+                  name="bankName"
+                  value={formData.bankName}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="accountNumber" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Account Number
+                </label>
+                <input
+                  type="number"
+                  name="accountNumber"
+                  value={formData.accountNumber}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="bankCode" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Bank Code
+                </label>
+                <input
+                  type="text"
+                  name="bankCode"
+                  value={formData.bankCode}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="passportNumber" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Passport Number
+                </label>
+                <input
+                  type="text"
+                  name="passportNumber"
+                  value={formData.passportNumber}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="emergencyContactNumber" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Emergency Contact Number
+                </label>
+                <input
+                  type="number"
+                  name="emergencyContactNumber"
+                  value={formData.emergencyContactNumber}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="relationshipWithEmployee" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Relationship with Employee
+                </label>
+                <input
+                  type="text"
+                  name="relationshipWithEmployee"
+                  value={formData.relationshipWithEmployee}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="address" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Address
+                </label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="designation" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Designation
+                </label>
+                <select
+                  name="designation"
+                  value={formData.designation}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                >
+                  <option value="">Select Designation</option>
+                  <option value="SUPERVISOR">SUPERVISOR</option>
+                  <option value="ACADEMICCOACH">ACADEMIC COACH</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="department" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Department
+                </label>
+                <input
+                  type="text"
+                  name="department"
+                  value={formData.department}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="preferedWorkingHours" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Preferred Working Hours
+                </label>
+                <input
+                  type="number"
+                  name="preferedWorkingHours"
+                  value={formData.preferedWorkingHours}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="preferedShiftFrom" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Preferred Shift From
+                </label>
+                <input
+                  type="time"
+                  name="preferedShiftFrom"
+                  value={formData.preferedShiftFrom}
+                  onChange={handleTimeChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="preferedShiftTo" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Preferred Shift To
+                </label>
+                <input
+                  type="time"
+                  name="preferedShiftTo"
+                  value={formData.preferedShiftTo}
+                  onChange={handleTimeChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="languagesKnown" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Languages Known
+                </label>
+                <input
+                  type="text"
+                  name="languagesKnown"
+                  value={formData.languagesKnown.join(", ")} // Join the array for display
+                  onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData((prev) => ({
+                          ...prev,
+                          languagesKnown: value ? value.split(",").map(lang => lang.trim()) : [], // Split into array
+                      }));
+                  }}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              <div>
+                <label htmlFor="currency" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Currency
+                </label>
+                <select
+                  name="currency"
+                  value={formData.currency}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                >
+                  <option value="">Select Currency</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="INR">INR</option>
+                  <option value="AED">AED</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="expectedSalary" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Expected Salary
+                </label>
+                <input
+                  type="number"
+                  name="expectedSalary"
+                  value={formData.expectedSalary}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="profileImage" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Profile Image
+                </label>
+                <input
+                  type="file"
+                  name="profileImage"
+                  onChange={handleFileChange}
+                  className="w-full text-xs bg-gray-100 border border-gray-300 rounded-lg px-4 py-2"
+                />
+              </div>
+              <div>
+                <label htmlFor="preferedWorkingDays" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Preferred Working Days
+                </label>
+                <div className="flex flex-wrap gap-3 flex-col-6">
+                  {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(day => (
+                    <label key={day} className="flex items-center space-x-2 text-xs">
+                      <input
+                        type="checkbox"
+                        checked={formData.preferedWorkingDays.includes(day)}
+                        onChange={() => handleCheckboxChange(day)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span>{day}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label htmlFor="comments" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Additional Comments
+                </label>
+                <textarea
+                  name="comments"
+                  value={formData.comments}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
             </div>
-
             <div className="flex justify-end space-x-3 mt-6">
               <button
                 type="button"
