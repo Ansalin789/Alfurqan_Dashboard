@@ -171,6 +171,7 @@ const GroupStudents = () => {
   const [groupStudents, setGroupStudents] = useState<StudentWithAssignments[]>(
     []
   );
+  const [viewingStudentId, setViewingStudentId] = useState<string | null>(null);
   const [studentId, setStudentId] = useState("");
   const [studentName, setStudentName] = useState("");
   const [sessionClassType, setSessionClassType] = useState("");
@@ -485,6 +486,7 @@ const GroupStudents = () => {
   const startIdx = (currentPage - 1) * itemsPerPage;
   const endIdx = startIdx + itemsPerPage;
   const paginatedList = displayList.slice(startIdx, endIdx);
+
   const handleViewProfile = (studentId: string, assignmentId: string) => {
     if (assignmentId && assignmentId.trim() !== "") {
       router.push(
@@ -494,6 +496,7 @@ const GroupStudents = () => {
       router.push(`/teacher/ui/managestudentview?studentId=${studentId}`);
     }
   };
+
   const handleClick = (courseValue?: string, levelValue?: string) => {
     const finalCourse = courseValue || course;
     const finalLevel = levelValue || level;
@@ -521,6 +524,10 @@ const GroupStudents = () => {
     console.log("🔍 Final URL:", `/teacher/ui/addingnewassignment?${query}`);
     router.push(`/teacher/ui/addingnewassignment?${query}`);
   };
+   const handleStudentClick = (studentId: string) => {
+    router.push(`/teacher/ui/managestudentview?studentId=${studentId}`);
+  };
+
 
   useEffect(() => {
     const metaData = localStorage.getItem("assignmentMeta");
@@ -702,272 +709,275 @@ const GroupStudents = () => {
       const teacherId = localStorage.getItem("TeacherPortalId") || "";
       // Split the studentIds back into an array
       const studentIds = assignData.studentId.split(",");
-        for (const studentId of studentIds) {
-      const formData = new FormData();
-      
-      // Add shared fields that will be merged with each assignment
-      formData.append("studentId", assignData.studentId);
-      formData.append("studentName", assignData.studentFirstName);
-      formData.append("title", adminTitle.trim());
-      formData.append("assignedTeacher", teacherName);
-      formData.append("assignedTeacherId", teacherId);
-      formData.append("sessionClassType", "REGULARCLASS");
-      formData.append("course", assignData.course?.trim() || "");
-      formData.append("level", assignData.level?.trim() || "");
-      formData.append("createdBy", "System");
-      formData.append("updatedBy", teacherName);
-      formData.append("assignmentStatus", "Assigned");
-      formData.append("commends", adminComment?.trim() || "");
-      formData.append("score", "0");
+      for (const studentId of studentIds) {
+        const formData = new FormData();
 
-      // Process each assignment
-      selectedAssignments.forEach((assignmentId, index) => {
-        const questions = assignmentMap[assignmentId] || [];
-        questions.forEach((q: AssignmentQuestion, qIndex) => {
-          const prefix = `assignments[${index}]`;
+        // Add shared fields that will be merged with each assignment
+        formData.append("studentId", assignData.studentId);
+        formData.append("studentName", assignData.studentFirstName);
+        formData.append("title", adminTitle.trim());
+        formData.append("assignedTeacher", teacherName);
+        formData.append("assignedTeacherId", teacherId);
+        formData.append("sessionClassType", "REGULARCLASS");
+        formData.append("course", assignData.course?.trim() || "");
+        formData.append("level", assignData.level?.trim() || "");
+        formData.append("createdBy", "System");
+        formData.append("updatedBy", teacherName);
+        formData.append("assignmentStatus", "Assigned");
+        formData.append("commends", adminComment?.trim() || "");
+        formData.append("score", "0");
 
-          // Debug: Log question file info before appending
-          console.log(
-            `[SAVE ASSIGNMENT] Question ${qIndex} uploadFile:`,
-            q.uploadFile
-          );
+        // Process each assignment
+        selectedAssignments.forEach((assignmentId, index) => {
+          const questions = assignmentMap[assignmentId] || [];
+          questions.forEach((q: AssignmentQuestion, qIndex) => {
+            const prefix = `assignments[${index}]`;
 
-          // ...existing code for assignmentTypeValue and fields...
-          let assignmentTypeValue;
-          try {
-            assignmentTypeValue = JSON.stringify({
-              type:
-                q.assignmentType?.toLowerCase() === "image"
-                  ? "image identification"
-                  : q.assignmentType?.toLowerCase() === "wordmatch"
-                  ? "word match"
-                  : q.assignmentType?.toLowerCase(),
-              name: q.assignmentType,
-            });
-          } catch (err) {
-            console.error("Error stringifying assignmentType:", err);
-            assignmentTypeValue = JSON.stringify({
-              type: "quiz",
-              name: "quiz",
-            });
-          }
+            // Debug: Log question file info before appending
+            console.log(
+              `[SAVE ASSIGNMENT] Question ${qIndex} uploadFile:`,
+              q.uploadFile
+            );
 
-          formData.append(`${prefix}[questionName]`, q.questionName || "");
-          formData.append(
-            `${prefix}[questionType]`,
-            q.chooseType
-              ? "choose"
-              : q.trueorfalseType
-              ? "truefalse"
-              : "noOption"
-          );
-          formData.append(
-            `${prefix}[typeofQuestion]`,
-            q.chooseType
-              ? "choose"
-              : q.trueorfalseType
-              ? "truefalse"
-              : "noOption"
-          );
-          formData.append(`${prefix}[assignmentName]`, q.assignmentName || "");
-          formData.append(`${prefix}[assignmentType]`, assignmentTypeValue);
-          formData.append(`${prefix}[chooseType]`, String(q.chooseType));
-          formData.append(
-            `${prefix}[trueorfalseType]`,
-            String(q.trueorfalseType)
-          );
-          formData.append(
-            `${prefix}[question]`,
-            q.question || q.questionName || ""
-          );
-          formData.append(
-            `${prefix}[hasOptions]`,
-            String(q.chooseType || q.trueorfalseType)
-          );
-
-          try {
-            const optionsValue = JSON.stringify({
-              optionOne: q.options?.[0] ?? "",
-              optionTwo: q.options?.[1] ?? "",
-              optionThree: q.options?.[2] ?? "",
-              optionFour: q.options?.[3] ?? "",
-            });
-            formData.append(`${prefix}[options]`, optionsValue);
-          } catch (err) {
-            console.error("Error stringifying options:", err);
-            formData.append(`${prefix}[options]`, JSON.stringify({}));
-          }
-
-          formData.append(`${prefix}[status]`, "active");
-          formData.append(`${prefix}[createdDate]`, new Date().toISOString());
-          formData.append(`${prefix}[updatedDate]`, new Date().toISOString());
-          formData.append(`${prefix}[level]`, q.levelName || "");
-          formData.append(`${prefix}[courses]`, q.courseName || "");
-          formData.append(
-            `${prefix}[assignedDate]`,
-            new Date(adminAssignedDate).toISOString()
-          );
-          formData.append(
-            `${prefix}[dueDate]`,
-            new Date(adminDueDate).toISOString()
-          );
-          formData.append(`${prefix}[answer]`, "");
-          formData.append(
-            `${prefix}[answerValidation]`,
-            q.answerValidation || ""
-          );
-          formData.append(`${prefix}[rating]`, "");
-
-          // Handle file uploads - critical change for backend compatibility
-          if (q.uploadFile) {
+            // ...existing code for assignmentTypeValue and fields...
+            let assignmentTypeValue;
             try {
-              if (q.uploadFile instanceof File) {
-                console.log(
-                  `[SAVE ASSIGNMENT] Appending File object for question ${qIndex}`
-                );
-                formData.append(
-                  `${prefix}[uploadFile]`,
-                  q.uploadFile,
-                  `assignment_${index}_${qIndex}.${q.uploadFile.name
-                    .split(".")
-                    .pop()}`
-                );
-              } else if (typeof q.uploadFile === "string") {
-                let base64Data = q.uploadFile;
-                let mimeType = "application/octet-stream";
-                if (q.uploadFile.startsWith("data:")) {
-                  mimeType =
-                    q.uploadFile.match(/^data:(.*?);/)?.[1] || mimeType;
-                  base64Data = q.uploadFile.split(",")[1];
-                } else {
-                  base64Data = q.uploadFile;
-                }
-                if (/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
+              assignmentTypeValue = JSON.stringify({
+                type:
+                  q.assignmentType?.toLowerCase() === "image"
+                    ? "image identification"
+                    : q.assignmentType?.toLowerCase() === "wordmatch"
+                    ? "word match"
+                    : q.assignmentType?.toLowerCase(),
+                name: q.assignmentType,
+              });
+            } catch (err) {
+              console.error("Error stringifying assignmentType:", err);
+              assignmentTypeValue = JSON.stringify({
+                type: "quiz",
+                name: "quiz",
+              });
+            }
+
+            formData.append(`${prefix}[questionName]`, q.questionName || "");
+            formData.append(
+              `${prefix}[questionType]`,
+              q.chooseType
+                ? "choose"
+                : q.trueorfalseType
+                ? "truefalse"
+                : "noOption"
+            );
+            formData.append(
+              `${prefix}[typeofQuestion]`,
+              q.chooseType
+                ? "choose"
+                : q.trueorfalseType
+                ? "truefalse"
+                : "noOption"
+            );
+            formData.append(
+              `${prefix}[assignmentName]`,
+              q.assignmentName || ""
+            );
+            formData.append(`${prefix}[assignmentType]`, assignmentTypeValue);
+            formData.append(`${prefix}[chooseType]`, String(q.chooseType));
+            formData.append(
+              `${prefix}[trueorfalseType]`,
+              String(q.trueorfalseType)
+            );
+            formData.append(
+              `${prefix}[question]`,
+              q.question || q.questionName || ""
+            );
+            formData.append(
+              `${prefix}[hasOptions]`,
+              String(q.chooseType || q.trueorfalseType)
+            );
+
+            try {
+              const optionsValue = JSON.stringify({
+                optionOne: q.options?.[0] ?? "",
+                optionTwo: q.options?.[1] ?? "",
+                optionThree: q.options?.[2] ?? "",
+                optionFour: q.options?.[3] ?? "",
+              });
+              formData.append(`${prefix}[options]`, optionsValue);
+            } catch (err) {
+              console.error("Error stringifying options:", err);
+              formData.append(`${prefix}[options]`, JSON.stringify({}));
+            }
+
+            formData.append(`${prefix}[status]`, "active");
+            formData.append(`${prefix}[createdDate]`, new Date().toISOString());
+            formData.append(`${prefix}[updatedDate]`, new Date().toISOString());
+            formData.append(`${prefix}[level]`, q.levelName || "");
+            formData.append(`${prefix}[courses]`, q.courseName || "");
+            formData.append(
+              `${prefix}[assignedDate]`,
+              new Date(adminAssignedDate).toISOString()
+            );
+            formData.append(
+              `${prefix}[dueDate]`,
+              new Date(adminDueDate).toISOString()
+            );
+            formData.append(`${prefix}[answer]`, "");
+            formData.append(
+              `${prefix}[answerValidation]`,
+              q.answerValidation || ""
+            );
+            formData.append(`${prefix}[rating]`, "");
+
+            // Handle file uploads - critical change for backend compatibility
+            if (q.uploadFile) {
+              try {
+                if (q.uploadFile instanceof File) {
                   console.log(
-                    `[SAVE ASSIGNMENT] Appending raw base64 string as Blob for question ${qIndex}`
+                    `[SAVE ASSIGNMENT] Appending File object for question ${qIndex}`
                   );
-                  const byteCharacters = atob(base64Data);
-                  const byteNumbers = new Array(byteCharacters.length);
-                  for (let j = 0; j < byteCharacters.length; j++) {
-                    byteNumbers[j] = byteCharacters.charCodeAt(j);
-                  }
-                  const byteArray = new Uint8Array(byteNumbers);
-                  const blob = new Blob([byteArray], { type: mimeType });
                   formData.append(
                     `${prefix}[uploadFile]`,
-                    blob,
-                    `assignment_${index}_${qIndex}.jpg`
+                    q.uploadFile,
+                    `assignment_${index}_${qIndex}.${q.uploadFile.name
+                      .split(".")
+                      .pop()}`
                   );
+                } else if (typeof q.uploadFile === "string") {
+                  let base64Data = q.uploadFile;
+                  let mimeType = "application/octet-stream";
+                  if (q.uploadFile.startsWith("data:")) {
+                    mimeType =
+                      q.uploadFile.match(/^data:(.*?);/)?.[1] || mimeType;
+                    base64Data = q.uploadFile.split(",")[1];
+                  } else {
+                    base64Data = q.uploadFile;
+                  }
+                  if (/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
+                    console.log(
+                      `[SAVE ASSIGNMENT] Appending raw base64 string as Blob for question ${qIndex}`
+                    );
+                    const byteCharacters = atob(base64Data);
+                    const byteNumbers = new Array(byteCharacters.length);
+                    for (let j = 0; j < byteCharacters.length; j++) {
+                      byteNumbers[j] = byteCharacters.charCodeAt(j);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    const blob = new Blob([byteArray], { type: mimeType });
+                    formData.append(
+                      `${prefix}[uploadFile]`,
+                      blob,
+                      `assignment_${index}_${qIndex}.jpg`
+                    );
+                  } else {
+                    console.warn(
+                      `[SAVE ASSIGNMENT] Unknown string file type for question ${qIndex}:`,
+                      q.uploadFile
+                    );
+                  }
                 } else {
                   console.warn(
-                    `[SAVE ASSIGNMENT] Unknown string file type for question ${qIndex}:`,
+                    `[SAVE ASSIGNMENT] Unknown file type for question ${qIndex}:`,
                     q.uploadFile
                   );
                 }
-              } else {
-                console.warn(
-                  `[SAVE ASSIGNMENT] Unknown file type for question ${qIndex}:`,
-                  q.uploadFile
-                );
+              } catch (err) {
+                console.error("Error processing file:", err);
+                // Continue without file if processing fails
               }
-            } catch (err) {
-              console.error("Error processing file:", err);
-              // Continue without file if processing fails
             }
-          }
 
-          // Handle audio file uploads for word match and other types
-          if (q.audioFile) {
-            try {
-              if (q.audioFile instanceof File) {
-                console.log(
-                  `[SAVE ASSIGNMENT] Appending audio File object for question ${qIndex}`
-                );
-                formData.append(
-                  `${prefix}[audioFile]`,
-                  q.audioFile,
-                  `assignment_${index}_${qIndex}.mp3`
-                );
-              } else if (typeof q.audioFile === "string") {
-                let base64Data = q.audioFile;
-                let mimeType = "audio/mpeg";
-                if (q.audioFile.startsWith("data:")) {
-                  mimeType = q.audioFile.match(/^data:(.*?);/)?.[1] || mimeType;
-                  base64Data = q.audioFile.split(",")[1];
-                } else {
-                  base64Data = q.audioFile;
-                }
-                if (/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
+            // Handle audio file uploads for word match and other types
+            if (q.audioFile) {
+              try {
+                if (q.audioFile instanceof File) {
                   console.log(
-                    `[SAVE ASSIGNMENT] Appending raw base64 audio string as Blob for question ${qIndex}`
+                    `[SAVE ASSIGNMENT] Appending audio File object for question ${qIndex}`
                   );
-                  const byteCharacters = atob(base64Data);
-                  const byteNumbers = new Array(byteCharacters.length);
-                  for (let j = 0; j < byteCharacters.length; j++) {
-                    byteNumbers[j] = byteCharacters.charCodeAt(j);
-                  }
-                  const byteArray = new Uint8Array(byteNumbers);
-                  const blob = new Blob([byteArray], { type: mimeType });
                   formData.append(
                     `${prefix}[audioFile]`,
-                    blob,
+                    q.audioFile,
                     `assignment_${index}_${qIndex}.mp3`
                   );
+                } else if (typeof q.audioFile === "string") {
+                  let base64Data = q.audioFile;
+                  let mimeType = "audio/mpeg";
+                  if (q.audioFile.startsWith("data:")) {
+                    mimeType =
+                      q.audioFile.match(/^data:(.*?);/)?.[1] || mimeType;
+                    base64Data = q.audioFile.split(",")[1];
+                  } else {
+                    base64Data = q.audioFile;
+                  }
+                  if (/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
+                    console.log(
+                      `[SAVE ASSIGNMENT] Appending raw base64 audio string as Blob for question ${qIndex}`
+                    );
+                    const byteCharacters = atob(base64Data);
+                    const byteNumbers = new Array(byteCharacters.length);
+                    for (let j = 0; j < byteCharacters.length; j++) {
+                      byteNumbers[j] = byteCharacters.charCodeAt(j);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    const blob = new Blob([byteArray], { type: mimeType });
+                    formData.append(
+                      `${prefix}[audioFile]`,
+                      blob,
+                      `assignment_${index}_${qIndex}.mp3`
+                    );
+                  } else {
+                    console.warn(
+                      `[SAVE ASSIGNMENT] Unknown string audio file type for question ${qIndex}:`,
+                      q.audioFile
+                    );
+                  }
                 } else {
                   console.warn(
-                    `[SAVE ASSIGNMENT] Unknown string audio file type for question ${qIndex}:`,
+                    `[SAVE ASSIGNMENT] Unknown audio file type for question ${qIndex}:`,
                     q.audioFile
                   );
                 }
-              } else {
-                console.warn(
-                  `[SAVE ASSIGNMENT] Unknown audio file type for question ${qIndex}:`,
-                  q.audioFile
-                );
+              } catch (err) {
+                console.error("Error processing audio file:", err);
+                // Continue without audio if processing fails
               }
-            } catch (err) {
-              console.error("Error processing audio file:", err);
-              // Continue without audio if processing fails
             }
-          }
 
-          // Debug: Log FormData after file append
-          if (q.uploadFile) {
-            const lastKey = `${prefix}[uploadFile]`;
-            const lastValue = formData.get(lastKey);
-            console.log(
-              `[SAVE ASSIGNMENT] FormData after file append for ${lastKey}:`,
-              lastValue
-            );
-          }
+            // Debug: Log FormData after file append
+            if (q.uploadFile) {
+              const lastKey = `${prefix}[uploadFile]`;
+              const lastValue = formData.get(lastKey);
+              console.log(
+                `[SAVE ASSIGNMENT] FormData after file append for ${lastKey}:`,
+                lastValue
+              );
+            }
+          });
         });
-      });
 
-      // Debug: Log FormData contents (remove in production)
-      formData.forEach((value, key) => {
-        console.log(
-          key,
-          value instanceof Blob ? `[Blob ${(value as Blob).type}]` : value
+        // Debug: Log FormData contents (remove in production)
+        formData.forEach((value, key) => {
+          console.log(
+            key,
+            value instanceof Blob ? `[Blob ${(value as Blob).type}]` : value
+          );
+        });
+
+        // Submit to API
+        const res = await axios.post(
+          "https://api.blackstoneinfomaticstech.com/assignments",
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
         );
-      });
-
-      // Submit to API
-      const res = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/assignments",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
+        if ([200, 201].includes(res.status)) {
+          setSucces(true);
+          handleAdminClose();
         }
-      );
-       if ([200, 201].includes(res.status)) {
-        setSucces(true);
-        handleAdminClose();
       }
-    }
-     
     } catch (err) {
       console.error("Submission error:", err);
       const error = err as AxiosError;
@@ -1166,8 +1176,8 @@ const GroupStudents = () => {
                 <tr>
                   {[
                     { label: "Assignment ID", width: "w-[15%]" },
-                    { label: "Student Name", width: "w-[12%]" },
-                    { label: "Group ID", width: "w-[15%]" },
+                    { label: "Student Name", width: "w-[17%]" },
+                    { label: "Group ID", width: "w-[17%]" },
                     { label: "Level", width: "w-[6%]" },
                     { label: "Course", width: "w-[10%]" },
                     { label: "Assignment Name", width: "w-[15%]" },
@@ -1224,23 +1234,27 @@ const GroupStudents = () => {
                                 <MdFormatListBulleted className="w-5 h-5 text-[#3D8FDE]" />
                                 View List ({students.length} students)
                               </button>
-                              {expandedGroupId === groupId && (
-                                <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 p-2 z-10 min-w-[100px]">
-                                  {students.map((student) => {
-                                    const studentData =
-                                      student.studentDetails?.student;
-                                    return (
-                                      <div
-                                        key={student.studentId}
-                                        className="text-[9px] py-1 border-b border-gray-200 dark:border-gray-600 last:border-b-0"
-                                      >
-                                        {studentData?.studentFirstName}{" "}
-                                        {studentData?.studentLastName}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              )}
+                               {expandedGroupId === groupId && (
+                  <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 p-2 z-10 min-w-[200px]">
+                    {students.map((student) => {
+                      const studentData = student.studentDetails?.student;
+                      return (
+                        <div
+                          key={student.studentId}
+                          className="text-[11px] py-2 px-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                          onClick={() => handleStudentClick(student.studentId)}
+                        >
+                          <div className="font-medium">
+                            {studentData?.studentFirstName} {studentData?.studentLastName}
+                          </div>
+                          <div className="text-gray-500 text-[10px]">
+                            ID: {student.studentId}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
                             </td>
                             <td className="px-3 py-2 break-words">
                               {groupId === "no-group" ? "-" : groupId}
@@ -1474,23 +1488,65 @@ const GroupStudents = () => {
                                     ({students.length} students)
                                   </span>
                                 </button>
-                                {expandedGroupId === groupId && (
-                                  <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 p-2 z-10 min-w-[150px]">
-                                    {students.map((student, idx) => {
-                                      const studentData =
-                                        student.studentDetails?.student;
-                                      return (
-                                        <div
-                                          key={student.studentId}
-                                          className="text-[11px] py-1 border-b border-gray-200 dark:border-gray-600 last:border-b-0"
-                                        >
-                                          {studentData?.studentFirstName}{" "}
-                                          {studentData?.studentLastName}
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                )}
+                              {expandedGroupId === groupId && (
+  <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 p-2 z-10 min-w-[300px]">
+    {students.map((student) => {
+      const studentData = student.studentDetails?.student;
+      const isSelected = viewingStudentId === student.studentId;
+      
+      return (
+        <div key={student.studentId}>
+          <div 
+            className={`text-[11px] py-2 px-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 ${
+              isSelected ? 'bg-blue-50 dark:bg-blue-900' : ''
+            }`}
+            onClick={() => setViewingStudentId(isSelected ? null : student.studentId)}
+          >
+            {studentData?.studentFirstName} {studentData?.studentLastName}
+          </div>
+          
+          {isSelected && (
+            <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <p className="font-semibold">Email:</p>
+                  <p>{studentData?.studentEmail || '-'}</p>
+                </div>
+                <div>
+                  <p className="font-semibold">Phone:</p>
+                  <p>{studentData?.studentPhone || '-'}</p>
+                </div>
+                <div>
+                  <p className="font-semibold">Country:</p>
+                  <p>{studentData?.studentCountry || '-'}</p>
+                </div>
+                <div>
+                  <p className="font-semibold">Level:</p>
+                  <p>{student.level || '-'}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="font-semibold">Course:</p>
+                  <p>{studentData?.learningInterest || '-'}</p>
+                </div>
+              </div>
+              <div className="mt-2 flex justify-end">
+                <button
+                  className="text-blue-600 dark:text-blue-400 text-xs hover:underline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewProfile(student.studentId, "");
+                  }}
+                >
+                  View Full Profile →
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    })}
+  </div>
+)}
                               </td>
                               <td className="px-3 py-2 break-words">
                                 {groupId === "no-group" ? "-" : groupId}
@@ -1638,15 +1694,19 @@ const GroupStudents = () => {
                                             <button
                                               className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                               onClick={() => {
-    // Get all student IDs in the group
-    const studentIds = students.map(s => s.studentId);
-    handleAssign(
-      studentIds,
-      firstStudent.studentDetails.student.studentFirstName,
-      firstStudent.studentDetails.student.learningInterest,
-      firstStudent.level || ""
-    );
-  }}
+                                                // Get all student IDs in the group
+                                                const studentIds = students.map(
+                                                  (s) => s.studentId
+                                                );
+                                                handleAssign(
+                                                  studentIds,
+                                                  firstStudent.studentDetails
+                                                    .student.studentFirstName,
+                                                  firstStudent.studentDetails
+                                                    .student.learningInterest,
+                                                  firstStudent.level || ""
+                                                );
+                                              }}
                                             >
                                               Assign
                                             </button>
