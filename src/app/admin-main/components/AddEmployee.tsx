@@ -120,12 +120,12 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
   };
 
   const formatTime = (value: string): string => {
-  if (!value) return "";
-  const [hour, minute] = value.split(":");
-  const h = parseInt(hour, 10);
-  const formattedHour = h.toString().padStart(2, "0");
-  return `${formattedHour}:${minute}`;
-};
+    if (!value) return "";
+    const [hour, minute] = value.split(":");
+    const h = parseInt(hour, 10);
+    const formattedHour = h.toString().padStart(2, "0");
+    return `${formattedHour}:${minute}`;
+  };
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -231,7 +231,7 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
 
       return (
         <div key={index} className={`flex flex-col ${field.full ? "col-span-2" : ""}`}>
-          <label className="text-xs font-medium text-gray-700 mb-1 block">
+          <label className="text-xs font-medium dark:text-[#FFFFFF] text-gray-700 mb-1 block">
             {field.label}
           </label>
           <div className="flex flex-wrap gap-3">
@@ -241,9 +241,9 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
                   type="checkbox"
                   checked={valueArray.includes(option)}
                   onChange={() => handleCheckboxChange(option)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-gray-300 dark:text-[#FFFFFF] text-blue-600 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
                 />
-                <span>{option}</span>
+                <span className="dark:text-gray-300">{option}</span>
               </label>
             ))}
           </div>
@@ -256,7 +256,7 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
 
     return (
       <div key={index} className={`flex flex-col ${field.full ? "col-span-2" : ""}`}>
-        <label className="text-xs font-medium text-gray-700 mb-1">
+        <label className="text-xs font-medium text-gray-700 dark:text-[#FFFFFF] mb-1">
           {field.label}
         </label>
         {field.type === "file" ? (
@@ -264,39 +264,54 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
             type="file"
             accept="image/*"
             onChange={handleFileChange}
-            className="w-full text-xs bg-gray-100 border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full text-xs bg-gray-100 dark:text-[#FFFFFF] dark:bg-[#5C5C5C] border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2"
           />
         ) : field.type === "time" ? (
           <input
             type="time"
             name={field.name}
             onChange={handleTimeChange}
-            className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-xs"
+            className="w-full bg-gray-100 dark:text-[#FFFFFF] border dark:bg-[#5C5C5C] border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-xs"
           />
-        ): field.type === "select" && field.options ? (
-  <select
-    name={field.name}
-    value={fieldValue as string}
-    onChange={handleChange}
-    className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-xs"
-  >
-    <option value="">Select {field.label}</option>
-    {field.options.map((option) => (
-      <option key={option} value={option}>
-        {option}
-      </option>
-    ))}
-  </select>
-) : (
-  <input
-    type={field.type}
-    name={field.name}
-    value={fieldValue as string | number}
-    onChange={handleChange}
-    className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-xs"
-  />
-)}
-
+        ) : field.type === "date" ? (
+          <input
+            type="date"
+            name={field.name}
+            value={fieldValue as string}
+            onChange={handleChange}
+            className="w-full bg-gray-100 dark:bg-[#5C5C5C] border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-xs text-gray-900 dark:text-gray-100 [color-scheme:light dark]"
+          />
+        ) : field.type === "select" && field.options ? (
+          <select
+            name={field.name}
+            value={fieldValue as string}
+            onChange={handleChange}
+            className="w-full bg-gray-100 border dark:bg-[#5C5C5C] border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-xs text-gray-900 dark:text-gray-100"
+          >
+            <option value="">Select {field.label}</option>
+            {field.options.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        ) : field.type === "textarea" ? (
+          <textarea
+            name={field.name}
+            value={fieldValue as string}
+            onChange={handleChange}
+            className="w-full bg-gray-100 dark:bg-[#5C5C5C] border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-xs text-gray-900 dark:text-gray-100"
+            rows={3}
+          />
+        ) : (
+          <input
+            type={field.type}
+            name={field.name}
+            value={fieldValue as string | number}
+            onChange={handleChange}
+            className="w-full bg-gray-100 dark:bg-[#5C5C5C] border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-xs text-gray-900 dark:text-gray-100"
+          />
+        )}
         {error && (
           <p className="text-red-500 text-xs mt-1">{error as string}</p>
         )}
@@ -396,13 +411,13 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center overflow-auto">
-      <div className="w-full max-w-4xl h-[90vh] bg-white rounded-2xl shadow-lg overflow-hidden m-4">
+      <div className="w-full max-w-4xl h-[90vh] bg-white dark:bg-[#1F1F1F] dark:text-[#FFFFFF] rounded-2xl shadow-lg overflow-hidden m-4">
         <div className="h-full overflow-y-auto p-6 space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Add Employee</h2>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -430,7 +445,7 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-gray-400 rounded-lg text-sm hover:bg-gray-100"
+                className="px-4 py-2 border border-gray-400 dark:border-gray-600 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
                 disabled={isSubmitting}
               >
                 Cancel
