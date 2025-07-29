@@ -1050,7 +1050,7 @@ const Page = () => {
                 <div className="h-[600px] overflow-y-auto scrollbar-none">
                   <div className="flex flex-row gap-4 sm:gap-4 md:gap-4 lg:gap-4 xl:gap-4  ">
                     {/* Teachers Records */}
-                    <div className="bg-[#F7FBFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[370px] md:max-w-[390px] lg:max-w-[620px] h-[280px]">
+                    <div className="bg-[#FFFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[370px] md:max-w-[390px] lg:max-w-[620px] h-[280px]">
                       <h2 className="text-[16px] font-semibold text-[#0B0F19] dark:text-white mb-4">
                         Teachers Record
                       </h2>
@@ -1104,7 +1104,7 @@ const Page = () => {
                     </div>
 
                     {/* Gender Chart (Teachers section) */}
-                    <div className="bg-[#F7FBFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[312px] h-[280px] flex flex-col items-center justify-between relative">
+                    <div className="bg-[#FFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[312px] h-[280px] flex flex-col items-center justify-between relative">
                       <h2 className="text-[16px] font-semibold text-[#0B0F19] dark:text-white self-start">
                         Gender
                       </h2>
@@ -1284,7 +1284,7 @@ const Page = () => {
                     </div>
 
                     {/* Countries Block */}
-                    <div className="bg-[#F7FBFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[312px] h-[280px] flex flex-col">
+                    <div className="bg-[#FFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[312px] h-[280px] flex flex-col">
                       <h2 className="text-[16px] font-semibold text-[#0B0F19] dark:text-white">
                         Countries
                       </h2>
