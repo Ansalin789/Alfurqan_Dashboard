@@ -524,10 +524,9 @@ const GroupStudents = () => {
     console.log("🔍 Final URL:", `/teacher/ui/addingnewassignment?${query}`);
     router.push(`/teacher/ui/addingnewassignment?${query}`);
   };
-   const handleStudentClick = (studentId: string) => {
+  const handleStudentClick = (studentId: string) => {
     router.push(`/teacher/ui/managestudentview?studentId=${studentId}`);
   };
-
 
   useEffect(() => {
     const metaData = localStorage.getItem("assignmentMeta");
@@ -964,7 +963,7 @@ const GroupStudents = () => {
 
         // Submit to API
         const res = await axios.post(
-          "https://api.blackstoneinfomaticstech.com/assignments",
+          "http://localhost:5001/assignments",
           formData,
           {
             headers: {
@@ -1234,27 +1233,31 @@ const GroupStudents = () => {
                                 <MdFormatListBulleted className="w-5 h-5 text-[#3D8FDE]" />
                                 View List ({students.length} students)
                               </button>
-                               {expandedGroupId === groupId && (
-                  <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 p-2 z-10 min-w-[200px]">
-                    {students.map((student) => {
-                      const studentData = student.studentDetails?.student;
-                      return (
-                        <div
-                          key={student.studentId}
-                          className="text-[11px] py-2 px-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-                          onClick={() => handleStudentClick(student.studentId)}
-                        >
-                          <div className="font-medium">
-                            {studentData?.studentFirstName} {studentData?.studentLastName}
-                          </div>
-                          <div className="text-gray-500 text-[10px]">
-                            ID: {student.studentId}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                              {expandedGroupId === groupId && (
+                                <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 p-2 z-10 min-w-[200px]">
+                                  {students.map((student) => {
+                                    const studentData =
+                                      student.studentDetails?.student;
+                                    return (
+                                      <div
+                                        key={student.studentId}
+                                        className="text-[11px] py-2 px-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                                        onClick={() =>
+                                          handleStudentClick(student.studentId)
+                                        }
+                                      >
+                                        <div className="font-medium">
+                                          {studentData?.studentFirstName}{" "}
+                                          {studentData?.studentLastName}
+                                        </div>
+                                        <div className="text-gray-500 text-[10px]">
+                                          ID: {student.studentId}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
                             </td>
                             <td className="px-3 py-2 break-words">
                               {groupId === "no-group" ? "-" : groupId}
@@ -1488,65 +1491,101 @@ const GroupStudents = () => {
                                     ({students.length} students)
                                   </span>
                                 </button>
-                              {expandedGroupId === groupId && (
-  <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 p-2 z-10 min-w-[300px]">
-    {students.map((student) => {
-      const studentData = student.studentDetails?.student;
-      const isSelected = viewingStudentId === student.studentId;
-      
-      return (
-        <div key={student.studentId}>
-          <div 
-            className={`text-[11px] py-2 px-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 ${
-              isSelected ? 'bg-blue-50 dark:bg-blue-900' : ''
-            }`}
-            onClick={() => setViewingStudentId(isSelected ? null : student.studentId)}
-          >
-            {studentData?.studentFirstName} {studentData?.studentLastName}
-          </div>
-          
-          {isSelected && (
-            <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs">
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <p className="font-semibold">Email:</p>
-                  <p>{studentData?.studentEmail || '-'}</p>
-                </div>
-                <div>
-                  <p className="font-semibold">Phone:</p>
-                  <p>{studentData?.studentPhone || '-'}</p>
-                </div>
-                <div>
-                  <p className="font-semibold">Country:</p>
-                  <p>{studentData?.studentCountry || '-'}</p>
-                </div>
-                <div>
-                  <p className="font-semibold">Level:</p>
-                  <p>{student.level || '-'}</p>
-                </div>
-                <div className="col-span-2">
-                  <p className="font-semibold">Course:</p>
-                  <p>{studentData?.learningInterest || '-'}</p>
-                </div>
-              </div>
-              <div className="mt-2 flex justify-end">
-                <button
-                  className="text-blue-600 dark:text-blue-400 text-xs hover:underline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewProfile(student.studentId, "");
-                  }}
-                >
-                  View Full Profile →
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    })}
-  </div>
-)}
+                                {expandedGroupId === groupId && (
+                                  <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 p-2 z-10 min-w-[300px]">
+                                    {students.map((student) => {
+                                      const studentData =
+                                        student.studentDetails?.student;
+                                      const isSelected =
+                                        viewingStudentId === student.studentId;
+
+                                      return (
+                                        <div key={student.studentId}>
+                                          <div
+                                            className={`text-[11px] py-2 px-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 ${
+                                              isSelected
+                                                ? "bg-blue-50 dark:bg-blue-900"
+                                                : ""
+                                            }`}
+                                            onClick={() =>
+                                              setViewingStudentId(
+                                                isSelected
+                                                  ? null
+                                                  : student.studentId
+                                              )
+                                            }
+                                          >
+                                            {studentData?.studentFirstName}{" "}
+                                            {studentData?.studentLastName}
+                                          </div>
+
+                                          {isSelected && (
+                                            <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs">
+                                              <div className="grid grid-cols-2 gap-2">
+                                                <div>
+                                                  <p className="font-semibold">
+                                                    Email:
+                                                  </p>
+                                                  <p>
+                                                    {studentData?.studentEmail ||
+                                                      "-"}
+                                                  </p>
+                                                </div>
+                                                <div>
+                                                  <p className="font-semibold">
+                                                    Phone:
+                                                  </p>
+                                                  <p>
+                                                    {studentData?.studentPhone ||
+                                                      "-"}
+                                                  </p>
+                                                </div>
+                                                <div>
+                                                  <p className="font-semibold">
+                                                    Country:
+                                                  </p>
+                                                  <p>
+                                                    {studentData?.studentCountry ||
+                                                      "-"}
+                                                  </p>
+                                                </div>
+                                                <div>
+                                                  <p className="font-semibold">
+                                                    Level:
+                                                  </p>
+                                                  <p>{student.level || "-"}</p>
+                                                </div>
+                                                <div className="col-span-2">
+                                                  <p className="font-semibold">
+                                                    Course:
+                                                  </p>
+                                                  <p>
+                                                    {studentData?.learningInterest ||
+                                                      "-"}
+                                                  </p>
+                                                </div>
+                                              </div>
+                                              <div className="mt-2 flex justify-end">
+                                                <button
+                                                  className="text-blue-600 dark:text-blue-400 text-xs hover:underline"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleViewProfile(
+                                                      student.studentId,
+                                                      ""
+                                                    );
+                                                  }}
+                                                >
+                                                  View Full Profile →
+                                                </button>
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
                               </td>
                               <td className="px-3 py-2 break-words">
                                 {groupId === "no-group" ? "-" : groupId}
@@ -1587,14 +1626,21 @@ const GroupStudents = () => {
                               </td>
                               <td className="px-4 py-2 text-center relative">
                                 <button
-                                  className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
-                                  onClick={() =>
-                                    setOpenDropdownId(
-                                      openDropdownId === modalId
-                                        ? null
-                                        : modalId
-                                    )
-                                  }
+                                  className={`text-gray-500 dark:text-[#ffff] ${
+                                    status === "Assigned"
+                                      ? "opacity-50 cursor-not-allowed"
+                                      : "hover:text-gray-700"
+                                  }`}
+                                  disabled={status === "Assigned"}
+                                  onClick={() => {
+                                    if (status !== "Assigned") {
+                                      setOpenDropdownId(
+                                        openDropdownId === modalId
+                                          ? null
+                                          : modalId
+                                      );
+                                    }
+                                  }}
                                 >
                                   <BsThreeDotsVertical />
                                 </button>
@@ -1720,10 +1766,7 @@ const GroupStudents = () => {
                                             </button>
                                           </>
                                         );
-                                      } else if (
-                                        status === "Not Completed" ||
-                                        status === "Assigned"
-                                      ) {
+                                      } else if (status === "Not Completed") {
                                         return (
                                           <>
                                             <button
@@ -1737,6 +1780,31 @@ const GroupStudents = () => {
                                               }
                                             >
                                               View Profile
+                                            </button>
+                                            <button
+                                              className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                              onClick={() =>
+                                                setOpenDropdownId(null)
+                                              }
+                                            >
+                                              Cancel
+                                            </button>
+                                          </>
+                                        );
+                                      } else if (status === "Not Assigned") {
+                                        return (
+                                          <>
+                                            <button
+                                              className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
+                                              onClick={() =>
+                                                handleViewProfile(
+                                                  firstStudent.studentId,
+                                                  assignmentItem.assignmentId ||
+                                                    ""
+                                                )
+                                              }
+                                            >
+                                              Assign
                                             </button>
                                             <button
                                               className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
@@ -1766,7 +1834,7 @@ const GroupStudents = () => {
                                                     ?.teacherId ?? ""
                                                 );
                                                 console.log(
-                                                  "🔍 GroupStudents - Setting values for assignment student:",
+                                                  "🔍 GroupStudents - Setting values for student:",
                                                   firstStudent.studentId
                                                 );
                                                 console.log(
@@ -1821,14 +1889,7 @@ const GroupStudents = () => {
                                         );
                                       } else {
                                         return (
-                                          <button
-                                            className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                                            onClick={() =>
-                                              setOpenDropdownId(null)
-                                            }
-                                          >
-                                            Cancel
-                                          </button>
+                                          <></>
                                         );
                                       }
                                     })()}
