@@ -187,6 +187,18 @@ interface WageData {
   updatedBy: string;
 }
 
+interface WagesResponse {
+  employeeId: string;
+  totalhours: number;
+  totalearnings: number;
+  monthlyData: Array<{
+    year: number;
+    month: number;
+    totalhours: number;
+  }>;
+  wageRecords: WageData[];
+}
+
 interface MonthlyData {
   year: number;
   month: number; // 1 to 12
@@ -269,6 +281,10 @@ const Teacher = () => {
   const [users, setUsers] = useState<User>();
   const [scheduledclass, setScheduledClass] = useState<ScheduledClass[]>([]);
   const [wages, setWages] = useState<WageData[]>([]);
+  const [wagesResponse, setWagesResponse] = useState<WagesResponse | null>(null);
+  const [editingWageId, setEditingWageId] = useState<string | null>(null);
+  const [editingRate, setEditingRate] = useState<string>("");
+  const [editingDuration, setEditingDuration] = useState<string>("");
   const [students, setStudents] = useState<StudentData[]>([]);
   const [teacherCounts, setTeacherCounts] = useState<TeacherCounts>({
     totalclasses: 0,
@@ -374,6 +390,63 @@ const Teacher = () => {
     setFilters({});
   };
 
+  const handleEditRate = (wageId: string, currentRate: string) => {
+    setEditingWageId(wageId);
+    setEditingRate(currentRate);
+  };
+
+  const handleSaveRate = async (wageId: string) => {
+    try {
+      const token = localStorage.getItem("AdminAuthToken");
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
+
+      // Find the wage record to update
+      const wageToUpdate = wages.find(wage => wage._id === wageId);
+      if (!wageToUpdate) return;
+
+      const updatedWage = {
+        ...wageToUpdate,
+        classType: {
+          ...wageToUpdate.classType,
+          rate: editingRate
+        }
+      };
+
+      // Update the wage record via API
+      const response = await axios.put(
+        `http://localhost:5001/empwages/${wageId}`,
+        updatedWage,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Update local state
+      setWages(prevWages => 
+        prevWages.map(wage => 
+          wage._id === wageId ? updatedWage : wage
+        )
+      );
+
+      // Reset editing state
+      setEditingWageId(null);
+      setEditingRate("");
+    } catch (error) {
+      console.error("Error updating wage rate:", error);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingWageId(null);
+    setEditingRate("");
+  };
+
   useEffect(() => {
     const token =
       typeof window !== "undefined"
@@ -467,8 +540,11 @@ const Teacher = () => {
   const fetchWages = async (token: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/empwages/${employeeId}`,
+        `http://localhost:5001/empwages`,
         {
+          params: {
+            employeeId: employeeId
+          },
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -476,9 +552,9 @@ const Teacher = () => {
         }
       );
 
-      const data = response.data;
-      const wagesArray = Array.isArray(data) ? data : [data];
-      setWages(wagesArray);
+      const data: WagesResponse = response.data;
+      setWagesResponse(data);
+      setWages(data.wageRecords || []);
     } catch (error) {
       console.error("Error fetching wages:", error);
     }
@@ -1509,7 +1585,7 @@ const Teacher = () => {
 
             {activeTab === "Wages" && (
               <div className="space-y-6">
-                <div className="rounded-xl overflow-hidden">
+              <div className="rounded-xl overflow-hidden">
                 <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
                       <input
                         type="text"
@@ -1557,6 +1633,7 @@ const Teacher = () => {
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Duration
                           </th>
+                        
                         </tr>
                       </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
@@ -1574,21 +1651,40 @@ const Teacher = () => {
                                 {item.classType?.className || "-"}
                               </td>
                               <td className="p-3">
-                                {item.classType?.rate || "-"}
+                                <input
+                                  type="text"
+                                  className="w-16 px-2 py-1 text-xs  dark:bg-[#2C2C2C] dark:text-white text-center"
+                                  value={item.classType?.rate || ""}
+                                  onChange={e => {
+                                    const newRate = e.target.value;
+                                    setWages(prevWages => prevWages.map(wage => wage._id === item._id ? {
+                                      ...wage,
+                                      classType: {
+                                        ...wage.classType,
+                                        rate: newRate
+                                      }
+                                    } : wage));
+                                  }}
+                                />
                               </td>
                               <td className="p-3">
                                 {item.classType?.currency || "-"}
                               </td>
                               <td className="p-3">
-                                {item.classType?.hoursMins
-                                  ? `${item.classType.hoursMins} mins`
-                                  : "-"}
+                                {item.classType?.className === "TRAILCLASS" ? (
+                                  <span className="text-xs dark:text-white">1 day</span>
+                                ) : (
+                                  <select className="w-20 px-2 py-1 text-xs dark:bg-[#2C2C2C] dark:text-white">
+                                    <option value="30 min">30 min</option>
+                                    <option value="60 min">60 min</option>
+                                  </select>
+                                )}
                               </td>
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td colSpan={4} className="p-4 text-center">
+                            <td colSpan={5} className="p-4 text-center">
                               No data available
                             </td>
                           </tr>
