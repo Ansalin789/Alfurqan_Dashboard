@@ -200,11 +200,13 @@ const GroupStudents = () => {
     studentFirstName: string;
     course: string;
     level: string;
+    groupId?: string;
   }>({
     studentId: "",
     studentFirstName: "",
     course: "",
     level: "",
+    groupId: "",
   });
   const [openGroupId, setOpenGroupId] = useState<string | null>(null);
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
@@ -706,276 +708,255 @@ const GroupStudents = () => {
       const token = localStorage.getItem("TeacherAuthToken") || "";
       const teacherName = localStorage.getItem("TeacherPortalName") || "";
       const teacherId = localStorage.getItem("TeacherPortalId") || "";
-      // Split the studentIds back into an array
+
+      // Prepare students list - ensure we have valid student names
       const studentIds = assignData.studentId.split(",");
-      for (const studentId of studentIds) {
-        const formData = new FormData();
+      const studentNames = assignData.studentFirstName.split(",");
 
-        // Add shared fields that will be merged with each assignment
-        formData.append("studentId", assignData.studentId);
-        formData.append("studentName", assignData.studentFirstName);
-        formData.append("title", adminTitle.trim());
-        formData.append("assignedTeacher", teacherName);
-        formData.append("assignedTeacherId", teacherId);
-        formData.append("sessionClassType", "REGULARCLASS");
-        formData.append("course", assignData.course?.trim() || "");
-        formData.append("level", assignData.level?.trim() || "");
-        formData.append("createdBy", "System");
-        formData.append("updatedBy", teacherName);
-        formData.append("assignmentStatus", "Assigned");
-        formData.append("commends", adminComment?.trim() || "");
-        formData.append("score", "0");
+      // Create students array with fallback for missing names
+      const students = studentIds.map((id, index) => {
+        const studentId = id.trim();
+        let studentName = studentNames[index]?.trim() || "";
 
-        // Process each assignment
-        selectedAssignments.forEach((assignmentId, index) => {
-          const questions = assignmentMap[assignmentId] || [];
-          questions.forEach((q: AssignmentQuestion, qIndex) => {
-            const prefix = `assignments[${index}]`;
+        // If name is empty, try to get it from localStorage or use a default
+        if (!studentName) {
+          studentName =
+            localStorage.getItem(`studentName_${studentId}`) || "Student";
+          console.warn(
+            `Missing student name for ID ${studentId}, using fallback: ${studentName}`
+          );
+        }
 
-            // Debug: Log question file info before appending
-            console.log(
-              `[SAVE ASSIGNMENT] Question ${qIndex} uploadFile:`,
-              q.uploadFile
+        return {
+          studentId,
+          studentName,
+        };
+      });
+
+      // Validate we have at least one student
+      if (students.length === 0) {
+        setFailedMessage("No valid students found");
+        setFailed(true);
+        return;
+      }
+
+      const formData = new FormData();
+ 
+const groupAssignmentId = `GRP-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+      // Add shared fields
+      formData.append("students", JSON.stringify(students));
+      formData.append("sessionClassType", "GROUPCLASS");
+      formData.append("assignedTeacher", teacherName);
+      formData.append("assignedTeacherId", teacherId);
+      formData.append("course", assignData.course?.trim() || "");
+      formData.append("level", assignData.level?.trim() || "");
+      formData.append("createdBy", "System");
+      formData.append("updatedBy", teacherName);
+      formData.append("commends", adminComment?.trim() || "");
+      formData.append("groupId", assignData.groupId || "");
+formData.append("groupAssignmentId", groupAssignmentId);
+
+      // Process each assignment
+      selectedAssignments.forEach((assignmentId, index) => {
+        const questions = assignmentMap[assignmentId] || [];
+        questions.forEach((q: AssignmentQuestion, qIndex) => {
+          const prefix = `assignments[${index}]`;
+
+          // Assignment type handling
+          let assignmentTypeValue;
+          try {
+            assignmentTypeValue = JSON.stringify({
+              type:
+                q.assignmentType?.toLowerCase() === "image"
+                  ? "image identification"
+                  : q.assignmentType?.toLowerCase() === "wordmatch"
+                  ? "word match"
+                  : q.assignmentType?.toLowerCase() || "quiz",
+              name: q.assignmentType || "quiz",
+            });
+          } catch (err) {
+            console.error("Error stringifying assignmentType:", err);
+            assignmentTypeValue = JSON.stringify({
+              type: "quiz",
+              name: "quiz",
+            });
+          }
+
+          // Core assignment fields
+          formData.append(
+            `${prefix}[assignmentName]`,
+            q.assignmentName || "Unnamed Assignment"
+          );
+          formData.append(`${prefix}[assignmentType]`, assignmentTypeValue);
+          formData.append(`${prefix}[questionName]`, q.questionName || "");
+          formData.append(
+            `${prefix}[questionType]`,
+            q.chooseType
+              ? "choose"
+              : q.trueorfalseType
+              ? "truefalse"
+              : "noOption"
+          );
+          formData.append(`${prefix}[title]`, adminTitle.trim());
+          formData.append(`${prefix}[question]`, q.question || "");
+          formData.append(
+            `${prefix}[hasOptions]`,
+            String(q.chooseType || q.trueorfalseType)
+          );
+          formData.append(
+            `${prefix}[assignedDate]`,
+            new Date(adminAssignedDate).toISOString()
+          );
+
+          // Options handling
+          try {
+            const optionsValue = JSON.stringify({
+              optionOne: q.options?.[0] ?? "",
+              optionTwo: q.options?.[1] ?? "",
+              optionThree: q.options?.[2] ?? "",
+              optionFour: q.options?.[3] ?? "",
+            });
+            formData.append(`${prefix}[options]`, optionsValue);
+          } catch (err) {
+            console.error("Error stringifying options:", err);
+            formData.append(
+              `${prefix}[options]`,
+              JSON.stringify({
+                optionOne: "",
+                optionTwo: "",
+                optionThree: "",
+                optionFour: "",
+              })
             );
+          }
 
-            // ...existing code for assignmentTypeValue and fields...
-            let assignmentTypeValue;
+          // Dates and status fields
+          const currentDate = new Date().toISOString();
+          formData.append(`${prefix}[createdDate]`, currentDate);
+          formData.append(
+            `${prefix}[dueDate]`,
+            new Date(adminDueDate).toISOString()
+          );
+          formData.append(`${prefix}[updatedDate]`, currentDate);
+          formData.append(`${prefix}[status]`, "Active");
+          formData.append(`${prefix}[assignmentStatus]`, "Assigned");
+          formData.append(`${prefix}[answer]`, "");
+          formData.append(
+            `${prefix}[answerValidation]`,
+            q.answerValidation || ""
+          );
+          formData.append(
+            `${prefix}[chooseType]`,
+            String(q.chooseType || false)
+          );
+          formData.append(
+            `${prefix}[trueorfalseType]`,
+            String(q.trueorfalseType || false)
+          );
+
+          // File handling
+          if (q.uploadFile) {
             try {
-              assignmentTypeValue = JSON.stringify({
-                type:
-                  q.assignmentType?.toLowerCase() === "image"
-                    ? "image identification"
-                    : q.assignmentType?.toLowerCase() === "wordmatch"
-                    ? "word match"
-                    : q.assignmentType?.toLowerCase(),
-                name: q.assignmentType,
-              });
-            } catch (err) {
-              console.error("Error stringifying assignmentType:", err);
-              assignmentTypeValue = JSON.stringify({
-                type: "quiz",
-                name: "quiz",
-              });
-            }
-
-            formData.append(`${prefix}[questionName]`, q.questionName || "");
-            formData.append(
-              `${prefix}[questionType]`,
-              q.chooseType
-                ? "choose"
-                : q.trueorfalseType
-                ? "truefalse"
-                : "noOption"
-            );
-            formData.append(
-              `${prefix}[typeofQuestion]`,
-              q.chooseType
-                ? "choose"
-                : q.trueorfalseType
-                ? "truefalse"
-                : "noOption"
-            );
-            formData.append(
-              `${prefix}[assignmentName]`,
-              q.assignmentName || ""
-            );
-            formData.append(`${prefix}[assignmentType]`, assignmentTypeValue);
-            formData.append(`${prefix}[chooseType]`, String(q.chooseType));
-            formData.append(
-              `${prefix}[trueorfalseType]`,
-              String(q.trueorfalseType)
-            );
-            formData.append(
-              `${prefix}[question]`,
-              q.question || q.questionName || ""
-            );
-            formData.append(
-              `${prefix}[hasOptions]`,
-              String(q.chooseType || q.trueorfalseType)
-            );
-
-            try {
-              const optionsValue = JSON.stringify({
-                optionOne: q.options?.[0] ?? "",
-                optionTwo: q.options?.[1] ?? "",
-                optionThree: q.options?.[2] ?? "",
-                optionFour: q.options?.[3] ?? "",
-              });
-              formData.append(`${prefix}[options]`, optionsValue);
-            } catch (err) {
-              console.error("Error stringifying options:", err);
-              formData.append(`${prefix}[options]`, JSON.stringify({}));
-            }
-
-            formData.append(`${prefix}[status]`, "active");
-            formData.append(`${prefix}[createdDate]`, new Date().toISOString());
-            formData.append(`${prefix}[updatedDate]`, new Date().toISOString());
-            formData.append(`${prefix}[level]`, q.levelName || "");
-            formData.append(`${prefix}[courses]`, q.courseName || "");
-            formData.append(
-              `${prefix}[assignedDate]`,
-              new Date(adminAssignedDate).toISOString()
-            );
-            formData.append(
-              `${prefix}[dueDate]`,
-              new Date(adminDueDate).toISOString()
-            );
-            formData.append(`${prefix}[answer]`, "");
-            formData.append(
-              `${prefix}[answerValidation]`,
-              q.answerValidation || ""
-            );
-            formData.append(`${prefix}[rating]`, "");
-
-            // Handle file uploads - critical change for backend compatibility
-            if (q.uploadFile) {
-              try {
-                if (q.uploadFile instanceof File) {
-                  console.log(
-                    `[SAVE ASSIGNMENT] Appending File object for question ${qIndex}`
-                  );
+              if (q.uploadFile instanceof File) {
+                formData.append(
+                  `${prefix}[uploadFile]`,
+                  q.uploadFile,
+                  `assignment_${index}_${qIndex}.${q.uploadFile.name
+                    .split(".")
+                    .pop()}`
+                );
+              } else if (typeof q.uploadFile === "string") {
+                // Handle base64 string
+                let base64Data = q.uploadFile;
+                let mimeType = "application/octet-stream";
+                if (q.uploadFile.startsWith("data:")) {
+                  mimeType =
+                    q.uploadFile.match(/^data:(.*?);/)?.[1] || mimeType;
+                  base64Data = q.uploadFile.split(",")[1];
+                }
+                if (/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
+                  const byteCharacters = atob(base64Data);
+                  const byteNumbers = new Array(byteCharacters.length);
+                  for (let j = 0; j < byteCharacters.length; j++) {
+                    byteNumbers[j] = byteCharacters.charCodeAt(j);
+                  }
+                  const byteArray = new Uint8Array(byteNumbers);
+                  const blob = new Blob([byteArray], { type: mimeType });
                   formData.append(
                     `${prefix}[uploadFile]`,
-                    q.uploadFile,
-                    `assignment_${index}_${qIndex}.${q.uploadFile.name
-                      .split(".")
-                      .pop()}`
-                  );
-                } else if (typeof q.uploadFile === "string") {
-                  let base64Data = q.uploadFile;
-                  let mimeType = "application/octet-stream";
-                  if (q.uploadFile.startsWith("data:")) {
-                    mimeType =
-                      q.uploadFile.match(/^data:(.*?);/)?.[1] || mimeType;
-                    base64Data = q.uploadFile.split(",")[1];
-                  } else {
-                    base64Data = q.uploadFile;
-                  }
-                  if (/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
-                    console.log(
-                      `[SAVE ASSIGNMENT] Appending raw base64 string as Blob for question ${qIndex}`
-                    );
-                    const byteCharacters = atob(base64Data);
-                    const byteNumbers = new Array(byteCharacters.length);
-                    for (let j = 0; j < byteCharacters.length; j++) {
-                      byteNumbers[j] = byteCharacters.charCodeAt(j);
-                    }
-                    const byteArray = new Uint8Array(byteNumbers);
-                    const blob = new Blob([byteArray], { type: mimeType });
-                    formData.append(
-                      `${prefix}[uploadFile]`,
-                      blob,
-                      `assignment_${index}_${qIndex}.jpg`
-                    );
-                  } else {
-                    console.warn(
-                      `[SAVE ASSIGNMENT] Unknown string file type for question ${qIndex}:`,
-                      q.uploadFile
-                    );
-                  }
-                } else {
-                  console.warn(
-                    `[SAVE ASSIGNMENT] Unknown file type for question ${qIndex}:`,
-                    q.uploadFile
+                    blob,
+                    `assignment_${index}_${qIndex}.jpg`
                   );
                 }
-              } catch (err) {
-                console.error("Error processing file:", err);
-                // Continue without file if processing fails
               }
+            } catch (err) {
+              console.error("Error processing file:", err);
             }
+          }
 
-            // Handle audio file uploads for word match and other types
-            if (q.audioFile) {
-              try {
-                if (q.audioFile instanceof File) {
-                  console.log(
-                    `[SAVE ASSIGNMENT] Appending audio File object for question ${qIndex}`
-                  );
+          // Audio file handling
+          if (q.audioFile) {
+            try {
+              if (q.audioFile instanceof File) {
+                formData.append(
+                  `${prefix}[audioFile]`,
+                  q.audioFile,
+                  `assignment_${index}_${qIndex}.mp3`
+                );
+              } else if (typeof q.audioFile === "string") {
+                // Handle base64 audio string
+                let base64Data = q.audioFile;
+                let mimeType = "audio/mpeg";
+                if (q.audioFile.startsWith("data:")) {
+                  mimeType = q.audioFile.match(/^data:(.*?);/)?.[1] || mimeType;
+                  base64Data = q.audioFile.split(",")[1];
+                }
+                if (/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
+                  const byteCharacters = atob(base64Data);
+                  const byteNumbers = new Array(byteCharacters.length);
+                  for (let j = 0; j < byteCharacters.length; j++) {
+                    byteNumbers[j] = byteCharacters.charCodeAt(j);
+                  }
+                  const byteArray = new Uint8Array(byteNumbers);
+                  const blob = new Blob([byteArray], { type: mimeType });
                   formData.append(
                     `${prefix}[audioFile]`,
-                    q.audioFile,
+                    blob,
                     `assignment_${index}_${qIndex}.mp3`
                   );
-                } else if (typeof q.audioFile === "string") {
-                  let base64Data = q.audioFile;
-                  let mimeType = "audio/mpeg";
-                  if (q.audioFile.startsWith("data:")) {
-                    mimeType =
-                      q.audioFile.match(/^data:(.*?);/)?.[1] || mimeType;
-                    base64Data = q.audioFile.split(",")[1];
-                  } else {
-                    base64Data = q.audioFile;
-                  }
-                  if (/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
-                    console.log(
-                      `[SAVE ASSIGNMENT] Appending raw base64 audio string as Blob for question ${qIndex}`
-                    );
-                    const byteCharacters = atob(base64Data);
-                    const byteNumbers = new Array(byteCharacters.length);
-                    for (let j = 0; j < byteCharacters.length; j++) {
-                      byteNumbers[j] = byteCharacters.charCodeAt(j);
-                    }
-                    const byteArray = new Uint8Array(byteNumbers);
-                    const blob = new Blob([byteArray], { type: mimeType });
-                    formData.append(
-                      `${prefix}[audioFile]`,
-                      blob,
-                      `assignment_${index}_${qIndex}.mp3`
-                    );
-                  } else {
-                    console.warn(
-                      `[SAVE ASSIGNMENT] Unknown string audio file type for question ${qIndex}:`,
-                      q.audioFile
-                    );
-                  }
-                } else {
-                  console.warn(
-                    `[SAVE ASSIGNMENT] Unknown audio file type for question ${qIndex}:`,
-                    q.audioFile
-                  );
                 }
-              } catch (err) {
-                console.error("Error processing audio file:", err);
-                // Continue without audio if processing fails
               }
+            } catch (err) {
+              console.error("Error processing audio file:", err);
             }
-
-            // Debug: Log FormData after file append
-            if (q.uploadFile) {
-              const lastKey = `${prefix}[uploadFile]`;
-              const lastValue = formData.get(lastKey);
-              console.log(
-                `[SAVE ASSIGNMENT] FormData after file append for ${lastKey}:`,
-                lastValue
-              );
-            }
-          });
-        });
-
-        // Debug: Log FormData contents (remove in production)
-        formData.forEach((value, key) => {
-          console.log(
-            key,
-            value instanceof Blob ? `[Blob ${(value as Blob).type}]` : value
-          );
-        });
-
-        // Submit to API
-        const res = await axios.post(
-          "http://localhost:5001/assignments",
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
-            },
           }
+        });
+      });
+
+      // Debug: Log FormData before sending
+      console.log("FormData contents:");
+      formData.forEach((value, key) => {
+        console.log(
+          key,
+          value instanceof Blob ? `[Blob ${value.type}]` : value
         );
-        if ([200, 201].includes(res.status)) {
-          setSucces(true);
-          handleAdminClose();
+      });
+
+      // Submit to API
+      const res = await axios.post(
+        "http://localhost:5001/groupAssignments",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         }
+      );
+
+      if ([200, 201].includes(res.status)) {
+        setSucces(true);
+        handleAdminClose();
       }
     } catch (err) {
       console.error("Submission error:", err);
@@ -1003,7 +984,6 @@ const GroupStudents = () => {
       setFailed(true);
     }
   };
-
   return (
     <div className="md:p-0 mx-auto w-full">
       <div className="flex flex-col h-full w-full justify-between">
@@ -1888,9 +1868,7 @@ const GroupStudents = () => {
                                           </>
                                         );
                                       } else {
-                                        return (
-                                          <></>
-                                        );
+                                        return <></>;
                                       }
                                     })()}
                                   </div>
@@ -2007,11 +1985,12 @@ const GroupStudents = () => {
                 transition={{ duration: 0.3 }}
                 className="bg-white dark:bg-[#1f1f1f] text-gray-900 dark:text-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-gray-200 dark:border-gray-700"
               >
-                <h2 className="text-2xl font-bold mb-6 text-center">
-                  Assign to {assignData.studentFirstName}
-                </h2>
+             <h2 className="text-2xl font-bold mb-6 text-center">
+  Assign to Students
+</h2>
 
-                <AnimatePresence mode="wait">
+
+                <AnimatePresence mode="wait">  
                   {step === 1 && (
                     <motion.div
                       key="step1"
