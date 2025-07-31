@@ -1066,8 +1066,8 @@ const NewAssignment = () => {
                 key={idx}
                 className="mb-6 p-4 border rounded-lg dark:border-[#484f5b]"
               >
+                {/* Common Question Display */}
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_120px] gap-4">
-                  {/* Question Section */}
                   <div>
                     <div className="flex items-center mb-2">
                       <span className="w-6 text-sm text-[#010E30] dark:text-[#fff]">
@@ -1085,7 +1085,6 @@ const NewAssignment = () => {
                     />
                   </div>
 
-                  {/* Assignment Type */}
                   <div>
                     <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
                       Type
@@ -1099,45 +1098,9 @@ const NewAssignment = () => {
                   </div>
                 </div>
 
-                {/* Image Display */}
-                {item.type === "image identification" && item.imageURL && (
-                  <div className="mt-4">
-                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                      Uploaded Image
-                    </label>
-                    <div className="flex items-center gap-3 bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
-                      <img
-                        src={item.imageURL}
-                        alt={item.imageName || "Question image"}
-                        className="max-h-32 object-contain "
-                      />
-                      <span className="text-xs break-all dark:text-[#fff] dark:bg-[#343434]">
-                        {item.imageName}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {item.type === "word match" && item.audioURL && (
-                  <div className="mt-4">
-                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                      Uploaded Audio
-                    </label>
-                    <div className="flex items-center gap-3 mt-1 bg-gray-100 dark:bg-[#343434] rounded-lg px-4 py-2 shadow">
-                      <audio
-                        controls
-                        src={item.audioURL}
-                        className="flex-1 min-w-0"
-                      />
-                      <span className="text-xs break-all dark:text-[#fff]">
-                        {item.audioName}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {(item.type === "image identification" ||
-                  item.type === "word match") &&
+                {/* Quiz - Choose Type */}
+                {item.type === "quiz" &&
+                  item.questionType === "choose" &&
                   item.options && (
                     <div className="mt-4">
                       <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
@@ -1174,6 +1137,116 @@ const NewAssignment = () => {
                     </div>
                   )}
 
+                {/* Quiz - True/False Type */}
+                {item.type === "quiz" && item.questionType === "truefalse" && (
+                  <div className="mt-4">
+                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                      Correct Answer
+                    </label>
+                    <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
+                      <div className="flex items-center">
+                        <span className="dark:text-[#fff] flex-grow">
+                          {item.answerValidation === "true" ? "True" : "False"}
+                        </span>
+                        <span className="ml-2 text-green-600">✓ Correct</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Image Identification */}
+                {item.type === "image identification" && item.options && (
+                  <div className="mt-4">
+                    {item.imageURL && (
+                      <>
+                        <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                          Uploaded Image
+                        </label>
+                        <div className="flex items-center gap-3 bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
+                          <img
+                            src={item.imageURL}
+                            alt={item.imageName || "Question image"}
+                            className="max-h-32 object-contain"
+                          />
+                          <span className="text-xs break-all dark:text-[#fff]">
+                            {item.imageName}
+                          </span>
+                        </div>
+                      </>
+                    )}
+
+                    <label className="block text-[13px] font-light text-[#010E30] mt-4 mb-2 dark:text-[#fff]">
+                      Options
+                    </label>
+                    <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
+                      {Object.entries({
+                        a: item.options.optionOne,
+                        b: item.options.optionTwo,
+                        c: item.options.optionThree,
+                        d: item.options.optionFour,
+                      }).map(
+                        ([key, value]) =>
+                          value && (
+                            <div
+                              key={key}
+                              className="mb-2 last:mb-0 flex items-center"
+                            >
+                              <span className="font-medium dark:text-[#fff] mr-2">
+                                {key.toUpperCase()}:
+                              </span>
+                              <span className="dark:text-[#fff] flex-grow">
+                                {value}
+                              </span>
+                              {item.answerValidation === value && (
+                                <span className="ml-2 text-green-600">
+                                  ✓ Correct
+                                </span>
+                              )}
+                            </div>
+                          )
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Word Match */}
+                {item.type === "word match" && item.options && (
+                  <div className="mt-4">
+                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                      Options
+                    </label>
+                    <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
+                      {Object.entries({
+                        a: item.options.optionOne,
+                        b: item.options.optionTwo,
+                        c: item.options.optionThree,
+                        d: item.options.optionFour,
+                      }).map(
+                        ([key, value]) =>
+                          value && (
+                            <div
+                              key={key}
+                              className="mb-2 last:mb-0 flex items-center"
+                            >
+                              <span className="font-medium dark:text-[#fff] mr-2">
+                                {key.toUpperCase()}:
+                              </span>
+                              <span className="dark:text-[#fff] flex-grow">
+                                {value}
+                              </span>
+                              {item.answerValidation === value && (
+                                <span className="ml-2 text-green-600">
+                                  ✓ Correct
+                                </span>
+                              )}
+                            </div>
+                          )
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Reading/Writing */}
                 {(item.type === "reading" || item.type === "writing") && (
                   <div className="mt-4">
                     <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
@@ -1185,16 +1258,24 @@ const NewAssignment = () => {
                       <p className="whitespace-pre-wrap dark:text-[#fff]">
                         {item.answerValidation}
                       </p>
+                      {item.answerValidation && (
+                        <div className="mt-2 text-right">
+                          <span className="text-green-600">
+                            ✓ Answer Provided
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
-                {/* Audio Display */}
+
+                {/* Audio Display (for all types that might have audio) */}
                 {item.audioURL && (
                   <div className="mt-4">
                     <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                      Uploaded Audio
+                      Audio Content
                     </label>
-                    <div className="flex items-center gap-3 mt-1 bg-gray-100 dark:bg-[#343434] rounded-lg px-4 py-2 shadow dark:text-[#fff]">
+                    <div className="flex items-center gap-3 bg-gray-100 dark:bg-[#343434] rounded-lg px-4 py-2">
                       <audio
                         controls
                         src={item.audioURL}

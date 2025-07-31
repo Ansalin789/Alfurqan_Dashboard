@@ -178,6 +178,7 @@ const GroupStudents = () => {
   const [assignedTeacher, setAssignedTeacher] = useState("");
   const [assignedTeacherId, setAssignedTeacherId] = useState("");
   const [course, setCourse] = useState("");
+  const [groupClassId, setGroupClassId] = useState("");
   const [level, setLevel] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredGroups, setFilteredGroups] = useState<
@@ -502,30 +503,40 @@ const GroupStudents = () => {
   const handleClick = (courseValue?: string, levelValue?: string) => {
     const finalCourse = courseValue || course;
     const finalLevel = levelValue || level;
+  // Split the comma-separated strings back into arrays
+  const studentIds = studentId.split(",");
+  const studentNames = studentName.split(",");
 
+    // Create an array of student objects
+  const studentsData = studentIds.map((id, index) => ({
+    studentId: id.trim(),
+    studentName: studentNames[index]?.trim() || "Student"
+  }));
     console.log("🔍 Debug - Values being passed:");
     console.log("course:", finalCourse);
     console.log("level:", finalLevel);
     console.log("studentId:", studentId);
     console.log("studentName:", studentName);
 
-    const query = new URLSearchParams({
-      title,
-      assignedDate,
-      dueDate,
-      comment,
-      studentId,
-      studentName,
-      sessionClassType,
-      assignedTeacher,
-      assignedTeacherId,
-      course: finalCourse,
-      level: finalLevel,
-    }).toString();
+   
+  const query = new URLSearchParams({
+    title,
+    assignedDate,
+    dueDate,
+    comment,
+    sessionClassType,
+    assignedTeacher,
+    assignedTeacherId,
+    course: finalCourse,
+    level: finalLevel,
+    groupClassId: groupClassId || "", // Include groupClassId
+    students: JSON.stringify(studentsData) // Pass students as JSON
+  }).toString();
 
-    console.log("🔍 Final URL:", `/teacher/ui/addingnewassignment?${query}`);
-    router.push(`/teacher/ui/addingnewassignment?${query}`);
-  };
+  console.log("🔍 Final URL:", `/teacher/ui/addinggroupnewassignment?${query}`);
+  router.push(`/teacher/ui/addinggroupnewassignment?${query}`);
+};
+
   const handleStudentClick = (studentId: string) => {
     router.push(`/teacher/ui/managestudentview?studentId=${studentId}`);
   };
@@ -741,8 +752,10 @@ const GroupStudents = () => {
       }
 
       const formData = new FormData();
- 
-const groupAssignmentId = `GRP-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      const groupAssignmentId = `GRP-${Date.now()}-${Math.floor(
+        1000 + Math.random() * 9000
+      )}`;
       // Add shared fields
       formData.append("students", JSON.stringify(students));
       formData.append("sessionClassType", "GROUPCLASS");
@@ -754,7 +767,7 @@ const groupAssignmentId = `GRP-${Date.now()}-${Math.floor(1000 + Math.random() *
       formData.append("updatedBy", teacherName);
       formData.append("commends", adminComment?.trim() || "");
       formData.append("groupId", assignData.groupId || "");
-formData.append("groupAssignmentId", groupAssignmentId);
+      formData.append("groupAssignmentId", groupAssignmentId);
 
       // Process each assignment
       selectedAssignments.forEach((assignmentId, index) => {
@@ -1511,15 +1524,7 @@ formData.append("groupAssignmentId", groupAssignmentId);
                                                       "-"}
                                                   </p>
                                                 </div>
-                                                <div>
-                                                  <p className="font-semibold">
-                                                    Phone:
-                                                  </p>
-                                                  <p>
-                                                    {studentData?.studentPhone ||
-                                                      "-"}
-                                                  </p>
-                                                </div>
+
                                                 <div>
                                                   <p className="font-semibold">
                                                     Country:
@@ -1556,7 +1561,7 @@ formData.append("groupAssignmentId", groupAssignmentId);
                                                     );
                                                   }}
                                                 >
-                                                  View Full Profile →
+                                                  View Full Profile
                                                 </button>
                                               </div>
                                             </div>
@@ -1647,76 +1652,33 @@ formData.append("groupAssignmentId", groupAssignmentId);
                                               View Profile
                                             </button>
                                             <button
-                                              className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                                              onClick={() => {
-                                                setStudentId(
-                                                  firstStudent.studentId
-                                                );
-                                                setStudentName(
-                                                  `${
-                                                    studentInfo?.studentFirstName ??
-                                                    ""
-                                                  } ${
-                                                    studentInfo?.studentLastName ??
-                                                    ""
-                                                  }`
-                                                );
-                                                setSessionClassType(
-                                                  studentDetails?.classType ??
-                                                    "GROUPCLASS"
-                                                );
-                                                setAssignedTeacher(
-                                                  studentDetails?.teacher
-                                                    ?.teacherName ?? ""
-                                                );
-                                                setAssignedTeacherId(
-                                                  studentDetails?.teacher
-                                                    ?.teacherId ?? ""
-                                                );
-                                                console.log(
-                                                  "🔍 GroupStudents - Setting values for student:",
-                                                  firstStudent.studentId
-                                                );
-                                                console.log(
-                                                  "🔍 students array:",
-                                                  students
-                                                );
-                                                console.log(
-                                                  "🔍 students[0]:",
-                                                  students[0]
-                                                );
-                                                console.log(
-                                                  "🔍 students[0]?.level:",
-                                                  students[0]?.level
-                                                );
-                                                console.log(
-                                                  "🔍 studentDetails?.student?.learningInterest:",
-                                                  studentDetails?.student
-                                                    ?.learningInterest
-                                                );
+  className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+  onClick={() => {
+    // Get all student IDs in the group
+    const studentIds = students.map((s) => s.studentId);
+    const studentNames = students.map(
+      (s) => `${s.studentDetails?.student?.studentFirstName || ""} ${
+        s.studentDetails?.student?.studentLastName || ""
+      }`
+    );
 
-                                                const courseValue =
-                                                  studentDetails?.student
-                                                    ?.learningInterest || "";
-                                                const levelValue =
-                                                  students[0]?.level || "";
+    setStudentId(studentIds.join(","));
+    setStudentName(studentNames.join(","));
+    setSessionClassType(studentDetails?.classType ?? "GROUPCLASS");
+    setAssignedTeacher(studentDetails?.teacher?.teacherName ?? "");
+    setAssignedTeacherId(studentDetails?.teacher?.teacherId ?? "");
+    setGroupClassId(groupId); // Set the groupClassId from current row
 
-                                                console.log(
-                                                  "🔍 Final courseValue:",
-                                                  courseValue
-                                                );
-                                                console.log(
-                                                  "🔍 Final levelValue:",
-                                                  levelValue
-                                                );
+    const courseValue = studentDetails?.student?.learningInterest || "";
+    const levelValue = students[0]?.level || "";
 
-                                                setCourse(courseValue);
-                                                setLevel(levelValue);
-                                                setOpenModalId(modalId);
-                                              }}
-                                            >
-                                              New Assignment
-                                            </button>
+    setCourse(courseValue);
+    setLevel(levelValue);
+    setOpenModalId(modalId);
+  }}
+>
+  New Assignment
+</button>
                                             <button
                                               className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                               onClick={() => {
@@ -1985,12 +1947,11 @@ formData.append("groupAssignmentId", groupAssignmentId);
                 transition={{ duration: 0.3 }}
                 className="bg-white dark:bg-[#1f1f1f] text-gray-900 dark:text-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-gray-200 dark:border-gray-700"
               >
-             <h2 className="text-2xl font-bold mb-6 text-center">
-  Assign to Students
-</h2>
+                <h2 className="text-2xl font-bold mb-6 text-center">
+                  Assign to Students
+                </h2>
 
-
-                <AnimatePresence mode="wait">  
+                <AnimatePresence mode="wait">
                   {step === 1 && (
                     <motion.div
                       key="step1"
