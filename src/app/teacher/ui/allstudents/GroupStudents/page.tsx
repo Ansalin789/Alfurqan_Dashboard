@@ -503,39 +503,41 @@ const GroupStudents = () => {
   const handleClick = (courseValue?: string, levelValue?: string) => {
     const finalCourse = courseValue || course;
     const finalLevel = levelValue || level;
-  // Split the comma-separated strings back into arrays
-  const studentIds = studentId.split(",");
-  const studentNames = studentName.split(",");
+    // Split the comma-separated strings back into arrays
+    const studentIds = studentId.split(",");
+    const studentNames = studentName.split(",");
 
     // Create an array of student objects
-  const studentsData = studentIds.map((id, index) => ({
-    studentId: id.trim(),
-    studentName: studentNames[index]?.trim() || "Student"
-  }));
+    const studentsData = studentIds.map((id, index) => ({
+      studentId: id.trim(),
+      studentName: studentNames[index]?.trim() || "Student",
+    }));
     console.log("🔍 Debug - Values being passed:");
     console.log("course:", finalCourse);
     console.log("level:", finalLevel);
     console.log("studentId:", studentId);
     console.log("studentName:", studentName);
 
-   
-  const query = new URLSearchParams({
-    title,
-    assignedDate,
-    dueDate,
-    comment,
-    sessionClassType,
-    assignedTeacher,
-    assignedTeacherId,
-    course: finalCourse,
-    level: finalLevel,
-    groupClassId: groupClassId || "", // Include groupClassId
-    students: JSON.stringify(studentsData) // Pass students as JSON
-  }).toString();
+    const query = new URLSearchParams({
+      title,
+      assignedDate,
+      dueDate,
+      comment,
+      sessionClassType,
+      assignedTeacher,
+      assignedTeacherId,
+      course: finalCourse,
+      level: finalLevel,
+      groupClassId: groupClassId || "", // Include groupClassId
+      students: JSON.stringify(studentsData), // Pass students as JSON
+    }).toString();
 
-  console.log("🔍 Final URL:", `/teacher/ui/addinggroupnewassignment?${query}`);
-  router.push(`/teacher/ui/addinggroupnewassignment?${query}`);
-};
+    console.log(
+      "🔍 Final URL:",
+      `/teacher/ui/addinggroupnewassignment?${query}`
+    );
+    router.push(`/teacher/ui/addinggroupnewassignment?${query}`);
+  };
 
   const handleStudentClick = (studentId: string) => {
     router.push(`/teacher/ui/managestudentview?studentId=${studentId}`);
@@ -1167,14 +1169,14 @@ const GroupStudents = () => {
               <thead className="text-[12px] bg-[#4C6993] text-white">
                 <tr>
                   {[
-                    { label: "Assignment ID", width: "w-[15%]" },
-                    { label: "Student Name", width: "w-[17%]" },
+                    { label: "Assignment ID", width: "w-[18%]" },
+                    { label: "Student Name", width: "w-[15%]" },
                     { label: "Group ID", width: "w-[17%]" },
-                    { label: "Level", width: "w-[6%]" },
+                    { label: "Level", width: "w-[8%]" },
                     { label: "Course", width: "w-[10%]" },
-                    { label: "Assignment Name", width: "w-[15%]" },
-                    { label: "Assign Date", width: "w-[11%]" },
-                    { label: "Due Date", width: "w-[11%]" },
+                    { label: "Assignment Name", width: "w-[13%]" },
+                    { label: "Assign Date", width: "w-[12%]" },
+                    { label: "Due Date", width: "w-[12%]" },
                     { label: "Status", width: "w-[12%]" },
                     { label: "Action", width: "w-[8%]" },
                   ].map((header) => (
@@ -1513,55 +1515,66 @@ const GroupStudents = () => {
                                           </div>
 
                                           {isSelected && (
-                                            <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs">
-                                              <div className="grid grid-cols-2 gap-2">
+                                            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm text-xs w-full max-w-sm">
+                                              <div className="grid grid-cols-2 gap-y-3 gap-x-4">
+                                                {/* Email */}
                                                 <div>
-                                                  <p className="font-semibold">
+                                                  <p className="text-gray-500 font-medium">
                                                     Email:
                                                   </p>
-                                                  <p>
+                                                  <p className="text-gray-900 dark:text-gray-100 break-words">
                                                     {studentData?.studentEmail ||
                                                       "-"}
                                                   </p>
                                                 </div>
 
+                                                {/* Country */}
                                                 <div>
-                                                  <p className="font-semibold">
+                                                  <p className="text-gray-500 font-medium">
                                                     Country:
                                                   </p>
-                                                  <p>
+                                                  <p className="text-gray-900 dark:text-gray-100">
                                                     {studentData?.studentCountry ||
                                                       "-"}
                                                   </p>
                                                 </div>
+
+                                                {/* Level */}
                                                 <div>
-                                                  <p className="font-semibold">
+                                                  <p className="text-gray-500 font-medium">
                                                     Level:
                                                   </p>
-                                                  <p>{student.level || "-"}</p>
+                                                  <p className="text-gray-900 dark:text-gray-100">
+                                                    {student?.level || "-"}
+                                                  </p>
                                                 </div>
-                                                <div className="col-span-2">
-                                                  <p className="font-semibold">
+
+                                                {/* Course */}
+                                                <div>
+                                                  <p className="text-gray-500 font-medium">
                                                     Course:
                                                   </p>
-                                                  <p>
+                                                  <p className="text-gray-900 dark:text-gray-100">
                                                     {studentData?.learningInterest ||
                                                       "-"}
                                                   </p>
                                                 </div>
                                               </div>
-                                              <div className="mt-2 flex justify-end">
+                                              <br />
+                                              {/* View Profile Button */}
+                                              <div className=" text-right">
                                                 <button
-                                                  className="text-blue-600 dark:text-blue-400 text-xs hover:underline"
+                                                  className="text-[#576CBC] dark:text-[#576CBC] border border-[#576CBC] text-xs bg-gray-100 px-2 rounded-md py-2 font-semibold hover:underline"
                                                   onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleViewProfile(
                                                       student.studentId,
-                                                      ""
+                                                      assignmentItem.assignmentId ||
+                                                        ""
                                                     );
                                                   }}
                                                 >
-                                                  View Full Profile
+                                                  View Profile
                                                 </button>
                                               </div>
                                             </div>
@@ -1602,7 +1615,11 @@ const GroupStudents = () => {
                                 }`}
                               >
                                 <span
-                                  className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px]`}
+                                  className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle(
+                                    assignmentItem?.assignmentStatus ||
+                                      assignmentItem?.status ||
+                                      "Not Assigned"
+                                  )}`}
                                 >
                                   {assignmentItem?.assignmentStatus ||
                                     assignmentItem?.status ||
@@ -1652,33 +1669,61 @@ const GroupStudents = () => {
                                               View Profile
                                             </button>
                                             <button
-  className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-  onClick={() => {
-    // Get all student IDs in the group
-    const studentIds = students.map((s) => s.studentId);
-    const studentNames = students.map(
-      (s) => `${s.studentDetails?.student?.studentFirstName || ""} ${
-        s.studentDetails?.student?.studentLastName || ""
-      }`
-    );
+                                              className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                              onClick={() => {
+                                                // Get all student IDs in the group
+                                                const studentIds = students.map(
+                                                  (s) => s.studentId
+                                                );
+                                                const studentNames =
+                                                  students.map(
+                                                    (s) =>
+                                                      `${
+                                                        s.studentDetails
+                                                          ?.student
+                                                          ?.studentFirstName ||
+                                                        ""
+                                                      } ${
+                                                        s.studentDetails
+                                                          ?.student
+                                                          ?.studentLastName ||
+                                                        ""
+                                                      }`
+                                                  );
 
-    setStudentId(studentIds.join(","));
-    setStudentName(studentNames.join(","));
-    setSessionClassType(studentDetails?.classType ?? "GROUPCLASS");
-    setAssignedTeacher(studentDetails?.teacher?.teacherName ?? "");
-    setAssignedTeacherId(studentDetails?.teacher?.teacherId ?? "");
-    setGroupClassId(groupId); // Set the groupClassId from current row
+                                                setStudentId(
+                                                  studentIds.join(",")
+                                                );
+                                                setStudentName(
+                                                  studentNames.join(",")
+                                                );
+                                                setSessionClassType(
+                                                  studentDetails?.classType ??
+                                                    "GROUPCLASS"
+                                                );
+                                                setAssignedTeacher(
+                                                  studentDetails?.teacher
+                                                    ?.teacherName ?? ""
+                                                );
+                                                setAssignedTeacherId(
+                                                  studentDetails?.teacher
+                                                    ?.teacherId ?? ""
+                                                );
+                                                setGroupClassId(groupId); // Set the groupClassId from current row
 
-    const courseValue = studentDetails?.student?.learningInterest || "";
-    const levelValue = students[0]?.level || "";
+                                                const courseValue =
+                                                  studentDetails?.student
+                                                    ?.learningInterest || "";
+                                                const levelValue =
+                                                  students[0]?.level || "";
 
-    setCourse(courseValue);
-    setLevel(levelValue);
-    setOpenModalId(modalId);
-  }}
->
-  New Assignment
-</button>
+                                                setCourse(courseValue);
+                                                setLevel(levelValue);
+                                                setOpenModalId(modalId);
+                                              }}
+                                            >
+                                              New Assignment
+                                            </button>
                                             <button
                                               className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                               onClick={() => {

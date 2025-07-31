@@ -5,13 +5,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { MdTune } from "react-icons/md";
 import { MoreVertical, Search } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import Pagination from "@/components/Pagination";
 import Modal from "react-modal";
 import AcademicHeader from "@/app/Academic-coach/components/academicHeader";
 import { PieChart, Pie, Cell } from "recharts";
 import TeacherHeader from "../../components/TeacherHeader";
 import axios from "axios";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import Pagination from "@/components/Pagination";
 
 export interface AssignmentItem {
   assignmentId?: string;
@@ -387,6 +387,8 @@ const ManageStudentView = () => {
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [openModalId, setOpenModalId] = useState<string | null>(null);
+  // Calculate total pages for pagination
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -614,10 +616,6 @@ useEffect(() => {
     }
   }, []);
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = paginatedData.slice(indexOfFirstItem, indexOfLastItem);
-
   // Optional: reset page to 1 when tab changes
   useEffect(() => {
     setCurrentPage(1);
@@ -756,7 +754,12 @@ useEffect(() => {
       : isFilterActive
       ? filteredAssignments
       : selectedStudentAssignments;
+const totalPages = Math.ceil(tableData.length / itemsPerPage);
 
+// Get current items for display
+const indexOfLastItem = currentPage * itemsPerPage;
+const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+const currentItems = tableData.slice(indexOfFirstItem, indexOfLastItem);
   return (
     <BaseLayout>
       <div>
@@ -911,8 +914,8 @@ useEffect(() => {
 
           {/* Table */}
           <div className="relative">
-            <table className="table-fixed w-full">
-              <thead className="text-[12px] bg-[#4C6993] text-white">
+            <table className="table-fixed w-full border border-gray-300 dark:border-gray-600">
+              <thead className="text-[12px] bg-[#4C6993] text-white scrollbar-none">
                 <tr>
                   {[
                     "Assignment ID",
@@ -939,7 +942,7 @@ useEffect(() => {
             >
               <table className="table-fixed w-full">
                 <tbody>
-                  {tableData.map((assignmentItem, index) => {
+                    {currentItems.map((assignmentItem, index) => {
                     const statusValue = assignmentItem.assignmentStatus?.toLowerCase().trim();
                     return (
                       <tr
@@ -965,21 +968,15 @@ useEffect(() => {
                         <td className="px-3 py-3 break-words text-[12px]">
                           {formatDate(assignmentItem.dueDate)}
                         </td>
-                        <td className="px-3 py-2 break-words text-[12px]">
-                          <span
-                            className={`py-1 px-3 rounded-md text-[9px] min-w-[60px] inline-block
-                              ${
-                                statusValue === "completed"
-                                  ? "bg-green-100 text-green-700"
-                                  : statusValue === "pending"
-                                  ? "bg-orange-100 text-orange-700"
-                                  : "bg-gray-100 text-gray-600"
-                              }
-                            `}
-                          >
-                            {assignmentItem.assignmentStatus || "Not Assigned"}
-                          </span>
-                        </td>
+                       <td className="px-3 py-2 break-words text-[12px]">
+  <span
+    className={`py-1 px-3 rounded-md text-[9px] min-w-[60px] inline-block ${
+      getStatusStyle(assignmentItem.assignmentStatus)
+    }`}
+  >
+    {assignmentItem.assignmentStatus || "Not Assigned"}
+  </span>
+</td>
                        <td className="px-4 py-2 text-left relative">
   <button
     className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
@@ -1022,14 +1019,13 @@ useEffect(() => {
               </table>
             </div>
           </div>
-
         </div>
 
-        {/* <Pagination
+        <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}
-        /> */}
+        />
       </div>
 
       {/*filterform  */}

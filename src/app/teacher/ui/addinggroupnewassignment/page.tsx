@@ -709,7 +709,7 @@ if (studentsParam) {
       if (response.status === 201 || response.status === 200) {
         setSuccess(true);
         setSuccessMessage("Assignment submitted successfully!");
-        setTimeout(() => false, 3000);
+        setTimeout(() => {window.location.href="/teacher/ui/assignment"}, 3000);
       } else {
         const errorData = await response.json(); // Try to get error message from response
         setFailed(true);
