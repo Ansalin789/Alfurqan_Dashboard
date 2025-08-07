@@ -70,7 +70,7 @@ export default function Sidebar4() {
   };
 
   return (
-    <div className="sidebar__wrapper bg-[#012A4A]  h-full overflow-y-auto" style={{ width: "240px" }}>
+    <div className="sidebar__wrapper   h-full overflow-y-auto" style={{ width: "240px" }}>
       <aside className="sidebar bg-[#012A4A] dark:bg-[#1D1D1D] p-4 h-full flex flex-col" style={{ width: "240px" }}>
         
         {/* Logo */}
