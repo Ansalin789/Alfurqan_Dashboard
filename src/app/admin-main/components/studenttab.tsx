@@ -176,7 +176,7 @@ interface AssignmentType {
   updatedDate?: string;
   updatedBy?: string;
   level?: string;
-  courses?: string;
+  course?: string;
   assignedDate?: string;
   dueDate?: string;
   answer?: string;
@@ -205,6 +205,7 @@ interface PaymentDetail {
   _id: string;
   userId: string;
   userName: string;
+  course:string;
   paymentStatus: string;
   paymentAmount: string;
   paymentResponse: PaymentResponse;
@@ -604,7 +605,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
 
   // Get unique values for filter options
   const getUniqueCourses = () => {
-    const values = assignments.map(assignment => assignment.courses).filter(Boolean) as string[];
+    const values = assignments.map(assignment => assignment.course).filter(Boolean) as string[];
     return Array.from(new Set(values));
   };
   
@@ -687,7 +688,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
         return false;
       }
       // Course filter
-      if (filters.course && assignment.courses !== filters.course) {
+      if (filters.course && assignment.course !== filters.course) {
         return false;
       }
       // Level filter
@@ -793,7 +794,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
   };
 
   // Fetch payment history
-  useEffect(() => {
+useEffect(() => {
     const fetchPaymentHistory = async () => {
       try {
         const token = localStorage.getItem("AdminAuthToken");
@@ -801,9 +802,8 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
           console.error("Missing token or student ID");
           return;
         }
-        // console.log("Fetching payment history for userId:", userId);
 
-        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/student/paymenthistory?userId=${studentId}`, {
+        const response = await axios.get(`http://localhost:5001/student/paymenthistory?userId=${studentId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -812,6 +812,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
 
         console.log("Payment history API response:", response.data);
 
+        // Backend returns { totalCount, paymentDetails }
         if (response.data.paymentDetails) {
           setPaymentHistory(response.data.paymentDetails);
         }
@@ -901,7 +902,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
     return (
       (assignment.assignmentId && assignment.assignmentId.toLowerCase().includes(searchTerm)) || // Match Assignment ID
       (assignment.assignedTeacher && assignment.assignedTeacher.toLowerCase().includes(searchTerm)) || // Match Assigned By
-      (assignment.courses && assignment.courses.toLowerCase().includes(searchTerm)) || // Match Course
+      (assignment.course && assignment.course.toLowerCase().includes(searchTerm)) || // Match Course
       (assignment.level && assignment.level.toLowerCase().includes(searchTerm)) || // Match Level
       (assignment.title && assignment.title.toLowerCase().includes(searchTerm)) || // Match Assignment Name
       (assignment.sessionClassType && assignment.sessionClassType.toLowerCase().includes(searchTerm)) // Match Class Type
@@ -1430,9 +1431,13 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
                   {filteredPaymentData.length > 0 ? (
                     filteredPaymentData.map((payment, index) => (
                       <tr key={payment._id} className={`text-left dark:text-white ${index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"}`}>
-                        <td className="p-3">{payment.paymentResponse.id}</td>
-                        <td className="p-3">{new Date(payment.paymentDate).toLocaleDateString()}</td>
-                        <td className="p-3">{payment.userName}</td>
+                        <td className="p-3">{payment._id}</td>
+                        <td className="p-3">{new Date(payment.paymentDate).toLocaleDateString("en-GB",{
+                          day:'numeric',
+                          month:'short',
+                          year:'numeric',
+                        })}</td>
+                        <td className="p-3">{payment.course}</td>
                         <td className="p-3">{payment.paymentAmount}</td>
                         <td className="p-3">
                           <span className={`inline-flex items-center justify-center w-16 h-6 px-3 py-1 rounded-md ${payment.paymentStatus === "succeeded" ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] dark:text-[#377E36] text-[#377E36]" : "bg-[#ececfd] text-[#002c5f] dark:bg-[#2e333c] dark:text-[#fff]"}`}>
@@ -1634,7 +1639,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
                       <tr key={assignment._id || index} className={`text-left dark:text-white ${index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"}`}>
                         <td className="p-3">{assignment.assignmentId}</td>
                         <td className="p-3">{assignment.assignedTeacher}</td>
-                        <td className="p-3">{assignment.courses}</td>
+                        <td className="p-3">{assignment.course}</td>
                         <td className="p-3">{assignment.level}</td>
                         <td className="p-3">{assignment.title}</td>
                         <td className="p-3">{assignment.sessionClassType}</td>
