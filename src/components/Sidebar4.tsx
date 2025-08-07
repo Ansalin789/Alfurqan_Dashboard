@@ -70,9 +70,8 @@ export default function Sidebar4() {
   };
 
   return (
-    <div className="sidebar__wrapper   h-full overflow-y-auto" style={{ width: "240px" }}>
-      <aside className="sidebar bg-[#012A4A] dark:bg-[#1D1D1D] p-4 h-full flex flex-col" style={{ width: "240px" }}>
-        
+    <div className="sidebar__wrapper h-full overflow-y-auto" style={{ width: "240px" }}>
+    <aside className="sidebar !bg-[#012A4A] dark:!bg-[#1D1D1D] p-4 h-full flex flex-col" style={{ width: "240px", backgroundColor: "#012A4A !important" }}>   
         {/* Logo */}
         <div className='flex items-center gap-3 mt-5 mb-6 px-2'>
           <Image src="/assets/images/alfwhite.png" width={40} height={40} alt='logo' />
@@ -96,22 +95,28 @@ export default function Sidebar4() {
                 {/* Icon */}
                 <span className="text-[18px] w-5 flex justify-center items-center">
                   {typeof Icon === 'string' ? (
-                    <Image
-                      src={Icon}
-                      width={20}
-                      height={20}
-                      alt={name}
-                      className={`dark:invert ${isActive ? 'brightness-0 invert' : ''}`}
-                    />
+                    <div className="relative w-5 h-5">
+                      <Image
+                        src={Icon}
+                        fill
+                        alt={name}
+                        className={`object-contain ${isActive ? 'brightness-0 invert' : ''}`}
+                        style={{
+                          filter: isActive 
+                            ? '' 
+                            : 'brightness(0) saturate(100%) invert(67%) sepia(6%) saturate(422%) hue-rotate(185deg) brightness(89%) contrast(86%)'
+                        }}
+                      />
+                    </div>
                   ) : (
-                    <Icon size={20} className={`${isActive ? 'text-white' : 'text-[#818790]'}`} />
+                    <Icon size={20} className={isActive ? 'text-white' : 'text-[#818790]'} />
                   )}
                 </span>
 
                 <span className="flex-1 text-left">{name}</span>
 
                 {subItems && (
-                  <span className={`${isActive ? 'text-white' : 'text-[#818790]'}`}>
+                  <span className={isActive ? 'text-white' : 'text-[#818790]'}>
                     {expandedItem === name ? <IoIosArrowDown /> : <IoIosArrowForward />}
                   </span>
                 )}
@@ -120,7 +125,6 @@ export default function Sidebar4() {
 
             return (
               <li key={name}>
-                {/* Wrap in Link if no subItems */}
                 {subItems ? (
                   <button onClick={() => toggleSubItems(name)} className="w-full text-left">
                     {ItemContent}
@@ -131,7 +135,6 @@ export default function Sidebar4() {
                   </Link>
                 )}
 
-                {/* Sub Items */}
                 {subItems && expandedItem === name && (
                   <ul className="ml-10 mt-1 space-y-1.5">
                     {subItems.map((subItem) => (
