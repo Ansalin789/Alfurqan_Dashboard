@@ -11,54 +11,140 @@ import Modal from "react-modal";
 import { FaEye } from "react-icons/fa";
 import { getSocket } from "@/app/utils/socket";
 
-interface Student {
-  studentId: string;
-  studentFirstName: string;
-  studentLastName: string;
-  studentEmail: string;
-  city: string;
-  country: string;
-  trailId: string;
-  course: string;
-  classStatus: string;
-}
 
-interface Teacher {
-  teacherId: string;
-  teacherName: string;
-  teacherEmail: string;
-}
-
-interface Course {
-  courseName: string;
-  courseId: string;
-}
 
 interface ClassData {
-  course: Course;
-  student: Student;
-  teacher: Teacher;
+  isTrial: boolean;
+  classType: string;
+  trialclass: any;
   _id: string;
-  classDay: string[];
+  classDay: string[]; // ISO date strings
   package: string;
-  coruse: string;
-  preferedTeacher: string;
   totalHourse: number;
-  startDate: string;
-  endDate: string;
+  startDate: string; // ISO date string
+  endDate: string;   // ISO date string
   startTime: string[];
   endTime: string[];
   scheduleStatus: string;
+  classLink: string;
   status: string;
   createdBy: string;
+  teacherAttendee: string;
+  studentAttendee: string;
+  classhour: string;
+  currency: string;
+  amount: string;
+  earnings: number;
+  isSalaryProcessed: boolean;
+  sessionClassType: string;
+  sessionStarttime: string;
+  sessionsEndtime: string;
+  sessionStatus: string;
   createdDate: string;
   lastUpdatedDate: string;
+  __v: number;
+
+  student: {
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    gender: string;
+    level: string;
+    studnetSessionStart: string[];
+    studnetSessionEnd: string[];
+  };
+
+  teacher: {
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+    teacherSessionStart: string | null;
+    teacherSessionEnd: string | null;
+  };
+
+  course: {
+    courseId: string;
+    courseName: string;
+  };
+
+  alfstudent: {
+    _id: string;
+    username: string;
+    password: string;
+    sessionClassType: string;
+    role: string;
+    level: string;
+    status: string;
+    createdDate: string;
+    createdBy: string;
+    updatedDate: string;
+    __v: number;
+    student: {
+      studentId: string;
+      studentEmail: string;
+      studentPhone: number;
+      course: string;
+      package: string;
+      city: string;
+      country: string;
+      gender: string;
+    };
+  };
+}
+
+
+interface TrialClass {
+  academicCoach: {
+    academicCoachId: string | null;
+    name: string | null;
+    email: string | null;
+  };
+  teacher: {
+    teacherId: string;
+    name: string;
+    email: string;
+  };
+  student: {
+    studentId: string;
+    name: string;
+    email: string;
+    city: string;
+    country: string;
+    phonenumber: string;
+  };
+  course: {
+    courseId: string;
+    courseName: string;
+  };
+  _id: string;
+  trialId: string;
+  subject: string;
+  meetingLocation: string;
+  classType: string;
+  meetingType: string;
+  meetingLink: string;
+  isScheduledMeeting: boolean;
+  scheduledStartDate: string;
+  scheduledEndDate: string;
+  scheduledFrom: string;
+  scheduledTo: string;
+  timeZone: string;
+  description: string;
+  meetingStatus: string;
+  studentResponse: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  lastUpdatedDate: string;
+  lastUpdatedBy: string;
   __v: number;
 }
 
 interface ApiResponse {
   totalCount: number;
   classSchedule: ClassData[];
+  trialclasses: TrialClass;
 }
 
 const ScheduledClasses = () => {
@@ -87,43 +173,173 @@ const ScheduledClasses = () => {
     Modal.setAppElement("body");
   }, []);
 
-  useEffect(() => {
-    const fetchClasses = async () => {
-      try {
-        const teacherId = localStorage.getItem("TeacherPortalId");
-        const token = localStorage.getItem("TeacherAuthToken");
-        if (!token || !teacherId) return;
+const fetchClasses = async () => {
+  try {
+    const teacherId = localStorage.getItem("TeacherPortalId");
+    const token = localStorage.getItem("TeacherAuthToken");
 
-        const response = await axios.get<ApiResponse>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
-          {
-            params: { teacherId },
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+    console.log("Fetching classes...");
+    console.log("Teacher ID:", teacherId);
+    console.log("Auth Token Present:", !!token);
 
-        const classes = response.data.classSchedule;
-        const now = new Date();
-        console.log("Fetched classes:", classes);
-        const upcoming = classes.filter((cls) =>
-          ["Scheduled", "Rescheduled"].includes(cls.scheduleStatus)
-        );
+    if (!token || !teacherId) {
+      console.warn("Missing token or teacher ID.");
+      return;
+    }
 
-        const completed = classes.filter(
-          (cls) => cls.scheduleStatus === "Completed"
-        );
-
-        setUpcomingClasses(upcoming);
-        setCompletedData(completed);
-      } catch (error) {
-        console.error("Error fetching class data:", error);
+    const response = await axios.get<ApiResponse>(
+      "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
+      {
+        params: { teacherId },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       }
-    };
-    fetchClasses();
-  }, []);
+    );
+
+    console.log("API Response:", response.data);
+
+    // Process regular classes
+    const regularClasses = response.data.classSchedule.map(cls => ({
+      ...cls,
+      sessionClassType: "REGULARCLASS",
+      isTrial: false
+    }));
+
+    console.log("Processed Regular Classes:", regularClasses);
+
+   
+
+// Process trial classes
+let trialClasses: ClassData[] = [];
+
+if (Array.isArray(response.data.trialclasses)) {
+  console.log("Raw Trial Classes Data:", response.data.trialclasses);
+
+  trialClasses = response.data.trialclasses.map((trialClass) => ({
+    _id: trialClass._id || trialClass.trialId || "",
+    classLink: trialClass.meetingLink || "",
+    classDay: trialClass.scheduledStartDate ? [trialClass.scheduledStartDate] : [],
+    package: "", // Trial classes may not have package
+    totalHourse: 0.5,
+    startDate: trialClass.scheduledStartDate || "",
+    endDate: trialClass.scheduledEndDate || "",
+    startTime: [trialClass.scheduledFrom || ""],
+    endTime: [trialClass.scheduledTo || ""],
+    scheduleStatus: trialClass.meetingStatus || "Scheduled",
+    classhour: "0.5",
+    currency: "$",
+    amount: "0",
+    earnings: 0,
+    isSalaryProcessed: false,
+    status: "Active",
+    createdDate: trialClass.createdDate || "",
+    createdBy: trialClass.createdBy || "System",
+    lastUpdatedDate: trialClass.lastUpdatedDate || "",
+    lastUpdatedBy: trialClass.lastUpdatedBy || "",
+    __v: trialClass.__v || 0,
+
+    sessionClassType: "TRIALCLASS",
+    classType: trialClass.classType || "OneToOne",
+    sessionStarttime: trialClass.scheduledFrom || "",
+    sessionsEndtime: trialClass.scheduledTo || "",
+    sessionStatus: trialClass.meetingStatus === "Completed" ? "Completed" : "NotCompleted",
+
+    student: {
+      studentId: trialClass.student?.studentId || "N/A",
+      studentFirstName: trialClass.student?.name?.split(" ")[0] || "Trial",
+      studentLastName: trialClass.student?.name?.split(" ").slice(1).join(" ") || "Student",
+      studentEmail: trialClass.student?.email || "",
+      gender: "", // No gender in trial
+      level: "", // No level in trial
+      studnetSessionStart: [], // Provide empty array to match ClassData type
+      studnetSessionEnd: [],   // Provide empty array to match ClassData type
+    },
+
+    teacher: {
+      teacherId: trialClass.teacher?.teacherId || "",
+      teacherName: trialClass.teacher?.name || "",
+      teacherEmail: trialClass.teacher?.email || "",
+      teacherSessionStart: null,
+      teacherSessionEnd: null,
+    },
+
+    course: {
+      courseId: trialClass.course?.courseId || "",
+      courseName: trialClass.course?.courseName || "",
+    },
+
+    alfstudent: {
+      _id: "",
+      username: "",
+      password: "",
+      sessionClassType: "",
+      role: "",
+      level: "",
+      status: "",
+      createdDate: "",
+      createdBy: "",
+      updatedDate: "",
+      __v: 0,
+      student: {
+        studentId: "",
+        studentEmail: "",
+        studentPhone: 0,
+        course: "",
+        package: "",
+        city: "",
+        country: "",
+        gender: "",
+      },
+    },
+
+    teacherAttendee: "",
+    studentAttendee: "",
+    isTrial: true,
+    trialclass: trialClass,
+  }));
+
+  console.log("Processed Trial Classes:", trialClasses);
+} else {
+  console.log("No trial classes found or incorrect format.");
+}
+
+
+
+    // Combine both types
+    const allClasses = [...regularClasses, ...trialClasses];
+    console.log("All Classes Combined:", allClasses);
+
+    // Filter upcoming classes
+    const upcoming = allClasses.filter(cls =>
+      ["Scheduled", "Rescheduled", "RequestReschedule", "BothAbsent", "StudentAbsent", "TeacherAbsent"].includes(cls.scheduleStatus)
+    );
+
+    console.log("Upcoming Classes:", upcoming);
+
+    // Filter completed classes
+    const completed = allClasses.filter(cls => cls.scheduleStatus === "Completed");
+
+    console.log("Completed Classes:", completed);
+
+    setUpcomingClasses(upcoming);
+    setCompletedData(completed);
+    setFilteredClasses(activeTab === "upcoming" ? upcoming : completed);
+
+    console.log("Class data successfully set to state.");
+  } catch (error) {
+    console.error("Error fetching class data:", error);
+  }
+};
+
+// Add this useEffect to load data on component mount
+useEffect(() => {
+  fetchClasses();
+}, []);
+
+
+
   useEffect(() => {
     const userId =
       typeof window !== "undefined"
@@ -168,15 +384,8 @@ const ScheduledClasses = () => {
         item.student?.studentFirstName,
         item.student?.studentLastName,
         item.student?.studentEmail,
-        item.student?.course,
-        item.student?.classStatus,
-        item.student?.city,
-        item.student?.country,
-        item.course?.courseName,
-        item.teacher?.teacherName,
         item.scheduleStatus,
         item.package,
-        item.preferedTeacher,
         item.status,
         item.startDate,
         item.endDate,
@@ -206,13 +415,7 @@ const ScheduledClasses = () => {
       );
     }
 
-    if (filters.teacher) {
-      filtered = filtered.filter((c) =>
-        c.teacher.teacherName
-          ?.toLowerCase()
-          .includes(filters.teacher.toLowerCase())
-      );
-    }
+  
     if (filters.scheduleStatus) {
       filtered = filtered.filter(
         (c) =>
@@ -257,7 +460,7 @@ const ScheduledClasses = () => {
   const studentNames = Array.from(
     new Set(
       dataToShow.map(
-        (c) => `${c.student.studentFirstName} ${c.student.studentLastName}`
+        (c) => `${c.student.studentFirstName} `
       )
     )
   );
@@ -340,127 +543,146 @@ const ScheduledClasses = () => {
                   <th className="text-left px-4 py-3">Date</th>
                   <th className="text-left px-4 py-3">Timing</th>
                   <th className="text-left px-4 py-3">Status</th>
-                  <th className="text-left px-4 py-3">Action</th>
+                  <th className="text-left px-4 py-3 w-[120px]">Action</th>
                 </tr>
               </thead>
-              <tbody>
-                {currentItems.map((item, index) => (
-                  <tr
-                    key={item._id}
-                    className={`text-[12px] ${
-                      index % 2 === 0
-                        ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                        : "bg-[#F8F8F8] dark:bg-[#303030]"
-                    }`}
+<tbody>
+  {currentItems.length > 0 ? (
+    currentItems.map((item, index) => {
+      const isTrial = item.classType === "Trail class" || item.isTrial;
+      
+      // Get the appropriate date
+      const classDate = isTrial ? 
+        (item.trialclass?.scheduledStartDate || item.startDate) : 
+        item.startDate;
+      
+      // Format the date
+      const dateObj = classDate ? new Date(classDate) : null;
+      const formattedDate = dateObj
+        ? dateObj.toLocaleDateString("en-US", {
+            month: "short",
+            day: "2-digit",
+            year: "numeric",
+          })
+        : "N/A";
+
+      // Get time - prioritize trial class time if available
+      const startTime = isTrial ? 
+        (item.trialclass?.scheduledFrom || item.startTime?.[0]) : 
+        item.startTime?.[0];
+      const endTime = isTrial ? 
+        (item.trialclass?.scheduledTo || item.endTime?.[0]) : 
+        item.endTime?.[0];
+      const timeDisplay = startTime && endTime ? `${startTime} - ${endTime}` : "N/A";
+
+const hideLastNameStatuses = [
+  "Scheduled",
+  "Rescheduled",
+  "RequestReschedule",
+  "BothAbsent",
+  "StudentAbsent",
+  "TeacherAbsent",
+];
+
+const studentName =
+  isTrial || hideLastNameStatuses.includes(item.scheduleStatus)
+    ? item.student?.studentFirstName || item.trialclass?.student?.name?.split(" ")[0] || "Student"
+    : `${item.student?.studentFirstName || ""} ${item.student?.studentLastName || ""}`.trim();
+
+
+      // Get course name
+      const courseName = isTrial
+        ? item.trialclass?.course?.courseName || item.course?.courseName
+        : item.course?.courseName;
+
+      // Get status
+      const status = isTrial
+        ? item.trialclass?.meetingStatus || item.scheduleStatus
+        : item.scheduleStatus;
+
+      return (
+        <tr
+          key={item._id}
+          className={`text-[12px] ${
+            index % 2 === 0
+              ? "bg-[#fff] dark:bg-[#2C2C2C]"
+              : "bg-[#F8F8F8] dark:bg-[#303030]"
+          }`}
+        >
+          <td className="px-3 py-2 text-[10px] text-left break-words whitespace-normal">
+            {isTrial ? item.trialclass?.trialId || item._id : item._id || "N/A"}
+          </td>
+          <td className="text-[#3D8FDE] px-3 py-2 text-left w-[180px] break-words whitespace-normal">
+            {studentName || "N/A"}
+          </td>
+          <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
+            {courseName || "N/A"}
+          </td>
+          <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
+            {formattedDate}
+          </td>
+          <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
+            {timeDisplay}
+          </td>
+          <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[10px] w-[200px] break-words whitespace-normal">
+          <span
+  className={`px-3 py-1 font-semibold text-[11px] text-center rounded-md ${
+    status === "Scheduled"
+      ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633] px-7 py-1"
+      : status === "Rescheduled"
+      ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE] px-6 py-1" // <-- Custom Rescheduled style
+      : status === "RequestReschedule"
+      ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]  text-[9px]" // <-- Custom RequestReschedule style
+      : status === "BothAbsent"
+      ? "bg-[#FEF2F2] text-[#B91C1C] dark:bg-[#B91C1C33] px-6 py-1"
+      : "bg-[#E5E7EB] text-[#374151] dark:bg-[#DEDEDE]"
+  }`}
+>
+  {status}
+</span>
+          </td>
+        <td className="px-3 py-2 relative w-[20px] break-words whitespace-normal">
+          <div className="relative inline-block text-left">
+            <button
+              onClick={() =>
+                setOpenDropdownId(openDropdownId === item._id ? null : item._id)
+              }
+              className="p-2 rounded-md"
+            >
+              <MoreVertical className="w-4 h-4 text-slate-600 dark:text-white" />
+            </button>
+
+            {openDropdownId === item._id && (
+              <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-[#2C2C2C] shadow-lg ring-1 ring-black ring-opacity-5">
+                <div className="py-1 text-sm text-gray-700 dark:text-white">
+                  <button
+                    onClick={() => handleRescheduleRedirect(item._id)}
+                    className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-[#404040]"
                   >
-                    <td className="px-3 py-2 text-[10px] text-left break-words whitespace-normal">
-                      {item._id}
-                    </td>
-                    <td className=" text-[#3D8FDE] px-3 py-2 text-left w-[180px] break-words whitespace-normal">
-                      {item.student.studentFirstName}{" "}
-                      {item.student.studentLastName}
-                    </td>
-                    <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
-                      {item.course?.courseName ?? "N/A"}
-                    </td>
-                    <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
-                      {new Date(item.startDate).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "2-digit",
-                        year: "numeric",
-                      })}
-                    </td>
-                    <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
-                      {item.startTime[0]}
-                    </td>
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[180px] break-words whitespace-normal">
-                      <span
-                        className={`px-3 py-2 font-semibold text-[11px] text-center  rounded-md ${
-                          item.scheduleStatus === "Scheduled"
-                            ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
-                            : item.scheduleStatus === "Rescheduled"
-                            ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE]"
-                            : "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
-                        }`}
-                      >
-                        {(item.scheduleStatus || "UNKNOWN")}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 relative ">
-                      {item.scheduleStatus === "Scheduled" ||
-                      item.scheduleStatus === "Rescheduled" ? (
-                        <div className="relative inline-block text-left">
-                          <button
-                            onClick={() =>
-                              setOpenDropdownId(
-                                openDropdownId === item._id ? null : item._id
-                              )
-                            }
-                            className="p-2 rounded-md"
-                          >
-                            <MoreVertical className="w-4 h-4 text-slate-600 dark:text-white" />
-                          </button>
-
-                          {openDropdownId === item._id && (
-                            <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-[#2C2C2C] shadow-lg ring-1 ring-black ring-opacity-5">
-                              <div className="py-1 text-sm text-gray-700 dark:text-white">
-                                <button
-                                  onClick={() => {
-                                    handleRescheduleRedirect(item._id);
-                                  }}
-                                  className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-[#404040]"
-                                >
-                                  Reschedule
-                                </button>
-                                <button
-                                  onClick={() => setOpenDropdownId(null)}
-                                  className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 dark:hover:bg-[#404040]"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="relative inline-block text-left">
-                          <button
-                            // onClick={() =>
-                            //   setOpenDropdownId(
-                            //     openDropdownId === item._id ? null : item._id
-                            //   )
-                            // }
-                            className="p-2 rounded-md"
-                          >
-                            <MoreVertical className="w-4 h-4 text-slate-600 dark:text-white" />
-                          </button>
-
-                          {openDropdownId === item._id && (
-                            <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-[#2C2C2C] shadow-lg ring-1 ring-black ring-opacity-5">
-                              <div className="py-1 text-sm text-gray-700 dark:text-white">
-                                <button
-                                  onClick={() => {
-                                    handleRescheduleRedirect(item._id);
-                                  }}
-                                  className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-[#404040]"
-                                >
-                                  Reschedule
-                                </button>
-                                <button
-                                  onClick={() => setOpenDropdownId(null)}
-                                  className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 dark:hover:bg-[#404040]"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+                    Reschedule
+                  </button>
+                  <button
+                    onClick={() => setOpenDropdownId(null)}
+                    className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 dark:hover:bg-[#404040]"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </td>
+      </tr>
+    );
+  })
+    ) : (
+    <tr>
+      <td colSpan={7} className="text-center py-4 text-gray-500">
+        No classes found
+      </td>
+    </tr>
+  )}
+</tbody>
             </table>
           </div>
 
