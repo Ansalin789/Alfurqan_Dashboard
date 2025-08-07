@@ -312,15 +312,31 @@ if (Array.isArray(response.data.trialclasses)) {
     console.log("All Classes Combined:", allClasses);
 
     // Filter upcoming classes
-    const upcoming = allClasses.filter(cls =>
-      ["Scheduled", "Rescheduled", "RequestReschedule", "BothAbsent", "StudentAbsent", "TeacherAbsent"].includes(cls.scheduleStatus)
-    );
+    // const upcoming = allClasses.filter(cls =>
+    //   ["Scheduled", "Rescheduled", "RequestReschedule", "BothAbsent", "StudentAbsent", "TeacherAbsent"].includes(cls.scheduleStatus)
+    // );
 
-    console.log("Upcoming Classes:", upcoming);
+    // console.log("Upcoming Classes:", upcoming);
 
     // Filter completed classes
-    const completed = allClasses.filter(cls => cls.scheduleStatus === "Completed");
+    const now = new Date();
 
+    const completed = allClasses.filter(cls => {
+      const endDate = new Date(cls.endDate);
+      return (
+        cls.scheduleStatus === "Completed" ||
+        endDate < now // Auto-complete if end date passed
+      );
+    });
+    
+    const upcoming = allClasses.filter(cls => {
+      const endDate = new Date(cls.endDate);
+      return (
+        ["Scheduled", "Rescheduled", "RequestReschedule", "BothAbsent", "StudentAbsent", "TeacherAbsent"].includes(cls.scheduleStatus) &&
+        endDate >= now
+      );
+    });
+    
     console.log("Completed Classes:", completed);
 
     setUpcomingClasses(upcoming);
