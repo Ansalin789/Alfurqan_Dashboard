@@ -203,7 +203,6 @@ const fetchClasses = async () => {
     // Process regular classes
     const regularClasses = response.data.classSchedule.map(cls => ({
       ...cls,
-      sessionClassType: "REGULARCLASS",
       isTrial: false
     }));
 
@@ -556,10 +555,11 @@ useEffect(() => {
                   <th className="text-left px-4 py-3 w-[180px]">Class ID</th>
                   <th className="text-left px-4 py-3">Student Name</th>
                   <th className="text-left px-4 py-3">Course</th>
+                  <th className="text-left px-4 py-3">Class Type</th>
                   <th className="text-left px-4 py-3">Date</th>
                   <th className="text-left px-4 py-3">Timing</th>
                   <th className="text-left px-4 py-3">Status</th>
-                  <th className="text-left px-4 py-3 w-[120px]">Action</th>
+                  <th className="text-left px-4 py-3 ">Action</th>
                 </tr>
               </thead>
 <tbody>
@@ -604,7 +604,8 @@ const studentName =
   isTrial || hideLastNameStatuses.includes(item.scheduleStatus)
     ? item.student?.studentFirstName || item.trialclass?.student?.name?.split(" ")[0] || "Student"
     : `${item.student?.studentFirstName || ""} ${item.student?.studentLastName || ""}`.trim();
-
+       
+    const classType = item .sessionClassType || item.classType || "N/A";
 
       // Get course name
       const courseName = isTrial
@@ -633,6 +634,9 @@ const studentName =
           </td>
           <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
             {courseName || "N/A"}
+          </td>
+          <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
+            {classType || "N/A"}
           </td>
           <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
             {formattedDate}
