@@ -32,7 +32,6 @@ export default function AddPackage({ onClose }: { onClose: () => void }) {
     setError("");
     setValidationErrors({});
 
-    // Client-side validation
     if (!formData.name.trim()) {
       setValidationErrors({ name: "Package name is required" });
       setIsLoading(false);
@@ -46,13 +45,11 @@ export default function AddPackage({ onClose }: { onClose: () => void }) {
     }
 
     try {
-      // Mock API call - replace with real API when needed
       console.log("Submitting package data:", {
         ...formData,
         file: selectedFile ? selectedFile.name : null
       });
 
-      // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       setIsSuccess(true);
@@ -88,12 +85,12 @@ export default function AddPackage({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 w-full max-w-md shadow-lg">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">Add New Package</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Add New Package</h3>
           <button 
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
             disabled={isLoading}
           >
             <X size={20} />
@@ -101,13 +98,13 @@ export default function AddPackage({ onClose }: { onClose: () => void }) {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+          <div className="mb-4 p-3 bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-200 rounded-lg">
             {error}
           </div>
         )}
 
         {isSuccess && (
-          <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg flex items-center">
+          <div className="mb-4 p-3 bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200 rounded-lg flex items-center">
             <Check className="mr-2" size={18} />
             Package created successfully! Closing...
           </div>
@@ -116,24 +113,24 @@ export default function AddPackage({ onClose }: { onClose: () => void }) {
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Package Name
               </label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
-                className={`w-full border ${validationErrors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                className={`w-full border ${validationErrors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg px-4 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
                 placeholder="Enter package name"
                 required
               />
               {validationErrors.name && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.name}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationErrors.name}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Price
               </label>
               <div className="relative">
@@ -141,28 +138,28 @@ export default function AddPackage({ onClose }: { onClose: () => void }) {
                   type="number"
                   value={formData.price}
                   onChange={(e) => setFormData({...formData, price: e.target.value})}
-                  className={`w-full border ${validationErrors.price ? 'border-red-500' : 'border-gray-300'} rounded-lg px-4 py-2 text-sm pr-8 focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                  className={`w-full border ${validationErrors.price ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg px-4 py-2 text-sm pr-8 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
                   placeholder="0.00"
                   step="0.01"
                   required
                 />
-                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 text-sm">
                   $
                 </span>
               </div>
               {validationErrors.price && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.price}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationErrors.price}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Category
               </label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               >
                 {CATEGORIES.map((category) => (
@@ -174,27 +171,27 @@ export default function AddPackage({ onClose }: { onClose: () => void }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Uploaded By
               </label>
               <input
                 type="text"
                 value={formData.uploadedBy}
                 onChange={(e) => setFormData({...formData, uploadedBy: e.target.value})}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter your name"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Description
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter package description"
                 rows={3}
                 required
@@ -202,16 +199,16 @@ export default function AddPackage({ onClose }: { onClose: () => void }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Upload File (Optional)
               </label>
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Upload className="w-8 h-8 mb-3 text-gray-500" />
-                  <p className="mb-2 text-sm text-gray-500">
+                  <Upload className="w-8 h-8 mb-3 text-gray-500 dark:text-gray-400" />
+                  <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
                     <span className="font-semibold">Click to upload</span> or drag and drop
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {selectedFile ? selectedFile.name : "PDF, DOCX, JPG (MAX. 5MB)"}
                   </p>
                 </div>
@@ -230,7 +227,7 @@ export default function AddPackage({ onClose }: { onClose: () => void }) {
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
             >
               Cancel
             </button>

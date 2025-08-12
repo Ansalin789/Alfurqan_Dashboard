@@ -86,6 +86,8 @@ interface Assignment {
   title?: string;
   level?: string;
   courses?: string;
+  studentIds?: string[]; // For group assignments
+  groupAssignment?: boolean;
 }
 
 const NewAssignment = () => {
@@ -94,8 +96,7 @@ const NewAssignment = () => {
   const [assignedDate, setAssignedDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [comment, setComment] = useState("");
-  const [studentId, setStudentId] = useState("");
-  const [studentName, setStudentName] = useState("");
+
   const [sessionClassType, setSessionClassType] = useState("");
   const [assignedTeacher, setAssignedTeacher] = useState("");
   const [assignedTeacherId, setAssignedTeacherId] = useState("");
@@ -106,27 +107,64 @@ const NewAssignment = () => {
   const [failedMessage, setFailedMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const searchParams = useSearchParams();
-
+  // Replace single student states with arrays
+  const [studentIds, setStudentIds] = useState<string[]>([]);
+  const [studentNames, setStudentNames] = useState<string[]>([]);
   useEffect(() => {
     const title = searchParams?.get("title") || "";
     const assignedDate = searchParams?.get("assignedDate") || "";
     const dueDate = searchParams?.get("dueDate") || "";
     const comment = searchParams?.get("comment") || "";
-    const studentId = searchParams?.get("studentId") || "";
-    const studentName = searchParams?.get("studentName") || "";
+
     const sessionClassType = searchParams?.get("sessionClassType") || "";
     const assignedTeacher = searchParams?.get("assignedTeacher") || "";
     const assignedTeacherId = searchParams?.get("assignedTeacherId") || "";
     const course = searchParams?.get("course") || "";
     const level = searchParams?.get("level") || "";
+    // Handle multiple students
+    // Handle student data - support both single student and multiple students
+    const studentIdParam = searchParams?.get("studentId");
+    const studentNameParam = searchParams?.get("studentName");
+    const studentsParam = searchParams?.get("students");
+
+    if (studentsParam) {
+      // Multiple students case (JSON format)
+      try {
+        console.log("Parsing students data from query params:", studentsParam);
+        const studentsData = JSON.parse(studentsParam);
+        console.log("Parsed students data:", studentsData);
+        setStudentIds(studentsData.map((s: any) => s.studentId));
+        console.log("Student IDs:", studentsData.map((s: any) => s.studentId));
+        console.log("Student Names:", studentsData.map((s: any) => s.studentName));
+        setStudentNames(studentsData.map((s: any) => s.studentName));
+        console.log("studentIds",studentIds);
+      } catch (error) {
+        console.error("Error parsing students data:", error);
+        // Fallback to empty arrays
+        setStudentIds([]);
+        setStudentNames([]);
+      }
+    }else {
+      // No student data case
+      setStudentIds([]);
+      setStudentNames([]);
+    }
+    // Add this right after parsing the students data
+    console.log("Parsed student data:", {
+      studentIds,
+      studentNames,
+      studentsParam,
+      studentIdParam,
+      studentNameParam,
+    });
 
     console.log("🔍 Query Params:");
     console.log("title:", title);
     console.log("assignedDate:", assignedDate);
     console.log("dueDate:", dueDate);
     console.log("comment:", comment);
-    console.log("studentId:", studentId);
-    console.log("studentName:", studentName);
+    console.log("studentId:", studentIds);
+    console.log("studentName:", studentNames);
     console.log("sessionClassType:", sessionClassType);
     console.log("assignedTeacher:", assignedTeacher);
     console.log("assignedTeacherId:", assignedTeacherId);
@@ -137,8 +175,8 @@ const NewAssignment = () => {
     setAssignedDate(assignedDate);
     setDueDate(dueDate);
     setComment(comment);
-    setStudentId(studentId);
-    setStudentName(studentName);
+    setStudentIds(studentIds);
+    setStudentNames(studentNames);
     setSessionClassType(sessionClassType);
     setAssignedTeacher(assignedTeacher);
     setAssignedTeacherId(assignedTeacherId);
@@ -473,10 +511,29 @@ const NewAssignment = () => {
   const submitAssignment = async () => {
     const formData = new FormData();
     console.log("📤 Starting assignment submission...");
-    console.log("👤 Student ID:", studentId);
+    
     console.log("📝 Assignment count:", assignments.length);
-    formData.append("studentId", studentId);
-    formData.append("studentName", studentName);
+const studentsParam = searchParams?.get("students");
+
+if (studentsParam) {
+  try {
+    const studentsData = JSON.parse(studentsParam);
+
+    console.log("Parsed students data:", studentsData);
+
+    // ✅ Just use studentsData directly — don’t rely on setState
+    const formattedStudents = studentsData.map((s: any) => ({
+      studentId: s.studentId,
+      studentName: s.studentName,
+    }));
+
+    formData.append("students", JSON.stringify(formattedStudents));
+  } catch (error) {
+    console.error("❌ Failed to parse students param:", error);
+  }
+}
+
+
     formData.append("sessionClassType", sessionClassType);
     formData.append("assignedTeacher", assignedTeacher);
     formData.append("assignedTeacherId", assignedTeacherId);
@@ -640,22 +697,19 @@ const NewAssignment = () => {
       return;
     }
     try {
-      const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/assignments",
-        {
-          method: "POST",
-          body: formData, // ✅ Use FormData directly
+      const response = await fetch("http://localhost:5001/groupAssignments", {
+        method: "POST",
+        body: formData, // ✅ Use FormData directly
 
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.status === 201 || response.status === 200) {
         setSuccess(true);
         setSuccessMessage("Assignment submitted successfully!");
-        setTimeout(() =>{window.location.href="/teacher/ui/assignment"}, 3000);
+        setTimeout(() => {window.location.href="/teacher/ui/assignment"}, 3000);
       } else {
         const errorData = await response.json(); // Try to get error message from response
         setFailed(true);
@@ -736,6 +790,8 @@ const NewAssignment = () => {
             </button>
           </div>
 
+    
+
           <div className="flex gap-4 mb-4">
             <div className="w-1/2">
               <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff] ">
@@ -773,7 +829,6 @@ const NewAssignment = () => {
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-[#010E30] mb-2 dark:text-[#fff]">
-              Answer Type
             </label>
             {/* Hide for reading/writing */}
             {!(
@@ -1061,234 +1116,219 @@ const NewAssignment = () => {
             <h2 className="text-lg font-medium text-[#010E30] mb-6 dark:text-[#fff]">
               List of Assignment
             </h2>
-            {assignments.map((item, idx) => (
-              <div
-                key={idx}
-                className="mb-6 p-4 border rounded-lg dark:border-[#484f5b]"
-              >
-                {/* Common Question Display */}
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_120px] gap-4">
-                  <div>
-                    <div className="flex items-center mb-2">
-                      <span className="w-6 text-sm text-[#010E30] dark:text-[#fff]">
-                        {idx + 1}.
-                      </span>
-                      <label className="block text-[13px] font-light text-[#010E30] dark:text-[#fff]">
-                        Question
-                      </label>
-                    </div>
-                    <textarea
-                      value={item.question}
-                      disabled
-                      rows={2}
-                      className="w-full p-3 text-[11px] border border-gray-300 rounded-xl dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
-                    />
-                  </div>
+           {assignments.map((item, idx) => (
+  <div key={idx} className="mb-6 p-4 border rounded-lg dark:border-[#484f5b]">
+    {/* Common Question Display */}
+    <div className="grid grid-cols-1 md:grid-cols-[1fr_120px] gap-4">
+      <div>
+        <div className="flex items-center mb-2">
+          <span className="w-6 text-sm text-[#010E30] dark:text-[#fff]">
+            {idx + 1}.
+          </span>
+          <label className="block text-[13px] font-light text-[#010E30] dark:text-[#fff]">
+            Question
+          </label>
+        </div>
+        <textarea
+          value={item.question}
+          disabled
+          rows={2}
+          className="w-full p-3 text-[11px] border border-gray-300 rounded-xl dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
+        />
+      </div>
 
-                  <div>
-                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                      Type
-                    </label>
-                    <input
-                      type="text"
-                      value={item.type}
-                      disabled
-                      className="w-full p-3 text-[11px] border border-gray-300 rounded-xl dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
-                    />
-                  </div>
-                </div>
+      <div>
+        <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+          Type
+        </label>
+        <input
+          type="text"
+          value={item.type}
+          disabled
+          className="w-full p-3 text-[11px] border border-gray-300 rounded-xl dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
+        />
+      </div>
+    </div>
 
-                {/* Quiz - Choose Type */}
-                {item.type === "quiz" &&
-                  item.questionType === "choose" &&
-                  item.options && (
-                    <div className="mt-4">
-                      <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                        Options
-                      </label>
-                      <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
-                        {Object.entries({
-                          a: item.options.optionOne,
-                          b: item.options.optionTwo,
-                          c: item.options.optionThree,
-                          d: item.options.optionFour,
-                        }).map(
-                          ([key, value]) =>
-                            value && (
-                              <div
-                                key={key}
-                                className="mb-2 last:mb-0 flex items-center"
-                              >
-                                <span className="font-medium dark:text-[#fff] mr-2">
-                                  {key.toUpperCase()}:
-                                </span>
-                                <span className="dark:text-[#fff] flex-grow">
-                                  {value}
-                                </span>
-                                {item.answerValidation === value && (
-                                  <span className="ml-2 text-green-600">
-                                    ✓ Correct
-                                  </span>
-                                )}
-                              </div>
-                            )
-                        )}
-                      </div>
-                    </div>
+    {/* Quiz - Choose Type */}
+    {item.type === "quiz" && item.questionType === "choose" && item.options && (
+      <div className="mt-4">
+        <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+          Options
+        </label>
+        <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
+          {Object.entries({
+            a: item.options.optionOne,
+            b: item.options.optionTwo,
+            c: item.options.optionThree,
+            d: item.options.optionFour,
+          }).map(
+            ([key, value]) =>
+              value && (
+                <div
+                  key={key}
+                  className="mb-2 last:mb-0 flex items-center"
+                >
+                  <span className="font-medium dark:text-[#fff] mr-2">
+                    {key.toUpperCase()}:
+                  </span>
+                  <span className="dark:text-[#fff] flex-grow">
+                    {value}
+                  </span>
+                  {item.answerValidation === value && (
+                    <span className="ml-2 text-green-600">✓ Correct</span>
                   )}
+                </div>
+              )
+          )}
+        </div>
+      </div>
+    )}
 
-                {/* Quiz - True/False Type */}
-                {item.type === "quiz" && item.questionType === "truefalse" && (
-                  <div className="mt-4">
-                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                      Correct Answer
-                    </label>
-                    <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
-                      <div className="flex items-center">
-                        <span className="dark:text-[#fff] flex-grow">
-                          {item.answerValidation === "true" ? "True" : "False"}
-                        </span>
-                        <span className="ml-2 text-green-600">✓ Correct</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+    {/* Quiz - True/False Type */}
+    {item.type === "quiz" && item.questionType === "truefalse" && (
+      <div className="mt-4">
+        <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+          Correct Answer
+        </label>
+        <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
+          <div className="flex items-center">
+            <span className="dark:text-[#fff] flex-grow">
+              {item.answerValidation === "true" ? "True" : "False"}
+            </span>
+            <span className="ml-2 text-green-600">✓ Correct</span>
+          </div>
+        </div>
+      </div>
+    )}
 
-                {/* Image Identification */}
-                {item.type === "image identification" && item.options && (
-                  <div className="mt-4">
-                    {item.imageURL && (
-                      <>
-                        <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                          Uploaded Image
-                        </label>
-                        <div className="flex items-center gap-3 bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
-                          <img
-                            src={item.imageURL}
-                            alt={item.imageName || "Question image"}
-                            className="max-h-32 object-contain"
-                          />
-                          <span className="text-xs break-all dark:text-[#fff]">
-                            {item.imageName}
-                          </span>
-                        </div>
-                      </>
-                    )}
+    {/* Image Identification */}
+    {item.type === "image identification" && item.options && (
+      <div className="mt-4">
+        {item.imageURL && (
+          <>
+            <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+              Uploaded Image
+            </label>
+            <div className="flex items-center gap-3 bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
+              <img
+                src={item.imageURL}
+                alt={item.imageName || "Question image"}
+                className="max-h-32 object-contain"
+              />
+              <span className="text-xs break-all dark:text-[#fff]">
+                {item.imageName}
+              </span>
+            </div>
+          </>
+        )}
 
-                    <label className="block text-[13px] font-light text-[#010E30] mt-4 mb-2 dark:text-[#fff]">
-                      Options
-                    </label>
-                    <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
-                      {Object.entries({
-                        a: item.options.optionOne,
-                        b: item.options.optionTwo,
-                        c: item.options.optionThree,
-                        d: item.options.optionFour,
-                      }).map(
-                        ([key, value]) =>
-                          value && (
-                            <div
-                              key={key}
-                              className="mb-2 last:mb-0 flex items-center"
-                            >
-                              <span className="font-medium dark:text-[#fff] mr-2">
-                                {key.toUpperCase()}:
-                              </span>
-                              <span className="dark:text-[#fff] flex-grow">
-                                {value}
-                              </span>
-                              {item.answerValidation === value && (
-                                <span className="ml-2 text-green-600">
-                                  ✓ Correct
-                                </span>
-                              )}
-                            </div>
-                          )
-                      )}
-                    </div>
-                  </div>
-                )}
+        <label className="block text-[13px] font-light text-[#010E30] mt-4 mb-2 dark:text-[#fff]">
+          Options
+        </label>
+        <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
+          {Object.entries({
+            a: item.options.optionOne,
+            b: item.options.optionTwo,
+            c: item.options.optionThree,
+            d: item.options.optionFour,
+          }).map(
+            ([key, value]) =>
+              value && (
+                <div
+                  key={key}
+                  className="mb-2 last:mb-0 flex items-center"
+                >
+                  <span className="font-medium dark:text-[#fff] mr-2">
+                    {key.toUpperCase()}:
+                  </span>
+                  <span className="dark:text-[#fff] flex-grow">
+                    {value}
+                  </span>
+                  {item.answerValidation === value && (
+                    <span className="ml-2 text-green-600">✓ Correct</span>
+                  )}
+                </div>
+              )
+          )}
+        </div>
+      </div>
+    )}
 
-                {/* Word Match */}
-                {item.type === "word match" && item.options && (
-                  <div className="mt-4">
-                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                      Options
-                    </label>
-                    <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
-                      {Object.entries({
-                        a: item.options.optionOne,
-                        b: item.options.optionTwo,
-                        c: item.options.optionThree,
-                        d: item.options.optionFour,
-                      }).map(
-                        ([key, value]) =>
-                          value && (
-                            <div
-                              key={key}
-                              className="mb-2 last:mb-0 flex items-center"
-                            >
-                              <span className="font-medium dark:text-[#fff] mr-2">
-                                {key.toUpperCase()}:
-                              </span>
-                              <span className="dark:text-[#fff] flex-grow">
-                                {value}
-                              </span>
-                              {item.answerValidation === value && (
-                                <span className="ml-2 text-green-600">
-                                  ✓ Correct
-                                </span>
-                              )}
-                            </div>
-                          )
-                      )}
-                    </div>
-                  </div>
-                )}
+    {/* Word Match */}
+    {item.type === "word match" && item.options && (
+      <div className="mt-4">
+        <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+          Options
+        </label>
+        <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
+          {Object.entries({
+            a: item.options.optionOne,
+            b: item.options.optionTwo,
+            c: item.options.optionThree,
+            d: item.options.optionFour,
+          }).map(
+            ([key, value]) =>
+              value && (
+                <div
+                  key={key}
+                  className="mb-2 last:mb-0 flex items-center"
+                >
+                  <span className="font-medium dark:text-[#fff] mr-2">
+                    {key.toUpperCase()}:
+                  </span>
+                  <span className="dark:text-[#fff] flex-grow">
+                    {value}
+                  </span>
+                  {item.answerValidation === value && (
+                    <span className="ml-2 text-green-600">✓ Correct</span>
+                  )}
+                </div>
+              )
+          )}
+        </div>
+      </div>
+    )}
 
-                {/* Reading/Writing */}
-                {(item.type === "reading" || item.type === "writing") && (
-                  <div className="mt-4">
-                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                      {item.type === "reading"
-                        ? "Reading Content"
-                        : "Writing Prompt"}
-                    </label>
-                    <div className="p-3 bg-gray-100 dark:bg-[#343434] rounded-lg">
-                      <p className="whitespace-pre-wrap dark:text-[#fff]">
-                        {item.answerValidation}
-                      </p>
-                      {item.answerValidation && (
-                        <div className="mt-2 text-right">
-                          <span className="text-green-600">
-                            ✓ Answer Provided
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+    {/* Reading/Writing */}
+    {(item.type === "reading" || item.type === "writing") && (
+      <div className="mt-4">
+        <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+          {item.type === "reading" ? "Reading Content" : "Writing Prompt"}
+        </label>
+        <div className="p-3 bg-gray-100 dark:bg-[#343434] rounded-lg">
+          <p className="whitespace-pre-wrap dark:text-[#fff]">
+            {item.answerValidation}
+          </p>
+          {item.answerValidation && (
+            <div className="mt-2 text-right">
+              <span className="text-green-600">✓ Answer Provided</span>
+            </div>
+          )}
+        </div>
+      </div>
+    )}
 
-                {/* Audio Display (for all types that might have audio) */}
-                {item.audioURL && (
-                  <div className="mt-4">
-                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                      Audio Content
-                    </label>
-                    <div className="flex items-center gap-3 bg-gray-100 dark:bg-[#343434] rounded-lg px-4 py-2">
-                      <audio
-                        controls
-                        src={item.audioURL}
-                        className="flex-1 min-w-0"
-                      />
-                      <span className="text-xs break-all dark:text-[#fff]">
-                        {item.audioName}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+    {/* Audio Display (for all types that might have audio) */}
+    {item.audioURL && (
+      <div className="mt-4">
+        <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+          Audio Content
+        </label>
+        <div className="flex items-center gap-3 bg-gray-100 dark:bg-[#343434] rounded-lg px-4 py-2">
+          <audio
+            controls
+            src={item.audioURL}
+            className="flex-1 min-w-0"
+          />
+          <span className="text-xs break-all dark:text-[#fff]">
+            {item.audioName}
+          </span>
+        </div>
+      </div>
+    )}
+  </div>
+))}
           </div>
 
           <div className="flex justify-end gap-4 mt-6">

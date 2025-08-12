@@ -195,27 +195,57 @@ export default function LiveClass() {
       return null;
     }
   };
-  const handleJoinCall = async () => {
-    const now = new Date();
-    const sessionStartTime = now.toTimeString().slice(0, 5);
-    console.log("Joined at:", sessionStartTime);
+ const handleJoinCall = async () => {
+  const now = new Date();
+  const sessionStartTime = now.toTimeString().slice(0, 5);
+  console.log("Joined at:", sessionStartTime);
 
+  if (classData?.sessionClassType === 'GROUPCLASS') {
+    await fetch(
+      `https://api.blackstoneinfomaticstech.com/groupclassschedule/bulkupdate/${classData.classLink}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          teacher: { teacherSessionStart: sessionStartTime }
+        })
+      }
+    );
+  } else {
     await updateAttendance({
       teacherSessionStart: sessionStartTime,
     });
-  };
-  const handleEndCall = async () => {
-    const now = new Date();
-    const sessionEndTime = now.toTimeString().slice(0, 5);
-    console.log("Left at:", sessionEndTime);
+  }
+};
 
-    const res = await updateAttendance({
+ const handleEndCall = async () => {
+  const now = new Date();
+  const sessionEndTime = now.toTimeString().slice(0, 5);
+  console.log("Left at:", sessionEndTime);
+
+  let res;
+
+  if (classData?.sessionClassType === 'GROUPCLASS') {
+    res = await fetch(
+      `https://api.blackstoneinfomaticstech.com/groupclassschedule/bulkupdate/${classData.classLink}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          teacher: { teacherSessionEnd: sessionEndTime }
+        })
+      }
+    );
+  } else {
+    res = await updateAttendance({
       teacherSessionEnd: sessionEndTime,
     });
-    if (res && res.status === 200) {
-      setShowFeedback(true);
-    }
-  };
+  }
+  if (res && (res.status === 200)) {
+    setShowFeedback(true);
+  }
+};
+
 
   const StarRating = ({
     value,

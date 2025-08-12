@@ -54,6 +54,30 @@ const TrailManagement = () => {
     setOpenPopup(null);
   };
 
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+const [meetingFilters, setMeetingFilters] = useState({
+  teacher: "",
+  course: "",
+  fromDate: "",
+});
+
+// Filtered students based on filters
+const filteredStudentsByFilters = filteredStudents.filter((student) => {
+  const matchesTeacher = meetingFilters.teacher
+    ? student.teacherName.toLowerCase().includes(meetingFilters.teacher.toLowerCase())
+    : true;
+
+  const matchesCourse = meetingFilters.course
+    ? student.student.course.toLowerCase().includes(meetingFilters.course.toLowerCase())
+    : true;
+
+  const matchesFromDate = meetingFilters.fromDate
+    ? new Date(student.evaluation[0].joiningDate) >= new Date(meetingFilters.fromDate)
+    : true;
+
+  return matchesTeacher && matchesCourse && matchesFromDate;
+});
+
   // Fetch students data from API
   const [students, setStudents] = useState<Student[]>([]); // Initialize as an empty array
   const [currentPage, setCurrentPage] = useState(1);
@@ -196,6 +220,27 @@ const TrailManagement = () => {
     router.push(`/admin-main/ui/studentlist?studentId=${studentId}`);
   };
 
+  function handleApplyMeetingFilters(meetingFilters: { teacher: string; course: string; fromDate: string; }): void {
+    const filtered = students.filter((student) => {
+      const matchesTeacher = meetingFilters.teacher
+        ? student.teacherName.toLowerCase().includes(meetingFilters.teacher.toLowerCase())
+        : true;
+
+      const matchesCourse = meetingFilters.course
+        ? student.student.course.toLowerCase().includes(meetingFilters.course.toLowerCase())
+        : true;
+
+      const matchesFromDate = meetingFilters.fromDate
+        ? new Date(student.evaluation[0].joiningDate) >= new Date(meetingFilters.fromDate)
+        : true;
+
+      return matchesTeacher && matchesCourse && matchesFromDate;
+    });
+
+    setFilteredStudents(filtered);
+    setCurrentPage(1); // Reset to page 1 when filters are applied
+  }
+
   return (
     <BaseLayout4>
       <AdminHeader currentSection="Student Lists" />
@@ -212,7 +257,10 @@ const TrailManagement = () => {
           />
 
           {/* Filter */}
-          <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer">
+          <div
+            className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+            onClick={() => setIsFilterModalOpen(true)} // Add onClick to open the filter modal
+          >
             <MdTune className="w-4 h-4" />
             <span>Filter</span>
           </div>
@@ -306,13 +354,13 @@ const TrailManagement = () => {
                             className="absolute right-0 mt-2 w-28 bg-white dark:bg-[#343434] shadow-md  rounded-lg z-50 text-[11px]"
                           >
                             <button
-                              className="w-full text-left px-4 py-2 hover:bg-[#404040]"
+                              className="w-full text-left px-4 py-2 hover:bg-[]"
                               onClick={() => handleViewDetails(student._id)}
                             >
                               View Details
                             </button>
                             <button
-                              className="w-full text-left px-4 py-2 hover:bg-[#404040]"
+                              className="w-full text-left px-4 py-2 hover:bg-[]"
                               onClick={handleCancel}
                             >
                               Cancel
@@ -334,6 +382,63 @@ const TrailManagement = () => {
           </table>
         </div>
       </div>
+
+{/* Filter Modal */}
+{isFilterModalOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
+    <div className="bg-white p-6 rounded-xl w-[400px] relative dark:bg-[#252525] shadow-xl">
+      <button
+        className="absolute top-4 right-4 text-gray-400 text-2xl"
+        onClick={() => setIsFilterModalOpen(false)} // Close the modal
+      >
+        &times;
+      </button>
+      <h2 className="text-lg font-semibold mb-6 dark:text-white">Filter by</h2>
+      <div className="mb-4">
+        <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Teacher Name</label>
+        <input
+          type="text"
+          className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+          value={meetingFilters.teacher}
+          onChange={(e) => setMeetingFilters({ ...meetingFilters, teacher: e.target.value })}
+        />
+      </div>
+      <div className="mb-4">
+        <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Course Name</label>
+        <input
+          type="text"
+          className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+          value={meetingFilters.course}
+          onChange={(e) => setMeetingFilters({ ...meetingFilters, course: e.target.value })}
+        />
+      </div>
+      <div className="mb-4">
+        <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">From Date</label>
+        <input
+          type="date"
+          className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+          value={meetingFilters.fromDate}
+          onChange={(e) => setMeetingFilters({ ...meetingFilters, fromDate: e.target.value })}
+        />
+      </div>
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => setMeetingFilters({ teacher: '', course: '', fromDate: '' })}
+          className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+        >
+          Reset
+        </button>
+        <button
+          className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+          onClick={() => handleApplyMeetingFilters(meetingFilters)}
+        >
+          Apply Filters
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
       <Pagination
         currentPage={currentPage}

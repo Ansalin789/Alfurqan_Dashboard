@@ -28,6 +28,15 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
   const [failed, setFailed] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
 
+  // New state for leave summary and records
+  const [leaveSummary, setLeaveSummary] = useState({
+    sickLeave: 0,
+    casualLeave: 0,
+    paidLeave: 0,
+    deductionDays: 0,
+  });
+  const [leaveRecords, setLeaveRecords] = useState<any[]>([]);
+
   useEffect(() => {
     const Id = localStorage.getItem("AcademicCoachPortalId") ?? "";
     const Name = localStorage.getItem("AcademicCoachPortalName") ?? "";
@@ -36,6 +45,43 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
       employeeId: Id,
       name: Name,
     }));
+
+    // Fetch leave data from API
+    if (Id) {
+      const token = typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+      axios
+        .get(`https://api.blackstoneinfomaticstech.com/leaverequest?employeeId=${Id}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((res) => {
+          const data = res.data;
+          setLeaveSummary({
+            sickLeave: data.sickLeave || 0,
+            casualLeave: data.casualLeave || 0,
+            paidLeave: data.paidLeave || 0,
+            deductionDays: data.deductionDays || 0,
+          });
+          setLeaveRecords(data.records || []);
+          // Pre-fill form with the latest record if available
+          if (data.records && data.records.length > 0) {
+            const latest = data.records[data.records.length - 1];
+            setForm((prev) => ({
+              ...prev,
+              ...latest,
+              fromDate: latest.fromDate ? latest.fromDate.slice(0, 10) : "",
+              toDate: latest.toDate ? latest.toDate.slice(0, 10) : "",
+              createdDate: latest.createdDate || new Date().toISOString(),
+              UpdatedDate: latest.updatedDate || new Date().toISOString(),
+            }));
+          }
+        })
+        .catch((err) => {
+          // Optionally handle error
+        });
+    }
   }, []);
 
   const handleChange = (
@@ -153,7 +199,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
               </label>
               <input
                 name="designation"
-                value={form.role}
+                value="Academiccoach"
                 readOnly
                 type="text"
                 className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
@@ -214,7 +260,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
           </div>
 
           {/* Right Section */}
-          <div className="flex flex-col h-full">
+          <div>
             <h2 className="text-lg font-normal text-gray-800 mb-3 dark:text-[#FFFFFF]">
               Leave Records
             </h2>
@@ -228,7 +274,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
               </label>
               <input
                 type="text"
-                value="2"
+                value={leaveSummary.sickLeave}
                 readOnly
                 className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
@@ -243,7 +289,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
               </label>
               <input
                 type="text"
-                value="2"
+                value={leaveSummary.casualLeave}
                 readOnly
                 className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
@@ -251,36 +297,50 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
 
             <div className="mb-4">
               <label
-                htmlFor="lossOfPay"
+                htmlFor="paidLeave"
+                className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]"
+              >
+                Paid Leave
+              </label>
+              <input
+                type="text"
+                value={leaveSummary.paidLeave}
+                readOnly
+                className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label
+                htmlFor="deductionDays"
                 className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]"
               >
                 Loss of Pay
               </label>
               <input
                 type="text"
-                value="2"
+                value={leaveSummary.deductionDays}
                 readOnly
                 className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
 
-           
-
-    <div className="flex flex-col flex-1 min-h-0">
-    <label
-      htmlFor="reason"
-      className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]"
-    >
-      Reason For Leave
-    </label>
-    <textarea
-      name="reason"
-      value={form.reason}
-      onChange={handleChange}
-      className="w-full flex-1 resize-none border rounded px-3 py-3 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
-    />
-  </div>
-</div>
+            <div className="mt-4">
+              <label
+                htmlFor="reason"
+                className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]"
+              >
+                Reason For Leave
+              </label>
+              <textarea
+                name="reason"
+                value={form.reason}
+                onChange={handleChange}
+                rows={2}
+                className="w-full border rounded px-3 py-3 h-full text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Divider and Buttons */}
@@ -288,13 +348,13 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1 border border-[#576CBC] text-[#576CBC] hover:border-[#4459A9] rounded hover:bg-[#E6E9F5] dark:hover:bg-[#333]"
+            className="px-3 py-1 border border-[#576CBC] rounded text-[#576CBC] hover:bg-gray-100 transition "
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-3 py-1 bg-[#576CBC] text-white rounded hover:bg-[#4459A9]"
+            className="px-3 py-1 bg-[#576CBC] text-white rounded hover:bg-blue-700 transition"
           >
             Submit
           </button>

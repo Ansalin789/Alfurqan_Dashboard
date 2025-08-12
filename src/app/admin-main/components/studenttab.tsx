@@ -176,7 +176,7 @@ interface AssignmentType {
   updatedDate?: string;
   updatedBy?: string;
   level?: string;
-  courses?: string;
+  course?: string;
   assignedDate?: string;
   dueDate?: string;
   answer?: string;
@@ -205,6 +205,7 @@ interface PaymentDetail {
   _id: string;
   userId: string;
   userName: string;
+  course:string;
   paymentStatus: string;
   paymentAmount: string;
   paymentResponse: PaymentResponse;
@@ -278,6 +279,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
   });
 
   const [isCourseFilterModalOpen, setIsCourseFilterModalOpen] = useState(false); // For Courses tab filter modal
+  const [isAssignmentFilterModalOpen, setIsAssignmentFilterModalOpen] = useState(false); // For Assignments tab filter modal
 
 
   useEffect(() => {
@@ -597,12 +599,13 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
     assignedDateTo: "",
     dueDateFrom: "",
     dueDateTo: "",
-    status: ""
+    status: "",
+    classType: "" // Added classType to filters state
   });
 
   // Get unique values for filter options
   const getUniqueCourses = () => {
-    const values = assignments.map(assignment => assignment.courses).filter(Boolean) as string[];
+    const values = assignments.map(assignment => assignment.course).filter(Boolean) as string[];
     return Array.from(new Set(values));
   };
   
@@ -685,7 +688,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
         return false;
       }
       // Course filter
-      if (filters.course && assignment.courses !== filters.course) {
+      if (filters.course && assignment.course !== filters.course) {
         return false;
       }
       // Level filter
@@ -725,6 +728,10 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
         if (dueDate > toDate) {
           return false;
         }
+      }
+      // Class Type filter
+      if (filters.classType && assignment.sessionClassType !== filters.classType) {
+        return false;
       }
       return true;
     });
@@ -777,7 +784,8 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
       assignedDateTo: "",
       dueDateFrom: "",
       dueDateTo: "",
-      status: ""
+      status: "",
+      classType: "" // Reset classType
     });
   };
 
@@ -786,7 +794,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
   };
 
   // Fetch payment history
-  useEffect(() => {
+useEffect(() => {
     const fetchPaymentHistory = async () => {
       try {
         const token = localStorage.getItem("AdminAuthToken");
@@ -794,9 +802,8 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
           console.error("Missing token or student ID");
           return;
         }
-        // console.log("Fetching payment history for userId:", userId);
 
-        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/student/paymenthistory?userId=${studentId}`, {
+        const response = await axios.get(`http://localhost:5001/student/paymenthistory?userId=${studentId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -805,6 +812,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
 
         console.log("Payment history API response:", response.data);
 
+        // Backend returns { totalCount, paymentDetails }
         if (response.data.paymentDetails) {
           setPaymentHistory(response.data.paymentDetails);
         }
@@ -894,7 +902,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
     return (
       (assignment.assignmentId && assignment.assignmentId.toLowerCase().includes(searchTerm)) || // Match Assignment ID
       (assignment.assignedTeacher && assignment.assignedTeacher.toLowerCase().includes(searchTerm)) || // Match Assigned By
-      (assignment.courses && assignment.courses.toLowerCase().includes(searchTerm)) || // Match Course
+      (assignment.course && assignment.course.toLowerCase().includes(searchTerm)) || // Match Course
       (assignment.level && assignment.level.toLowerCase().includes(searchTerm)) || // Match Level
       (assignment.title && assignment.title.toLowerCase().includes(searchTerm)) || // Match Assignment Name
       (assignment.sessionClassType && assignment.sessionClassType.toLowerCase().includes(searchTerm)) // Match Class Type
@@ -1423,9 +1431,13 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
                   {filteredPaymentData.length > 0 ? (
                     filteredPaymentData.map((payment, index) => (
                       <tr key={payment._id} className={`text-left dark:text-white ${index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"}`}>
-                        <td className="p-3">{payment.paymentResponse.id}</td>
-                        <td className="p-3">{new Date(payment.paymentDate).toLocaleDateString()}</td>
-                        <td className="p-3">{payment.userName}</td>
+                        <td className="p-3">{payment._id}</td>
+                        <td className="p-3">{new Date(payment.paymentDate).toLocaleDateString("en-GB",{
+                          day:'numeric',
+                          month:'short',
+                          year:'numeric',
+                        })}</td>
+                        <td className="p-3">{payment.course}</td>
                         <td className="p-3">{payment.paymentAmount}</td>
                         <td className="p-3">
                           <span className={`inline-flex items-center justify-center w-16 h-6 px-3 py-1 rounded-md ${payment.paymentStatus === "succeeded" ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] dark:text-[#377E36] text-[#377E36]" : "bg-[#ececfd] text-[#002c5f] dark:bg-[#2e333c] dark:text-[#fff]"}`}>
@@ -1588,7 +1600,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
               
               <div
                 className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
-                // onClick={() => setIsFilterModalOpen(true)}
+                onClick={() => setIsAssignmentFilterModalOpen(true)} // Open filter modal on click
               >
                 <MdTune className="w-4 h-4" />
                 <span>Filter</span>
@@ -1627,7 +1639,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
                       <tr key={assignment._id || index} className={`text-left dark:text-white ${index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"}`}>
                         <td className="p-3">{assignment.assignmentId}</td>
                         <td className="p-3">{assignment.assignedTeacher}</td>
-                        <td className="p-3">{assignment.courses}</td>
+                        <td className="p-3">{assignment.course}</td>
                         <td className="p-3">{assignment.level}</td>
                         <td className="p-3">{assignment.title}</td>
                         <td className="p-3">{assignment.sessionClassType}</td>
@@ -1651,6 +1663,120 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
               </table>
             </div>
           </div>
+
+          {/* Filter Modal for Assignments */}
+          {isAssignmentFilterModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
+              <div className="bg-white p-6 rounded-xl w-[400px] relative dark:bg-[#252525] shadow-xl">
+                <button
+                  className="absolute top-4 right-4 text-gray-400 text-2xl"
+                  onClick={() => setIsAssignmentFilterModalOpen(false)}
+                >
+                  &times;
+                </button>
+                <h2 className="text-lg font-semibold mb-6 dark:text-white">Filter by</h2>
+                
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Assignment Name</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={filters.assignmentName}
+                    onChange={(e) => handleFilterChange('assignmentName', e.target.value)}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Course</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={filters.course}
+                    onChange={(e) => handleFilterChange('course', e.target.value)}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Level</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={filters.level}
+                    onChange={(e) => handleFilterChange('level', e.target.value)}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Class Type</label>
+                  <select
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={filters.classType} // Assuming you have a classType in your filters state
+                    onChange={(e) => handleFilterChange('classType', e.target.value)}
+                  >
+                    <option value="REGULARCLASS">Regular Class</option>
+                    <option value="GROUPCLASS">Group Class</option>
+                    {/* Add more class type options as needed */}
+                  </select>
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Assigned Date</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                      value={filters.assignedDateFrom}
+                      onChange={(e) => handleFilterChange('assignedDateFrom', e.target.value)}
+                    />
+                    <input
+                      type="date"
+                      className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                      value={filters.assignedDateTo}
+                      onChange={(e) => handleFilterChange('assignedDateTo', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Due Date</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                      value={filters.dueDateFrom}
+                      onChange={(e) => handleFilterChange('dueDateFrom', e.target.value)}
+                    />
+                    <input
+                      type="date"
+                      className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                      value={filters.dueDateTo}
+                      onChange={(e) => handleFilterChange('dueDateTo', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={resetFilters}
+                    className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                    onClick={() => {
+                      setIsAssignmentFilterModalOpen(false);
+                      // Apply filters logic here
+                    }}
+                  >
+                    Apply Filters
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

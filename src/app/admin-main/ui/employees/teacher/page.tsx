@@ -187,6 +187,18 @@ interface WageData {
   updatedBy: string;
 }
 
+interface WagesResponse {
+  employeeId: string;
+  totalhours: number;
+  totalearnings: number;
+  monthlyData: Array<{
+    year: number;
+    month: number;
+    totalhours: number;
+  }>;
+  wageRecords: WageData[];
+}
+
 interface MonthlyData {
   year: number;
   month: number; // 1 to 12
@@ -269,6 +281,10 @@ const Teacher = () => {
   const [users, setUsers] = useState<User>();
   const [scheduledclass, setScheduledClass] = useState<ScheduledClass[]>([]);
   const [wages, setWages] = useState<WageData[]>([]);
+  const [wagesResponse, setWagesResponse] = useState<WagesResponse | null>(null);
+  const [editingWageId, setEditingWageId] = useState<string | null>(null);
+  const [editingRate, setEditingRate] = useState<string>("");
+  const [editingDuration, setEditingDuration] = useState<string>("");
   const [students, setStudents] = useState<StudentData[]>([]);
   const [teacherCounts, setTeacherCounts] = useState<TeacherCounts>({
     totalclasses: 0,
@@ -320,9 +336,9 @@ const Teacher = () => {
       const matchesSearch = searchFields.some((field) =>
         field
           ? field
-              .toString()
-              .toLowerCase()
-              .includes(searchEarnings.toLowerCase())
+            .toString()
+            .toLowerCase()
+            .includes(searchEarnings.toLowerCase())
           : false
       );
 
@@ -369,9 +385,85 @@ const Teacher = () => {
   const handleFilterChange = (newFilters: Record<string, any>) => {
     setFilters(newFilters);
   };
-  
+
   const handleResetFilters = () => {
     setFilters({});
+  };
+
+  const handleEditRate = (wageId: string, currentRate: string) => {
+    setEditingWageId(wageId);
+    setEditingRate(currentRate);
+  };
+const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string) => {
+  try {
+    const token = localStorage.getItem("AdminAuthToken");
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+      return;
+    }
+
+    // Step 1: Log incoming data
+    console.log("🔧 Saving rate for wageId:", wageId);
+    console.log("Rate:", rate);
+    console.log("HoursMins:", hoursMins);
+
+    // Step 2: Find wage to update
+    const wageToUpdate = wages.find(wage => wage._id === wageId);
+    if (!wageToUpdate) {
+      console.warn("⚠️ Wage not found for ID:", wageId);
+      return;
+    }
+
+    console.log("🧠 Found wage:", wageToUpdate);
+
+    // Step 3: Construct updated object
+    const updatedClassType = {
+      ...wageToUpdate.classType,
+      ...(rate !== undefined && rate !== "" && { rate }),
+      ...(hoursMins !== undefined && hoursMins !== "" && { hoursMins }),
+    };
+
+    const updatedWage = {
+      ...wageToUpdate,
+      classType: updatedClassType,
+    };
+
+    console.log("📦 Payload to send:", updatedWage);
+
+    // Step 4: Send API request
+    const response = await axios.put(
+      `http://localhost:5001/empwages/${wageId}`,
+      updatedWage,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("✅ API Response:", response.data);
+
+    // Step 5: Update local state
+    setWages(prevWages =>
+      prevWages.map(wage =>
+        wage._id === wageId ? updatedWage : wage
+      )
+    );
+
+  } catch (error: any) {
+    // Step 6: Show detailed error
+    console.error("❌ Error updating wage rate:", error.message || error);
+    if (error.response) {
+      console.error("🚨 Backend error response:", error.response.data);
+    }
+  }
+};
+
+
+  const handleCancelEdit = () => {
+    setEditingWageId(null);
+    setEditingRate("");
   };
 
   useEffect(() => {
@@ -467,8 +559,11 @@ const Teacher = () => {
   const fetchWages = async (token: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/empwages/${employeeId}`,
+        `http://localhost:5001/empwages`,
         {
+          params: {
+            employeeId: employeeId
+          },
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -476,9 +571,9 @@ const Teacher = () => {
         }
       );
 
-      const data = response.data;
-      const wagesArray = Array.isArray(data) ? data : [data];
-      setWages(wagesArray);
+      const data: WagesResponse = response.data;
+      setWagesResponse(data);
+      setWages(data.wageRecords || []);
     } catch (error) {
       console.error("Error fetching wages:", error);
     }
@@ -694,9 +789,9 @@ const Teacher = () => {
     const matchesSearch = searchFields.some((field) =>
       field
         ? field
-            .toString()
-            .toLowerCase()
-            .includes(searchScheduledClass.toLowerCase())
+          .toString()
+          .toLowerCase()
+          .includes(searchScheduledClass.toLowerCase())
         : false
     );
     return matchesSearch && matchesFilters;
@@ -743,26 +838,26 @@ const Teacher = () => {
   // Filtered Wages
   const filteredWages = Array.isArray(wages)
     ? wages.filter((item) => {
-        const searchFields = [
-          item.classType?.className || "",
-          item.classType?.rate || "",
-          item.classType?.currency || "",
-        ];
-        
-        let matchesFilters = true;
-        if (filters.className && item.classType && !item.classType.className.toLowerCase().includes(filters.className.toLowerCase())) {
-          matchesFilters = false;
-        }
-        if (filters.currency && item.classType && item.classType.currency.toLowerCase() !== filters.currency.toLowerCase()) {
-          matchesFilters = false;
-        }
+      const searchFields = [
+        item.classType?.className || "",
+        item.classType?.rate || "",
+        item.classType?.currency || "",
+      ];
 
-        const matchesSearch = searchFields.some((field) =>
-          field.toString().toLowerCase().includes(searchWages.toLowerCase())
-        );
+      let matchesFilters = true;
+      if (filters.className && item.classType && !item.classType.className.toLowerCase().includes(filters.className.toLowerCase())) {
+        matchesFilters = false;
+      }
+      if (filters.currency && item.classType && item.classType.currency.toLowerCase() !== filters.currency.toLowerCase()) {
+        matchesFilters = false;
+      }
 
-        return matchesSearch && matchesFilters;
-      })
+      const matchesSearch = searchFields.some((field) =>
+        field.toString().toLowerCase().includes(searchWages.toLowerCase())
+      );
+
+      return matchesSearch && matchesFilters;
+    })
     : [];
 
   // Filtered Working Hours
@@ -770,17 +865,17 @@ const Teacher = () => {
     const searchFields = [item.day, item.date];
 
     let matchesFilters = true;
-    if(filters.day && item.day.toLowerCase() !== filters.day.toLowerCase()){
+    if (filters.day && item.day.toLowerCase() !== filters.day.toLowerCase()) {
       matchesFilters = false;
     }
-    if(filters.date){
+    if (filters.date) {
       const itemDate = new Date(item.date);
       const from = filters.date.from ? new Date(filters.date.from) : null;
       const to = filters.date.to ? new Date(filters.date.to) : null;
-      if(from && itemDate < from){
+      if (from && itemDate < from) {
         matchesFilters = false;
       }
-      if(to && itemDate > to){
+      if (to && itemDate > to) {
         matchesFilters = false;
       }
     }
@@ -788,9 +883,9 @@ const Teacher = () => {
     const matchesSearch = searchFields.some((field) =>
       field
         ? field
-            .toString()
-            .toLowerCase()
-            .includes(searchWorkingHours.toLowerCase())
+          .toString()
+          .toLowerCase()
+          .includes(searchWorkingHours.toLowerCase())
         : false
     );
     return matchesSearch && matchesFilters;
@@ -845,42 +940,48 @@ const Teacher = () => {
 
   const scheduledClassFilterFields: FilterField[] = [
     { name: 'studentName', label: 'Student Name', type: 'select', options: scheduleStudentNameOptions },
-    { name: 'classType', label: 'Class Type', type: 'select', options: [
-      { value: 'trial', label: 'Trial' },
-      { value: 'regular', label: 'Regular' },
-    ]},
+    {
+      name: 'classType', label: 'Class Type', type: 'select', options: [
+        { value: 'trial', label: 'Trial' },
+        { value: 'regular', label: 'Regular' },
+      ]
+    },
     { name: 'status', label: 'Status', type: 'select', options: scheduleStatusOptions },
     { name: 'dateRange', label: 'Date', type: 'date-range' },
   ];
 
   const earningsFilterFields: FilterField[] = [
-    { name: 'month', label: 'Month', type: 'select', options: Array.from({length: 12}, (_, i) => ({value: (i+1).toString(), label: new Date(0, i).toLocaleString('default', { month: 'long' }) }))},
+    { name: 'month', label: 'Month', type: 'select', options: Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString(), label: new Date(0, i).toLocaleString('default', { month: 'long' }) })) },
     { name: 'year', label: 'Year', type: 'text' },
   ];
 
   const paymentsFilterFields: FilterField[] = [
     { name: 'paymentDate', label: 'Payment Date', type: 'date-range' },
-    { name: 'status', label: 'Status', type: 'select', options: [
-      { value: 'paid', label: 'Paid' },
-      { value: 'pending', label: 'Pending' },
-    ] },
+    {
+      name: 'status', label: 'Status', type: 'select', options: [
+        { value: 'paid', label: 'Paid' },
+        { value: 'pending', label: 'Pending' },
+      ]
+    },
   ];
 
   const wagesFilterFields: FilterField[] = [
     { name: 'className', label: 'Class Name', type: 'text' },
-    { name: 'currency', label: 'Currency', type: 'select', options: [
-      { value: 'usd', label: 'USD' },
-      { value: 'eur', label: 'EUR' },
-    ] },
+    {
+      name: 'currency', label: 'Currency', type: 'select', options: [
+        { value: 'usd', label: 'USD' },
+        { value: 'eur', label: 'EUR' },
+      ]
+    },
   ];
 
   const workingHoursFilterFields: FilterField[] = [
-    { name: 'day', label: 'Day', type: 'select', options: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => ({value: d.toLowerCase(), label: d})) },
+    { name: 'day', label: 'Day', type: 'select', options: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => ({ value: d.toLowerCase(), label: d })) },
     { name: 'date', label: 'Date', type: 'date-range' },
   ];
 
   const getFilterFieldsForTab = (tab: string) => {
-    switch(tab) {
+    switch (tab) {
       case 'Studentslist':
         return studentslistFilterFields;
       case 'ScheduledClass':
@@ -905,77 +1006,77 @@ const Teacher = () => {
         <div className="grid grid-cols-5 gap-2">
           {/* Left Card */}
           <div className="col-span-3 bg-[#5E6578] text-white px-4 py-3 rounded-lg shadow-sm flex flex-row">
-          <div className="flex flex-col items-center w-[30%] pr-4 py-6 border-r border-[#BCBCBC] gap-y-2">
-            <div className="w-[90px] h-[90px] rounded-full overflow-hidden border border-white">
-              <img
-                src="/assets/images/Avatar.png"
-                alt="Avatar"
-                className="object-cover w-full h-full"
-              />
+            <div className="flex flex-col items-center w-[30%] pr-4 py-6 border-r border-[#BCBCBC] gap-y-2">
+              <div className="w-[90px] h-[90px] rounded-full overflow-hidden border border-white">
+                <img
+                  src="/assets/images/Avatar.png"
+                  alt="Avatar"
+                  className="object-cover w-full h-full"
+                />
+              </div>
+              <h2 className="text-[12px] font-semibold text-center mt-2">
+                {users?.userName}
+              </h2>
+              <span className="text-gray-300 text-center text-[10px]">
+                {users?.email}
+              </span>
             </div>
-            <h2 className="text-[12px] font-semibold text-center mt-2">
-              {users?.userName}
-            </h2>
-            <span className="text-gray-300 text-center text-[10px]">
-              {users?.email}
-            </span>
-          </div>
 
-          <div className="flex flex-col md:w-1/2 gap-4 px-3 border-r border-[#BCBCBC]">
-            <h4 className="text-[13px] font-semibold mb-2 py-2">
-            Personal Info
-            </h4>
-            <div className="text-xs">
-              <div className="py-2 flex flex-row justify-between">
-                <span className="text-gray-200">Contact:</span>{" "}
-                <span className="text-gray-200 px-2 text-[10px]">
-                  {users?.contact}
-                </span>
-              </div>
-              <div className="py-2 flex flex-row justify-between">
-                <span className="text-gray-200">Country:</span>{" "}
-                <span className="text-gray-200 px-2 text-[10px]">
-                  {users?.country}
-                </span>
-              </div>
-              <div className="py-2 flex flex-row justify-between">
-                <span className="text-gray-200">Gender:</span>{" "}
-                <span className="text-gray-200 px-2 text-[10px]">
-                  {users?.gender}
-                </span>
-              </div>
-              
-              
-              
-            </div>
-          </div>
+            <div className="flex flex-col md:w-1/2 gap-4 px-3 border-r border-[#BCBCBC]">
+              <h4 className="text-[13px] font-semibold mb-2 py-2">
+                Personal Info
+              </h4>
+              <div className="text-xs">
+                <div className="py-2 flex flex-row justify-between">
+                  <span className="text-gray-200">Contact:</span>{" "}
+                  <span className="text-gray-200 px-2 text-[10px]">
+                    {users?.contact}
+                  </span>
+                </div>
+                <div className="py-2 flex flex-row justify-between">
+                  <span className="text-gray-200">Country:</span>{" "}
+                  <span className="text-gray-200 px-2 text-[10px]">
+                    {users?.country}
+                  </span>
+                </div>
+                <div className="py-2 flex flex-row justify-between">
+                  <span className="text-gray-200">Gender:</span>{" "}
+                  <span className="text-gray-200 px-2 text-[10px]">
+                    {users?.gender}
+                  </span>
+                </div>
 
-          <div className="flex flex-col md:w-1/2 gap-4 px-3">
-            <h4 className="text-[13px] font-semibold mb-2 py-4">
-              {/* Educational Information */}
-            </h4>
-            <div className="text-xs">
-            <div className="py-2 flex flex-row justify-between">
-                <span className="text-gray-200">Nationality:</span>{" "}
-                <span className="text-gray-200 px-2 text-[10px]">
-                  {users?.country}
-                </span>
+
+
               </div>
-              <div className="py-2 flex flex-row justify-between">
-                <span className="text-gray-200">Course:</span>{" "}
-                <span className="text-gray-200 px-2 text-[10px]">
-                  {users?.position}
-                </span>
-              </div>
-              <div className="py-2 flex flex-row justify-between">
-                <span className="text-gray-200">Employment:</span>{" "}
-                <span className="text-gray-200 px-2 text-[10px]">
-                Full Time
-                </span>
+            </div>
+
+            <div className="flex flex-col md:w-1/2 gap-4 px-3">
+              <h4 className="text-[13px] font-semibold mb-2 py-4">
+                {/* Educational Information */}
+              </h4>
+              <div className="text-xs">
+                <div className="py-2 flex flex-row justify-between">
+                  <span className="text-gray-200">Nationality:</span>{" "}
+                  <span className="text-gray-200 px-2 text-[10px]">
+                    {users?.country}
+                  </span>
+                </div>
+                <div className="py-2 flex flex-row justify-between">
+                  <span className="text-gray-200">Course:</span>{" "}
+                  <span className="text-gray-200 px-2 text-[10px]">
+                    {users?.position}
+                  </span>
+                </div>
+                <div className="py-2 flex flex-row justify-between">
+                  <span className="text-gray-200">Employment:</span>{" "}
+                  <span className="text-gray-200 px-2 text-[10px]">
+                    Full Time
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
           {/* Right Analytics Panel */}
           <div className="col-span-2 bg-[#7689BD] px-3 py-3 rounded-lg shadow-sm text-white">
@@ -1008,9 +1109,9 @@ const Teacher = () => {
             </div>
           </div>
 
-          
+
         </div>
-        
+
 
         {/*Table card */}
         <div className="mt-4  h-min">
@@ -1018,11 +1119,10 @@ const Teacher = () => {
             {tabs.map((tab) => (
               <button
                 key={tab}
-                className={`px-3 py-[7px] text-xs font-medium focus:outline-none transition-all duration-200 ${
-                  activeTab === tab
+                className={`px-3 py-[7px] text-xs font-medium focus:outline-none transition-all duration-200 ${activeTab === tab
                     ? "border-b border-b-[#576CBC] text-[#576CBC]"
                     : "text-[#010E30] dark:text-white"
-                }`}
+                  }`}
                 onClick={() => setActiveTab(tab)}
               >
                 {tab}
@@ -1034,8 +1134,8 @@ const Teacher = () => {
             {activeTab === "Studentslist" && (
               <div className="">
                 <div className="rounded-xl overflow-hidden">
-                <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                <input
+                  <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <input
                       type="text"
                       placeholder="Search"
                       className="bg-transparent outline-none text-[12px] w-32 py-3"
@@ -1044,8 +1144,8 @@ const Teacher = () => {
                     />
                     <div className="relative">
                       <button
-                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-3 border-r-2 border-l-2 px-48 cursor-pointer"
-                      onClick={() => setIsFilterModalOpen(true)}
+                        className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-3 border-r-2 border-l-2 px-48 cursor-pointer"
+                        onClick={() => setIsFilterModalOpen(true)}
                       >
                         <MdTune className="w-4 h-4" />
                         <span>Filter</span>
@@ -1090,11 +1190,10 @@ const Teacher = () => {
                               return (
                                 <tr
                                   key={item.studentId || index}
-                                  className={`text-center dark:text-white ${
-                                    index % 2 === 0
+                                  className={`text-center dark:text-white ${index % 2 === 0
                                       ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                       : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                  }`}
+                                    }`}
                                 >
                                   <td className="p-3">{item.studentId}</td>
                                   <td className="p-3">
@@ -1140,27 +1239,26 @@ const Teacher = () => {
               <div className="space-y-2 -mt-8">
                 <div className="justify-end text-end">
                   <button
-                    className={`font-medium text-[14px] ${
-                      view === "month"
+                    className={`font-medium text-[14px] ${view === "month"
                         ? "text-black"
                         : "text-white bg-[#576CBC] py-[4px] px-2 rounded"
-                    }`}
+                      }`}
                     onClick={handleclickcalender}
                   >
                     <FaCalendarAlt />
                   </button>
                 </div>
                 <div className="rounded-xl overflow-hidden">
-                <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                      <input
-                        type="text"
-                        placeholder="Search"
-                        className="bg-transparent outline-none text-[12px] w-32 py-3"
-                        value={searchScheduledClass}
-                        onChange={(e) =>
-                          setSearchScheduledClass(e.target.value)
-                        }
-                      />
+                  <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      className="bg-transparent outline-none text-[12px] w-32 py-3"
+                      value={searchScheduledClass}
+                      onChange={(e) =>
+                        setSearchScheduledClass(e.target.value)
+                      }
+                    />
                     <div
                       className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-3 border-r-2 border-l-2 px-48 cursor-pointer"
                       onClick={() => setIsFilterModalOpen(true)}
@@ -1169,10 +1267,10 @@ const Teacher = () => {
                       <span>Filter</span>
                     </div>
                     <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-                        Showing {filteredScheduledClass.length === 0 ? 0 : 1} to{" "}
-                        {filteredScheduledClass.length} of{" "}
-                        {filteredScheduledClass.length}
-                      </span>
+                      Showing {filteredScheduledClass.length === 0 ? 0 : 1} to{" "}
+                      {filteredScheduledClass.length} of{" "}
+                      {filteredScheduledClass.length}
+                    </span>
                   </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
@@ -1215,11 +1313,10 @@ const Teacher = () => {
                             .map((event, index) => (
                               <tr
                                 key={event._id}
-                                className={`text-center dark:text-white ${
-                                  index % 2 === 0
+                                className={`text-center dark:text-white ${index % 2 === 0
                                     ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                     : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                }`}
+                                  }`}
                               >
                                 <td className="p-3">
                                   {event.student.studentFirstName}
@@ -1248,11 +1345,10 @@ const Teacher = () => {
                                 </td>
                                 <td className="p-3">
                                   <span
-                                    className={`text-[9px] dark:bg-[#2E3C2E] dark:text-[#377E36] font-semibold px-3 py-[2px] rounded-md inline-block ${
-                                      statusStyle[
-                                        event.scheduleStatus as keyof typeof statusStyle
+                                    className={`text-[9px] dark:bg-[#2E3C2E] dark:text-[#377E36] font-semibold px-3 py-[2px] rounded-md inline-block ${statusStyle[
+                                      event.scheduleStatus as keyof typeof statusStyle
                                       ]
-                                    }`}
+                                      }`}
                                   >
                                     {event.scheduleStatus}
                                   </span>
@@ -1288,14 +1384,14 @@ const Teacher = () => {
             {activeTab === "Earnings" && (
               <div className="space-y-2">
                 <div className="rounded-xl overflow-hidden">
-                <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                      <input
-                        type="text"
-                        placeholder="Search"
-                        className="bg-transparent outline-none text-[12px] w-32 py-3"
-                        value={searchEarnings}
-                        onChange={(e) => setSearchEarnings(e.target.value)}
-                      />
+                  <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      className="bg-transparent outline-none text-[12px] w-32 py-3"
+                      value={searchEarnings}
+                      onChange={(e) => setSearchEarnings(e.target.value)}
+                    />
                     <div
                       className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
                       onClick={() => setIsFilterModalOpen(true)}
@@ -1304,17 +1400,17 @@ const Teacher = () => {
                       <span>Filter</span>
                     </div>
                     <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-                        Showing{" "}
-                        {filteredEarningsMonths.length === 0
-                          ? 0
-                          : (earningsPage - 1) * earningsPerPage + 1}{" "}
-                        to{" "}
-                        {Math.min(
-                          earningsPage * earningsPerPage,
-                          filteredEarningsMonths.length
-                        )}{" "}
-                        of {filteredEarningsMonths.length}
-                      </span>
+                      Showing{" "}
+                      {filteredEarningsMonths.length === 0
+                        ? 0
+                        : (earningsPage - 1) * earningsPerPage + 1}{" "}
+                      to{" "}
+                      {Math.min(
+                        earningsPage * earningsPerPage,
+                        filteredEarningsMonths.length
+                      )}{" "}
+                      of {filteredEarningsMonths.length}
+                    </span>
                   </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
@@ -1342,11 +1438,10 @@ const Teacher = () => {
                           paginatedEarnings.map((row, index) => (
                             <tr
                               key={row.key}
-                              className={`text-center dark:text-white ${
-                                index % 2 === 0
+                              className={`text-center dark:text-white ${index % 2 === 0
                                   ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
+                                }`}
                             >
                               <td className="p-3">{`${row.monthName} ${row.currentYear}`}</td>
                               <td className="p-3">
@@ -1386,14 +1481,14 @@ const Teacher = () => {
             {activeTab === "Payments" && (
               <div className="space-y-6">
                 <div className="rounded-xl overflow-hidden">
-                <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                      <input
-                        type="text"
-                        placeholder="Search"
-                        className="bg-transparent outline-none text-[12px] w-32 py-3"
-                        value={searchPayments}
-                        onChange={(e) => setSearchPayments(e.target.value)}
-                      />
+                  <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      className="bg-transparent outline-none text-[12px] w-32 py-3"
+                      value={searchPayments}
+                      onChange={(e) => setSearchPayments(e.target.value)}
+                    />
                     <div
                       className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
                       onClick={() => setIsFilterModalOpen(true)}
@@ -1402,7 +1497,7 @@ const Teacher = () => {
                       <span>Filter</span>
                     </div>
                     <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-                        Showing {filteredSalaryWages.length === 0 ? 0 : 1} to {filteredSalaryWages.length} of {filteredSalaryWages.length}
+                      Showing {filteredSalaryWages.length === 0 ? 0 : 1} to {filteredSalaryWages.length} of {filteredSalaryWages.length}
                     </span>
                   </div>
                   <div className="overflow-x-auto max-h-none">
@@ -1419,7 +1514,7 @@ const Teacher = () => {
                             Amount
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
-                          DeductionAmount
+                            DeductionAmount
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Payment Method
@@ -1440,11 +1535,10 @@ const Teacher = () => {
                             .map((item, index) => (
                               <tr
                                 key={item._id}
-                                className={`text-center dark:text-white ${
-                                  index % 2 === 0
+                                className={`text-center dark:text-white ${index % 2 === 0
                                     ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                     : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                }`}
+                                  }`}
                               >
                                 <td className="p-3">
                                   {new Date(item.createdDate).toLocaleDateString(
@@ -1464,11 +1558,10 @@ const Teacher = () => {
                                 <td className="p-3">
                                   <span
                                     className={`inline-flex items-center justify-center gap-1 px-3 py-[1px] rounded-md text-[10px] font-semibold
-                                    ${
-                                      item.paymentStatus.toLowerCase() === "pending"
+                                    ${item.paymentStatus.toLowerCase() === "pending"
                                         ? "bg-red-100 text-[#D34645] dark:bg-[#D3464533] dark:bg-opacity-20 dark:text-[#D34645]"
                                         : "bg-green-100 text-green-700 dark:bg-[#2E3C2E] dark:text-[#377E36] px-6"
-                                    }
+                                      }
                                   `}
                                   >
                                     {item.paymentStatus}
@@ -1510,14 +1603,14 @@ const Teacher = () => {
             {activeTab === "Wages" && (
               <div className="space-y-6">
                 <div className="rounded-xl overflow-hidden">
-                <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                      <input
-                        type="text"
-                        placeholder="Search"
-                        className="bg-transparent outline-none text-[12px] w-32 py-3"
-                        value={searchWages}
-                        onChange={(e) => setSearchWages(e.target.value)}
-                      />
+                  <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      className="bg-transparent outline-none text-[12px] w-32 py-3"
+                      value={searchWages}
+                      onChange={(e) => setSearchWages(e.target.value)}
+                    />
                     <div
                       className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
                       onClick={() => setIsFilterModalOpen(true)}
@@ -1526,17 +1619,17 @@ const Teacher = () => {
                       <span>Filter</span>
                     </div>
                     <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-                        Showing{" "}
-                        {filteredWages.length === 0
-                          ? 0
-                          : (wagesPage - 1) * wagesPerPage + 1}{" "}
-                        to{" "}
-                        {Math.min(
-                          wagesPage * wagesPerPage,
-                          filteredWages.length
-                        )}{" "}
-                        of {filteredWages.length}
-                      </span>
+                      Showing{" "}
+                      {filteredWages.length === 0
+                        ? 0
+                        : (wagesPage - 1) * wagesPerPage + 1}{" "}
+                      to{" "}
+                      {Math.min(
+                        wagesPage * wagesPerPage,
+                        filteredWages.length
+                      )}{" "}
+                      of {filteredWages.length}
+                    </span>
                   </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
@@ -1557,6 +1650,7 @@ const Teacher = () => {
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Duration
                           </th>
+
                         </tr>
                       </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
@@ -1564,31 +1658,87 @@ const Teacher = () => {
                           paginatedWages.map((item, index) => (
                             <tr
                               key={item._id}
-                              className={`text-center dark:text-white ${
-                                index % 2 === 0
+                              className={`text-center dark:text-white ${index % 2 === 0
                                   ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
+                                }`}
                             >
                               <td className="p-3">
                                 {item.classType?.className || "-"}
                               </td>
                               <td className="p-3">
-                                {item.classType?.rate || "-"}
+                                <input
+                                  type="text"
+                                  className="w-16 px-2 py-1 text-xs dark:bg-[#2C2C2C] dark:text-white text-center"
+                                  value={item.classType?.rate || ""}
+                                  onChange={e => {
+                                    const newRate = e.target.value;
+                                    // update local state (editing value)
+                                    setWages(prevWages =>
+                                      prevWages.map(wage =>
+                                        wage._id === item._id
+                                          ? {
+                                            ...wage,
+                                            classType: {
+                                              ...wage.classType,
+                                              rate: newRate,
+                                            },
+                                          }
+                                          : wage
+                                      )
+                                    );
+                                  }}
+                                  onKeyDown={e => {
+                                    if (e.key === "Enter") {
+                                      handleSaveRate(item._id, item.classType?.rate, undefined);
+                                    }
+                                  }}
+                                />
+
                               </td>
                               <td className="p-3">
                                 {item.classType?.currency || "-"}
                               </td>
                               <td className="p-3">
-                                {item.classType?.hoursMins
-                                  ? `${item.classType.hoursMins} mins`
-                                  : "-"}
+                                {item.classType?.className === "TRAILCLASS" ? (
+                                  <span className="text-xs dark:text-white">1 day</span>
+                                ) : (
+                                  <select
+                                    className="w-20 px-2 py-1 text-xs dark:bg-[#2C2C2C] dark:text-white"
+                                    value={item.classType?.hoursMins || ""}
+                                    onChange={e => {
+                                      const hoursMins = e.target.value;
+
+                                      // ✅ 1. Update local state
+                                      setWages(prevWages =>
+                                        prevWages.map(wage =>
+                                          wage._id === item._id
+                                            ? {
+                                              ...wage,
+                                              classType: {
+                                                ...wage.classType,
+                                                hoursMins: hoursMins,
+                                              },
+                                            }
+                                            : wage
+                                        )
+                                      );
+
+                                      // ✅ 2. Call save function with only duration
+                                      handleSaveRate(item._id, undefined, hoursMins);
+                                    }}
+                                  >
+                                    <option value="30 min">30 min</option>
+                                    <option value="60 min">60 min</option>
+                                  </select>
+                                )}
                               </td>
+
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td colSpan={4} className="p-4 text-center">
+                            <td colSpan={5} className="p-4 text-center">
                               No data available
                             </td>
                           </tr>
@@ -1612,14 +1762,14 @@ const Teacher = () => {
             {activeTab === "WorkingHours" && (
               <div className="space-y-6">
                 <div className="rounded-xl overflow-hidden">
-                <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                      <input
-                        type="text"
-                        placeholder="Search"
-                        className="bg-transparent outline-none text-[12px] w-32 py-3"
-                        value={searchWorkingHours}
-                        onChange={(e) => setSearchWorkingHours(e.target.value)}
-                      />
+                  <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      className="bg-transparent outline-none text-[12px] w-32 py-3"
+                      value={searchWorkingHours}
+                      onChange={(e) => setSearchWorkingHours(e.target.value)}
+                    />
                     <div
                       className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
                       onClick={() => setIsFilterModalOpen(true)}
@@ -1628,10 +1778,10 @@ const Teacher = () => {
                       <span>Filter</span>
                     </div>
                     <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-                        Showing {filteredWorkingHours.length === 0 ? 0 : 1} to{" "}
-                        {filteredWorkingHours.length} of{" "}
-                        {filteredWorkingHours.length}
-                      </span>
+                      Showing {filteredWorkingHours.length === 0 ? 0 : 1} to{" "}
+                      {filteredWorkingHours.length} of{" "}
+                      {filteredWorkingHours.length}
+                    </span>
                   </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
@@ -1661,11 +1811,10 @@ const Teacher = () => {
                           .map((item, index) => (
                             <tr
                               key={index}
-                              className={`text-center dark:text-white ${
-                                index % 2 === 0
+                              className={`text-center dark:text-white ${index % 2 === 0
                                   ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
+                                }`}
                             >
                               <td className="p-3">{item.day}</td>
                               <td className="p-3">{item.date}</td>

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import Image from "next/image";
 import Link from 'next/link';
@@ -7,12 +7,9 @@ import { RiDashboardFill } from "react-icons/ri";
 import { MdBookmarks, MdAnalytics } from "react-icons/md";
 import { IoPeopleSharp } from "react-icons/io5";
 import { LuMessagesSquare } from "react-icons/lu";
-import { GiGraduateCap } from "react-icons/gi";
 import { PiBookOpenFill } from "react-icons/pi";
 import { IoMdSettings, IoIosArrowForward, IoIosArrowDown } from "react-icons/io";
 import { usePathname } from "next/navigation";
-
-import "@/styles/globals.css";
 
 const SidebarItems = [
   {
@@ -25,20 +22,20 @@ const SidebarItems = [
     href: '#',
     icon: MdBookmarks,
     subItems: [
-      { name: 'Trail Class', href: '/admin-main/ui/evaluations', icon: MdBookmarks },
-      { name: 'Scheduled Trail class', href: '/admin-main/ui/trailmanagement', icon: MdBookmarks },
+      { name: 'Trail Class', href: '/admin-main/ui/evaluations' },
+      { name: 'Scheduled Trail class', href: '/admin-main/ui/trailmanagement' },
     ],
   },
-  { name: 'Manage Students', href: '/admin-main/ui/student', icon: '/assets/images/local-library.svg' },
-  { name: 'Manage Employees', href: '/admin-main/ui/employees', icon: '/assets/images/business-center.svg' },
+  { name: 'Manage Students', href: '/admin-main/ui/student', icon: '/assets/images/ll.svg' },
+  { name: 'Manage Employees', href: '/admin-main/ui/employees', icon: '/assets/images/bc.svg' },
   { name: 'Courses', href: '/admin-main/ui/courses', icon: PiBookOpenFill },
   {
     name: 'Schedule',
     href: '#',
     icon: '/assets/images/ChalkboardTeacher.svg',
     subItems: [
-      { name: 'Meeting', href: '/admin-main/ui/meeting', icon: MdAnalytics },
-      { name: 'Classes', href: '/admin-main/ui/classes', icon: '/assets/images/clssss.png' },
+      { name: 'Meeting', href: '/admin-main/ui/meeting' },
+      { name: 'Classes', href: '/admin-main/ui/classes' },
     ],
   },
   {
@@ -46,9 +43,9 @@ const SidebarItems = [
     href: '#',
     icon: '/assets/images/ChartLineUp.svg',
     subItems: [
-      { name: 'Invoice', href: '/admin-main/ui/Invoice', icon: MdBookmarks },
-      { name: 'Salary and Wages', href: '/admin-main/ui/salaryandwages', icon: MdBookmarks },
-      { name: 'Expenses', href: '/admin-main/ui/expenses', icon: MdBookmarks },
+      { name: 'Invoice', href: '/admin-main/ui/Invoice' },
+      { name: 'Salary and Wages', href: '/admin-main/ui/salaryandwages' },
+      { name: 'Expenses', href: '/admin-main/ui/expenses' },
     ],
   },
   { name: 'Analytics', href: '/admin-main/ui/analytics', icon: MdAnalytics },
@@ -60,12 +57,9 @@ export default function Sidebar4() {
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const currentPath = usePathname();
 
-  const isSubItemActive = (subItems: any[]) =>
-    subItems.some((subItem) => currentPath === subItem.href);
-
   useEffect(() => {
     SidebarItems.forEach((item) => {
-      if (item.subItems && isSubItemActive(item.subItems)) {
+      if (item.subItems && item.subItems.some((sub) => currentPath === sub.href)) {
         setExpandedItem(item.name);
       }
     });
@@ -76,89 +70,84 @@ export default function Sidebar4() {
   };
 
   return (
-    <div className="sidebar__wrapper bg-[#0e2231] h-full overflow-y-auto" style={{ width: "240px" }}>
-      <aside className="sidebar bg-[#0e2536] dark:bg-[#1D1D1D] p-4 h-full flex flex-col" style={{ width: "240px" }}>
-
-        {/* Logo Section */}
+    <div className="sidebar__wrapper h-full overflow-y-auto" style={{ width: "240px" }}>
+    <aside className="sidebar !bg-[#012A4A] dark:!bg-[#1D1D1D] p-4 h-full flex flex-col" style={{ width: "240px", backgroundColor: "#012A4A !important" }}>   
+        {/* Logo */}
         <div className='flex items-center gap-3 mt-5 mb-6 px-2'>
-          <Image 
-            src="/assets/images/alfwhite.png" 
-            width={40} 
-            height={40} 
-            className='w-10 h-10 object-contain' 
-            alt='logo' 
-          />
-          <div className="text-white leading-tight">
+          <Image src="/assets/images/alfwhite.png" width={40} height={40} alt='logo' />
+          <div className="text-white">
             <h3 className="font-bold text-[18px]">AL FURQAN</h3>
-            <h4 className="font-light text-[14px] font-sans">academy</h4>
+            <h4 className="text-[14px] font-light">academy</h4>
           </div>
         </div>
 
-        {/* Menu List */}
         <ul className="space-y-1.5 flex-1">
           {SidebarItems.map(({ name, href, icon: Icon, subItems }) => {
-            const isParentActive = currentPath === href && !subItems;
+            const isParentActive = currentPath === href;
+            const isChildActive = subItems?.some((sub) => currentPath === sub.href);
+            const isActive = isParentActive || isChildActive;
+
+            const ItemContent = (
+              <div
+                className={`w-full flex items-center gap-3 px-3 py-3 text-[16px] font-normal rounded-md transition-all duration-200
+                  ${isActive ? 'bg-[#576CBC] text-white' : 'text-[#818790]'}`}
+              >
+                {/* Icon */}
+                <span className="text-[18px] w-5 flex justify-center items-center">
+                  {typeof Icon === 'string' ? (
+                    <div className="relative w-5 h-5">
+                      <Image
+                        src={Icon}
+                        fill
+                        alt={name}
+                        className={`object-contain ${isActive ? 'brightness-0 invert' : ''}`}
+                        style={{
+                          filter: isActive 
+                            ? '' 
+                            : 'brightness(0) saturate(100%) invert(67%) sepia(6%) saturate(422%) hue-rotate(185deg) brightness(89%) contrast(86%)'
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <Icon size={20} className={isActive ? 'text-white' : 'text-[#818790]'} />
+                  )}
+                </span>
+
+                <span className="flex-1 text-left">{name}</span>
+
+                {subItems && (
+                  <span className={isActive ? 'text-white' : 'text-[#818790]'}>
+                    {expandedItem === name ? <IoIosArrowDown /> : <IoIosArrowForward />}
+                  </span>
+                )}
+              </div>
+            );
 
             return (
               <li key={name}>
-                <Link href={href} className="block no-underline">
-                  <button
-                    onClick={() => subItems && toggleSubItems(name)}
-                    className={`w-full flex items-center gap-3 px-3 py-3 text-[14px] cursor-pointer rounded-md border-l-4 transition-all duration-200
-                      ${isParentActive ? 'bg-[#576CBC] border-[#576CBC] text-white font-semibold'
-                        : 'border-transparent text-[#6C6C6C]'}
-                    `}
-                  >
-                    {/* Icon */}
-                    <span
-                      className={`text-[18px] w-5 flex justify-center 
-                        ${isParentActive ? 'text-white' : 'text-[#6C6C6C]'}
-                      `}
-                    >
-                      {typeof Icon === 'string' ? (
-                        <Image 
-                          src={Icon} 
-                          width={20} 
-                          height={20} 
-                          alt={name} 
-                          className="dark:invert"
-                        />
-                      ) : (
-                        <Icon size={20} />
-                      )}
-                    </span>
-
-                    {/* Title */}
-                    <span className="flex-1 text-left">{name}</span>
-
-                    {/* Dropdown Arrow */}
-                    {subItems && (
-                      <span className="text-sm text-[#6C6C6C]">
-                        {expandedItem === name ? <IoIosArrowDown /> : <IoIosArrowForward />}
-                      </span>
-                    )}
+                {subItems ? (
+                  <button onClick={() => toggleSubItems(name)} className="w-full text-left">
+                    {ItemContent}
                   </button>
-                </Link>
+                ) : (
+                  <Link href={href}>
+                    {ItemContent}
+                  </Link>
+                )}
 
-                {/* Sub Items */}
                 {subItems && expandedItem === name && (
                   <ul className="ml-10 mt-1 space-y-1.5">
-                    {subItems.map((subItem) => {
-                      const isActive = currentPath === subItem.href;
-                      return (
-                        <li key={subItem.name}>
-                          <Link
-                            href={subItem.href}
-                            className={`block text-[14px] no-underline py-1.5 px-3 rounded-md border-l-4 transition-all duration-150
-                              ${isActive ? 'bg-[#576CBC] border-[#576CBC] text-white font-medium'
-                                : 'border-transparent text-[#6C6C6C]'}
-                            `}
-                          >
-                            {subItem.name}
-                          </Link>
-                        </li>
-                      );
-                    })}
+                    {subItems.map((subItem) => (
+                      <li key={subItem.name}>
+                        <Link
+                          href={subItem.href}
+                          className={`block text-[15px] font-normal py-1.5 px-2 rounded-md
+                            text-[#576CBC] hover:text-[#576CBC]`}
+                        >
+                          {subItem.name}
+                        </Link>
+                      </li>
+                    ))}
                   </ul>
                 )}
               </li>
