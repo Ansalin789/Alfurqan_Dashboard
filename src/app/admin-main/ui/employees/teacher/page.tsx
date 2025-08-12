@@ -432,7 +432,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
 
     // Step 4: Send API request
     const response = await axios.put(
-      `http://localhost:5001/empwages/${wageId}`,
+      `https://api.blackstoneinfomaticstech.com/empwages/${wageId}`,
       updatedWage,
       {
         headers: {
@@ -559,7 +559,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
   const fetchWages = async (token: string) => {
     try {
       const response = await axios.get(
-        `http://localhost:5001/empwages`,
+        `https://api.blackstoneinfomaticstech.com/empwages`,
         {
           params: {
             employeeId: employeeId

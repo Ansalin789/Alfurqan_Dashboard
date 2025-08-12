@@ -697,7 +697,7 @@ if (studentsParam) {
       return;
     }
     try {
-      const response = await fetch("http://localhost:5001/groupAssignments", {
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/groupAssignments", {
         method: "POST",
         body: formData, // ✅ Use FormData directly
 
