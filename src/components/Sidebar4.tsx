@@ -71,7 +71,8 @@ export default function Sidebar4() {
 
   return (
     <div className="sidebar__wrapper h-full overflow-y-auto" style={{ width: "240px" }}>
-    <aside className="sidebar !bg-[#012A4A] dark:!bg-[#1D1D1D] p-4 h-full flex flex-col" style={{ width: "240px", backgroundColor: "#012A4A !important" }}>   
+      <aside className="sidebar !bg-[#012A4A] dark:!bg-[#1D1D1D] p-4 h-full flex flex-col" style={{ width: "240px", backgroundColor: "#012A4A !important" }}>
+        
         {/* Logo */}
         <div className='flex items-center gap-3 mt-5 mb-6 px-2'>
           <Image src="/assets/images/alfwhite.png" width={40} height={40} alt='logo' />
@@ -87,41 +88,45 @@ export default function Sidebar4() {
             const isChildActive = subItems?.some((sub) => currentPath === sub.href);
             const isActive = isParentActive || isChildActive;
 
-            const ItemContent = (
-              <div
-                className={`w-full flex items-center gap-3 px-3 py-3 text-[16px] font-normal rounded-md transition-all duration-200
-                  ${isActive ? 'bg-[#576CBC] text-white' : 'text-[#818790]'}`}
-              >
-                {/* Icon */}
-                <span className="text-[18px] w-5 flex justify-center items-center">
-                  {typeof Icon === 'string' ? (
-                    <div className="relative w-5 h-5">
-                      <Image
-                        src={Icon}
-                        fill
-                        alt={name}
-                        className={`object-contain ${isActive ? 'brightness-0 invert' : ''}`}
-                        style={{
-                          filter: isActive 
-                            ? '' 
-                            : 'brightness(0) saturate(100%) invert(67%) sepia(6%) saturate(422%) hue-rotate(185deg) brightness(89%) contrast(86%)'
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <Icon size={20} className={isActive ? 'text-white' : 'text-[#818790]'} />
-                  )}
-                </span>
+const ItemContent = (
+  <div
+    className={`group w-full flex items-center gap-3 px-3 py-3 text-[16px] font-normal rounded-md transition-all duration-200
+      ${isActive 
+        ? 'bg-[#576CBC] text-white hover:bg-[#6b80d6]' 
+        : 'text-[#818790] hover:text-[#a0c4ff]'}`}
+  >
+    {/* Icon */}
+    <span className={`text-[18px] w-5 flex justify-center items-center 
+      ${isActive ? 'text-white' : 'text-[#818790] group-hover:text-[#a0c4ff]'}`}>
+      {typeof Icon === 'string' ? (
+        <div className="relative w-5 h-5">
+          <Image
+            src={Icon}
+            fill
+            alt={name}
+            className={`object-contain ${isActive ? 'brightness-0 invert' : 'group-hover:brightness-0 group-hover:invert'}`}
+            style={{
+              filter: isActive 
+                ? '' 
+                : 'brightness(0) saturate(100%) invert(67%) sepia(6%) saturate(422%) hue-rotate(185deg) brightness(89%) contrast(86%)'
+            }}
+          />
+        </div>
+      ) : (
+        <Icon size={20} />
+      )}
+    </span>
 
-                <span className="flex-1 text-left">{name}</span>
+    <span className="flex-1 text-left">{name}</span>
 
-                {subItems && (
-                  <span className={isActive ? 'text-white' : 'text-[#818790]'}>
-                    {expandedItem === name ? <IoIosArrowDown /> : <IoIosArrowForward />}
-                  </span>
-                )}
-              </div>
-            );
+    {subItems && (
+      <span className={`${isActive ? 'text-white' : 'text-[#818790] group-hover:text-[#a0c4ff]'}`}>
+        {expandedItem === name ? <IoIosArrowDown /> : <IoIosArrowForward />}
+      </span>
+    )}
+  </div>
+);
+
 
             return (
               <li key={name}>
@@ -142,7 +147,7 @@ export default function Sidebar4() {
                         <Link
                           href={subItem.href}
                           className={`block text-[15px] font-normal py-1.5 px-2 rounded-md
-                            text-[#576CBC] hover:text-[#576CBC]`}
+                            text-[#576CBC] hover:text-[#a0c4ff]`}
                         >
                           {subItem.name}
                         </Link>
