@@ -959,7 +959,7 @@ const GroupStudents = () => {
 
       // Submit to API
       const res = await axios.post(
-        "http://localhost:5001/groupAssignments",
+        "https://api.blackstoneinfomaticstech.com/groupAssignments",
         formData,
         {
           headers: {
