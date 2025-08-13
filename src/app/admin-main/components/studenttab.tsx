@@ -803,7 +803,7 @@ useEffect(() => {
           return;
         }
 
-        const response = await axios.get(`http://localhost:5001/student/paymenthistory?userId=${studentId}`, {
+        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/student/paymenthistory?userId=${studentId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
