@@ -27,6 +27,7 @@ export interface IStudentInvoice {
   dueDate: string; // ISO date string
   createdDate: string; // ISO date string
   paymentDate: string; // ISO date string
+  paymentStatus: string;
   createdBy: string;
   lastUpdatedDate: string;
   lastUpdatedBy: string;
@@ -178,7 +179,7 @@ const StudentProfile = () => {
           <p className="text-gray-500 text-sm">No pending payments found</p>
         ) : (
           invoices
-            .filter((i) => i.invoiceStatus === "Pending")
+            .filter((i) => i.paymentStatus === "Pending")
             .slice(0, 2)
             .map((invoice) => (
               <div
@@ -201,7 +202,7 @@ const StudentProfile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
-                  <p className="text-gray-400 text-[11px]">Due date</p>
+                  <p className="text-gray-400 text-[11px]">{invoice.invoiceStatus}</p>
                   <p className="text-gray-400 text-[12px]">
                     {new Date(invoice.dueDate).toLocaleDateString("en-US", {
                       year: "numeric",
@@ -248,7 +249,7 @@ const StudentProfile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
-                  <p className="text-[#377E36] text-[11px]">Paid</p>
+                  <p className="text-[#377E36] text-[11px]">{invoice.invoiceStatus}</p>
                   <p className="text-gray-400 text-[12px]">
                     {new Date(invoice.paymentDate).toLocaleDateString("en-US", {
                       year: "numeric",
