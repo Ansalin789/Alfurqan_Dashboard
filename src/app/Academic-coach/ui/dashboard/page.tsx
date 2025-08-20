@@ -17,6 +17,7 @@ type StudentData = {
   id: number;
   name: string;
   mobile: string;
+  course: string;
   country: string;
   preferredTeacher: string;
   date: string;
@@ -67,6 +68,7 @@ export default function Dashboard() {
             name: `${data.data.student.studentFirstName} ${data.data.student.studentLastName}`,
             mobile: data.data.student.studentPhone.toString(),
             country: data.data.student.studentCountry,
+            course: data.data.student.learningInterest,
             preferredTeacher: data.data.student.preferredTeacher,
             date: new Date(data.data.student.preferredDate).toLocaleDateString(),
             time: `${data.data.student.preferredFromTime} - ${data.data.student.preferredToTime}`,
@@ -117,6 +119,7 @@ export default function Dashboard() {
                 studentLastName: string;
                 studentPhone: string;
                 studentCountry: string;
+                learningInterest: string;
                 preferredTeacher: string;
                 preferredDate: string;
                 preferredFromTime: string;
@@ -129,6 +132,7 @@ export default function Dashboard() {
             name: `${item.student.studentFirstName} ${item.student.studentLastName}`,
             mobile: item.student.studentPhone,
             country: item.student.studentCountry,
+            course: item.student.learningInterest,
             preferredTeacher: item.student.preferredTeacher,
             date: new Date(item.student.preferredDate).toLocaleDateString(),
             time: `${item.student.preferredFromTime} - ${item.student.preferredToTime}`,
@@ -183,6 +187,7 @@ export default function Dashboard() {
                         "Name",
                         "Mobile",
                         "Country",
+                        "Course",
                         "Preferred Teacher",
                         "Date",
                         "Time",
@@ -206,6 +211,7 @@ export default function Dashboard() {
                         <td className="py-4 px-2 text-left">{item.name}</td>
                         <td className="py-4 px-2 text-left">{item.mobile}</td>
                         <td className="py-4 px-2 text-left">{item.country}</td>
+                        <td className="py-4 px-2 text-left">{item.course}</td>
                         <td className="py-4 px-2 text-left">
                           {item.preferredTeacher}
                         </td>
