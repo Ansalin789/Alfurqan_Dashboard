@@ -1,26 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+"use client";
+
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 interface StatsData {
   scheduled: number;
   completed: number;
   absent: number;
-  rescheduled?: number;
-}
-
-interface ArcData {
-  path: string;
-  dashArray: string;
 }
 
 const COLORS = {
-  scheduled: '#B1A7F2',
-  completed: '#6BE6C1',
-  absent: '#FFA9A9',
+  scheduled: "#B1A7F2", // Purple
+  completed: "#6BE6C1", // Green
+  absent: "#FFA9A9",   // Red
 };
 
-const ClassAnalytics = () => {
-  const [data, setData] = useState<StatsData>({ scheduled: 0, completed: 0, absent: 0 });
+const ClassAnalyticsChart = () => {
+  const [data, setData] = useState<StatsData>({
+    scheduled: 0,
+    completed: 0,
+    absent: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,7 +42,7 @@ const ClassAnalytics = () => {
         absent: response.data.absent || 0,
       });
     } catch (err: any) {
-      setError(err?.response?.data?.message || err.message || 'API Error');
+      setError(err?.response?.data?.message || err.message || "API Error");
     } finally {
       setLoading(false);
     }
@@ -54,87 +54,95 @@ const ClassAnalytics = () => {
 
   const total = data.scheduled + data.completed + data.absent;
 
-  const circleConfig = [
-    { radius: 100, color: COLORS.scheduled, value: data.scheduled },
-    { radius: 75, color: COLORS.completed, value: data.completed },
-    { radius: 60, color: COLORS.absent, value: data.absent },
-  ];
-
-  const getArcPath = (value: number, total: number, radius: number): ArcData | null => {
-    if (total === 0) return null;
-    const circumference = 2 * Math.PI * radius;
-    const dashLength = (value / total) * circumference;
-    const gapLength = circumference - dashLength;
-    return {
-      path: `M ${radius},0 A ${radius},${radius} 0 1,1 ${-radius},0`,
-      dashArray: `${dashLength} ${gapLength}`,
-    };
-  };
-
   if (loading) {
     return (
-      <div className="p-6 rounded-xl bg-white shadow-sm text-center text-gray-600">
-        Loading...
+      <div className="w-full h-full bg-white rounded-xl shadow-md p-3 flex items-center justify-center">
+        <div className="text-sm text-gray-600">Loading class analytics...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6 rounded-xl bg-white shadow-sm text-center text-red-600">
-        {error}
+      <div className="w-full h-full bg-white rounded-xl shadow-md p-3 flex items-center justify-center">
+        <div className="text-sm text-red-600 text-center">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full bg-white rounded-2xl shadow-md p-4">
-      <h2 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 mb-6 text-center md:text-left">
+    <div className="w-full h-full bg-white rounded-xl shadow-md p-3 flex flex-col overflow-hidden">
+      {/* Heading */}
+      <h2 className="text-base font-semibold text-gray-900 mt-3 text-left">
         Class Analytics
       </h2>
 
-      <div className="flex flex-col md:flex-row items-center mt-14 justify-between gap-6 w-full">
-        {/* Donut Chart */}
-        <div className="relative w-full max-w-[260px] aspect-square mx-auto">
-          <svg viewBox="-100 -100 200 200" className="w-full h-full">
-            {circleConfig.map((circle, i) => {
-              const arc = getArcPath(circle.value, total || 1, circle.radius);
-              return arc ? (
-                <path
+      {/* Content area that fills available space without overflowing */}
+      <div className="flex flex-col md:flex-row items-center justify-center flex-1 gap-2 min-h-0">
+        {/* Donut Chart - sized to always fit */}
+        <div className="relative flex-shrink-0 aspect-square w-2/5 max-w-[110px]">
+          <svg viewBox="0 0 100 100" className="w-full h-full">
+            {[
+              { scale: 0.9, color: COLORS.scheduled, value: data.scheduled },
+              { scale: 0.7, color: COLORS.completed, value: data.completed },
+              { scale: 0.5, color: COLORS.absent, value: data.absent },
+            ].map((circle, i) => {
+              const radius = 50 * circle.scale;
+              const circumference = 2 * Math.PI * radius;
+              const dashLength = (circle.value / (total || 1)) * circumference;
+              const gapLength = circumference - dashLength;
+
+              return (
+                <circle
                   key={i}
-                  d={arc.path}
+                  r={radius}
+                  cx="50"
+                  cy="50"
                   stroke={circle.color}
-                  strokeWidth="10"
+                  strokeWidth="5"
                   fill="none"
                   strokeLinecap="round"
-                  strokeDasharray={arc.dashArray}
+                  strokeDasharray={`${dashLength} ${gapLength}`}
+                  transform="rotate(-90 50 50)"
                 />
-              ) : null;
+              );
             })}
           </svg>
 
-          {/* Center Text */}
+          {/* Center text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="text-[22px] sm:text-[26px] font-bold text-gray-900">{total}</div>
-            <div className="text-[9px] sm:text-[10px] text-center text-gray-800 leading-tight">
-              TOTAL<br />CLASS<br />ASSIGNED
+            <div className="text-lg font-extrabold text-gray-900 leading-none">
+              {total}
+            </div>
+            <div className="text-[9px] text-gray-700 text-center leading-tight uppercase mt-0.5">
+              TOTAL CLASS <br /> ASSIGNED
             </div>
           </div>
         </div>
 
-        {/* Legend */}
-        <div className="w-full flex-1 max-w-sm md:max-w-xs space-y-4">
+        {/* Legend - compact and always fits */}
+        <div className="w-full space-y-1.5 max-w-[120px]">
           {[
-            { label: 'Scheduled', value: data.scheduled, color: COLORS.scheduled },
-            { label: 'Completed', value: data.completed, color: COLORS.completed },
-            { label: 'Absent', value: data.absent, color: COLORS.absent },
+            { label: "Scheduled", value: data.scheduled, color: COLORS.scheduled },
+            { label: "Completed", value: data.completed, color: COLORS.completed },
+            { label: "Absent", value: data.absent, color: COLORS.absent },
           ].map((item, i) => (
-            <div key={i} className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="text-sm text-gray-800">{item.label}</span>
+            <div
+              key={i}
+              className="flex justify-between items-center"
+            >
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span className="text-gray-800 text-xs">
+                  {item.label}
+                </span>
               </div>
-              <span className="font-semibold text-sm text-gray-900">{item.value}</span>
+              <span className="font-semibold text-xs text-gray-900">
+                {item.value}
+              </span>
             </div>
           ))}
         </div>
@@ -143,4 +151,4 @@ const ClassAnalytics = () => {
   );
 };
 
-export default ClassAnalytics;
+export default ClassAnalyticsChart;
