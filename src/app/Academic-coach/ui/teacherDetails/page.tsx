@@ -818,11 +818,11 @@ const TeacherDetails = () => {
         showBackButton={true}
         showBackPath="/Academic-coach/ui/manageteacher"
       />
-      <div className="p-2 mx-auto">
+      <div className="p-2 mx-auto w-full">
         {/* Main Container */}
         <div className="flex gap-x-5 w-full">
           {/* Left Profile Card */}
-          <div className="rounded-xl flex items-center p-6 w-[630px] h-[247px] border bg-[#5e6578] text-white ">
+          <div className="rounded-xl flex items-center p-6 w-[633px] h-[247px] border bg-[#5e6578] text-white ">
             {/* Profile Section */}
             <div className="flex flex-col items-center w-full px-4 text-center">
               <Image
@@ -878,9 +878,9 @@ const TeacherDetails = () => {
           </div>
 
           {/* Right Section */}
-          <div className="rounded-xl w-[610px] h-[220px] flex justify-between p-3 border dark:bg-[#252525] -mt-3 ">
+          <div className="rounded-xl w-full h-[220px] flex justify-between p-3 border dark:bg-[#252525] -mt-3 ">
             {/* Left Side - Performance and Attendance */}
-            <div className="grid grid-cols-1 gap-3 w-[45%] h-[247px]">
+            <div className="grid grid-cols-1 gap-3 w-full h-[247px]">
               {[
                 {
                   title: "Performance",
@@ -911,7 +911,9 @@ const TeacherDetails = () => {
 
             {/* Right Side - Students List */}
             {/* Right Side - Students List */}
-            <div className="bg-white dark:bg-[#2f2f2f] rounded-2xl p-4 w-[50%] h-[247px] flex flex-col gap-y-4 scrollbar-none">
+            
+          </div>
+          <div className="bg-white dark:bg-[#2f2f2f] rounded-2xl p-4 w-full h-[247px] flex flex-col gap-y-4 scrollbar-none">
               <div className="flex justify-between items-center">
                 <h2 className="text-[14px] font-semibold text-[#111827] dark:text-white">
                   Students List
@@ -947,9 +949,8 @@ const TeacherDetails = () => {
                 ))}
               </ul>
             </div>
-          </div>
         </div>
-
+        -
         <div className="flex space-x-6  px-4 py-2 rounded-md">
           <button
             className={`relative text-[14px] transition font-medium ${
@@ -985,7 +986,6 @@ const TeacherDetails = () => {
             )}
           </button>
         </div>
-
         <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-2">
           <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
             <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -1086,7 +1086,10 @@ const TeacherDetails = () => {
                       {item.scheduleStatus}
                     </span>
                   </td>
-                  <td className="py-1 text-center relative w-[90px] min-w-[90px] max-w-[90px]" ref={dropdownRef}>
+                  <td
+                    className="py-1 text-center relative w-[90px] min-w-[90px] max-w-[90px]"
+                    ref={dropdownRef}
+                  >
                     <button
                       onClick={
                         item.scheduleStatus === "Scheduled"
@@ -1113,7 +1116,7 @@ const TeacherDetails = () => {
                       activeDropdown === index && (
                         <div
                           className="py-1 bg-white rounded-md shadow-lg daerk absolute right-0 top-6 z-20 w-32 min-w-[120px] max-w-[160px]  dark:bg-[#252525]"
-                          style={{ minWidth: '120px' }}
+                          style={{ minWidth: "120px" }}
                         >
                           <button
                             className={`w-full text-left px-4 py-2 text-[12px] $${
@@ -1144,7 +1147,6 @@ const TeacherDetails = () => {
             </tbody>
           </table>
         </div>
-
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
