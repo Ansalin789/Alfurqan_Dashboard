@@ -255,7 +255,7 @@ export default function AcademicHeader({
         </button>
       );
     }
-    if (currentSection === "Trail Management") {
+    if (currentSection === "Trial Management") {
       return (
         <button
           onClick={() => setAddApplicant(true)}

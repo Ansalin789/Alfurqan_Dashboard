@@ -76,17 +76,26 @@ const StudentsCard: React.FC = () => {
   const malePercent = getPercentage(teacher.maleCount, teacher.studentCount);
   const femalePercent = 100 - malePercent;
 
-  // Calculate angles
+  // Angles
   const femaleAngle = (femalePercent / 100) * 360;
-  const maleAngle = 360 - femaleAngle;
+  const maleAngle = (malePercent / 100) * 360;
 
-  // Position female label (starts from 0 deg)
-  const femaleX = 50 + 35 * Math.cos((femaleAngle / 2) * (Math.PI / 180));
-  const femaleY = 50 - 35 * Math.sin((femaleAngle / 2) * (Math.PI / 180));
 
-  // Position male label (starts after female ends)
-  const maleX = 50 + 35 * Math.cos((femaleAngle + maleAngle / 2) * (Math.PI / 180));
-  const maleY = 50 - 35 * Math.sin((femaleAngle + maleAngle / 2) * (Math.PI / 180));
+  const center = 50;
+
+
+  const outerRadius = 40; 
+  const innerRadius = 35; 
+  const labelRadius = (outerRadius + innerRadius) / 2; 
+
+
+  const femaleMidAngle = femaleAngle / 2;
+  const femaleX = center + labelRadius * Math.cos((femaleMidAngle * Math.PI) / 180);
+  const femaleY = center - labelRadius * Math.sin((femaleMidAngle * Math.PI) / 180);
+
+  const maleMidAngle = femaleAngle + maleAngle / 2;
+  const maleX = center + labelRadius * Math.cos((maleMidAngle * Math.PI) / 180);
+  const maleY = center - labelRadius * Math.sin((maleMidAngle * Math.PI) / 180);
 
   return (
     <div className="bg-white dark:bg-[#343434] rounded-xl shadow-md w-full max-w-sm p-4">
@@ -116,21 +125,20 @@ const StudentsCard: React.FC = () => {
         ></div>
 
         {/* Inner Circle */}
-        <div className="absolute top-1/2 left-1/2 w-[60%] h-[60%] bg-white dark:bg-[#343434] rounded-full flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
+        <div className="absolute top-1/2 left-1/2 w-[50%] h-[50%] bg-white dark:bg-[#343434] rounded-full flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
           <span className="text-lg font-bold text-[#010E30] dark:text-white">
             100%
           </span>
         </div>
 
         {/* Female % label */}
-        {femalePercent > 0 && femalePercent < 100 && (
+        {femalePercent > 0 && (
           <div
-            className="absolute text-[10px] font-semibold"
+            className="absolute text-xs font-semibold text-[#010E30]"
             style={{
               top: `${femaleY}%`,
               left: `${femaleX}%`,
               transform: 'translate(-50%, -50%)',
-              color: femalePercent > 50 ? 'white' : '#010E30',
             }}
           >
             {femalePercent}%
@@ -138,14 +146,13 @@ const StudentsCard: React.FC = () => {
         )}
 
         {/* Male % label */}
-        {malePercent > 0 && malePercent < 100 && (
+        {malePercent > 0 && (
           <div
-            className="absolute text-[10px] font-semibold"
+            className="absolute text-xs font-semibold text-[#010E30]"
             style={{
               top: `${maleY}%`,
               left: `${maleX}%`,
               transform: 'translate(-50%, -50%)',
-              color: malePercent > 50 ? 'white' : '#010E30',
             }}
           >
             {malePercent}%
