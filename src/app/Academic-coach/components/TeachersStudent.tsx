@@ -76,7 +76,7 @@ export default function Academic() {
          <div>Teachers</div>
          <div>Students</div>
         </h3>
-        <div className="overflow-y-scroll scrollbar-none">
+        <div className="overflow-y-scroll h-[275px] scrollbar-none px-2">
           <table className="min-w-full">
             {/* <thead>
               <tr>
@@ -94,9 +94,8 @@ export default function Academic() {
                   <div className="justify-between items-center flex border-b-[1px]  dark:border-[#585858] px-3 py-1">
 
                   
-                  <td className=" py-1 text-[11px] text-center font-normal flex text-[#010e30] opacity-90 dark:text-[#fff]">
+                  <td className=" py-1 text-center text-[13px] font-normal flex text-[#010e30] opacity-90 dark:text-[#fff]">
                     {/* <FaUserCircle className="text-[#000] mr-2 mt-1" /> */}
-                    <img src="/assets/images/teacheravt.svg" alt="" className="mr-1 -mt-[3px]"/>
                     {teacher.teacherName}
                   </td>
                   <td className=" py-1 text-[13px] whitespace-nowrap text-center text-[#010e30] dark:text-[#fff] font-medium">
