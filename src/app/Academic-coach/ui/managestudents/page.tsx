@@ -33,6 +33,7 @@ export interface Student {
     country: string;
     gender: string;
   };
+  level: string;
 }
 
 interface Users {
@@ -162,11 +163,11 @@ const ManageStudents = () => {
     const filtered = studentData.students.filter((item) => {
       const studentId = item.student?.studentId?.toLowerCase() || "";
       const fullName = (item.username || "").toLowerCase();
-      // const teacher = (item.teacherName || "").toLowerCase();
+      const teacher = (item.teacherName || "").toLowerCase();
       const contact = item.student?.studentPhone?.toString() || "";
-      const classType = "group class"; // hardcoded in your UI
+      const classType = item.sessionClassType.toLowerCase() || "";
       const classCount = item.classScheduleCount?.toString() || "";
-      // const level = (item.level || "").toLowerCase();
+      const level = (item.level || "").toLowerCase();
       const joiningDate = new Date(item.createdDate)
         .toLocaleDateString("en-US", {
           month: "short",
@@ -178,11 +179,11 @@ const ManageStudents = () => {
       return (
         studentId.includes(queryLower) ||
         fullName.includes(queryLower) ||
-        // teacher.includes(queryLower) ||
+        teacher.includes(queryLower) ||
         contact.includes(queryLower) ||
         classType.includes(queryLower) ||
         classCount.includes(queryLower) ||
-        // level.includes(queryLower) ||
+        level.includes(queryLower) ||
         joiningDate.includes(queryLower)
       );
     });
@@ -457,11 +458,12 @@ const ManageStudents = () => {
     <BaseLayout1>
       <div>
         <AcademicHeader currentSection="Student List" students={selectedStudents} />
-        <div className="md:p-0 mx-auto">
+        
+        <div className=" mx-auto">
           <div className="h-full w-full flex flex-col justify-between">
             <div className="p-0 justify-between flex flex-col">
               <div className="w-full h-[610px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-2">
-                <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434] h-[42px]">
+                <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
                     <input
@@ -491,7 +493,7 @@ const ManageStudents = () => {
                 </div>
 
                 {/* Table */}
-                <table className="table-auto xw-full">
+                <table className="w-full">
                   <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0] h-[46px]">
                     <tr className="font-medium ">
                       <th className="text-left h-[46px] px-3 py-2 text-[12px] font-medium border border-[#4C6993] dark:border-[#6087C0] w-[40px]">
@@ -582,7 +584,7 @@ const ManageStudents = () => {
                         <td className="px-3 py-2 whitespace-nowrap">
                           {item.classScheduleCount}
                         </td>
-                        <td className="px-3 py-2">1</td>
+                        <td className="px-3 py-2">{item.level}</td>
                         <td className="relative px-3 py-2">
                           <button
                             className="p-1"
