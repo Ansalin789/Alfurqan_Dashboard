@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { FaEllipsisV } from "react-icons/fa";
-import BaseLayout1 from "@/components/BaseLayout1";
 import Popup from "../Popup";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -11,6 +10,7 @@ import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { getSocket } from "@/app/utils/socket";
+import { create } from "domain";
 
 interface Student {
   learningInterest: string; // Replace with the exact type if known
@@ -27,6 +27,7 @@ interface Student {
   status?: string;
   trialClassStatus: string;
   studentStatus: string;
+  createdDate: Date;
 }
 
 interface EvaluationItem {
@@ -62,6 +63,7 @@ interface TransformedUser {
   assignedTeacher: string;
   paymentLink: string;
   studentStatus: string; // Optional if not always present
+  createdDate: Date; // Optional if not always present
 }
 // Define the return type of the getAllUsers function
 interface User {
@@ -80,6 +82,7 @@ interface User {
   city: string;
   students?: number;
   comment?: string;
+  createdDate: Date;
 }
 
 interface GetAllUsersResponse {
@@ -293,6 +296,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
         preferredToTime: string;
         evaluationStatus?: string;
         status?: string;
+        createdDate: string;
       }) => {
         console.log("Processing item - Original data:", {
           status: item.status,
@@ -311,6 +315,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
           date: new Date(item.startDate).toLocaleDateString(),
           time: item.preferredFromTime,
           evaluationStatus: item.evaluationStatus,
+          createdDate: new Date(item.createdDate),
         };
         console.log("Transformed item - Final data:", {
           allFields: Object.keys(transformed),
@@ -615,6 +620,7 @@ const TrailManagement = () => {
       time: user.time,
       evaluationStatus: user.evaluationStatus ?? "PENDING",
       status: "PENDING",
+      createdDate: new Date(user.createdDate),
     };
 
     console.log("➡️ Action: create", formatted.studentId);
@@ -871,7 +877,7 @@ const TrailManagement = () => {
                         {[
                           { label: "Student ID", width: "w-[10%]" },
                           { label: "Student Name", width: "w-[12%]" },
-                          { label: "Email", width: "w-[12%]" },
+                          { label: "Date", width: "w-[12%]" },
                           { label: "Mobile", width: "w-[10%]" },
                           { label: "Country", width: "w-[8%]" },
                           { label: "Course", width: "w-[10%]" },
@@ -908,9 +914,12 @@ const TrailManagement = () => {
                             <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] break-words w-[12%]">
                               {item.fname} {item.lname}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[15%]">
-                              {item.email}
-                            </td>
+                          <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[15%]">
+{new Date(item.createdDate).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric'
+})}</td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.number}
                             </td>

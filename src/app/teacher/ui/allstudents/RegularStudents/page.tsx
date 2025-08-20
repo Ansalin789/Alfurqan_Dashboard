@@ -1502,11 +1502,15 @@ formData.append("level", assignData.level?.trim() || "");
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(
-                                              student.studentId,
-                                              assignmentItem.assignmentId || ""
-                                            )
-                                          }
+                                  handleAssign(
+                                    student.studentId,
+                                    student.studentDetails.student
+                                      .studentFirstName,
+                                    student.studentDetails.student
+                                      .learningInterest,
+                                    student.level || ""
+                                  )
+                                }
                                         >
                                           Assign
                                         </button>
