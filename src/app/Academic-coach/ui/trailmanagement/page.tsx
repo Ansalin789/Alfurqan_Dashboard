@@ -11,7 +11,7 @@ const Page = () => {
   return (
     <BaseLayout1>
       <div>
-        <AcademicHeader currentSection="Trail Management" />
+        <AcademicHeader currentSection="Trial Management" />
         <div className="flex space-x-6 px-4 py-2 rounded-md relative">
           <button
             onClick={() => setActiveTab("evaluation")}
@@ -19,7 +19,7 @@ const Page = () => {
               activeTab === "evaluation" ? "text-[#576CBC] font-semibold" : "text-gray-600 dark:text-[#ffffff]"
             }`}
           >
-            Scheduled Evaluation Session
+             Evaluation Session
             {activeTab === "evaluation" && (
               <span className="absolute left-1/2 transform -translate-x-1/2 bottom-0 w-[80px] h-[2px] bg-[#576CBC] rounded-full"></span>
             )}
@@ -31,7 +31,7 @@ const Page = () => {
               activeTab === "trial" ? "text-[#576CBC] font-semibold" : "text-gray-600 dark:text-[#ffffff]"
             }`}
           >
-            Scheduled Trial Session
+       Trial Session
             {activeTab === "trial" && (
               <span className="absolute left-1/2 transform -translate-x-1/2 bottom-0 w-[80px] h-[2px] bg-[#576CBC] rounded-full"></span>
             )}
