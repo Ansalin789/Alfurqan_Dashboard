@@ -71,9 +71,9 @@ const ClassAnalyticsChart = () => {
   }
 
   return (
-    <div className="w-full h-full bg-white rounded-xl shadow-md p-3 flex flex-col overflow-hidden">
+    <div className="w-full h-full bg-white dark:bg-[#343434] rounded-xl shadow-md p-3 flex flex-col overflow-hidden">
       {/* Heading */}
-      <h2 className="text-base font-semibold text-gray-900 mt-3 text-left">
+      <h2 className="text-base font-semibold dark:text-[#FFFFFF] text-gray-900 mt-3 text-left">
         Class Analytics
       </h2>
 
@@ -111,10 +111,10 @@ const ClassAnalyticsChart = () => {
 
           {/* Center text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="text-lg font-extrabold text-gray-900 leading-none">
+            <div className="text-lg font-extrabold text-gray-900 dark:text-[#FFFFFF] leading-none">
               {total}
             </div>
-            <div className="text-[9px] text-gray-700 text-center leading-tight uppercase mt-0.5">
+            <div className="text-[9px] text-gray-700 dark:text-[#FFFFFF] text-center leading-tight uppercase mt-0.5">
               TOTAL CLASS <br /> ASSIGNED
             </div>
           </div>
@@ -133,14 +133,14 @@ const ClassAnalyticsChart = () => {
             >
               <div className="flex items-center gap-1.5">
                 <span
-                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  className="w-2.5 h-2.5 rounded flex-shrink-0"
                   style={{ backgroundColor: item.color }}
                 />
-                <span className="text-gray-800 text-xs">
+                <span className="text-gray-800 dark:text-[#FFFFFF] text-xs">
                   {item.label}
                 </span>
               </div>
-              <span className="font-semibold text-xs text-gray-900">
+              <span className="font-semibold text-xs dark:text-[#FFFFFF] text-gray-900">
                 {item.value}
               </span>
             </div>
