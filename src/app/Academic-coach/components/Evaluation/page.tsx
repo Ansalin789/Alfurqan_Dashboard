@@ -884,9 +884,6 @@ const TrailManagement = () => {
                           { label: "Country", width: "w-[8%]" },
                           { label: "Course", width: "w-[10%]" },
                           { label: "Preferred Teacher", width: "w-[10%]" },
-                          {label : "Change Time", width: "w-[8%]"},
-                          {label:"Change Date", width: "w-[10%]"},
-                          {label:"Available Teacher", width: "w-[8%]"},
                           { label: "Evaluation Status", width: "w-[8%]" },
                           { label: "Student Status", width: "w-[10%]" },
                           { label: "Action", width: "w-[6%]" },
@@ -940,15 +937,7 @@ const TrailManagement = () => {
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[10%]">
                               {item.preferredTeacher}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[10%]">
-                              {item.preferredTeacher}
-                            </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[10%]">
-                              {item.preferredTeacher}
-                            </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[8%]">
-                              {item.time}
-                            </td>
+                           
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px]">
                               <span
                                 className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
