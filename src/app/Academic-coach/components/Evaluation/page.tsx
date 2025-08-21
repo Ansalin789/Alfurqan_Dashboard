@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { FaEllipsisV } from "react-icons/fa";
-import BaseLayout1 from "@/components/BaseLayout1";
 import Popup from "../Popup";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -11,13 +10,14 @@ import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { getSocket } from "@/app/utils/socket";
+import { create } from "domain";
 
 interface Student {
   learningInterest: string; // Replace with the exact type if known
   studentId: string;
   studentFirstName: string;
   studentLastName: string;
-  studentEmail:string;
+  studentEmail: string;
   studentPhone: number;
   studentCountry: string;
   preferredTeacher: string;
@@ -27,6 +27,7 @@ interface Student {
   status?: string;
   trialClassStatus: string;
   studentStatus: string;
+  createdDate: Date;
 }
 
 interface EvaluationItem {
@@ -48,7 +49,7 @@ interface TransformedUser {
   studentId: string;
   studentFirstName: string;
   studentLastName: string;
-  studentEmail:string;
+  studentEmail: string;
   number: string;
   country: string;
   city: string;
@@ -62,6 +63,7 @@ interface TransformedUser {
   assignedTeacher: string;
   paymentLink: string;
   studentStatus: string; // Optional if not always present
+  createdDate: Date; // Optional if not always present
 }
 // Define the return type of the getAllUsers function
 interface User {
@@ -80,6 +82,7 @@ interface User {
   city: string;
   students?: number;
   comment?: string;
+  createdDate: Date;
 }
 
 interface GetAllUsersResponse {
@@ -159,7 +162,6 @@ interface ClassPayload {
   updatedBy: string;
 }
 
-
 const getAllUser = async (): Promise<{
   success: boolean;
   data: TransformedUser[];
@@ -204,7 +206,7 @@ const getAllUser = async (): Promise<{
             ? item.student.studentPhone.toString()
             : "",
           country: item.student.studentCountry,
-          city:item.city,
+          city: item.city,
           course: item.student.learningInterest,
           preferredTeacher: item.student.preferredTeacher,
           time: item.student.preferredFromTime,
@@ -236,7 +238,6 @@ const getAllUser = async (): Promise<{
     };
   }
 };
-
 
 // Update the getAllUsers function to fetch from your API
 const getAllUsers = async (): Promise<GetAllUsersResponse> => {
@@ -284,7 +285,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
         lastName: string;
         email: string;
         phoneNumber: string;
-        city:string;
+        city: string;
         country: string;
         learningInterest: string;
         preferredTeacher: string;
@@ -293,6 +294,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
         preferredToTime: string;
         evaluationStatus?: string;
         status?: string;
+        createdDate: string;
       }) => {
         console.log("Processing item - Original data:", {
           status: item.status,
@@ -303,7 +305,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
           fname: item.firstName,
           lname: item.lastName,
           email: item.email,
-          city:item.city,
+          city: item.city,
           number: item.phoneNumber.toString(),
           country: item.country,
           course: item.learningInterest,
@@ -311,6 +313,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
           date: new Date(item.startDate).toLocaleDateString(),
           time: item.preferredFromTime,
           evaluationStatus: item.evaluationStatus,
+          createdDate: new Date(item.createdDate),
         };
         console.log("Transformed item - Final data:", {
           allFields: Object.keys(transformed),
@@ -591,72 +594,77 @@ const TrailManagement = () => {
     };
     fetchEvaluationUsers();
   }, []);
-  useEffect(()=>{
- const academicId = typeof window !== "undefined"
+  useEffect(() => {
+    const academicId =
+      typeof window !== "undefined"
         ? localStorage.getItem("AcademicCoachPortalId")
         : null;
-        if(!academicId) return;
-     const socket = getSocket(academicId);
-     const handleList = ( data :{event : string , data : User | ClassPayload , sender : string })=>{
-         console.log("📩 Received WebSocket Data:", data);
-        if ('studentId' in data.data) {
-    const user = data.data as User;
-    const formatted: User = {
-      studentId: user.studentId,
-      fname: user.fname,
-      lname: user.lname,
-      email: user.email,
-      number: user.number,
-      country: user.country,
-      city: user.city,
-      course: user.course,
-      preferredTeacher: user.preferredTeacher,
-      date: new Date(user.date).toLocaleDateString(),
-      time: user.time,
-      evaluationStatus: user.evaluationStatus ?? "PENDING",
-      status: "PENDING",
+    if (!academicId) return;
+    const socket = getSocket(academicId);
+    const handleList = (data: {
+      event: string;
+      data: User | ClassPayload;
+      sender: string;
+    }) => {
+      console.log("📩 Received WebSocket Data:", data);
+      if ("studentId" in data.data) {
+        const user = data.data as User;
+        const formatted: User = {
+          studentId: user.studentId,
+          fname: user.fname,
+          lname: user.lname,
+          email: user.email,
+          number: user.number,
+          country: user.country,
+          city: user.city,
+          course: user.course,
+          preferredTeacher: user.preferredTeacher,
+          date: new Date(user.date).toLocaleDateString(),
+          time: user.time,
+          evaluationStatus: user.evaluationStatus ?? "PENDING",
+          status: "PENDING",
+          createdDate: new Date(user.createdDate),
+        };
+
+        console.log("➡️ Action: create", formatted.studentId);
+        setFilteredUsers((prev) => [...prev, formatted]);
+        setUsers((pre) => [...pre, formatted]);
+      } else {
+        const classPayload = data.data as ClassPayload;
+        const student = classPayload.student;
+
+        console.log("➡️ Action: update", student.studentId);
+
+        setFilteredUsers((prev) =>
+          prev.map((user) =>
+            user.studentId === student.studentId
+              ? {
+                  ...user,
+                  evaluationStatus: student.evaluationStatus ?? "PENDING",
+                  status: classPayload.studentStatus ?? "NOT JOINED",
+                }
+              : user
+          )
+        );
+        setUsers((prev) =>
+          prev.map((user) =>
+            user.studentId === student.studentId
+              ? {
+                  ...user,
+                  evaluationStatus: student.evaluationStatus ?? "PENDING",
+                  status: classPayload.studentStatus ?? "NOT JOINED",
+                }
+              : user
+          )
+        );
+      }
     };
 
-    console.log("➡️ Action: create", formatted.studentId);
-    setFilteredUsers((prev) => [...prev, formatted]);
-    setUsers((pre)=> [...pre,formatted]);
-
-  } else{
-    const classPayload = data.data as ClassPayload;
-    const student = classPayload.student;
-
-    console.log("➡️ Action: update", student.studentId);
-
-    setFilteredUsers((prev) =>
-      prev.map((user) =>
-        user.studentId === student.studentId
-          ? {
-              ...user,
-              evaluationStatus: student.evaluationStatus ?? "PENDING",
-              status: classPayload.studentStatus ?? "NOT JOINED",
-            }
-          : user
-      )
-    );
-    setUsers((prev) =>
-      prev.map((user) =>
-        user.studentId === student.studentId
-          ? {
-              ...user,
-              evaluationStatus: student.evaluationStatus ?? "PENDING",
-              status: classPayload.studentStatus ?? "NOT JOINED",
-            }
-          : user
-      )
-    );
-  }
-        }
-
-    socket.on("academicStudentList",handleList);
-    return () =>{
-      socket.off("academicStudentList",handleList);
-    }
-},[]);
+    socket.on("academicStudentList", handleList);
+    return () => {
+      socket.off("academicStudentList", handleList);
+    };
+  }, []);
 
   const router = useRouter();
   const handleSyncClick = () => {
@@ -816,13 +824,13 @@ const TrailManagement = () => {
     setCurrentPage(1); // Reset to first page when search changes
   };
 
- if (errorMessage) {
-  return (
-    <div className="min-h-screen flex items-center justify-center text-xl font-semibold text-red-600">
-      {errorMessage === "Failed to fetch users" ? "Not Found" : errorMessage}
-    </div>
-  );
-}
+  if (errorMessage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-xl font-semibold text-red-600">
+        {errorMessage === "Failed to fetch users" ? "Not Found" : errorMessage}
+      </div>
+    );
+  }
 
   // Pagination logic: calculate currentItems based on filteredUsers, currentPage, and itemsPerPage
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -871,12 +879,14 @@ const TrailManagement = () => {
                         {[
                           { label: "Student ID", width: "w-[10%]" },
                           { label: "Student Name", width: "w-[12%]" },
-                          { label: "Email", width: "w-[12%]" },
+                          { label: "Date", width: "w-[12%]" },
                           { label: "Mobile", width: "w-[10%]" },
                           { label: "Country", width: "w-[8%]" },
                           { label: "Course", width: "w-[10%]" },
                           { label: "Preferred Teacher", width: "w-[10%]" },
-                          { label: "Time", width: "w-[8%]" },
+                          {label : "Change Time", width: "w-[8%]"},
+                          {label:"Change Date", width: "w-[10%]"},
+                          {label:"Available Teacher", width: "w-[8%]"},
                           { label: "Evaluation Status", width: "w-[8%]" },
                           { label: "Student Status", width: "w-[10%]" },
                           { label: "Action", width: "w-[6%]" },
@@ -909,7 +919,14 @@ const TrailManagement = () => {
                               {item.fname} {item.lname}
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[15%]">
-                              {item.email}
+                              {new Date(item.createdDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                }
+                              )}
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.number}
@@ -919,6 +936,12 @@ const TrailManagement = () => {
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[10%]">
                               {item.course}
+                            </td>
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[10%]">
+                              {item.preferredTeacher}
+                            </td>
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[10%]">
+                              {item.preferredTeacher}
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[10%]">
                               {item.preferredTeacher}
@@ -949,13 +972,15 @@ const TrailManagement = () => {
                                 const evalUser = evaluationUsers.find(
                                   (eu) => eu.studentId === item.studentId
                                 );
-                                
+
                                 // If evaluation status is PENDING, set student status to PENDING
                                 let status = "NOT JOINED";
                                 if (item.evaluationStatus === "PENDING") {
                                   status = "PENDING";
                                 } else {
-                                  status = evalUser?.studentStatus?.toUpperCase() || "NOT JOINED";
+                                  status =
+                                    evalUser?.studentStatus?.toUpperCase() ||
+                                    "NOT JOINED";
                                 }
 
                                 const statusClass =

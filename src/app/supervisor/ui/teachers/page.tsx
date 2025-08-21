@@ -328,7 +328,7 @@ const ManageTeacher: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-6 gap-4 gap-x-7 p-3 px-4 bg-[#f5f5f5] dark:bg-[#3b3b3b]">
+            <div className="grid grid-cols-6 gap-2 gap-x-4 p-3 px-4 bg-[#f5f5f5] dark:bg-[#3b3b3b] w-[180] h-[260px] ">
               {currentApplicants.map((teacher: ICandidateApplication) => (
                 <div
                   key={teacher._id}
@@ -337,7 +337,7 @@ const ManageTeacher: React.FC = () => {
                   <div className="items-center">
                     <div className="h-[126px] rounded-md bg-[#e8e8e8] dark:bg-[#dadada] flex items-center justify-center">
                       <Image
-                        src={"/assets/images/profilePicture.png"}
+                        src={"/assets/images/profilebg.png"}
                         alt="Teacher"
                         className="rounded-md"
                         width={160}

@@ -29,6 +29,7 @@ interface Student {
   status?: string;
   trialClassStatus: string;
   studentStatus: string;
+  prefferedDate: string;
 }
 interface ClassPayload {
   academicCoachId: string;
@@ -121,6 +122,7 @@ interface TransformedUser {
   studentFirstName: string;
   studentLastName: string;
   number: string;
+  prefferedDate: string; // Optional if not always present
   country: string;
   course: string; // Assuming this corresponds to `learningInterest`
   preferredTeacher: string;
@@ -180,6 +182,7 @@ const getAllUsers = async (): Promise<{
           country: item.student.studentCountry,
           course: item.student.learningInterest,
           preferredTeacher: item.student.preferredTeacher,
+          prefferedDate: item.student.preferredDate,
           time: item.student.preferredFromTime,
           classStatus: item.student.classStatus,
           status: item.student.status,
@@ -1185,11 +1188,12 @@ const TrailSection = () => {
                           { label: "Student Name", width: "w-[12%]" },
                           { label: "Mobile", width: "w-[10%]" },
                           { label: "Country", width: "w-[8%]" },
-                          { label: "Course", width: "w-[10%]" },
+                          { label: "Course", width: "w-[9%]" },
+                          {label: "Date", width: "w-[8%]" },
                           { label: "Preferred Teacher", width: "w-[10%]" },
                           { label: "Assigned Teacher", width: "w-[10%]" },
                           { label: "Time", width: "w-[8%]" },
-                          { label: "Trail Status", width: "w-[10%]" },
+                          { label: "Trail Status", width: "w-[12%]" },
                           { label: "Student Status", width: "w-[10%]" },
                           { label: "Payment Status", width: "w-[10%]" },
                           { label: "Action", width: "w-[7%]" },
@@ -1229,6 +1233,12 @@ const TrailSection = () => {
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
                               {item.course}
                             </td>
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
+{new Date(item.prefferedDate).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric'
+})}                            </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
                               {item.preferredTeacher}
                             </td>

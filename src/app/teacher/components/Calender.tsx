@@ -14,7 +14,7 @@ interface ClassEvent {
   endDate: string;
   startTime: string[];
   endTime: string[];
-  sessionClassType: string; // Using the correct field from your backend
+  sessionClassType: string;
   teacher: {
     teacherId: string;
     teacherName: string;
@@ -76,7 +76,7 @@ const Calender: React.FC = () => {
   };
 
   return (
-    <div className="dark:bg-[#343434] w-full rounded-xl h-[280px]">
+    <div className="dark:bg-[#343434] w-full rounded-xl h-full">
       <Calendar
         onChange={(newValue) => setValue(newValue as Date)}
         value={value}
@@ -84,6 +84,9 @@ const Calender: React.FC = () => {
           `${date.toLocaleString('default', {
             month: 'long',
           }).toUpperCase()}, ${date.getFullYear()}`
+        }
+        formatShortWeekday={(locale, date) =>
+          date.toLocaleDateString(locale, { weekday: 'short' }).charAt(0) // 👈 First letter only
         }
         onClickDay={() => {
           router.push(`/teacher/ui/teacherreschedule`);

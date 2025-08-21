@@ -1,4 +1,4 @@
-.container {
+/* .container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,7 +15,7 @@
 }
 
 .customCalendar {
-  border: none; /* Remove default border */
+  border: none; 
   width: 100%;
 }
 
@@ -29,7 +29,7 @@
 }
 
 .react-calendar__navigation button:hover {
-  color: #3182ce; /* Hover effect */
+  color: #3182ce; 
 }
 
 .react-calendar__tile {
@@ -61,7 +61,7 @@
 }
 
 .highlightedDate {
-  background-color: #63b3ed !important; /* Highlight color */
+  background-color: #63b3ed !important; 
   color: white !important;
   font-weight: bold;
 }
@@ -71,4 +71,4 @@
 }
 
 
-
+ */

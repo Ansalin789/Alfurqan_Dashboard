@@ -18,7 +18,7 @@ interface Props {
 
 const SidebarItems = [
   { name: 'Dashboard', href: '/Academic-coach/ui/dashboard', icon: RiDashboardFill },
-  { name: 'Trail Management', href: '/Academic-coach/ui/trailmanagement', icon: Users },
+  { name: 'Trial Management', href: '/Academic-coach/ui/trailmanagement', icon: Users },
   { name: 'Manage Students', href: '/Academic-coach/ui/managestudents', icon: PiStudent },
   { name: 'Manage Teachers', href: '/Academic-coach/ui/manageteacher', icon: FaBookOpenReader },
   { name: 'Schedule', href: '/Academic-coach/ui/schedule', icon: MdOutlineCalendarToday },

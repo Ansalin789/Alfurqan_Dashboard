@@ -208,6 +208,7 @@ const TeacherDetails = () => {
   interface StudentInfo {
     fullName: string;
     courseName: string;
+    studentId: string;
   }
 
   const router = useRouter();
@@ -378,36 +379,42 @@ const TeacherDetails = () => {
       }
 
       const data = await res.json();
-      return data.classSchedule || [];
-    } catch (err) {
-      console.error("Failed to fetch class schedule", err);
-      return [];
-    }
-  };
+   const classSchedules = data.classSchedule || [];
+    
+    // Sort by date in ascending order (oldest first)
+    return classSchedules.sort((a: ClassSchedule, b: ClassSchedule) => {
+      return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+    });
+  } catch (err) {
+    console.error("Failed to fetch class schedule", err);
+    return [];
+  }
+};
 
   // 👇 Separate function to get unique students
-  const getUniqueStudentsFromSchedule = (
-    schedule: ClassSchedule[]
-  ): StudentInfo[] => {
-    const studentSet = new Set<string>();
-    const studentInfoArray: StudentInfo[] = [];
+ const getUniqueStudentsFromSchedule = (
+  schedule: ClassSchedule[]
+): StudentInfo[] => {
+  const studentSet = new Set<string>();
+  const studentInfoArray: StudentInfo[] = [];
 
-    schedule.forEach((item: ClassSchedule) => {
-      if (item.student) {
-        const fullName = `${item.student.studentFirstName} ${
-          item.student.studentLastName || ""
-        }`.trim();
-        const courseName = item.course?.courseName || "";
+  schedule.forEach((item: ClassSchedule) => {
+    if (item.student && item.student.studentId) { // Add check for studentId
+      const fullName = `${item.student.studentFirstName} ${
+        item.student.studentLastName || ""
+      }`.trim();
+      const courseName = item.course?.courseName || "";
+      const studentId = item.student.studentId;
 
-        if (!studentSet.has(fullName)) {
-          studentSet.add(fullName);
-          studentInfoArray.push({ fullName, courseName });
-        }
+      if (!studentSet.has(studentId)) {
+        studentSet.add(studentId);
+        studentInfoArray.push({ fullName, courseName, studentId });
       }
-    });
+    }
+  });
 
-    return studentInfoArray;
-  };
+  return studentInfoArray;
+};
 
   // 👇 Fetch class schedule and set Scheduled/Completed classes
   useEffect(() => {
@@ -811,6 +818,10 @@ const TeacherDetails = () => {
       ? scheduledClasses.length
       : completedClasses.length;
 
+const handleViewDetails = (_id: string) => {
+  localStorage.setItem("studentManageID", _id);
+  router.push(`managestudentview?id=${_id}`);
+};
   return (
     <BaseLayout1>
       <AcademicHeader
@@ -818,32 +829,33 @@ const TeacherDetails = () => {
         showBackButton={true}
         showBackPath="/Academic-coach/ui/manageteacher"
       />
-      <div className="p-2 mx-auto">
+      <div className="p-2 mx-auto w-full">
         {/* Main Container */}
         <div className="flex gap-x-5 w-full">
           {/* Left Profile Card */}
-          <div className="rounded-xl flex items-center p-6 w-[630px] h-[247px] border bg-[#5e6578] text-white ">
-            {/* Profile Section */}
-            <div className="flex flex-col items-center w-full px-4 text-center">
-              <Image
-                src="/assets/images/proff.jpg"
-                width={100}
-                height={100}
-                alt="Profile"
-                className="rounded-full border-4 border-white mb-4"
-              />
-              <h2 className="text-xl font-semibold text-white break-words">
-                {teachers?.candidateFirstName}
-              </h2>
-              <p className="text-sm text-[#C9C9C9] break-words">
-                {teachers?.candidateEmail}
-              </p>
-            </div>
+          <div className="rounded-xl flex items-center p-6 w-[633px] h-[247px] border bg-[#5e6578] text-white ">
+              {/* Profile Section */}
+  <div className="flex flex-col items-center w-1/3 px-4 text-center">
+    <div className="relative mb-4">
+      <Image
+        src="/assets/images/proff.jpg"
+        width={100}
+        height={100}
+        alt="Profile"
+        className="rounded-full border-4 border-white object-cover"
+      />
+    </div>
+    <h2 className="text-lg font-semibold text-white break-words mb-1">
+      {teachers?.candidateFirstName}
+    </h2>
+    <p className="text-[11px] text-[#C9C9C9] break-words word-wrap w-[200px] px-2">
+      {teachers?.candidateEmail}
+    </p>
+  </div>
 
-            {/* Divider */}
-            <div className="w-px bg-gray-300 h-[150px] mx-6" />
-
-            {/* Personal Info */}
+  {/* Divider */}
+            <div className="w-px bg-gray-300 h-[150px] mx-10" />
+     {/* Personal Info */}
             <div className="w-2/3">
               <h3 className="text-[16px] font-semibold mb-4 text-[#ffff]">
                 Personal Info
@@ -878,9 +890,9 @@ const TeacherDetails = () => {
           </div>
 
           {/* Right Section */}
-          <div className="rounded-xl w-[610px] h-[220px] flex justify-between p-3 border dark:bg-[#252525] -mt-3 ">
+          <div className="rounded-xl w-full h-[220px] flex justify-between p-3 border dark:bg-[#252525] -mt-3 ">
             {/* Left Side - Performance and Attendance */}
-            <div className="grid grid-cols-1 gap-3 w-[45%] h-[247px]">
+            <div className="grid grid-cols-1 gap-3 w-full h-[247px]">
               {[
                 {
                   title: "Performance",
@@ -904,52 +916,55 @@ const TeacherDetails = () => {
                     {item.value}{" "}
                     <VscGraphLeft className="rotate-180 text-[#ffff]" />
                   </p>
-                  <p className="text-[12px] text-[#ffff]">{item.sub}</p>
+                  <p className="text-[10px] text-[#ffff]">{item.sub}</p>
                 </div>
               ))}
             </div>
 
             {/* Right Side - Students List */}
             {/* Right Side - Students List */}
-            <div className="bg-white dark:bg-[#2f2f2f] rounded-2xl p-4 w-[50%] h-[247px] flex flex-col gap-y-4 scrollbar-none">
-              <div className="flex justify-between items-center">
-                <h2 className="text-[14px] font-semibold text-[#111827] dark:text-white">
-                  Students List
-                </h2>
-                <span className="bg-[#576CBC] text-white text-[12px] font-semibold rounded-md px-2 py-1">
-                  {studentInfoList.length}
-                </span>
-              </div>
-
-              {/* Students List */}
-              <ul className="space-y-3 overflow-y-auto max-h-[180px] scrollbar-none">
-                {studentInfoList.map((student, index) => (
-                  <li
-                    key={index}
-                    className="flex items-center justify-between border-b pb-2 border-gray-200 dark:border-gray-700"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-6 h-6 rounded-full bg-[#ffff] flex items-center justify-center font-bold text-[10px]">
-                        <img
-                          src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                          alt="avatar"
-                          className="w-6 h-6 rounded-full object-cover"
-                        />
-                      </div>
-                      <span className="text-[12px] font-medium text-[#111827] dark:text-white">
-                        {student.fullName}
-                      </span>
-                    </div>
-                    <span className="text-[11px] text-[#576CBC] font-medium whitespace-nowrap">
-                      {student.courseName || ""}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
-        </div>
+  <div className="bg-white dark:bg-[#2f2f2f] rounded-2xl p-4 w-full h-[247px] flex flex-col gap-y-4 scrollbar-none">
+  <div className="flex justify-between items-center">
+    <h2 className="text-[14px] font-semibold text-[#111827] dark:text-white">
+      Students List
+    </h2>
+    <span className="bg-[#576CBC] text-white text-[12px] font-semibold rounded-md px-2 py-1">
+      {studentInfoList.length}
+    </span>
+  </div>
 
+  {/* Students List */}
+  <ul className="space-y-3 overflow-y-auto max-h-[180px] scrollbar-none">
+    {studentInfoList.map((student, index) => (
+      <li
+        key={index}
+        className="flex items-center justify-between border-b pb-2 border-gray-200 dark:border-gray-700"
+      >
+        <div className="flex items-center space-x-3">
+          <div className="w-6 h-6 rounded-full bg-[#ffff] flex items-center justify-center font-bold text-[10px]">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+              alt="avatar"
+              className="w-6 h-6 rounded-full object-cover"
+            />
+          </div>
+          <span 
+            className="text-[12px] font-medium text-[#111827] dark:text-white cursor-pointer hover:underline"
+            onClick={() => handleViewDetails(student.studentId)}
+          >
+            {student.fullName}
+          </span>
+        </div>
+        <span className="text-[11px] text-[#576CBC] font-medium whitespace-nowrap">
+          {student.courseName || ""}
+        </span>
+      </li>
+    ))}
+  </ul>
+</div>
+        </div>
+        
         <div className="flex space-x-6  px-4 py-2 rounded-md">
           <button
             className={`relative text-[14px] transition font-medium ${
@@ -985,7 +1000,6 @@ const TeacherDetails = () => {
             )}
           </button>
         </div>
-
         <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-2">
           <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
             <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -1040,9 +1054,11 @@ const TeacherDetails = () => {
                 <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                   Status
                 </th>
-                <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] w-[90px] min-w-[90px] max-w-[90px]">
-                  Action
-                </th>
+                {activeTab === "scheduled" && (
+                  <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] w-[90px] min-w-[90px] max-w-[90px]">
+                    Action
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-[#343434] dark:divide-gray-600">
@@ -1086,65 +1102,69 @@ const TeacherDetails = () => {
                       {item.scheduleStatus}
                     </span>
                   </td>
-                  <td className="py-1 text-center relative w-[90px] min-w-[90px] max-w-[90px]" ref={dropdownRef}>
-                    <button
-                      onClick={
-                        item.scheduleStatus === "Scheduled"
-                          ? () => toggleDropdown(index)
-                          : undefined
-                      }
-                      className={`$${
-                        item.scheduleStatus === "Scheduled"
-                          ? "cursor-pointer"
-                          : "cursor-default"
-                      }`}
-                    >
-                      <MoreVertical
-                        className={`w-4 h-4 $${
-                          item.scheduleStatus === "Scheduled"
-                            ? "text-slate-600 dark:text-[#FDFDFD]"
-                            : "text-gray-400 dark:text-gray-600 opacity-50"
-                        }`}
-                      />
-                    </button>
+             {activeTab === "scheduled" && (
+          <td
+            className="py-1 text-center relative w-[90px] min-w-[90px] max-w-[90px]"
+            ref={dropdownRef}
+          >
+            <button
+              onClick={
+                item.scheduleStatus === "Scheduled"
+                  ? () => toggleDropdown(index)
+                  : undefined
+              }
+              className={`${
+                item.scheduleStatus === "Scheduled"
+                  ? "cursor-pointer"
+                  : "cursor-default"
+              }`}
+            >
+              <MoreVertical
+                className={`w-4 h-4 ${
+                  item.scheduleStatus === "Scheduled"
+                    ? "text-slate-600 dark:text-[#FDFDFD]"
+                    : "text-gray-400 dark:text-gray-600 opacity-50"
+                }`}
+              />
+            </button>
 
-                    {/* Only show dropdown if status is Scheduled and activeDropdown is set */}
-                    {item.scheduleStatus === "Scheduled" &&
-                      activeDropdown === index && (
-                        <div
-                          className="py-1 bg-white rounded-md shadow-lg daerk absolute right-0 top-6 z-20 w-32 min-w-[120px] max-w-[160px]  dark:bg-[#252525]"
-                          style={{ minWidth: '120px' }}
-                        >
-                          <button
-                            className={`w-full text-left px-4 py-2 text-[12px] $${
-                              teacherRescheduleWrite
-                                ? "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
-                                : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444] cursor-not-allowed"
-                            }`}
-                            onClick={
-                              teacherRescheduleWrite
-                                ? () => handleReschedule(item._id)
-                                : undefined
-                            }
-                            disabled={!teacherRescheduleWrite}
-                          >
-                            Reschedule
-                          </button>
-                          <button
-                            onClick={() => setActiveDropdown(null)}
-                            className="w-full text-left px-4 py-2 text-red-600"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            {/* Only show dropdown if status is Scheduled and activeDropdown is set */}
+            {item.scheduleStatus === "Scheduled" &&
+              activeDropdown === index && (
+                <div
+                  className="py-1 bg-white rounded-md shadow-lg daerk absolute right-0 top-6 z-20 w-32 min-w-[120px] max-w-[160px]  dark:bg-[#252525]"
+                  style={{ minWidth: "120px" }}
+                >
+                  <button
+                    className={`w-full text-left px-4 py-2 text-[12px] ${
+                      teacherRescheduleWrite
+                        ? "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
+                        : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444] cursor-not-allowed"
+                    }`}
+                    onClick={
+                      teacherRescheduleWrite
+                        ? () => handleReschedule(item._id)
+                        : undefined
+                    }
+                    disabled={!teacherRescheduleWrite}
+                  >
+                    Reschedule
+                  </button>
+                  <button
+                    onClick={() => setActiveDropdown(null)}
+                    className="w-full text-left px-4 py-2 text-red-600"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+          </td>
+        )}
+      </tr>
+    ))}
+  </tbody>
+</table>
         </div>
-
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
