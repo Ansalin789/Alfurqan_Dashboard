@@ -231,7 +231,6 @@ const handleFormSubmit = async (e: React.FormEvent) => {
     console.log(authToken);
 
     router.push("/Academic-coach/ui/dashboard");
-    alert("Login successful as AcademicCoach");
   } catch (error: any) {
     if (error.response) {
       const { status, data } = error.response;

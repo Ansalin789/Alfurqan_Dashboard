@@ -1360,12 +1360,14 @@ const Step6 = ({
       startDate: trailStartDate,
       from: fromTime,
       to: calculatedToTime,
+      position :`${updatedStudentData.learningInterest} Teacher`,
     });
     socket.emit("academicTrailClassTeacherListRequest", {
       requestId: academicId,
       startDate: trailStartDate,
       from: fromTime,
       to: calculatedToTime,
+      position :`${updatedStudentData.learningInterest} Teacher`,
     });
 
     const handleResponse = (data: Record<string, string>) => {
