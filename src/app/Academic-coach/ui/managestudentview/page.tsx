@@ -321,7 +321,7 @@ useEffect(() => {
   const fetchStudentStats = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5001/studentattendanceperformance?studentId=${alstudentsId}`,
+        `https://api.blackstoneinfomaticstech.com/studentattendanceperformance?studentId=${alstudentsId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,  

@@ -126,32 +126,13 @@ const SignIn: React.FC = () => {
     // if (user) setUsername(user);
     // if (pass) setPassword(pass);
   }, [error]);
-  const signIn = async (username: string, password: string) => {
-    try {
-      const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/signin",
-        {
-          username,
-          password,
-        }
-      );
+ const signIn = async (username: string, password: string) => {
+  return axios.post("https://api.blackstoneinfomaticstech.com/signin", {
+    username,
+    password,
+  });
+};
 
-      // Handle successful login response
-      if (response.status === 200) {
-        return response.data;
-      }
-
-      throw new Error("Unexpected error occurred");
-    } catch (error: any) {
-      // Handle backend errors, e.g., user not found
-      if (error.response && error.response.status === 404) {
-        throw new Error("Email not found"); // Specific error message
-      }
-
-      // Handle other errors
-      throw new Error(error.message ?? "Login failed");
-    }
-  };
 
   const fetchrolebasedaccesscontrol = async (
     id: string,
@@ -207,44 +188,45 @@ const SignIn: React.FC = () => {
 
 const handleFormSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
-  setError(""); // Clear previous errors
+  setError("");
 
   try {
-    const data = await signIn(username, password);
+    const response = await signIn(username, password);
+    const data = response.data;
     const { accessToken, role, _id, userName } = data;
 
-    // ❌ Reject if not Academic Coach
+    // Only Academic Coaches
     if (!role?.includes("ACADEMICCOACH")) {
       setLoginError("Only Academic Coaches are allowed to log in.");
       return;
     }
 
-    // ✅ Proceed only for Academic Coaches
     localStorage.setItem("AcademicCoachAuthToken", accessToken);
     localStorage.setItem("AcademicCoachPortalId", _id);
     localStorage.setItem("AcademicCoachPortalName", userName);
 
     await fetchrolebasedaccesscontrol(_id, accessToken, role);
 
-    const authToken = localStorage.getItem("AcademicCoachAuthToken");
-    console.log(accessToken);
-    console.log(authToken);
-
     router.push("/Academic-coach/ui/dashboard");
   } catch (error: any) {
     if (error.response) {
       const { status, data } = error.response;
-      if (status === 400) {
-        console.log(error);
+
+      if (status === 404) {
+        setLoginError("Email not found");
+      } else if (status === 401) {
+        setLoginError(
+          data.message ?? "User already logged in on another device/session"
+        );
       } else {
         setLoginError(data.message ?? "Login failed. Please try again later.");
       }
     } else {
-      setLoginError("Login failed. Please try again later.");
+      setLoginError("Network error. Please try again later.");
     }
-    console.error("Login error:", error);
   }
 };
+
 
 
   const handleGoogleSuccess = async (response: CredentialResponse) => {
