@@ -11,7 +11,6 @@ import axios from "axios";
 import { Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import { getSocket } from "@/app/utils/socket";
 import moment from "moment";
 
@@ -406,7 +405,7 @@ const TrailSection = () => {
     availableTeacher: "",
   });
   const [availableTeachers, setAvailableTeachers] = useState<
-    { teacherId: string; teacherName: string }[]
+    { teacherId: string; teacherName: string; teacherEmail?: string }[]
   >([]);
   const [isLoadingTeachers, setIsLoadingTeachers] = useState(false);
 
@@ -431,12 +430,19 @@ const TrailSection = () => {
       const calculatedToTime = moment(time, "HH:mm")
         .add(30, "minutes")
         .format("HH:mm");
-
+        console.log("📤 Sending with payload:", {
+          requestId: academicId,
+        startDate: date,
+        from: time,
+        to: calculatedToTime,
+        position :`${formData.student.learningInterest} Teacher`,
+        });
       socket.emit("academicTrailClassTeacherListRequest", {
         requestId: academicId,
         startDate: date,
         from: time,
         to: calculatedToTime,
+        position :`${formData.student.learningInterest} Teacher`,
       });
 
       const handleResponse = (data: Record<string, string>) => {
@@ -486,7 +492,7 @@ const TrailSection = () => {
       const token = localStorage.getItem("AcademicCoachAuthToken");
       if (!token) return alert("Token missing!");
       if (!formData?._id) return alert("No evaluationId found!");
-
+  
       if (
         !editableData.changeDate ||
         !editableData.changeTime ||
@@ -496,31 +502,33 @@ const TrailSection = () => {
           "Please select Change Date, Change Time and Available Teacher."
         );
       }
-
+  
+      // 🔹 Find teacher info
       const selectedTeacher = availableTeachers.find(
         (t) => t.teacherId === editableData.availableTeacher
       );
-
+  
+      // 🔹 Compute time range (30 min duration)
       const changeFromTime = editableData.changeTime;
       const changeToTime = moment(editableData.changeTime, "HH:mm")
         .add(30, "minutes")
         .format("HH:mm");
-
-      // 🔹 Merge full student and evaluation details
+  
+      // 🔹 Build payload that backend expects (for Zoom scheduling)
       const payload = {
-        ...formData, // include all existing fields
-        trialClassStatus: "PENDING",
-        changeDate: editableData.changeDate,
-        changeFromTime,
-        changeToTime,
         teacher: {
-          teacherId:
-            selectedTeacher?.teacherId || editableData.availableTeacher,
-          teacherName: selectedTeacher?.teacherName || "",
-          // teacherEmail: selectedTeacher?.teacherEmail || "",
+          userId: selectedTeacher?.teacherId || editableData.availableTeacher,
+          userName: selectedTeacher?.teacherName || "",
+          email: selectedTeacher?.teacherEmail || "",
         },
+        preferredTrialDate: editableData.changeDate,
+        preferredTrialFromTime: changeFromTime,
+        preferredTrialToTime: changeToTime,
       };
-
+  
+      console.log("📤 Sending payload to backend:", payload);
+  
+      // 🔹 Send update request
       const response = await axios.put(
         `http://localhost:5001/evaluation/${formData._id}`,
         payload,
@@ -531,15 +539,18 @@ const TrailSection = () => {
           },
         }
       );
-
+  
+      console.log("✅ Backend response:", response.data);
+  
       if (response.status === 200) {
-        alert("Changes saved and email triggered successfully.");
+        alert("✅ Changes saved. Zoom schedule update & email will be triggered.");
       }
     } catch (error: any) {
-      console.error("Error saving changes:", error?.response?.data || error);
-      alert("Failed to save changes. Please try again.");
+      console.error("❌ Error saving changes:", error?.response?.data || error);
+      alert("❌ Failed to save changes. Please try again.");
     }
   };
+  
 
   useEffect(() => {
     const fetchData = async () => {
