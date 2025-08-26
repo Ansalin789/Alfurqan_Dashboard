@@ -517,15 +517,14 @@ const TrailSection = () => {
       // 🔹 Build payload that backend expects (for Zoom scheduling)
       const payload = {
         teacher: {
-          userId: selectedTeacher?.teacherId || editableData.availableTeacher,
-          userName: selectedTeacher?.teacherName || "",
-          email: selectedTeacher?.teacherEmail || "",
+          teacherId: selectedTeacher?.teacherId || editableData.availableTeacher,
+          teacherName: selectedTeacher?.teacherName || "",
+          teacherEmail: selectedTeacher?.teacherEmail || "",
         },
         preferredTrialDate: editableData.changeDate,
         preferredTrialFromTime: changeFromTime,
         preferredTrialToTime: changeToTime,
       };
-  
       console.log("📤 Sending payload to backend:", payload);
   
       // 🔹 Send update request
