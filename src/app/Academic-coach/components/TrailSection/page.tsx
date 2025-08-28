@@ -427,6 +427,17 @@ const TrailSection = () => {
       if (!academicId) return;
 
       const socket = getSocket(academicId);
+      const position =
+  formData.student.learningInterest === "Islamic Studies"
+    ? "Islamic Teacher"
+    : `${formData.student.learningInterest} Teacher`;
+    console.log("📤 Sending academicTrailClassTeacherListRequest");
+    console.log("📤 Sending with payload:", {
+      startDate: formData.student.preferredDate,
+      from: formData.student.preferredFromTime,
+      to: formData.student.preferredToTime,
+      position :position,
+    });
       const calculatedToTime = moment(time, "HH:mm")
         .add(30, "minutes")
         .format("HH:mm");
@@ -435,14 +446,14 @@ const TrailSection = () => {
         startDate: date,
         from: time,
         to: calculatedToTime,
-        position :`${formData.student.learningInterest} Teacher`,
-        });
+        position :position,
+      });
       socket.emit("academicTrailClassTeacherListRequest", {
         requestId: academicId,
         startDate: date,
         from: time,
         to: calculatedToTime,
-        position :`${formData.student.learningInterest} Teacher`,
+        position :position,
       });
 
       const handleResponse = (data: Record<string, string>) => {
@@ -471,7 +482,7 @@ const TrailSection = () => {
   // Function to handle time change and trigger teacher fetch
   const handleTimeChange = (time: string) => {
     handleEditableFieldChange("changeTime", time);
-    const date = editableData.changeDate;
+    const date = editableData.changeDate || formData?.student.preferredDate;
     if (date && time) {
       fetchAvailableTeachers(date, time);
     }
@@ -480,7 +491,8 @@ const TrailSection = () => {
   // Function to handle date change and trigger teacher fetch
   const handleDateChange = (date: string) => {
     handleEditableFieldChange("changeDate", date);
-    const time = editableData.changeTime;
+    const time = editableData.changeTime || formData?.student.preferredFromTime;
+    // If only date is selected, still show the teacher section by triggering fetch with existing time
     if (date && time) {
       fetchAvailableTeachers(date, time);
     }
@@ -488,29 +500,28 @@ const TrailSection = () => {
 
   // Save changes and trigger email in one step
   const handleSaveChanges = async () => {
-    try {
+        try {
       const token = localStorage.getItem("AcademicCoachAuthToken");
       if (!token) return alert("Token missing!");
       if (!formData?._id) return alert("No evaluationId found!");
-  
-      if (
-        !editableData.changeDate ||
-        !editableData.changeTime ||
-        !editableData.availableTeacher
-      ) {
+ 
+      const effectiveDate = editableData.changeDate || formData?.student.preferredDate;
+      const effectiveTime = editableData.changeTime || formData?.student.preferredFromTime;
+
+      if (!effectiveDate || !effectiveTime || !editableData.availableTeacher) {
         return alert(
           "Please select Change Date, Change Time and Available Teacher."
         );
       }
-  
+ 
       // 🔹 Find teacher info
       const selectedTeacher = availableTeachers.find(
         (t) => t.teacherId === editableData.availableTeacher
       );
   
       // 🔹 Compute time range (30 min duration)
-      const changeFromTime = editableData.changeTime;
-      const changeToTime = moment(editableData.changeTime, "HH:mm")
+      const changeFromTime = editableData.changeTime || formData?.student.preferredFromTime;
+      const changeToTime = moment(changeFromTime, "HH:mm")
         .add(30, "minutes")
         .format("HH:mm");
   
@@ -521,6 +532,10 @@ const TrailSection = () => {
           teacherName: selectedTeacher?.teacherName || "",
           teacherEmail: selectedTeacher?.teacherEmail || "",
         },
+        // Also update assigned teacher fields used by the list/table
+        assignedTeacher: selectedTeacher?.teacherName || "",
+        assignedTeacherId: selectedTeacher?.teacherId || editableData.availableTeacher,
+        assignedTeacherEmail: selectedTeacher?.teacherEmail || "",
         preferredTrialDate: editableData.changeDate,
         preferredTrialFromTime: changeFromTime,
         preferredTrialToTime: changeToTime,
@@ -541,8 +556,50 @@ const TrailSection = () => {
   
       console.log("✅ Backend response:", response.data);
   
-      if (response.status === 200) {
+      if (response.status === 200 || response.status === 204) {
         alert("✅ Changes saved. Zoom schedule update & email will be triggered.");
+
+        // Optimistically update table and modal state
+        setUsers((prev) =>
+          prev.map((u) =>
+            u._id === formData._id
+              ? {
+                  ...u,
+                  assignedTeacher: selectedTeacher?.teacherName || u.assignedTeacher,
+                  time: changeFromTime,
+                  prefferedDate: editableData.changeDate || u.prefferedDate,
+                }
+              : u
+          )
+        );
+        setFilteredUsers((prev) =>
+          prev.map((u) =>
+            u._id === formData._id
+              ? {
+                  ...u,
+                  assignedTeacher: selectedTeacher?.teacherName || u.assignedTeacher,
+                  time: changeFromTime,
+                  prefferedDate: editableData.changeDate || u.prefferedDate,
+                }
+              : u
+          )
+        );
+        setFormData((prev: any) => ({
+          ...prev,
+          assignedTeacher: selectedTeacher?.teacherName || prev?.assignedTeacher,
+          assignedTeacherId:
+            selectedTeacher?.teacherId || editableData.availableTeacher || prev?.assignedTeacherId,
+          assignedTeacherEmail: selectedTeacher?.teacherEmail || prev?.assignedTeacherEmail,
+          student: {
+            ...prev?.student,
+            preferredDate: editableData.changeDate || prev?.student?.preferredDate,
+            preferredFromTime: changeFromTime || prev?.student?.preferredFromTime,
+            preferredToTime: changeToTime || prev?.student?.preferredToTime,
+          },
+        }));
+
+        setShowModal(false);
+        fetchStudents();
       }
     } catch (error: any) {
       console.error("❌ Error saving changes:", error?.response?.data || error);
@@ -550,7 +607,7 @@ const TrailSection = () => {
     }
   };
   
-
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -1336,7 +1393,7 @@ const TrailSection = () => {
                     <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                       <tr>
                         {[
-                          { label: "Trail ID", width: "w-[10%]" },
+                          { label: "Trial ID", width: "w-[10%]" },
                           { label: "Student Name", width: "w-[12%]" },
                           { label: "Mobile", width: "w-[10%]" },
                           { label: "Country", width: "w-[8%]" },
@@ -1345,7 +1402,7 @@ const TrailSection = () => {
                           { label: "Preferred Teacher", width: "w-[10%]" },
                           { label: "Assigned Teacher", width: "w-[10%]" },
                           { label: "Time", width: "w-[8%]" },
-                          { label: "Trail Status", width: "w-[12%]" },
+                          { label: "Trial Status", width: "w-[12%]" },
                           { label: "Student Status", width: "w-[10%]" },
                           { label: "Payment Status", width: "w-[10%]" },
                           { label: "Action", width: "w-[7%]" },
@@ -1856,9 +1913,9 @@ const TrailSection = () => {
                 >
                   Cancel
                 </button>
-                {editableData.changeTime &&
-                  editableData.changeDate &&
-                  editableData.availableTeacher && (
+                {(editableData.availableTeacher &&
+                  ((editableData.changeDate || formData?.student.preferredDate) &&
+                   (editableData.changeTime || formData?.student.preferredFromTime))) && (
                     <button
                       type="button"
                       onClick={handleSaveChanges}
