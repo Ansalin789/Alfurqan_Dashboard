@@ -62,7 +62,7 @@
 .custom-calendar .react-calendar__navigation {
   display: flex;
   align-items: center;
-  margin-bottom: 5px;
+  /* margin-bottom: 5px; */
   height: auto;
   background: none;
   padding: 0px 10px;
@@ -76,7 +76,7 @@
   font-size: 20px;
   font-weight: bold;
   color: #010E30;
-  margin-top: 20px;
+  margin-top: 18px;
 }
 
 .custom-calendar .react-calendar__navigation__label {
@@ -149,23 +149,68 @@
 /* Navigation arrows with background */
 .custom-calendar .react-calendar__navigation__arrow {
   background: #EFEFEF !important;
-  padding: 14px 5px !important;
+  padding: 0 !important;
   color: #1e293b !important;
   border-radius: 8px;
-  width: 28px !important;
-  height: 28px;
+  width: 26px !important;
+  height: 26px !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 25px;
+  line-height: 26px !important;
+  font-size: 20px;
   margin: 4px 4px;
+  margin-top: 10px;
   cursor: pointer;
-  transition: background 0.2s ease-in-out;
+  transition: background 0.2s ease-in-out; 
 }
+.custom-calendar .react-calendar__navigation__arrow {
+  /* position: relative; */
+  /* margin-top: 8px !important; */
+}
+
 
 .custom-calendar .react-calendar__navigation__arrow:enabled:hover {
   background: #EFEFEF !important;
   color: #000 !important;
+}
+
+/* Ensure the arrow glyph sits perfectly centered inside the button */
+.custom-calendar .react-calendar__navigation__arrow svg,
+.custom-calendar .react-calendar__navigation__arrow i,
+.custom-calendar .react-calendar__navigation__arrow span,
+.custom-calendar .react-calendar__navigation__arrow::before,
+.custom-calendar .react-calendar__navigation__arrow::after {
+  line-height: 1;
+  vertical-align: middle;
+}
+
+/* Remove button-level translation; we'll move only the glyph */
+.custom-calendar .react-calendar__navigation__arrow {
+  transform: none;
+}
+
+/* Render glyphs via pseudo-elements so we can move only the icon */
+.custom-calendar .react-calendar__navigation__arrow {
+  font-size: 0 !important; /* hide original text glyph */
+}
+.custom-calendar .react-calendar__navigation__prev-button::before {
+  content: "\2039"; /* ‹ */
+}
+.custom-calendar .react-calendar__navigation__next-button::before {
+  content: "\203A"; /* › */
+}
+.custom-calendar .react-calendar__navigation__prev2-button::before {
+  content: "\00AB"; /* « */
+}
+.custom-calendar .react-calendar__navigation__next2-button::before {
+  content: "\00BB"; /* » */
+}
+.custom-calendar .react-calendar__navigation__arrow::before {
+  display: inline-block;
+  font-size: 18px; /* visible size */
+  line-height: 1;
+  transform: translateY(-2px); /* move only the icon up */
 }
 
 .event-day {
