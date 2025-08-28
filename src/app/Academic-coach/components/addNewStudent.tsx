@@ -325,19 +325,23 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
         : null;
     if (!academicId || !trailStartDate) return;
     const socket = getSocket(academicId);
+    const position =
+  form.course === "Islamic Studies"
+    ? "Islamic Teacher"
+    : `${form.course} Teacher`;
     console.log("📤 Sending academicTrailClassTeacherListRequest");
     console.log("📤 Sending with payload:", {
       startDate: trailStartDate,
       from: fromTime,
       to: calculatedToTime,
-      position :`${form.course} Teacher`,
+      position :position,
     });
     socket.emit("academicTrailClassTeacherListRequest", {
       requestId: academicId,
       startDate: trailStartDate,
       from: fromTime,
       to: calculatedToTime,
-      position :`${form.course} Teacher`,
+      position :position,
     });
 
     const handleResponse = (data: Record<string, string>) => {

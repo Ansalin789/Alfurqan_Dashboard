@@ -1355,19 +1355,23 @@ const Step6 = ({
         : null;
     if (!academicId || !trailStartDate) return;
     const socket = getSocket(academicId);
+     const position =
+  updatedStudentData.learningInterest === "Islamic Studies"
+    ? "Islamic Teacher"
+    : `${updatedStudentData.learningInterest} Teacher`;
     console.log("📤 Sending academicTrailClassTeacherListRequest");
     console.log("📤 Sending with payload:", {
       startDate: trailStartDate,
       from: fromTime,
       to: calculatedToTime,
-      position :`${updatedStudentData.learningInterest} Teacher`,
+      position :position,
     });
     socket.emit("academicTrailClassTeacherListRequest", {
       requestId: academicId,
       startDate: trailStartDate,
       from: fromTime,
       to: calculatedToTime,
-      position :`${updatedStudentData.learningInterest} Teacher`,
+      position :position,
     });
 
     const handleResponse = (data: Record<string, string>) => {
