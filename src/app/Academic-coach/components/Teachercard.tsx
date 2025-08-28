@@ -100,24 +100,24 @@ const Teacherscard: React.FC = () => {
     total > 0 ? `${Math.round((count / total) * 100)}%` : "0%";
 
   return (
-    <div className="bg-[#FFFFFF] dark:bg-[#343434] rounded-xl p-4 h-[270px]">
+    <div className="bg-[#FFFFFF] dark:bg-[#343434] rounded-xl p-2 h-[270px]">
       <div className="w-full flex justify-between items-center">
-        <h3 className="text-[#010E30] text-[13px] font-semibold dark:text-[#ffff]">
+        <h3 className="text-[#010E30] text-[16px] mb-2 px-3 py-2 font-semibold dark:text-[#ffff]">
           Teachers
         </h3>
-        <div className="flex gap-1">
+        <div className="flex gap-1 px-4">
           <div className="flex items-center gap-[3px]">
-            <div className="w-[6px] h-[6px] bg-pink-400 rounded-sm"></div>
-            <span className="text-[9px] text-[#010E30] dark:text-white/70">Female</span>
+            <div className="w-[10px] h-[10px] bg-[#EF95F4] rounded-[2px]"></div>
+            <span className="text-[9px] text-[#010E30] opacity-70 dark:text-white/70">Female</span>
           </div>
           <div className="flex items-center gap-[3px]">
-            <div className="w-[6px] h-[6px] bg-blue-400 rounded-sm"></div>
-            <span className="text-[9px] text-[#010E30] dark:text-white/70">Male</span>
+            <div className="w-[10px] h-[10px] bg-[#9fd0ff] rounded-[2px]"></div>
+            <span className="text-[9px] text-[#010E30] opacity-70 dark:text-white/70">Male</span>
           </div>
         </div>
       </div>
 
-      <div className="flex justify-center items-center mt-6 dark:text-[#242424]">
+      <div className="flex justify-center items-center mt-0 dark:text-[#242424]">
         <PieChart width={200} height={200}>
           <Pie
             data={pieData}

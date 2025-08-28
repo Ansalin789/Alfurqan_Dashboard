@@ -74,7 +74,7 @@ const Support = () => {
                 </span>
                 <br />
                 <span className="text-white text-[13px] font-normal">
-                  contact@alfurqan.academy
+                  support@alfurqan.academy 
                 </span>
                 </div>
               </p>

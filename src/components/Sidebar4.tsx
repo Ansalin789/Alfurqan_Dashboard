@@ -26,22 +26,22 @@ const SidebarItems = [
       { name: 'Scheduled Trail class', href: '/admin-main/ui/trailmanagement' },
     ],
   },
-  { name: 'Manage Students', href: '/admin-main/ui/student', icon: '/assets/images/ll.svg' },
-  { name: 'Manage Employees', href: '/admin-main/ui/employees', icon: '/assets/images/bc.svg' },
+  { name: 'Manage Students', href: '/admin-main/ui/student', icon: '/assets/images/local-library.png' },
+  { name: 'Manage Employees', href: '/admin-main/ui/employees', icon: '/assets/images/business-center.png' },
   { name: 'Courses', href: '/admin-main/ui/courses', icon: PiBookOpenFill },
   {
     name: 'Schedule',
     href: '#',
-    icon: '/assets/images/ChalkboardTeacher.svg',
+    icon: '/assets/images/ChalkboardTeacher.png',
     subItems: [
-      { name: 'Meeting', href: '/admin-main/ui/meeting' },
       { name: 'Classes', href: '/admin-main/ui/classes' },
+      { name: 'Meeting', href: '/admin-main/ui/meeting' },
     ],
   },
   {
     name: 'Finance',
     href: '#',
-    icon: '/assets/images/ChartLineUp.svg',
+    icon: '/assets/images/ChartLineUp.png',
     subItems: [
       { name: 'Invoice', href: '/admin-main/ui/Invoice' },
       { name: 'Salary and Wages', href: '/admin-main/ui/salaryandwages' },
@@ -69,9 +69,17 @@ export default function Sidebar4() {
     setExpandedItem((prev) => (prev === name ? null : name));
   };
 
+  // Define filter styles
+  const iconFilters = {
+    active: 'brightness(0) invert(1)',
+    inactive: 'brightness(0) saturate(100%) invert(67%) sepia(6%) saturate(422%) hue-rotate(185deg) brightness(89%) contrast(86%)',
+    hover: 'brightness(0) saturate(100%) invert(83%) sepia(12%) saturate(1032%) hue-rotate(185deg) brightness(105%) contrast(96%)'
+  };
+
   return (
     <div className="sidebar__wrapper h-full overflow-y-auto" style={{ width: "240px" }}>
-    <aside className="sidebar !bg-[#012A4A] dark:!bg-[#1D1D1D] p-4 h-full flex flex-col" style={{ width: "240px", backgroundColor: "#012A4A !important" }}>   
+      <aside className="sidebar !bg-[#012A4A] dark:!bg-[#1D1D1D] p-4 h-full flex flex-col" style={{ width: "240px", backgroundColor: "#012A4A !important" }}>
+        
         {/* Logo */}
         <div className='flex items-center gap-3 mt-5 mb-6 px-2'>
           <Image src="/assets/images/alfwhite.png" width={40} height={40} alt='logo' />
@@ -89,34 +97,40 @@ export default function Sidebar4() {
 
             const ItemContent = (
               <div
-                className={`w-full flex items-center gap-3 px-3 py-3 text-[16px] font-normal rounded-md transition-all duration-200
-                  ${isActive ? 'bg-[#576CBC] text-white' : 'text-[#818790]'}`}
+                className={`group w-full flex items-center gap-3 px-3 py-3 text-[16px] font-normal rounded-md transition-all duration-200
+                  ${isActive 
+                    ? 'bg-[#576CBC] text-white hover:bg-[#6b80d6]' 
+                    : 'text-[#818790] hover:text-[#a0c4ff]'}`}
               >
-                {/* Icon */}
-                <span className="text-[18px] w-5 flex justify-center items-center">
+                {/* Icon - Consistent handling for both PNG and React Icons */}
+                <span className={`text-[18px] w-5 flex justify-center items-center 
+                  ${isActive ? 'text-white' : 'text-[#818790] group-hover:text-[#a0c4ff]'}`}>
                   {typeof Icon === 'string' ? (
                     <div className="relative w-5 h-5">
                       <Image
                         src={Icon}
                         fill
                         alt={name}
-                        className={`object-contain ${isActive ? 'brightness-0 invert' : ''}`}
+                        className="object-contain"
                         style={{
                           filter: isActive 
-                            ? '' 
-                            : 'brightness(0) saturate(100%) invert(67%) sepia(6%) saturate(422%) hue-rotate(185deg) brightness(89%) contrast(86%)'
+                            ? iconFilters.active
+                            : iconFilters.inactive,
+                          transition: 'filter 0.2s ease-in-out'
                         }}
+                        onMouseEnter={(e) => !isActive && (e.currentTarget.style.filter = iconFilters.hover)}
+                        onMouseLeave={(e) => !isActive && (e.currentTarget.style.filter = iconFilters.inactive)}
                       />
                     </div>
                   ) : (
-                    <Icon size={20} className={isActive ? 'text-white' : 'text-[#818790]'} />
+                    <Icon size={20} />
                   )}
                 </span>
 
                 <span className="flex-1 text-left">{name}</span>
 
                 {subItems && (
-                  <span className={isActive ? 'text-white' : 'text-[#818790]'}>
+                  <span className={`${isActive ? 'text-white' : 'text-[#818790] group-hover:text-[#a0c4ff]'}`}>
                     {expandedItem === name ? <IoIosArrowDown /> : <IoIosArrowForward />}
                   </span>
                 )}
@@ -137,17 +151,22 @@ export default function Sidebar4() {
 
                 {subItems && expandedItem === name && (
                   <ul className="ml-10 mt-1 space-y-1.5">
-                    {subItems.map((subItem) => (
-                      <li key={subItem.name}>
-                        <Link
-                          href={subItem.href}
-                          className={`block text-[15px] font-normal py-1.5 px-2 rounded-md
-                            text-[#576CBC] hover:text-[#576CBC]`}
-                        >
-                          {subItem.name}
-                        </Link>
-                      </li>
-                    ))}
+                    {subItems.map((subItem) => {
+                      const isSubActive = currentPath === subItem.href;
+                      return (
+                        <li key={subItem.name}>
+                          <Link
+                            href={subItem.href}
+                            className={`block text-[15px] font-normal py-1.5 px-2 rounded-md
+                              ${isSubActive 
+                                ? 'text-[#576CBC]' 
+                                : 'text-[#818790] hover:text-[#576CBC]'}`}
+                          >
+                            {subItem.name}
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </li>

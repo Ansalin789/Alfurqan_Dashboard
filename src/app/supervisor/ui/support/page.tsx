@@ -8,9 +8,9 @@ const Support = () => {
   return (
     <BaseLayout3>
     <SupervisorHeader currentSection="Support"/>
-      <div className="p-4 mx-auto">
+      <div className="p-4">
         <div className="flex gap-x-5 w-auto">
-          <div className="bg-[#7689BD] shadow-lg rounded-xl p-4 h-[616px] w-[340px]">
+          <div className="bg-[#7689BD] shadow-lg rounded-xl p-4 h-[616px] w-[580px]">
             <h2 className="text-[20px] font-semibold text-[#fff] mb-4 p-4">
               Contact
             </h2>
@@ -79,7 +79,7 @@ const Support = () => {
             </div>
           </div>
 
-          <div className="bg-[#5E6578] shadow-lg rounded-xl p-6 w-[915px] h-[616px]">
+          <div className="bg-[#5E6578] shadow-lg rounded-xl p-6 w-full h-[616px]">
             <h2 className="text-[20px] p-4 text-left font-semibold text-[#FAFAFA] mb-7">
               Do you have questions?
             </h2>

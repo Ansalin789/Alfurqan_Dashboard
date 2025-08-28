@@ -247,7 +247,7 @@ const CoursesChart = () => {
                 ) : null
               }
             />
-            <Bar dataKey="revenue" radius={[10, 10, 10, 10]} barSize={50}>
+            <Bar dataKey="revenue" radius={[40, 40, 40, 40]} barSize={50}>
               {barData.map((entry) => (
                 <Cell key={entry.courseName} fill={entry.color} />
               ))}
@@ -505,7 +505,7 @@ const [selectedVisitorYear, setSelectedVisitorYear] = useState(new Date().getFul
         <div className="py-1 px-3 w-full h-full space-y-2">
           {/* Revenue Section */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-<div className="relative bg-[#5C70C5] rounded-2xl p-4 text-white overflow-hidden shadow-lg h-full w-full">
+<div className="relative bg-[#6172B0] rounded-2xl p-4 text-white overflow-hidden shadow-lg h-full w-full">
   {/* Content */}
   <div className="relative z-10">
     <h3 className="text-base font-medium opacity-90 mb-1">Total Income</h3>
@@ -530,28 +530,37 @@ const [selectedVisitorYear, setSelectedVisitorYear] = useState(new Date().getFul
   </div>
 
   {/* Decorative Wave Background + Stroke */}
-  <svg
-    className="absolute bottom-0 left-0 w-full h-[300px] z-0"
-    viewBox="0 0 320 100"
-    preserveAspectRatio="none"
-  >
-    {/* Light fill below wave */}
-    <path
-      d="M0,96 C40,80 80,60 120,70 C160,80 200,90 240,75 C280,60 300,65 320,80 L320,100 L0,100 Z"
-      fill="#6F83D8"  // lighter shade of the card
-      opacity="0.8"
-    />
-    {/* White stroke on top of wave */}
-    <path
-      d="M0,96 C40,80 80,60 120,70 C160,80 200,90 240,75 C280,60 300,65 320,80"
-      fill="none"
-      stroke="white"
-      strokeWidth="1"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      opacity="0.9"
-    />
-  </svg>
+<svg
+  className="absolute bottom-0 left-0 w-full h-[300px] z-0"
+  viewBox="0 0 320 100"
+  preserveAspectRatio="none"
+>
+  <defs>
+    <linearGradient id="waveGradient" >
+      <stop offset="0%" stopColor="#4E61A7" />
+      <stop offset="100%" stopColor="#9CB1FF" />
+    </linearGradient>
+  </defs>
+
+  {/* Gradient fill below wave */}
+  <path
+    d="M0,96 C40,80 80,60 120,70 C160,80 200,90 240,75 C280,60 300,65 320,80 L320,100 L0,100 Z"
+    fill="url(#waveGradient)"
+    opacity="0.8"
+  />
+
+  {/* White stroke on top of wave */}
+  <path
+    d="M0,96 C40,80 80,60 120,70 C160,80 200,90 240,75 C280,60 300,65 320,80"
+    fill="none"
+    stroke="white"
+    strokeWidth="1"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    opacity="0.9"
+  />
+</svg>
+
 </div>
 
 

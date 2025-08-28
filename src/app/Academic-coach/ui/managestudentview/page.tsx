@@ -154,6 +154,12 @@ type CardProps = {
   description: string;
 };
 
+interface StudentStats {
+  totalAttendance: number;
+  performance: number;
+  package: string;
+}
+
 const Card = ({ title, value, description }: CardProps) => (
   <div className="bg-[#7689BD] rounded-lg shadow-md p-4">
     <div className="text-[20px] text-[#fff] font font-semibold mb-4">
@@ -182,6 +188,7 @@ const ManageStudentView = () => {
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const [searchText, setSearchText] = useState("");
   const [studentListWrite, setStudentListWrite] = useState(false); // For Assign Group Class
+  const [studentStats, setStudentStats] = useState<StudentStats | null>(null);
 
   //Rolebyaccess
   useEffect(() => {
@@ -307,6 +314,37 @@ const ManageStudentView = () => {
     fetchData();
   }, []);
 
+useEffect(() => {
+  const alstudentsId = localStorage.getItem("studentManageID");
+  const token = localStorage.getItem("AcademicCoachAuthToken"); 
+
+  const fetchStudentStats = async () => {
+    try {
+      const res = await fetch(
+        `https://api.blackstoneinfomaticstech.com/studentattendanceperformance?studentId=${alstudentsId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,  
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to fetch student stats");
+      const stats = await res.json();
+      setStudentStats(stats);
+    } catch (error) {
+      console.error("Error fetching student stats:", error);
+    }
+  };
+
+  if (alstudentsId && token) {
+    fetchStudentStats();
+  }
+}, []);
+
+
+
   //Classschedule against the studentId
 
   useEffect(() => {
@@ -355,7 +393,7 @@ const ManageStudentView = () => {
           allSchedules.filter(
             (c) =>
               c.scheduleStatus === "Scheduled" ||
-              c.scheduleStatus === "Rescheduled" || 
+              c.scheduleStatus === "Rescheduled" ||
               c.scheduleStatus === "RequestReschedule"
           )
         );
@@ -375,7 +413,7 @@ const ManageStudentView = () => {
     setActiveDropdown(activeDropdown === index ? null : index);
   };
 
-  const handleReschedule = (_id: string,course:string) => {
+  const handleReschedule = (_id: string, course: string) => {
     console.log("Navigating to reschedule page");
     router.push(`studentreschedule?id=${_id}&course=${course}`);
 
@@ -665,6 +703,24 @@ const ManageStudentView = () => {
     setPaginatedData(filtered);
     setCurrentPage(1); // Reset to first page
   };
+
+  const formatSessionType = (type: string) => {
+    switch (type) {
+      case "GROUPCLASS":
+        return "Group ";
+      case "REGULARCLASS":
+        return "Regular ";
+      case "TRAILCLASS":
+        return "Trial ";
+      default:
+        return type; // fallback
+    }
+  };
+
+  const sortedPaginatedData = [...paginatedData].sort(
+    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+  );
+
   return (
     <BaseLayout1>
       <div>
@@ -729,22 +785,22 @@ const ManageStudentView = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
             <Card
               title="Performance"
-              value="72%"
-              description="60% increase than Last Month"
+              value={studentStats ? `${studentStats.performance}%` : "--"}
+              description="Compared to last month"
             />
             <Card
               title="Package"
-              value="Standard"
-              description="Upgraded from Basic"
+              value={studentStats ? studentStats.package : "--"}
+              description="Latest package"
             />
             <Card
               title="Total Attendance"
-              value="97%"
-              description="90% Progressive than Last Month"
+              value={studentStats ? `${studentStats.totalAttendance}` : "--"}
+              description="Classes attended"
             />
             <Card
               title="Total Reward Points"
-              value="500"
+              value="500" // TODO: bind if your API adds rewardPoints
               description="95% Progressive than Last Month"
             />
           </div>
@@ -825,7 +881,7 @@ const ManageStudentView = () => {
             <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
               <tr className="font-medium">
                 <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
-                  Student Name
+                  Teacher Name
                 </th>
                 <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                   Course
@@ -847,8 +903,9 @@ const ManageStudentView = () => {
                 </th>
               </tr>
             </thead>
+
             <tbody className="bg-white  dark:bg-[#343434] dark:divide-gray-600">
-              {paginatedData.map((item, index) => (
+              {sortedPaginatedData.map((item, index) => (
                 <tr
                   key={item._id}
                   className={`text-[12px] h-[50px] ${
@@ -858,8 +915,7 @@ const ManageStudentView = () => {
                   }`}
                 >
                   <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left">
-                    {item.student.studentFirstName}{" "}
-                    {item.student.studentLastName}
+                    {item.teacher.teacherName}
                   </td>
                   <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                     {item.course.courseName}
@@ -878,12 +934,14 @@ const ManageStudentView = () => {
                     </td>
                   </td>
 
-                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">{item.sessionClassType}</td>
+                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                    {formatSessionType(item.sessionClassType)}
+                  </td>
                   <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                     <span
-                      className={`font-semibold px-3 py-1 rounded-md text-[10px] ${
+                      className={`font-semibold px-3 py-1 rounded-md text-[10px] inline-block text-center min-w-[120px] ${
                         item.scheduleStatus === "Scheduled"
-                          ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36] px-[18px]"
+                          ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
                           : item.scheduleStatus === "Rescheduled"
                           ? "bg-[#E4E4E4] text-[#000] dark:bg-[#555] dark:text-[#fff]"
                           : "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
@@ -892,6 +950,7 @@ const ManageStudentView = () => {
                       {item.scheduleStatus}
                     </span>
                   </td>
+
                   <td className="py-1 text-center relative" ref={dropdownRef}>
                     <button
                       onClick={
@@ -930,7 +989,11 @@ const ManageStudentView = () => {
                               }`}
                               onClick={
                                 studentListWrite
-                                  ? () => handleReschedule(item._id,item.course.courseName)
+                                  ? () =>
+                                      handleReschedule(
+                                        item._id,
+                                        item.course.courseName
+                                      )
                                   : undefined
                               }
                               disabled={!studentListWrite}

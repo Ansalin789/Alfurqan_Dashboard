@@ -47,23 +47,30 @@ export default function Academic() {
 
 
           {/* Teaching Activity and Class Analytics */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            <div className="col-span-12 lg:col-span-8">
-              <TeachingActivity />
-            </div>
-            <div className="col-span-12 lg:col-span-4">
-              <ClassAnalyticsChart />
-            </div>
-          </div>
+<div className="grid grid-cols-1 lg:grid-cols-12 gap-4 w-full">
+  {/* Teaching Activity (8 cols) */}
+  <div className="col-span-12 lg:col-span-8 flex">
+    <div className="w-full h-full">
+      <TeachingActivity />
+    </div>
+  </div>
+
+  {/* Class Analytics (4 cols) - with constrained container */}
+  <div className="col-span-12 lg:col-span-4 flex">
+    <div className="w-full h-full min-h-[220px]">
+      <ClassAnalyticsChart />
+    </div>
+  </div>
+</div>
+
         </div>
 
         {/* Sidebar */}
         <div className="w-full lg:w-[310px] flex flex-col gap-4">
-          {/* Calendar */}
-          <div className="rounded-xl shadow-lg h-[320px] bg-white dark:bg-[#343434] flex items-center justify-center">
-            <Calender />
-          </div>
-
+        {/* Calendar */}
+      <div className="rounded-xl shadow-lg  bg-white dark:bg-[#343434] p-2">
+      <Calender />
+        </div>
           {/* Upcoming Tasks */}
           <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] overflow-y-auto scrollbar-none flex-1">
             <UpcomingTask />

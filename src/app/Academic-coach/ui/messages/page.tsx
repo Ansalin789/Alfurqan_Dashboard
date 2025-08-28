@@ -86,9 +86,9 @@ interface IMessagesend {
   receiverEmail: string;
   notificationStatus: "Unseen" | "Seen";
   status: "Active" | "Inactive";
-  createdDate: Date; // ISO date string
+  createdDate: Date;
   createdBy: string;
-  updatedDate: Date; // ISO date string
+  updatedDate: Date;
   updatedBy: string;
 }
 
@@ -97,6 +97,7 @@ const Message = () => {
   const [teachers, setTeachers] = useState<IUser[]>([]);
   const [admin, setAdmin] = useState<IUser[]>([]);
   const [students, setStudents] = useState<IUser[]>([]);
+  const [supervisors, setSupervisors] = useState<IUser[]>([]);
   const [activeTab, setActiveTab] = useState<
     "teachers" | "admin" | "all" | "supervisor" | "students"
   >("all");
@@ -193,14 +194,14 @@ const Message = () => {
   // Filter users based on search query
   const filteredUsers = (
     activeTab === "teachers"
-      ? [] // Return empty array for teachers tab
+      ? teachers // Fixed: Return teachers array instead of empty array
       : activeTab === "admin"
       ? admin
       : activeTab === "all"
-      ? [...admin, ...students] // Include both admin and students in all tab
+      ? [...admin, ...students, ...teachers, ...supervisors] // Include all user types
       : activeTab === "supervisor"
-      ? [] // Return empty array for supervisor tab
-      : students // Show students for students tab
+      ? supervisors // Fixed: Return supervisors array instead of empty array
+      : students
   ).filter(
     (user) =>
       user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -341,14 +342,16 @@ const Message = () => {
     
     const fetchAllUsers = async () => {
       try {
-        const [teachers, admins, studentData] = await Promise.all([
+        const [teachersData, adminsData, studentData, supervisorsData] = await Promise.all([
           fetchUsersByRole("TEACHER"),
           fetchUsersByRole("ADMIN"),
-          fetchUsersByRole("STUDENT"), // Use fetchUsersByRole with STUDENT role
+          fetchUsersByRole("STUDENT"),
+          fetchUsersByRole("SUPERVISOR"),
         ]);
-        setTeachers(teachers);
-        setAdmin(admins);
+        setTeachers(teachersData);
+        setAdmin(adminsData);
         setStudents(studentData);
+        setSupervisors(supervisorsData);
       } catch (error) {
         console.error("Error fetching users:", error);
       }
@@ -540,7 +543,7 @@ const Message = () => {
                 </div>
 
                 <p className="text-[12px] text-[#010e30a7] font-semibold dark:text-[#fff] dark:opacity-[60%]">
-                  Supervisor
+                  Academic coach
                 </p>
               </div>
             </div>

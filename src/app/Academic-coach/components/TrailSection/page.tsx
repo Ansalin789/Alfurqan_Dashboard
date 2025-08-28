@@ -11,8 +11,8 @@ import axios from "axios";
 import { Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import { getSocket } from "@/app/utils/socket";
+import moment from "moment";
 
 // Define interfaces for the API response structure
 interface Student {
@@ -29,6 +29,7 @@ interface Student {
   status?: string;
   trialClassStatus: string;
   studentStatus: string;
+  prefferedDate: string;
 }
 interface ClassPayload {
   academicCoachId: string;
@@ -121,6 +122,7 @@ interface TransformedUser {
   studentFirstName: string;
   studentLastName: string;
   number: string;
+  prefferedDate: string; // Optional if not always present
   country: string;
   course: string; // Assuming this corresponds to `learningInterest`
   preferredTeacher: string;
@@ -150,16 +152,13 @@ const getAllUsers = async (): Promise<{
     if (!token) {
       console.error("❌ AdminAuthToken not found");
     }
-    const response = await axios.get(
-      `https://api.blackstoneinfomaticstech.com/evaluationlist`,
-      {
-        params: { academicCoachId: academicId },
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await axios.get(`https://api.blackstoneinfomaticstech.com/evaluationlist`, {
+      params: { academicCoachId: academicId },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     // Add debug log for raw API response
     console.log("Raw API Response:", response.data.evaluation);
@@ -180,6 +179,7 @@ const getAllUsers = async (): Promise<{
           country: item.student.studentCountry,
           course: item.student.learningInterest,
           preferredTeacher: item.student.preferredTeacher,
+          prefferedDate: item.student.preferredDate,
           time: item.student.preferredFromTime,
           classStatus: item.student.classStatus,
           status: item.student.status,
@@ -388,7 +388,7 @@ const TrailSection = () => {
   const [searchText, setSearchText] = useState("");
 
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState<FormData>();
+  const [formData, setFormData] = useState<any>(null);
   const [trialClassStatus, setTrialClassStatus] = useState("");
   const [studentStatus, setStudentStatus] = useState("");
   const [paymentStatus, setPaymentStatus] = useState("");
@@ -398,6 +398,216 @@ const TrailSection = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   console.log(setItemsPerPage);
 
+  // Add new state variables for editable fields
+  const [editableData, setEditableData] = useState({
+    changeTime: "",
+    changeDate: "",
+    availableTeacher: "",
+  });
+  const [availableTeachers, setAvailableTeachers] = useState<
+    { teacherId: string; teacherName: string; teacherEmail?: string }[]
+  >([]);
+  const [isLoadingTeachers, setIsLoadingTeachers] = useState(false);
+
+  // Function to handle editable field changes
+  const handleEditableFieldChange = (field: string, value: string) => {
+    setEditableData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // Function to fetch available teachers for a specific time and date
+  const fetchAvailableTeachers = async (date: string, time: string) => {
+    if (!date || !time) return;
+
+    setIsLoadingTeachers(true);
+    try {
+      const academicId = localStorage.getItem("AcademicCoachPortalId");
+      if (!academicId) return;
+
+      const socket = getSocket(academicId);
+      const position =
+  formData.student.learningInterest === "Islamic Studies"
+    ? "Islamic Teacher"
+    : `${formData.student.learningInterest} Teacher`;
+    console.log("📤 Sending academicTrailClassTeacherListRequest");
+    console.log("📤 Sending with payload:", {
+      startDate: formData.student.preferredDate,
+      from: formData.student.preferredFromTime,
+      to: formData.student.preferredToTime,
+      position :position,
+    });
+      const calculatedToTime = moment(time, "HH:mm")
+        .add(30, "minutes")
+        .format("HH:mm");
+        console.log("📤 Sending with payload:", {
+          requestId: academicId,
+        startDate: date,
+        from: time,
+        to: calculatedToTime,
+        position :position,
+      });
+      socket.emit("academicTrailClassTeacherListRequest", {
+        requestId: academicId,
+        startDate: date,
+        from: time,
+        to: calculatedToTime,
+        position :position,
+      });
+
+      const handleResponse = (data: Record<string, string>) => {
+        const teacherArray = Object.entries(data).map(
+          ([teacherId, teacherName]) => ({
+            teacherId,
+            teacherName,
+          })
+        );
+        setAvailableTeachers(teacherArray);
+        setIsLoadingTeachers(false);
+      };
+
+      socket.on("academicTrailClassTeacherListResponse", handleResponse);
+
+      // Cleanup listener after a delay
+      setTimeout(() => {
+        socket.off("academicTrailClassTeacherListResponse", handleResponse);
+      }, 5000);
+    } catch (error) {
+      console.error("Error fetching teachers:", error);
+      setIsLoadingTeachers(false);
+    }
+  };
+
+  // Function to handle time change and trigger teacher fetch
+  const handleTimeChange = (time: string) => {
+    handleEditableFieldChange("changeTime", time);
+    const date = editableData.changeDate || formData?.student.preferredDate;
+    if (date && time) {
+      fetchAvailableTeachers(date, time);
+    }
+  };
+
+  // Function to handle date change and trigger teacher fetch
+  const handleDateChange = (date: string) => {
+    handleEditableFieldChange("changeDate", date);
+    const time = editableData.changeTime || formData?.student.preferredFromTime;
+    // If only date is selected, still show the teacher section by triggering fetch with existing time
+    if (date && time) {
+      fetchAvailableTeachers(date, time);
+    }
+  };
+
+  // Save changes and trigger email in one step
+  const handleSaveChanges = async () => {
+        try {
+      const token = localStorage.getItem("AcademicCoachAuthToken");
+      if (!token) return alert("Token missing!");
+      if (!formData?._id) return alert("No evaluationId found!");
+ 
+      const effectiveDate = editableData.changeDate || formData?.student.preferredDate;
+      const effectiveTime = editableData.changeTime || formData?.student.preferredFromTime;
+
+      if (!effectiveDate || !effectiveTime || !editableData.availableTeacher) {
+        return alert(
+          "Please select Change Date, Change Time and Available Teacher."
+        );
+      }
+ 
+      // 🔹 Find teacher info
+      const selectedTeacher = availableTeachers.find(
+        (t) => t.teacherId === editableData.availableTeacher
+      );
+  
+      // 🔹 Compute time range (30 min duration)
+      const changeFromTime = editableData.changeTime || formData?.student.preferredFromTime;
+      const changeToTime = moment(changeFromTime, "HH:mm")
+        .add(30, "minutes")
+        .format("HH:mm");
+  
+      // 🔹 Build payload that backend expects (for Zoom scheduling)
+      const payload = {
+        teacher: {
+          teacherId: selectedTeacher?.teacherId || editableData.availableTeacher,
+          teacherName: selectedTeacher?.teacherName || "",
+          teacherEmail: selectedTeacher?.teacherEmail || "",
+        },
+        // Also update assigned teacher fields used by the list/table
+        assignedTeacher: selectedTeacher?.teacherName || "",
+        assignedTeacherId: selectedTeacher?.teacherId || editableData.availableTeacher,
+        assignedTeacherEmail: selectedTeacher?.teacherEmail || "",
+        preferredTrialDate: editableData.changeDate,
+        preferredTrialFromTime: changeFromTime,
+        preferredTrialToTime: changeToTime,
+      };
+      console.log("📤 Sending payload to backend:", payload);
+  
+      // 🔹 Send update request
+      const response = await axios.put(
+        `https://api.blackstoneinfomaticstech.com/evaluation/${formData._id}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      console.log("✅ Backend response:", response.data);
+  
+      if (response.status === 200 || response.status === 204) {
+        alert("✅ Changes saved. Zoom schedule update & email will be triggered.");
+
+        // Optimistically update table and modal state
+        setUsers((prev) =>
+          prev.map((u) =>
+            u._id === formData._id
+              ? {
+                  ...u,
+                  assignedTeacher: selectedTeacher?.teacherName || u.assignedTeacher,
+                  time: changeFromTime,
+                  prefferedDate: editableData.changeDate || u.prefferedDate,
+                }
+              : u
+          )
+        );
+        setFilteredUsers((prev) =>
+          prev.map((u) =>
+            u._id === formData._id
+              ? {
+                  ...u,
+                  assignedTeacher: selectedTeacher?.teacherName || u.assignedTeacher,
+                  time: changeFromTime,
+                  prefferedDate: editableData.changeDate || u.prefferedDate,
+                }
+              : u
+          )
+        );
+        setFormData((prev: any) => ({
+          ...prev,
+          assignedTeacher: selectedTeacher?.teacherName || prev?.assignedTeacher,
+          assignedTeacherId:
+            selectedTeacher?.teacherId || editableData.availableTeacher || prev?.assignedTeacherId,
+          assignedTeacherEmail: selectedTeacher?.teacherEmail || prev?.assignedTeacherEmail,
+          student: {
+            ...prev?.student,
+            preferredDate: editableData.changeDate || prev?.student?.preferredDate,
+            preferredFromTime: changeFromTime || prev?.student?.preferredFromTime,
+            preferredToTime: changeToTime || prev?.student?.preferredToTime,
+          },
+        }));
+
+        setShowModal(false);
+        fetchStudents();
+      }
+    } catch (error: any) {
+      console.error("❌ Error saving changes:", error?.response?.data || error);
+      alert("❌ Failed to save changes. Please try again.");
+    }
+  };
+  
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -417,52 +627,59 @@ const TrailSection = () => {
     fetchData();
   }, []);
 
-   useEffect(()=>{
-   const academicId = typeof window !== "undefined"
-          ? localStorage.getItem("AcademicCoachPortalId")
-          : null;
-          if(!academicId) return;
-       const socket = getSocket(academicId);
-       const handleList = ( data :{event : string , data : ClassPayload , sender : string })=>{
-           console.log("📩 Received WebSocket Data:", data);
-   if(data.event === "update"){
-      const classPayload = data.data as ClassPayload;
-      const student = classPayload.student;
-  
-      console.log("➡️ Action: update", student.studentId);
-  
-      setFilteredUsers((prev) =>
-        prev.map((user) =>
-          user.studentId === student.studentId
-            ? {
-                ...user,
-                paymentStatus: classPayload.paymentStatus ?? "NOT JOINED",
-                trialClassStatus: classPayload.trialClassStatus ?? "NOT COMPLETED",
-                studentStatus: classPayload.studentStatus ?? "NOT JOINED",
-              }
-            : user
-        )
-      );
-      setUsers((prev) =>
-        prev.map((user) =>
-          user.studentId === student.studentId
-            ? {
-               ...user,
-                paymentStatus: classPayload.paymentStatus ?? "NOT JOINED",
-                trialClassStatus: classPayload.trialClassStatus ?? "NOT COMPLETED",
-                studentStatus: classPayload.studentStatus ?? "NOT JOINED",
-              }
-            : user
-        )
-      );
-    }
-          }
-  
-      socket.on("academicStudentList",handleList);
-      return () =>{
-        socket.off("academicStudentList",handleList);
+  useEffect(() => {
+    const academicId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AcademicCoachPortalId")
+        : null;
+    if (!academicId) return;
+    const socket = getSocket(academicId);
+    const handleList = (data: {
+      event: string;
+      data: ClassPayload;
+      sender: string;
+    }) => {
+      console.log("📩 Received WebSocket Data:", data);
+      if (data.event === "update") {
+        const classPayload = data.data as ClassPayload;
+        const student = classPayload.student;
+
+        console.log("➡️ Action: update", student.studentId);
+
+        setFilteredUsers((prev) =>
+          prev.map((user) =>
+            user.studentId === student.studentId
+              ? {
+                  ...user,
+                  paymentStatus: classPayload.paymentStatus ?? "NOT JOINED",
+                  trialClassStatus:
+                    classPayload.trialClassStatus ?? "NOT COMPLETED",
+                  studentStatus: classPayload.studentStatus ?? "NOT JOINED",
+                }
+              : user
+          )
+        );
+        setUsers((prev) =>
+          prev.map((user) =>
+            user.studentId === student.studentId
+              ? {
+                  ...user,
+                  paymentStatus: classPayload.paymentStatus ?? "NOT JOINED",
+                  trialClassStatus:
+                    classPayload.trialClassStatus ?? "NOT COMPLETED",
+                  studentStatus: classPayload.studentStatus ?? "NOT JOINED",
+                }
+              : user
+          )
+        );
       }
-  },[]);
+    };
+
+    socket.on("academicStudentList", handleList);
+    return () => {
+      socket.off("academicStudentList", handleList);
+    };
+  }, []);
 
   useEffect(() => {
     Modal.setAppElement("body");
@@ -632,9 +849,7 @@ const TrailSection = () => {
       setStudentStatus(data.studentStatus);
       setPaymentStatus(data.paymentStatus);
       setPaymentLink(
-        `https://blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(
-          data._id
-        )}`
+        `https://api.blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(data._id)}`
       );
       setFormData(data);
       console.log(data);
@@ -1064,17 +1279,14 @@ const TrailSection = () => {
         console.error("❌ AdminAuthToken not found");
         return;
       }
-      const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/evaluation/${id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(formDataNames),
-        }
-      );
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formDataNames),
+      });
 
       console.log("response", response);
       if (!response.ok) {
@@ -1181,15 +1393,16 @@ const TrailSection = () => {
                     <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                       <tr>
                         {[
-                          { label: "Trail ID", width: "w-[10%]" },
+                          { label: "Trial ID", width: "w-[10%]" },
                           { label: "Student Name", width: "w-[12%]" },
                           { label: "Mobile", width: "w-[10%]" },
                           { label: "Country", width: "w-[8%]" },
-                          { label: "Course", width: "w-[10%]" },
+                          { label: "Course", width: "w-[9%]" },
+                          { label: "Date", width: "w-[8%]" },
                           { label: "Preferred Teacher", width: "w-[10%]" },
                           { label: "Assigned Teacher", width: "w-[10%]" },
                           { label: "Time", width: "w-[8%]" },
-                          { label: "Trail Status", width: "w-[10%]" },
+                          { label: "Trial Status", width: "w-[12%]" },
                           { label: "Student Status", width: "w-[10%]" },
                           { label: "Payment Status", width: "w-[10%]" },
                           { label: "Action", width: "w-[7%]" },
@@ -1199,7 +1412,7 @@ const TrailSection = () => {
                             className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words ${header.width}`}
                           >
                             {header.label}
-                        </th>
+                          </th>
                         ))}
                       </tr>
                     </thead>
@@ -1228,6 +1441,16 @@ const TrailSection = () => {
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
                               {item.course}
+                            </td>
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
+                              {new Date(item.prefferedDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                }
+                              )}{" "}
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
                               {item.preferredTeacher}
@@ -1262,23 +1485,33 @@ const TrailSection = () => {
                                 console.log("Table display studentStatus:", {
                                   original: item.studentStatus,
                                   upperCase: item.studentStatus?.toUpperCase(),
-                                  isJoined: item.studentStatus?.toUpperCase() === "JOINED",
-                                  isWaiting: item.studentStatus?.toUpperCase() === "WAITING",
-                                  isPending: item.studentStatus?.toUpperCase() === "PENDING"
+                                  isJoined:
+                                    item.studentStatus?.toUpperCase() ===
+                                    "JOINED",
+                                  isWaiting:
+                                    item.studentStatus?.toUpperCase() ===
+                                    "WAITING",
+                                  isPending:
+                                    item.studentStatus?.toUpperCase() ===
+                                    "PENDING",
                                 });
                                 return (
                                   <span
                                     className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
-                                      item.studentStatus?.toUpperCase() === "JOINED"
+                                      item.studentStatus?.toUpperCase() ===
+                                      "JOINED"
                                         ? "bg-[#ECFDF3] text-[#377E36] px-6 dark:bg-[#377E3633]"
-                                        : item.studentStatus?.toUpperCase() === "WAITING"
+                                        : item.studentStatus?.toUpperCase() ===
+                                          "WAITING"
                                         ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
-                                        : item.studentStatus?.toUpperCase() === "PENDING"
+                                        : item.studentStatus?.toUpperCase() ===
+                                          "PENDING"
                                         ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
                                         : "bg-[#FDECEC] text-[#D34645] px-3 dark:bg-[#D3464533]"
                                     }`}
                                   >
-                                    {item.studentStatus?.toUpperCase() || "PENDING"}
+                                    {item.studentStatus?.toUpperCase() ||
+                                      "PENDING"}
                                   </span>
                                 );
                               })()}
@@ -1324,10 +1557,10 @@ const TrailSection = () => {
             </div>
           </div>
           <div className="mt-4">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
             />
           </div>
         </div>
@@ -1411,7 +1644,7 @@ const TrailSection = () => {
                   value={formData?.student.studentPhone || ""}
                   disabled
                   readOnly
-                  className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 />
               </div>
               {/** Country */}
@@ -1499,32 +1732,42 @@ const TrailSection = () => {
                   className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 />
               </div>
-              {/** Preferred Date */}
+              {/** Original Preferred Date */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
-                  Preferred Date
+                  Original Preferred Date
                 </label>
                 <input
-                  value={formData?.student.preferredDate || ""}
-                  disabled
-                  readOnly
-                  className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  type="date"
+                  value={
+                    editableData.changeDate
+                      ? editableData.changeDate
+                      : formData?.student.preferredDate
+                      ? new Date(formData.student.preferredDate)
+                          .toISOString()
+                          .split("T")[0]
+                      : ""
+                  }
+                  onChange={(e) => handleDateChange(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 />
               </div>
-              {/** Preferred Time */}
+              {/** Original Preferred Time */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
-                  Preferred Time
+                  Original Preferred Time
                 </label>
                 <input
-                  value={`${formData?.student.preferredFromTime || ""} TO ${
-                    formData?.student.preferredToTime || ""
-                  }`}
-                  disabled
-                  readOnly
-                  className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  type="time"
+                  value={
+                    editableData.changeTime ||
+                    `${formData?.student.preferredFromTime || ""}`
+                  }
+                  onChange={(e) => handleTimeChange(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 />
               </div>
+
               {/** Preferred Hours */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
@@ -1538,18 +1781,48 @@ const TrailSection = () => {
                 />
               </div>
 
-              {/** Select Teacher */}
+              {/** Change Assigned Teacher */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
-                  Select Teacher
+                  Change Assigned Teacher
                 </label>
-                <input
-                  value={formData?.assignedTeacher || ""}
-                  disabled
-                  readOnly
-                  className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                />
+                <select
+  className="w-full p-2 border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+  value={
+    editableData.availableTeacher
+      ? editableData.availableTeacher
+      : formData?.assignedTeacherId || "" // <-- make sure this is the teacher ID
+  }
+  onChange={(e) => handleEditableFieldChange('availableTeacher', e.target.value)}
+  disabled={isLoadingTeachers}
+>
+  <option value="">Select Teacher</option>
+  {isLoadingTeachers ? (
+    <option disabled>🔍 Searching...</option>
+  ) : (
+    availableTeachers.map((teacher) => (
+      <option key={teacher.teacherId} value={teacher.teacherId}>
+        {teacher.teacherName}
+      </option>
+    ))
+  )}
+</select>
+
+                {isLoadingTeachers && (
+                  <div className="text-xs text-blue-500 mt-1 flex items-center gap-1">
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
+                    Searching for available teachers...
+                  </div>
+                )}
+                {availableTeachers.length > 0 && !isLoadingTeachers && (
+                  <div className="text-xs text-green-500 mt-1">
+                    Found {availableTeachers.length} available teacher(s)
+                  </div>
+                )}
               </div>
+
+              {/** Original Assigned Teacher */} <div> <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]"> Original Assigned Teacher </label> <input value={formData?.assignedTeacher || ""} disabled readOnly className="w-full p-2 border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]" /> </div>
+
               {/** Preferred Package */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
@@ -1640,6 +1913,17 @@ const TrailSection = () => {
                 >
                   Cancel
                 </button>
+                {(editableData.availableTeacher &&
+                  ((editableData.changeDate || formData?.student.preferredDate) &&
+                   (editableData.changeTime || formData?.student.preferredFromTime))) && (
+                    <button
+                      type="button"
+                      onClick={handleSaveChanges}
+                      className="bg-[#576CBC] text-white px-5 py-2 rounded-lg hover:shadow-lg transition-all duration-300 text-sm font-medium"
+                    >
+                      Save & Send Email
+                    </button>
+                  )}
                 {/* <button
                   type="submit"
                   onClick={() => updateClick(formData?._id)}

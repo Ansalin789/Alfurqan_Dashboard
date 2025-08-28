@@ -11,79 +11,39 @@ import Teacherscard from "../../components/Teachercard";
 import Calender from "../../components/Calender";
 import UpcomingClasses from "../../components/UpcommingClasses";
 import AcademicHeader from "../../components/academicHeader";
+import { useRouter } from "next/navigation";
+
 import { getSocket } from "@/app/utils/socket";
 
-type StudentData = {
-  id: number;
-  name: string;
-  mobile: string;
+// Define the return type of the getAllUsers function
+interface User {
+  studentId: string;
+  fname: string;
+  lname: string;
+  email: string;
+  number: string;
   country: string;
+  course: string;
   preferredTeacher: string;
   date: string;
   time: string;
-};
-interface Student {
-  learningInterest: string; // Replace with the exact type if known
-  studentId: string;
-  studentFirstName: string;
-  studentLastName: string;
-  studentPhone: number;
-  studentCountry: string;
-  preferredTeacher: string;
-  preferredFromTime: string;
-  preferredToTime: string;
-  preferredDate:Date;
-  classStatus?: string;
   status?: string;
-  trialClassStatus: string;
-  studentStatus: string;
+  evaluationStatus?: string;
+  city?: string;
+  students?: number;
+  comment?: string;
 }
 
-interface EvaluationItem {
-  paymentLink: string;
-  _id: string;
-  student: Student;
-  trialClassStatus: string;
-  assignedTeacher: string;
-  paymentStatus: string;
+interface GetAllUsersResponse {
+  success: boolean;
+  data: User[];
+  message?: string; // Make message optional
 }
 
-export default function Dashboard() {
-  const [evaluationList, setEvaluationList] = useState<StudentData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-   useEffect(()=>{
-     const academicId = typeof window !== "undefined"
-        ? localStorage.getItem("AcademicCoachPortalId")
-        : null;
-        if(!academicId) return;
-    const socket = getSocket(academicId);
-     const handleList =(data : {event : string, data : EvaluationItem , sender : string})=>{
-        console.log("📩 Received WebSocket Data:", data);
-        if(data.event === "update"){
-          console.log("➡️ Action: create", data.data._id);
-          const formatted : StudentData ={
-            id : evaluationList.length + 1,
-            name: `${data.data.student.studentFirstName} ${data.data.student.studentLastName}`,
-            mobile: data.data.student.studentPhone.toString(),
-            country: data.data.student.studentCountry,
-            preferredTeacher: data.data.student.preferredTeacher,
-            date: new Date(data.data.student.preferredDate).toLocaleDateString(),
-            time: `${data.data.student.preferredFromTime} - ${data.data.student.preferredToTime}`,
-          }
-          setEvaluationList((pre)=> [...pre, formatted]);
-        }
-     }
-    socket.on('academicStudentList',handleList);
-    return ()=>{
-      socket.off('academicStudentList',handleList);
-    }
-   },[]);
-  useEffect(() => {
-    // Fetch data from API
-    const academicId = typeof window !== "undefined"
-        ? localStorage.getItem("AcademicCoachPortalId")
-        : null;
+// Update the getAllUsers function to fetch from your API
+const getAllUsers = async (): Promise<GetAllUsersResponse> => {
+  try {
+    const academicId = localStorage.getItem("AcademicCoachPortalId");
     console.log("academicId>>", academicId);
     const token =
       typeof window !== "undefined"
@@ -92,58 +52,240 @@ export default function Dashboard() {
 
     if (!token) {
       console.error("❌ AdminAuthToken not found");
-      return;
     }
-    axios
-      .get(`https://api.blackstoneinfomaticstech.com/evaluationlist`, {
+    const response = await axios.get(
+      `https://api.blackstoneinfomaticstech.com/studentlist`,
+      {
         params: { academicCoachId: academicId },
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+      }
+    );
+    console.log("response>>>", response);
+
+    // const rawData = JSON.stringify(response.data);
+    // console.log('Raw API Response:', rawData); // Debug log
+    // Check if rawData.students exists and is an array
+    if (!response.data.students || !Array.isArray(response.data.students)) {
+      throw new Error("Invalid data structure received from API");
+    }
+
+    // Transform API data to match User interface
+    const transformedData = response.data.students.map(
+      (item: {
+        _id: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        phoneNumber: string;
+        country: string;
+        learningInterest: string;
+        preferredTeacher: string;
+        startDate: string;
+        preferredFromTime: string;
+        preferredToTime: string;
+        evaluationStatus?: string;
+      }) => ({
+        studentId: item._id,
+        fname: item.firstName,
+        lname: item.lastName,
+        email: item.email,
+        number: item.phoneNumber.toString(),
+        country: item.country,
+        course: item.learningInterest,
+        preferredTeacher: item.preferredTeacher,
+        date: new Date(item.startDate).toLocaleDateString(),
+        time: item.preferredFromTime,
+        evaluationStatus: item.evaluationStatus,
       })
-      .then((response) => {
-        if (!response.data) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+    );
+
+    return {
+      success: true,
+      data: transformedData,
+      message: "Users fetched successfully",
+    };
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return {
+      success: false,
+      data: [],
+      message: error instanceof Error ? error.message : "Failed to fetch users",
+    };
+  }
+};
+
+export default function Dashboard() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedUserData, setSelectedUserData] = useState<User | null>(null);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  console.log(setItemsPerPage);
+
+  const router = useRouter();
+  const handleSyncClick = () => {
+    if (router) {
+      router.push("TrailSection");
+    } else {
+      console.error("Router is not available");
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const allData = await getAllUsers();
+        if (allData.success && allData.data) {
+          setUsers(allData.data);
+          setFilteredUsers(allData.data);
+        } else {
+          setErrorMessage(allData.message ?? "Failed to fetch users");
         }
-        return response.data;
-      })
-      .then((data) => {
-        const formattedData: StudentData[] = data.evaluation.map(
-          (
-            item: {
-              student: {
-                studentFirstName: string;
-                studentLastName: string;
-                studentPhone: string;
-                studentCountry: string;
-                preferredTeacher: string;
-                preferredDate: string;
-                preferredFromTime: string;
-                preferredToTime: string;
-              };
-            },
-            index: number
-          ) => ({
-            id: index + 1,
-            name: `${item.student.studentFirstName} ${item.student.studentLastName}`,
-            mobile: item.student.studentPhone,
-            country: item.student.studentCountry,
-            preferredTeacher: item.student.preferredTeacher,
-            date: new Date(item.student.preferredDate).toLocaleDateString(),
-            time: `${item.student.preferredFromTime} - ${item.student.preferredToTime}`,
-          })
-        );
-        setEvaluationList(formattedData.slice(-5)); // Keep only the latest 5 records
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
+      } catch (error) {
+        setErrorMessage("An unexpected error occurred");
+        console.error("An unexpected error occurred", error);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  if (error) return <div>Error: {error}</div>;
+  useEffect(() => {
+    // Modal.setAppElement("body");
+  }, []);
+
+  const openModal = (user: User | null = null) => {
+    setIsEditMode(!!user);
+    setIsModalOpen(true);
+    setModalIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalIsOpen(false);
+  };
+
+  useEffect(() => {
+    console.log("Current users data:", users);
+  }, [users]);
+
+  const fetchStudents = async () => {
+    try {
+      const allData = await getAllUsers();
+      if (allData.success && allData.data) {
+        setUsers(allData.data);
+      } else {
+        setErrorMessage(allData.message ?? "Failed to fetch users");
+      }
+    } catch (error) {
+      setErrorMessage("An unexpected error occurred");
+      console.error("An unexpected error occurred", error);
+    }
+  };
+
+  const handleEditClick = (studentId: User) => {
+    setSelectedUserData(studentId);
+    setModalIsOpen(true);
+  };
+
+  // Add filter handling function
+  const handleApplyFilters = (filters: {
+    country: string;
+    course: string;
+    teacher: string;
+    status: string;
+    trailId: string;
+    studentName: string;
+    email: string;
+    mobile: string;
+    time: string;
+    evaluationStatus: string;
+  }) => {
+    let filtered = [...users];
+
+    if (filters.country) {
+      filtered = filtered.filter((user) => user.country === filters.country);
+    }
+    if (filters.course) {
+      filtered = filtered.filter((user) => user.course === filters.course);
+    }
+    if (filters.teacher) {
+      filtered = filtered.filter(
+        (user) => user.preferredTeacher === filters.teacher
+      );
+    }
+    if (filters.status) {
+      filtered = filtered.filter(
+        (user) => user.evaluationStatus === filters.status
+      );
+    }
+    if (filters.trailId) {
+      filtered = filtered.filter((user) =>
+        user.studentId.includes(filters.trailId)
+      );
+    }
+    if (filters.studentName) {
+      filtered = filtered.filter((user) =>
+        `${user.fname} ${user.lname}`
+          .toLowerCase()
+          .includes(filters.studentName.toLowerCase())
+      );
+    }
+    if (filters.email) {
+      filtered = filtered.filter((user) =>
+        user.email.toLowerCase().includes(filters.email.toLowerCase())
+      );
+    }
+    if (filters.mobile) {
+      filtered = filtered.filter((user) =>
+        user.number.includes(filters.mobile)
+      );
+    }
+    if (filters.time) {
+      filtered = filtered.filter((user) => user.time.includes(filters.time));
+    }
+
+    setFilteredUsers(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    const filtered = users.filter((user) => {
+      const fullName = `${user.fname} ${user.lname}`.toLowerCase();
+      return (
+        user.studentId.toLowerCase().includes(query.toLowerCase()) ||
+        fullName.includes(query.toLowerCase()) ||
+        user.email.toLowerCase().includes(query.toLowerCase()) ||
+        user.number.includes(query) ||
+        user.country.toLowerCase().includes(query.toLowerCase()) ||
+        user.course.toLowerCase().includes(query.toLowerCase()) ||
+        user.preferredTeacher.toLowerCase().includes(query.toLowerCase()) ||
+        user.time.toLowerCase().includes(query.toLowerCase()) ||
+        user.evaluationStatus?.toLowerCase().includes(query.toLowerCase())
+      );
+    });
+    setFilteredUsers(filtered);
+    setCurrentPage(1); // Reset to first page when search changes
+  };
+
+  // if (error) return <div>Error: {error}</div>;
+
+
+    // Pagination logic: calculate currentItems based on filteredUsers, currentPage, and itemsPerPage
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   return (
     <BaseLayout1>
       <AcademicHeader currentSection="Dashboard" />
@@ -173,46 +315,57 @@ export default function Dashboard() {
 
           {/* Applications Table */}
           <div className="bg-white rounded-xl shadow-lg dark:bg-[#343434]">
+            <h2 className="text-[16px] font-semibold text-[#000] dark:text-[#fff] mb-0 px-5 py-3">Student Evaluation</h2>
             <div className="overflow-x-auto scrollbar-none h-full">
-              <div className="overflow-y-auto h-[335px] rounded-xl scrollbar-none">
+              <div className="overflow-y-auto h-[335px] rounded-b-xl scrollbar-none">
                 <table className="min-w-full text-xs border-collapse table-fixed px-4">
                   <thead className=" text-[12px] bg-[#4C6993] text-white dark:bg-[#44699d]">
                     <tr>
                       {[
-                        "Trail",
-                        "Name",
-                        "Mobile",
-                        "Country",
-                        "Preferred Teacher",
-                        "Date",
-                        "Time",
-                      ].map((col) => (
+                        { label: "Trial ID" },
+                        { label: "Name" },
+                        { label: "Mobile" },
+                        { label: "Country" },
+                        { label: "Course" },
+                        { label: "Preferred Teacher" },
+                        { label: "Date" },
+                        { label: "Time" },
+                      ].map((header) => (
                         <th
-                          key={col}
+                          key={header.label}
                           className="py-4 px-2 font-semibold text-left border border-[#466993] dark:border-[#466993]"
                         >
-                          {col}
+                          {header.label}
                         </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {evaluationList.map((item, index) => (
+                  {currentItems.length > 0 ? (
+                        currentItems.slice(-5).reverse().map((item, index) => (
                       <tr
-                        key={item.id}
+                        key={item.studentId}
                         className="text-[11px] px-2 py-4 border-none outline-none odd:bg-[#f8f8f8] even:bg-[#ffffff] dark:odd:bg-[#2c2c2c] dark:even:bg-[#303030]"
                       >
-                        <td className="py-4 px-2 text-left">{item.id}</td>
-                        <td className="py-4 px-2 text-left">{item.name}</td>
-                        <td className="py-4 px-2 text-left">{item.mobile}</td>
+                        <td className="py-4 px-2 text-left">{item.studentId}</td>
+                        <td className="py-4 px-2 text-left">{item.fname} {item.lname}</td>
+                        <td className="py-4 px-2 text-left">{item.number}</td>
                         <td className="py-4 px-2 text-left">{item.country}</td>
+                        <td className="py-4 px-2 text-left">{item.course}</td>
                         <td className="py-4 px-2 text-left">
                           {item.preferredTeacher}
                         </td>
                         <td className="py-4 px-2 text-left">{item.date}</td>
                         <td className="py-4 px-2 text-left">{item.time}</td>
                       </tr>
-                    ))}
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={10} className="p-4 text-center">
+                        No data available
+                      </td>
+                    </tr>
+                  )}
                   </tbody>
                 </table>
               </div>
@@ -235,10 +388,10 @@ export default function Dashboard() {
           </div>
 
           {/* Schedule */}
-          <div className="bg-white rounded-xl shadow-lg p-4 dark:bg-[#343434] h-[600px]">
+          <div className="bg-white rounded-xl shadow-lg p-2 dark:bg-[#343434] h-[640px]">
             {/* Header */}
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-[16px] font-semibold text-gray-700 dark:text-[#ffff]">
+            <div className="flex justify-between items-center pr-2">
+              <h3 className="text-[16px] font-semibold text-[#000] dark:text-[#fff] mb-2 px-3 py-2">
                 Upcoming Class
               </h3>
               <button className="px-2 py-1 rounded flex font-medium items-center gap-1 text-[10px] dark:text-[#576CBC] dark:bg-[#3D414A] bg-[#ebefff] text-[#576CBC]">

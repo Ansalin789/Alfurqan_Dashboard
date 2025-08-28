@@ -558,7 +558,7 @@ useEffect(() => {
                   <th className="text-left px-4 py-3">Class Type</th>
                   <th className="text-left px-4 py-3">Date</th>
                   <th className="text-left px-4 py-3">Timing</th>
-                  <th className="text-left px-4 py-3">Status</th>
+                  <th className="text-left px-4 py-3 w-[180px]">Status</th>
                   <th className="text-left px-4 py-3 ">Action</th>
                 </tr>
               </thead>

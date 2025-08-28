@@ -202,9 +202,36 @@ export default function AcademicHeader({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogOut = () => {
+  const handleLogOut = async () => {
+  try {
+    // Call your signout API
+    const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AcademicCoachAuthToken")
+          : null;
+    await axios.post(
+      "https://api.blackstoneinfomaticstech.com/signout",
+      {}, 
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    // Clear token/session
+    localStorage.removeItem("AcademicCoachAuthToken");
+
+    // Redirect to login page
     router.push("/Academic-coach/ui/login");
-  };
+  } catch (err) {
+    console.error("Logout failed:", err);
+
+    // Still clear and redirect (safe fallback)
+    localStorage.removeItem("AcademicCoachAuthToken");
+    router.push("/Academic-coach/ui/login");
+  }
+};
   // Real-time notifications with Socket.IO
   useEffect(() => {
     const socket = getSocket(userId ?? "");
@@ -255,7 +282,7 @@ export default function AcademicHeader({
         </button>
       );
     }
-    if (currentSection === "Trail Management") {
+    if (currentSection === "Trial Management") {
       return (
         <button
           onClick={() => setAddApplicant(true)}

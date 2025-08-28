@@ -71,6 +71,32 @@ interface Course {
 }
 
 const TeachersSchedule = () => {
+  
+// Generate time slots from 00:00 to 23:30 (30 min steps)
+const generateTimeSlots = () => {
+  const slots: string[] = [];
+  let start = moment("00:00", "HH:mm");
+
+  for (let i = 0; i < 48; i++) {
+    slots.push(start.format("HH:mm"));
+    start.add(30, "minutes");
+  }
+  return slots;
+};
+
+const timeSlots = generateTimeSlots();
+
+const handleFromTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const value = e.target.value;
+  const fromMoment = moment(value, "HH:mm");
+  const toMoment = fromMoment.clone().add(30, "minutes");
+
+  setFormData((prev) => ({
+    ...prev,
+    fromTime: value,
+    toTime: toMoment.format("HH:mm"),
+  }));
+};
   const [activeView, setActiveView] = useState<"monthly" | "weekly" | "daily">("monthly")
   const [currentDate, setCurrentDate] = useState(new Date())
   const [meetings, setMeetings] = useState<ClassSchedule[]>([]);
@@ -84,14 +110,15 @@ const TeachersSchedule = () => {
     const [success, setSucces] = useState(false);
     const [failed, setFailed] = useState(false);
     const [failedMessage, setFailedMessage] = useState("");
-  const [formData, setFormData] = useState({
-    date: moment().format("YYYY-MM-DD"),
-    fromTime: moment().format("HH:mm"),
-    toTime: moment().add(1, "hour").format("HH:mm"),
-    comment: "",
-    meetingId: "",
-    applyToAll: false,
-  })
+ const [formData, setFormData] = useState({
+  date: moment().format("YYYY-MM-DD"),
+  fromTime: moment().format("HH:mm"),
+  toTime: moment().add(30, "minutes").format("HH:mm"), // ⬅️ 30 mins, not 1 hour
+  comment: "",
+  meetingId: "",
+  applyToAll: false,
+});
+
 
 const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily"];
 
@@ -159,7 +186,7 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
           setFormData({
             date: todayFormatted,
             fromTime: moment().format("HH:mm"),
-            toTime: moment().add(1, "hour").format("HH:mm"),
+  toTime: moment().add(30, "minutes").format("HH:mm"), // ⬅️ 30 mins, not 1 hour
             comment: "",
             meetingId: "",
             applyToAll: false,
@@ -226,7 +253,7 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
       setFormData({
         date: todayFormatted,
         fromTime: firstMeeting.startTime?.[0] || moment().format("HH:mm"),
-        toTime: firstMeeting.endTime?.[0] || moment().add(1, "hour").format("HH:mm"),
+toTime: firstMeeting.endTime?.[0] || moment().add(30, "minutes").format("HH:mm"),
         comment: "",
         meetingId: firstMeeting._id,
         applyToAll: false,
@@ -235,7 +262,7 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
       setFormData({
         date: todayFormatted,
         fromTime: moment().format("HH:mm"),
-        toTime: moment().add(1, "hour").format("HH:mm"),
+  toTime: moment().add(30, "minutes").format("HH:mm"), // ⬅️ 30 mins, not 1 hour
         comment: "",
         meetingId: "",
         applyToAll: false,
@@ -301,7 +328,7 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
       setFormData({
         date: dateFormatted,
         fromTime: firstMeeting.startTime?.[0] || moment().format("HH:mm"),
-        toTime: firstMeeting.endTime?.[0] || moment().add(1, "hour").format("HH:mm"),
+toTime: firstMeeting.endTime?.[0] || moment().add(30, "minutes").format("HH:mm"),
         comment: "",
         meetingId: firstMeeting._id,
         applyToAll: false,
@@ -310,7 +337,7 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
       setFormData((prev) => ({
         date: dateFormatted,
         fromTime: prev.fromTime || moment().format("HH:mm"),
-        toTime: prev.toTime || moment().add(1, "hour").format("HH:mm"),
+        toTime: prev.toTime || moment().add(30, "minutes").format("HH:mm"),
         comment: "",
         meetingId: "",
         applyToAll: false,
@@ -366,7 +393,9 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
           createdDate: meetingToReschedule.createdDate || new Date().toISOString(),
           lastUpdatedDate: new Date().toISOString(),
         }
-
+    // Log the payload before sending
+    console.log("PUT Request Payload:", payload)
+    console.log("PUT Request URL:", `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`)
        const response= await axios.put(
           `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`,
           payload,
@@ -377,11 +406,15 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
             },
           },
         )
+            // Log the response
+    console.log("PUT Response:", response)
+    console.log("PUT Response Status:", response.status)
+    console.log("PUT Response Data:", response.data)
         if ([200, 201].includes(response.status)) {
         setSucces(true);
         setFormData( {date: moment().format("YYYY-MM-DD"),
     fromTime: moment().format("HH:mm"),
-    toTime: moment().add(1, "hour").format("HH:mm"),
+    toTime: moment().add(30, "minutes").format("HH:mm"),
     comment: "",
     meetingId: "",
     applyToAll: false,});
@@ -455,6 +488,20 @@ const CalendarControls = ({
   };
 
   const { prev, next } = getNavigationHandlers();
+// Generate time slots from 00:00 to 23:30 (30 min steps)
+const generateTimeSlots = () => {
+  const slots: string[] = [];
+  let start = moment("00:00", "HH:mm");
+
+  for (let i = 0; i < 48; i++) {
+    slots.push(start.format("HH:mm"));
+    start.add(30, "minutes");
+  }
+  return slots;
+};
+
+
+
 
   return (
     <div className="flex items-center justify-between mb-4">
@@ -832,21 +879,34 @@ const CalendarControls = ({
                     <label htmlFor="gcuyc" className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       From Time
                     </label>
-                    <input
-                      type="time"
-                      value={formData.fromTime}
-                      onChange={(e) => handleInputChange("fromTime", e.target.value)}
+                    <select
+  name="fromTime"
+  value={formData.fromTime}
+  onChange={handleFromTimeChange}
+  className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+>
+  <option value="">Select Time</option>
+  {timeSlots.map((slot:any) => (
+    <option key={slot} value={slot}>
+      {slot}
+    </option>
+  ))}
+</select>
+                    {/* <input
+                     name="fromTime"
+  value={formData.fromTime}
+  onChange={handleFromTimeChange}
                       className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                    />
+                    /> */}
                   </div>
                   <div>
                     <label  htmlFor="gcuyc" className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       To Time
                     </label>
                     <input
-                      type="time"
-                      value={formData.toTime}
-                      onChange={(e) => handleInputChange("toTime", e.target.value)}
+                       name="toTime"
+  value={formData.toTime}
+  readOnly
                       className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>

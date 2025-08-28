@@ -63,7 +63,7 @@ interface IMessagesend {
 }
 
 const Message = () => {
- // Set a sample userId, it should be dynamic based on logged-in user
+  // Set a sample userId, it should be dynamic based on logged-in user
   const [teachers, setTeachers] = useState<IUser[]>([]);
   const [admin, setAdmin] = useState<IUser[]>([]);
   const [activeTab, setActiveTab] = useState<
@@ -78,26 +78,31 @@ const Message = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<any>(null);
   let userId: string | null = null;
-  const userName = typeof window !== "undefined" ? localStorage.getItem("SupervisorPortalName") : null;
+  const userName =
+    typeof window !== "undefined"
+      ? localStorage.getItem("SupervisorPortalName")
+      : null;
   if (typeof window !== "undefined") {
-    userId = localStorage.getItem('SupervisorPortalId');
+    userId = localStorage.getItem("SupervisorPortalId");
   }
   const fetchUsersByRole = async (role: string): Promise<IUser[]> => {
     try {
       const token =
-    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorAuthToken")
+          : null;
 
-  if (!token) {
-    console.error("❌ SupervisorAuthToken not found");
-  } 
+      if (!token) {
+        console.error("❌ SupervisorAuthToken not found");
+      }
       const response = await axios.get<{ users: IUser[] }>(
         "https://api.blackstoneinfomaticstech.com/users",
         {
           params: { role },
-           headers:{
-              "Content-Type":"application/json",
-              "Authorization":`Bearer ${token}`
-            }
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
       return response.data.users;
@@ -109,15 +114,19 @@ const Message = () => {
 
   // Filter users based on search query
   const filteredUsers = (
-    activeTab === "teachers" ? teachers :
-    activeTab === "admin" ? admin :
-    activeTab === "all" ? [...teachers, ...admin] :
-    [] // Empty array for supervisor and academic-coach tabs
-  ).filter(
-    (user) =>
-      user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    activeTab === "teachers"
+      ? teachers
+      : activeTab === "admin"
+      ? admin
+      : activeTab === "all"
+      ? [...teachers, ...admin]
+      : []
+  ) // Empty array for supervisor and academic-coach tabs
+    .filter(
+      (user) =>
+        user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   // Handle message selection
   const handleUserClick = (user: IUser) => {
@@ -131,31 +140,31 @@ const Message = () => {
   const fetchMessages = async (receiverId: string) => {
     try {
       const token =
-    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorAuthToken")
+          : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
       const { data } = await axios.get<IMessageResponse>(
         `https://api.blackstoneinfomaticstech.com/realtimemessage/${userId}/${receiverId}`,
-          {
+        {
           headers: {
             "Content-Type": "application/json",
-                          'Authorization': `Bearer ${token}`,
-
+            Authorization: `Bearer ${token}`,
           },
         }
-        
       );
       const fetchedMessages = data?.data;
-       setMessages(fetchedMessages); // for rendering
+      setMessages(fetchedMessages); // for rendering
 
-// Count unread messages in all groups
-const allMessages = fetchedMessages.flatMap(group => group.messages);
-const unreadCount = allMessages.filter((m) => !m.isRead).length;
-setMessageCount(unreadCount);
- // Update the unread message count
+      // Count unread messages in all groups
+      const allMessages = fetchedMessages.flatMap((group) => group.messages);
+      const unreadCount = allMessages.filter((m) => !m.isRead).length;
+      setMessageCount(unreadCount);
+      // Update the unread message count
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
@@ -192,56 +201,62 @@ setMessageCount(unreadCount);
     }
 
     // Handle incoming messages
-  const handleNewMessage = (newMessage: IMessage) => {
-  console.log("Received new message:", newMessage);
-  
-  // Check if message is relevant to current chat or should increment count
-  const isForCurrentChat = 
-    (newMessage.senderId === userId && newMessage.receiverId === selectedUser?._id) ||
-    (newMessage.senderId === selectedUser?._id && newMessage.receiverId === userId);
-    console.log(userId);
-    console.log(selectedUser?._id);
-  // Always update message count for unread messages
-  if (newMessage.receiverId === userId && !newMessage.isRead) {
-    setMessageCount(prev => prev + 1);
-  }
+    const handleNewMessage = (newMessage: IMessage) => {
+      console.log("Received new message:", newMessage);
 
-  // Only update messages if it's for the current chat
-  if (isForCurrentChat) {
-    setMessages(prev => {
-      const dateKey = new Date(newMessage.createdDate).toISOString().split('T')[0];
-      console.log('enter');
-      // Find if we already have messages for this date
-      const existingGroupIndex = prev.findIndex(group => group._id === dateKey);
-      
-      // Create a new state array
-      const newState = [...prev];
-      
-      if (existingGroupIndex !== -1) {
-        // Add to existing date group - append to maintain chronological order
-        newState[existingGroupIndex] = {
-          ...newState[existingGroupIndex],
-          messages: [...newState[existingGroupIndex].messages, newMessage]
-        };
-      } else {
-        // Create new date group at the beginning (since we're using flex-col-reverse)
-        newState.unshift({
-          _id: dateKey,
-          messages: [newMessage]
+      // Check if message is relevant to current chat or should increment count
+      const isForCurrentChat =
+        (newMessage.senderId === userId &&
+          newMessage.receiverId === selectedUser?._id) ||
+        (newMessage.senderId === selectedUser?._id &&
+          newMessage.receiverId === userId);
+      console.log(userId);
+      console.log(selectedUser?._id);
+      // Always update message count for unread messages
+      if (newMessage.receiverId === userId && !newMessage.isRead) {
+        setMessageCount((prev) => prev + 1);
+      }
+
+      // Only update messages if it's for the current chat
+      if (isForCurrentChat) {
+        setMessages((prev) => {
+          const dateKey = new Date(newMessage.createdDate)
+            .toISOString()
+            .split("T")[0];
+          console.log("enter");
+          // Find if we already have messages for this date
+          const existingGroupIndex = prev.findIndex(
+            (group) => group._id === dateKey
+          );
+
+          // Create a new state array
+          const newState = [...prev];
+
+          if (existingGroupIndex !== -1) {
+            // Add to existing date group - append to maintain chronological order
+            newState[existingGroupIndex] = {
+              ...newState[existingGroupIndex],
+              messages: [...newState[existingGroupIndex].messages, newMessage],
+            };
+          } else {
+            // Create new date group at the beginning (since we're using flex-col-reverse)
+            newState.unshift({
+              _id: dateKey,
+              messages: [newMessage],
+            });
+          }
+
+          return newState;
         });
-      }
-      
-      return newState;
-    });
 
-    // Scroll to bottom after new message
-    setTimeout(() => {
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        // Scroll to bottom after new message
+        setTimeout(() => {
+          if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 100);
       }
-    }, 100);
-  }
-};
+    };
 
     socketRef.current.on("newmessage", handleNewMessage);
     const fetchAllUsers = async () => {
@@ -258,31 +273,35 @@ setMessageCount(unreadCount);
     return () => {
       socketRef.current?.off("newmessage", handleNewMessage);
     };
-  }, [userId,selectedUser]);
+  }, [userId, selectedUser]);
   const formatDateLabel = (dateString: string): string => {
-  const inputDate = new Date(dateString);
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
+    const inputDate = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
 
-  const sameDay = (d1: Date, d2: Date) =>
-    d1.getFullYear() === d2.getFullYear() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate();
+    const sameDay = (d1: Date, d2: Date) =>
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate();
 
-  if (sameDay(inputDate, today)) return "Today";
-  if (sameDay(inputDate, yesterday)) return "Yesterday";
-  return inputDate.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
-};
-// Replace your current groupedMessages logic with:
-const groupedMessages = messages
-  .flatMap(group => group.messages)
-  .reduce((acc, msg) => {
-    const dateKey = new Date(msg.createdDate).toDateString();
-    if (!acc[dateKey]) acc[dateKey] = [];
-    acc[dateKey].push(msg);
-    return acc;
-  }, {} as Record<string, IMessage[]>);
+    if (sameDay(inputDate, today)) return "Today";
+    if (sameDay(inputDate, yesterday)) return "Yesterday";
+    return inputDate.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+  // Replace your current groupedMessages logic with:
+  const groupedMessages = messages
+    .flatMap((group) => group.messages)
+    .reduce((acc, msg) => {
+      const dateKey = new Date(msg.createdDate).toDateString();
+      if (!acc[dateKey]) acc[dateKey] = [];
+      acc[dateKey].push(msg);
+      return acc;
+    }, {} as Record<string, IMessage[]>);
 
   // Handle sending messages
   const handleSendMessage = async () => {
@@ -291,7 +310,7 @@ const groupedMessages = messages
     // Create the message object in IMessagesend format
     const newMessage: IMessagesend = {
       messages: messageText,
-      senderId: userId ?? '',
+      senderId: userId ?? "",
       senderName: "Admin",
       receiverId: selectedUser._id,
       receiverName: `${selectedUser.userName}`,
@@ -308,12 +327,14 @@ const groupedMessages = messages
 
     try {
       const token =
-    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorAuthToken")
+          : null;
 
-  if (!token) {
-    console.error("❌ SupervisorAuthToken not found");
-    return;
-  } 
+      if (!token) {
+        console.error("❌ SupervisorAuthToken not found");
+        return;
+      }
       // Send the new message to the backend API
       const response = await axios.post(
         "https://api.blackstoneinfomaticstech.com/realtimemessage",
@@ -321,9 +342,7 @@ const groupedMessages = messages
         {
           headers: {
             "Content-Type": "application/json",
-      "Authorization":`Bearer ${token}`,
-        
-      
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -345,31 +364,38 @@ const groupedMessages = messages
           status: newMessage.status,
         };
 
-       // In handleSendMessage and handleNewMessage, ensure new messages are appended:
+        // In handleSendMessage and handleNewMessage, ensure new messages are appended:
 
-setMessages(prev => {
-  const dateKey = new Date(convertedMessage.createdDate).toISOString().split('T')[0];
-  const existingGroupIndex = prev.findIndex(group => group._id === dateKey);
+        setMessages((prev) => {
+          const dateKey = new Date(convertedMessage.createdDate)
+            .toISOString()
+            .split("T")[0];
+          const existingGroupIndex = prev.findIndex(
+            (group) => group._id === dateKey
+          );
 
-  if (existingGroupIndex !== -1) {
-    // Append to existing group
-    const updated = [...prev];
-    updated[existingGroupIndex] = {
-      ...updated[existingGroupIndex],
-      messages: [...updated[existingGroupIndex].messages, convertedMessage] // Append to end
-    };
-    return updated;
-  } else {
-    // Add new group at the end
-    return [
-      ...prev,
-      {
-        _id: dateKey,
-        messages: [convertedMessage]
-      }
-    ];
-  }
-});
+          if (existingGroupIndex !== -1) {
+            // Append to existing group
+            const updated = [...prev];
+            updated[existingGroupIndex] = {
+              ...updated[existingGroupIndex],
+              messages: [
+                ...updated[existingGroupIndex].messages,
+                convertedMessage,
+              ], // Append to end
+            };
+            return updated;
+          } else {
+            // Add new group at the end
+            return [
+              ...prev,
+              {
+                _id: dateKey,
+                messages: [convertedMessage],
+              },
+            ];
+          }
+        });
         setMessageText(""); // Clear the message input
       } else {
         console.error("Error posting message:", response.data.message);
@@ -394,7 +420,7 @@ setMessages(prev => {
 
   return (
     <BaseLayout3>
-    <SupervisorHeader currentSection="Message"/>
+      <SupervisorHeader currentSection="Message" />
       <div className="py-3 px-5">
         <div className="flex flex-col md:flex-row gap-4 h-[85vh]">
           {/* Left Panel */}
@@ -414,11 +440,10 @@ setMessages(prev => {
               </motion.div>
               <div>
                 <div className="flex">
-                <h3 className="text-[18px] font-medium text-[#010E30] dark:text-[#fff]">
-                  {userName}
-                  
-                </h3>
-                <button className="ml-[4px] text-gray-500">
+                  <h3 className="text-[18px] font-medium text-[#010E30] dark:text-[#fff]">
+                    {userName}
+                  </h3>
+                  <button className="ml-[4px] text-gray-500">
                     {messageCount > 0 && (
                       <span className=" -mt-2 ml-1 bg-red-600 text-white text-[8px] rounded-full h-3 w-3 flex items-center justify-center animate-pulse">
                         {messageCount}
@@ -426,9 +451,10 @@ setMessages(prev => {
                     )}
                   </button>
                 </div>
-                
 
-                <p className="text-[12px] text-[#010e30a7] font-medium dark:text-[#fff] dark:opacity-[60%]">Supervisor</p>
+                <p className="text-[12px] text-[#010e30a7] font-medium dark:text-[#fff] dark:opacity-[60%]">
+                  Supervisor
+                </p>
               </div>
             </div>
 
@@ -451,7 +477,7 @@ setMessages(prev => {
 
             {/* Tabs */}
             <div className="flex">
-            <button
+              <button
                 className={`px-2 py-1.5 text-[12px] font-medium ${
                   activeTab === "all"
                     ? "text-[#576CBC] border-b-2 border-[#576CBC]"
@@ -598,47 +624,61 @@ setMessages(prev => {
                   {/* Added flex-col-reverse */}
                   <AnimatePresence>
                     {Object.entries(groupedMessages)
-                      .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
-                       .map(([date, msgs]) => (
+                      .sort(
+                        (a, b) =>
+                          new Date(a[0]).getTime() - new Date(b[0]).getTime()
+                      )
+                      .map(([date, msgs]) => (
                         <div key={date}>
                           <div className="text-center text-gray-500  text-xs my-2 font-medium">
                             {formatDateLabel(date)}
                           </div>
-                  
-                          {msgs.toSorted((a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime())
-                          .map((msg) => (
-                            <motion.div
-                              key={msg._id}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.2 }}
-                              className={`flex flex-col mb-3 ${
-                                msg.senderId === userId ? "items-end" : "items-start"
-                              }`}
-                            >
+
+                          {msgs
+                            .toSorted(
+                              (a, b) =>
+                                new Date(a.createdDate).getTime() -
+                                new Date(b.createdDate).getTime()
+                            )
+                            .map((msg) => (
                               <motion.div
-                                whileHover={{ scale: 1.01 }}
-                                className={`p-2 rounded-lg max-w-[80%] ${
+                                key={msg._id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className={`flex flex-col mb-3 ${
                                   msg.senderId === userId
-                                    ? "bg-[#576CBC] text-[#fff]  rounded-lg"
-                                    : "bg-[#F1F1F1] rounded-lg dark:bg-[#2c2c2c]"
+                                    ? "items-end"
+                                    : "items-start"
                                 }`}
                               >
-                                <p className="text-xs">{msg.messages}</p>
-                                <div className="flex items-center justify-end mt-1 space-x-1">
-                                  <span className="text-[9px] opacity-70">
-                                    {new Date(msg.createdDate).toLocaleTimeString([], {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })}
-                                  </span>
-                                  {msg.senderId === userId && (
-                                    <span className="text-[9px]">{msg.isRead ? "✓✓" : "✓"}</span>
-                                  )}
-                                </div>
+                                <motion.div
+                                  whileHover={{ scale: 1.01 }}
+                                  className={`p-2 rounded-lg max-w-[80%] ${
+                                    msg.senderId === userId
+                                      ? "bg-[#576CBC] text-[#fff]  rounded-lg"
+                                      : "bg-[#F1F1F1] rounded-lg dark:bg-[#2c2c2c]"
+                                  }`}
+                                >
+                                  <p className="text-xs">{msg.messages}</p>
+                                  <div className="flex items-center justify-end mt-1 space-x-1">
+                                    <span className="text-[9px] opacity-70">
+                                      {new Date(
+                                        msg.createdDate
+                                      ).toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                    </span>
+                                    {msg.senderId === userId && (
+                                      <span className="text-[9px]">
+                                        {msg.isRead ? "✓✓" : "✓"}
+                                      </span>
+                                    )}
+                                  </div>
+                                </motion.div>
                               </motion.div>
-                            </motion.div>
-                          ))}
+                            ))}
                         </div>
                       ))}
                   </AnimatePresence>
@@ -671,11 +711,15 @@ setMessages(prev => {
                       disabled={!messageText.trim()}
                       className={`p-1 rounded-lg flex items-center ${
                         messageText.trim()
-                          ? "bg-[#576cbc] text-white"
+                          ? ""
                           : "bg-gray-200 dark:bg-[#2c2c2c] text-gray-400 cursor-not-allowed"
                       }`}
                     >
-                      <FaTelegramPlane size={14} />
+                      <img
+                        src="/assets/images/Iconsax.png"
+                        alt="Send"
+                        className="w-4 h-4"
+                      />
                     </motion.button>
                   </div>
                 </motion.div>

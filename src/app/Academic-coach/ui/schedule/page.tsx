@@ -15,6 +15,8 @@ interface Event {
   end: string;
   description: string;
   date: string;
+  studentName:string,
+  studentEmail:string,
 }
 
 const SchedulePage = () => {
@@ -45,12 +47,15 @@ const SchedulePage = () => {
     })
       .then((response) => response.json())
       .then((data) => {
+        console.log("dataaa",data);
         const mappedEvents = data.academicCoach.map((item: any) => ({
           id: item._id,
           title: item.subject,
           start: item.scheduledFrom,
           end: item.scheduledTo,
           description: item.description,
+          studentName:item.student.name,
+          studentEmail:item.student.email,
           date: moment(item.scheduledStartDate).format("YYYY-MM-DD"),
         }));
         setEvents(mappedEvents);
@@ -240,7 +245,7 @@ const SchedulePage = () => {
                           </div>
                         </div>
                         <div className="text-[10px] text-gray-600 dark:text-gray-300 mt-1">
-                          {event.description}
+                          {event.studentName}
                         </div>
                       </div>
                     ))}
@@ -275,7 +280,7 @@ const SchedulePage = () => {
             </div>
 
             <div className="text-[10px] text-gray-400 mt-1">
-              {event.description}
+              {event.studentName}
             </div>
           </div>
         ))}
@@ -424,12 +429,12 @@ const SchedulePage = () => {
                           </h3>
                           <div>
                             <div className="flex gap-4">
-                              <div className="text-[9px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
+                              <div className="text-[10px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
                                 <FaClock size={10} />
                                 {moment(item.start, 'HH:mm').format("h:mm A")} -{" "}
                                 {moment(item.end, 'HH:mm').format("h:mm A")}
                               </div>
-                              <span className="text-[9px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
+                              <span className="text-[10px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
                                 <BsFillCalendar2WeekFill size={10} />{" "}
                                 {moment(item.date).format("DD MMM YYYY")}
                               </span>
@@ -437,8 +442,8 @@ const SchedulePage = () => {
                           </div>
                         </div>
 
-                        <p className="text-[10px] font-light text-[#333] dark:text-[#fff] mt-2">
-                          {item.description || ""}
+                        <p className="text-[11px] font-light text-[#333] dark:text-[#fff] mt-2">
+                          {item.studentName || ""} 
                         </p>
                       </div>
                     );
