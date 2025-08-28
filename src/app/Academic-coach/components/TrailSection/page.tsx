@@ -152,7 +152,7 @@ const getAllUsers = async (): Promise<{
     if (!token) {
       console.error("❌ AdminAuthToken not found");
     }
-    const response = await axios.get(`http://localhost:5001/evaluationlist`, {
+    const response = await axios.get(`https://api.blackstoneinfomaticstech.com/evaluationlist`, {
       params: { academicCoachId: academicId },
       headers: {
         "Content-Type": "application/json",
@@ -544,7 +544,7 @@ const TrailSection = () => {
   
       // 🔹 Send update request
       const response = await axios.put(
-        `http://localhost:5001/evaluation/${formData._id}`,
+        `https://api.blackstoneinfomaticstech.com/evaluation/${formData._id}`,
         payload,
         {
           headers: {
@@ -822,7 +822,7 @@ const TrailSection = () => {
         return;
       }
       const response = await fetch(
-        `http://localhost:5001/evaluationlist/${id}`,
+        `https://api.blackstoneinfomaticstech.com/evaluationlist/${id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -849,7 +849,7 @@ const TrailSection = () => {
       setStudentStatus(data.studentStatus);
       setPaymentStatus(data.paymentStatus);
       setPaymentLink(
-        `http://localhost:5001/invoice?id=${encodeURIComponent(data._id)}`
+        `https://api.blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(data._id)}`
       );
       setFormData(data);
       console.log(data);
@@ -1279,7 +1279,7 @@ const TrailSection = () => {
         console.error("❌ AdminAuthToken not found");
         return;
       }
-      const response = await fetch(`http://localhost:5001/evaluation/${id}`, {
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

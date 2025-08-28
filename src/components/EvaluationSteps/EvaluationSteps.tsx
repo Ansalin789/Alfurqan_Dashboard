@@ -27,6 +27,7 @@ interface AcademicCoach {
 
 interface StudentData {
   _id: string; // Assuming _id is a string, or use ObjectId if you're using MongoDB
+  studentId:string;
   firstName: string;
   lastName: string;
   academicCoach: AcademicCoach;
@@ -2271,7 +2272,8 @@ const Step9 = ({
       const submitData = {
         academicCoachId: updatedStudentDatass.academicCoach.academicCoachId,
         student: {
-          studentId: updatedStudentDatass._id,
+          studentId: updatedStudentDatass.studentId,
+          studentRegisterId:updatedStudentDatass._id,
           studentFirstName: updatedStudentDatass.firstName,
           studentLastName: updatedStudentDatass.lastName,
           studentEmail: updatedStudentDatass.email,

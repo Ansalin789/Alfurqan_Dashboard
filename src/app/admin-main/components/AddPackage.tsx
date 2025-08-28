@@ -81,7 +81,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     console.log("Payload being sent:", payload);
 
-    const response = await fetch("http://localhost:5001/package", {
+    const response = await fetch("https://api.blackstoneinfomaticstech.com/package", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
