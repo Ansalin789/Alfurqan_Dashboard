@@ -91,10 +91,10 @@ export default function Academic() {
             <tbody className="mb-1">
               {teachersData.map((teacher) => (
                 <tr key={teacher._id ?? teacher.teacherEmail}>
-                  <div className="justify-between items-center flex border-b-[1px]  dark:border-[#585858] px-3 py-1">
+                  <div className="justify-between items-center flex border-b-[1px]  dark:border-[#585858] px-2 py-1">
 
                   
-                  <td className=" py-1 text-center text-[13px] font-normal flex text-[#010e30] opacity-90 dark:text-[#fff]">
+                  <td className=" py-1 text-center text-[12px] font-normal flex text-[#010e30] opacity-90 dark:text-[#fff]">
                     {/* <FaUserCircle className="text-[#000] mr-2 mt-1" /> */}
                     {teacher.teacherName}
                   </td>
