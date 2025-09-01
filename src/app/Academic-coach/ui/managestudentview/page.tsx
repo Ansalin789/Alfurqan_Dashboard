@@ -388,9 +388,12 @@ useEffect(() => {
         console.log("Fetched data from API:", data);
 
         const allSchedules: ClassSchedule[] = data.classSchedule;
+         const sortedSchedules = [...allSchedules].sort(
+        (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+      );
 
         setScheduledClasses(
-          allSchedules.filter(
+          sortedSchedules.filter(
             (c) =>
               c.scheduleStatus === "Scheduled" ||
               c.scheduleStatus === "Rescheduled" ||
@@ -399,7 +402,7 @@ useEffect(() => {
         );
 
         setCompletedClasses(
-          allSchedules.filter((c) => c.scheduleStatus === "Completed")
+          sortedSchedules.filter((c) => c.scheduleStatus === "Completed" || c.scheduleStatus === "BothAbsent" || c.scheduleStatus === "TeacherAbsent" || c.scheduleStatus === "StudentAbsent" )
         );
       } catch (err) {
         console.error("Failed to fetch class schedule", err);
@@ -954,19 +957,19 @@ useEffect(() => {
                   <td className="py-1 text-center relative" ref={dropdownRef}>
                     <button
                       onClick={
-                        item.scheduleStatus === "Scheduled"
+                        item.scheduleStatus === "Scheduled" || "RequestReschedule"
                           ? () => toggleDropdown(index)
                           : undefined
                       }
                       className={`${
-                        item.scheduleStatus === "Scheduled"
+                        item.scheduleStatus === "Scheduled" || "RequestReschedule"
                           ? "cursor-pointer"
                           : "cursor-default"
                       }`}
                     >
                       <MoreVertical
                         className={`w-4 h-4 mr-12 ${
-                          item.scheduleStatus === "Scheduled"
+                          item.scheduleStatus === "Scheduled" || "RequestReschedule"
                             ? "text-slate-600 dark:text-[#FDFDFD]"
                             : "text-gray-500 dark:text-gray-200 opacity-50"
                         }`}
@@ -974,7 +977,7 @@ useEffect(() => {
                     </button>
 
                     {/* Only show dropdown if status is Scheduled and activeDropdown is set */}
-                    {item.scheduleStatus === "Scheduled" &&
+                    {["Scheduled", "RequestReschedule"].includes(item.scheduleStatus) &&
                       activeDropdown === index && (
                         <div
                           ref={dropdownRef}

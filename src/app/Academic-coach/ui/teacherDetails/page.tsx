@@ -423,10 +423,12 @@ const TeacherDetails = () => {
       setClassScheduleData(schedule);
 
       setScheduledClasses(
-        schedule.filter((c) => c.scheduleStatus === "Scheduled")
+        schedule.filter((c) =>  c.scheduleStatus === "Scheduled" ||
+              c.scheduleStatus === "Rescheduled" ||
+              c.scheduleStatus === "RequestReschedule")
       );
       setCompletedClasses(
-        schedule.filter((c) => c.scheduleStatus === "Completed")
+        schedule.filter((c) => c.scheduleStatus === "Completed" || c.scheduleStatus === "BothAbsent" || c.scheduleStatus === "TeacherAbsent" || c.scheduleStatus === "StudentAbsent")
       );
     };
 
@@ -1109,19 +1111,19 @@ const handleViewDetails = (_id: string) => {
           >
             <button
               onClick={
-                item.scheduleStatus === "Scheduled"
+                item.scheduleStatus === "Scheduled" || "RequestReschedule"
                   ? () => toggleDropdown(index)
                   : undefined
               }
               className={`${
-                item.scheduleStatus === "Scheduled"
+                item.scheduleStatus === "Scheduled" || "RequestReschedule"
                   ? "cursor-pointer"
                   : "cursor-default"
               }`}
             >
               <MoreVertical
                 className={`w-4 h-4 ${
-                  item.scheduleStatus === "Scheduled"
+                  item.scheduleStatus === "Scheduled" || "RequestReschedule"
                     ? "text-slate-600 dark:text-[#FDFDFD]"
                     : "text-gray-400 dark:text-gray-600 opacity-50"
                 }`}
@@ -1129,7 +1131,7 @@ const handleViewDetails = (_id: string) => {
             </button>
 
             {/* Only show dropdown if status is Scheduled and activeDropdown is set */}
-            {item.scheduleStatus === "Scheduled" &&
+            {["Scheduled", "RequestReschedule"].includes(item.scheduleStatus) &&
               activeDropdown === index && (
                 <div
                   className="py-1 bg-white rounded-md shadow-lg daerk absolute right-0 top-6 z-20 w-32 min-w-[120px] max-w-[160px]  dark:bg-[#252525]"
