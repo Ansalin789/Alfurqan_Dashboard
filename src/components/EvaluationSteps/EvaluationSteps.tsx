@@ -207,6 +207,8 @@ const Step2: React.FC<{
   const [studentData, setStudentData] = useState<StudentData>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Make details editable in Step2 and propagate to later steps
+  const [editableStudentData, setEditableStudentData] = useState<StudentData | null>(null);
   const id = window.location.href;
   const queryString = id.split("?")[1]; // Extract the query string
   const params = new URLSearchParams(queryString);
@@ -241,6 +243,7 @@ const Step2: React.FC<{
         const data = await response.json();
         console.log("Fetched student data:", data);
         setStudentData(data);
+        setEditableStudentData(data); // initialize editable copy
         localStorage.setItem("studentData", JSON.stringify(data));
         console.log(studentData);
       } catch (error) {
@@ -253,6 +256,10 @@ const Step2: React.FC<{
 
     fetchStudentData();
   }, []);
+
+  const handleStudentDataChange = (field: keyof StudentData, value: any) => {
+    setEditableStudentData((prev) => (prev ? { ...prev, [field]: value } as StudentData : prev));
+  };
 
   if (loading) {
     return (
@@ -271,7 +278,7 @@ const Step2: React.FC<{
     );
   }
 
-  if (!studentData) {
+  if (!studentData || !editableStudentData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
         <div className="text-white text-xl">No student data available</div>
@@ -304,89 +311,62 @@ const Step2: React.FC<{
 
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl">
           <div
-            key={studentData.email || studentData.phoneNumber?.toString()}
+            key={editableStudentData.email || editableStudentData.phoneNumber?.toString()}
             className="mb-8 last:mb-0"
           >
             <h2 className="text-2xl font-semibold text-white mb-4">
-              {studentData.firstName || "N/A"} {studentData.lastName || "N/A"}
+              {editableStudentData.firstName || "N/A"} {editableStudentData.lastName || "N/A"}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
-                {
-                  label: "Email",
-                  value: studentData.email || "N/A",
-                  icon: "📧",
-                },
-                {
-                  label: "Phone Number",
-                  value: studentData.phoneNumber?.toString() || "N/A",
-                  icon: "📞",
-                },
-                { label: "City", value: studentData.city || "N/A", icon: "🌍" },
-                {
-                  label: "Country",
-                  value: studentData.country || "N/A",
-                  icon: "🌍",
-                },
-                {
-                  label: "Country Code",
-                  value: studentData.countryCode || "N/A",
-                  icon: "🌍",
-                },
-                {
-                  label: "Learning Interest",
-                  value: studentData.learningInterest || "N/A",
-                  icon: "📚",
-                },
-                {
-                  label: "Number of Students",
-                  value: studentData.numberOfStudents?.toString() || "N/A",
-                  icon: "👥",
-                },
-                {
-                  label: "Preferred Teacher",
-                  value: studentData.preferredTeacher || "N/A",
-                  icon: "👨‍🏫",
-                },
-                {
-                  label: "Preferred From Time",
-                  value: studentData.preferredFromTime || "N/A",
-                  icon: "⏰",
-                },
-                {
-                  label: "Preferred To Time",
-                  value: studentData.preferredToTime || "N/A",
-                  icon: "⏰",
-                },
-                {
-                  label: "Time Zone",
-                  value: studentData.timeZone || "N/A",
-                  icon: "🌐",
-                },
-                {
-                  label: "Referral Source",
-                  value: studentData.referralSource || "N/A",
-                  icon: "📢",
-                },
-                {
-                  label: "Evaluation Status",
-                  value: studentData.evaluationStatus || "N/A",
-                  icon: "📋",
-                },
-              ].map((field) => (
-                <div key={field.label} className="group">
+          
+                { label: "Email", field: "email", type: "email" },
+                { label: "Phone Number", field: "phoneNumber", type: "tel" },
+                { label: "City", field: "city", type: "text" },
+                { label: "Country", field: "country", type: "text" },
+                { label: "Country Code", field: "countryCode", type: "text" },
+                { label: "Learning Interest", field: "learningInterest", type: "text" },
+                { label: "Number of Students", field: "numberOfStudents", type: "number" },
+                { label: "Preferred Teacher", field: "preferredTeacher", type: "text" },
+                { label: "Preferred From Time", field: "preferredFromTime", type: "time" },
+                { label: "Preferred To Time", field: "preferredToTime", type: "time" },
+                { label: "Time Zone", field: "timeZone", type: "text" },
+                { label: "Referral Source", field: "referralSource", type: "text" },
+                { label: "Evaluation Status", field: "evaluationStatus", type: "text" },
+              ].map(({ label, field, type }) => (
+                <div key={label} className="group">
                   <div className="flex items-center space-x-2 mb-1">
                     <span className="text-white/60 group-hover:text-white/90 transition-colors">
-                      {field.icon}
+                      {label === "Email"
+                        ? "📧"
+                        : label === "Phone Number"
+                        ? "📞"
+                        : label.includes("Time")
+                        ? "⏰"
+                        : label === "City" || label === "Country" || label === "Country Code"
+                        ? "🌍"
+                        : label === "Time Zone"
+                        ? "🌐"
+                        : label === "Referral Source"
+                        ? "📢"
+                        : label === "Preferred Teacher"
+                        ? "👨‍🏫"
+                        : label === "Number of Students"
+                        ? "👥"
+                        : label === "Evaluation Status"
+                        ? "📋"
+                        : ""}
                     </span>
                     <label className="text-sm font-semibold text-white/60 group-hover:text-white/90 transition-colors">
-                      {field.label}
+                      {label}
                     </label>
                   </div>
                   <input
-                    type="text"
-                    value={field.value}
-                    readOnly
+                    type={type}
+                    value={(editableStudentData as any)[field] ?? ""}
+                    onChange={(e) =>
+                      handleStudentDataChange(field as keyof StudentData, type === "number" ? Number(e.target.value) : e.target.value)
+                    }
                     className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-white
                        focus:bg-white/10 focus:border-white/20 focus:ring-2 focus:ring-purple-500/20
                        transition-all duration-200"
@@ -412,8 +392,8 @@ const Step2: React.FC<{
 
           <button
             onClick={() => {
-              console.log("Passing studentData to next step:", studentData);
-              nextStep(studentData || ({} as StudentData));
+              console.log("Passing edited studentData to next step:", editableStudentData);
+              nextStep(editableStudentData as StudentData);
             }}
             className="flex items-center gap-2 px-6 py-3 text-white transition-all duration-300 
                      bg-gradient-to-r from-blue-500 to-purple-500 
@@ -2534,10 +2514,16 @@ const EvaluationSteps: React.FC<{ userId: string }> = ({ userId }) => {
   const [updatedStudentDatass, setUpdatedStudentDatass] = useState<any>({});
   const totalSteps = 9;
 
+  // Single draft that aggregates all step data
+  const [evaluationDraft, setEvaluationDraft] = useState<any>({});
+
   const nextStep = (data: any) => {
     console.log("Current step:", step);
-    if (step === 2 && 3 && 4) {
-      setStudentData(data); // Store studentData when moving to the next step
+    // Merge into draft
+    setEvaluationDraft((prev: any) => ({ ...prev, ...data }));
+
+    if (step === 2 || step === 3 || step === 4) {
+      setStudentData({ ...(studentData as any), ...data });
     }
     if (step === 5) {
       setUpdatedStudentData(data);
@@ -2550,7 +2536,7 @@ const EvaluationSteps: React.FC<{ userId: string }> = ({ userId }) => {
       setUpdatedStudentDatass(data);
     }
     if (step < totalSteps) {
-      setStudentData(data);
+      setStudentData({ ...(studentData as any), ...data });
       setStep((prev) => prev + 1);
     }
   };
@@ -2620,7 +2606,7 @@ const EvaluationSteps: React.FC<{ userId: string }> = ({ userId }) => {
         <Step9
           prevStep={prevStep}
           nextStep={(data: any) => nextStep(data)}
-          updatedStudentDatass={updatedStudentDatass}
+          updatedStudentDatass={{ ...evaluationDraft, ...updatedStudentDatass }}
         />
       )}
       <ToastContainer
