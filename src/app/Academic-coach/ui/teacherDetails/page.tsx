@@ -239,6 +239,8 @@ const TeacherDetails = () => {
   const [paginatedData, setPaginatedData] = useState<ClassSchedule[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [teacherRescheduleWrite, setTeacherRescheduleWrite] = useState(false);
+  const [isCompletedDetailsModalOpen, setIsCompletedDetailsModalOpen] = useState(false);
+  const [selectedCompletedClass, setSelectedCompletedClass] = useState<ClassSchedule | null>(null);
 
   //Rolebyaccess
   useEffect(() => {
@@ -267,6 +269,11 @@ const TeacherDetails = () => {
     setTimeout(() => {
       setActiveDropdown(null);
     }, 100);
+  };
+
+  const handleViewCompletedDetails = (classData: ClassSchedule) => {
+    setSelectedCompletedClass(classData);
+    setIsCompletedDetailsModalOpen(true);
   };
 
   // Calculate total pages based on active tab
@@ -1056,11 +1063,9 @@ const handleViewDetails = (_id: string) => {
                 <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                   Status
                 </th>
-                {activeTab === "scheduled" && (
-                  <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] w-[90px] min-w-[90px] max-w-[90px]">
-                    Action
-                  </th>
-                )}
+                <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] w-[90px] min-w-[90px] max-w-[90px]">
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-[#343434] dark:divide-gray-600">
@@ -1093,75 +1098,89 @@ const handleViewDetails = (_id: string) => {
                   <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                     {item.sessionClassType}
                   </td>
-                  <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                     <span
-                      className={`font-semibold px-3 py-1 rounded-md text-[10px] ${
+                      className={`font-semibold px-3 py-1 rounded-md text-[10px] inline-block text-center min-w-[120px] ${
                         item.scheduleStatus === "Scheduled"
                           ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
-                          : "bg-green-100 text-green-800"
+                          : item.scheduleStatus === "Rescheduled"
+                          ? "bg-[#E4E4E4] text-[#000] dark:bg-[#555] dark:text-[#fff]"
+                          : "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
                       }`}
                     >
                       {item.scheduleStatus}
                     </span>
                   </td>
-             {activeTab === "scheduled" && (
-          <td
-            className="py-1 text-center relative w-[90px] min-w-[90px] max-w-[90px]"
-            ref={dropdownRef}
-          >
-            <button
-              onClick={
-                item.scheduleStatus === "Scheduled" || "RequestReschedule"
-                  ? () => toggleDropdown(index)
-                  : undefined
-              }
-              className={`${
-                item.scheduleStatus === "Scheduled" || "RequestReschedule"
-                  ? "cursor-pointer"
-                  : "cursor-default"
-              }`}
-            >
-              <MoreVertical
-                className={`w-4 h-4 ${
-                  item.scheduleStatus === "Scheduled" || "RequestReschedule"
-                    ? "text-slate-600 dark:text-[#FDFDFD]"
-                    : "text-gray-400 dark:text-gray-600 opacity-50"
-                }`}
-              />
-            </button>
+             {(
+               <td
+                 className="py-1 text-center relative w-[90px] min-w-[90px] max-w-[90px]"
+                 ref={dropdownRef}
+               >
+                 <button
+                   onClick={() => toggleDropdown(index)}
+                   className={`$${
+                     (activeTab === "scheduled" && ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
+                     activeTab === "completed"
+                       ? "cursor-pointer"
+                       : "cursor-default"
+                   }`}
+                   disabled={
+                     !((activeTab === "scheduled" && ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
+                       activeTab === "completed")
+                   }
+                 >
+                   <MoreVertical
+                     className={`w-4 h-4 ${
+                       (activeTab === "scheduled" && ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
+                       activeTab === "completed"
+                         ? "text-slate-600 dark:text-[#FDFDFD]"
+                         : "text-gray-400 dark:text-gray-600 opacity-50"
+                     }`}
+                   />
+                 </button>
 
-            {/* Only show dropdown if status is Scheduled and activeDropdown is set */}
-            {["Scheduled", "RequestReschedule"].includes(item.scheduleStatus) &&
-              activeDropdown === index && (
-                <div
-                  className="py-1 bg-white rounded-md shadow-lg daerk absolute right-0 top-6 z-20 w-32 min-w-[120px] max-w-[160px]  dark:bg-[#252525]"
-                  style={{ minWidth: "120px" }}
-                >
-                  <button
-                    className={`w-full text-left px-4 py-2 text-[12px] ${
-                      teacherRescheduleWrite
-                        ? "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
-                        : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444] cursor-not-allowed"
-                    }`}
-                    onClick={
-                      teacherRescheduleWrite
-                        ? () => handleReschedule(item._id)
-                        : undefined
-                    }
-                    disabled={!teacherRescheduleWrite}
-                  >
-                    Reschedule
-                  </button>
-                  <button
-                    onClick={() => setActiveDropdown(null)}
-                    className="w-full text-left px-4 py-2 text-red-600"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              )}
-          </td>
-        )}
+                 {activeDropdown === index && (
+                   <div
+                     className="py-1 bg-white rounded-md shadow-lg daerk absolute right-0 top-6 z-20 w-32 min-w-[120px] max-w-[160px]  dark:bg-[#252525]"
+                     style={{ minWidth: "120px" }}
+                   >
+                     {activeTab === "completed" ? (
+                       <button
+                         className="w-full text-left px-4 py-2 text-[12px] text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
+                         onClick={() => {
+                           handleViewCompletedDetails(item);
+                           setActiveDropdown(null);
+                         }}
+                       >
+                         View Details
+                       </button>
+                     ) : (
+                       ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus) && (
+                         <button
+                           className={`w-full text-left px-4 py-2 text-[12px] ${
+                             teacherRescheduleWrite
+                               ? "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
+                               : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444] cursor-not-allowed"
+                           }`}
+                           onClick={
+                             teacherRescheduleWrite ? () => handleReschedule(item._id) : undefined
+                           }
+                           disabled={!teacherRescheduleWrite}
+                         >
+                           Reschedule
+                         </button>
+                       )
+                     )}
+                     <button
+                       onClick={() => setActiveDropdown(null)}
+                       className="w-full text-left px-4 py-2 text-red-600"
+                     >
+                       Cancel
+                     </button>
+                   </div>
+                 )}
+               </td>
+             )}
       </tr>
     ))}
   </tbody>
@@ -1178,8 +1197,174 @@ const handleViewDetails = (_id: string) => {
           onApplyFilters={handleApplyFilters}
           users={users}
         />
+
+        {selectedCompletedClass && (
+          <CompletedClassDetailsModal
+            isOpen={isCompletedDetailsModalOpen}
+            onClose={() => setIsCompletedDetailsModalOpen(false)}
+            classData={selectedCompletedClass}
+          />
+        )}
       </div>
     </BaseLayout1>
+  );
+};
+
+const CompletedClassDetailsModal = ({
+  isOpen,
+  onClose,
+  classData,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  classData: ClassSchedule | null;
+}) => {
+  if (!classData) return null;
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={onClose}
+      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-4 rounded-lg w-[600px] max-h-[80vh]"
+      overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+    >
+      <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-lg w-[580px] relative max-h-[80vh] overflow-y-auto border-2 border-gray-200 dark:border-[#404040] scrollbar-none shadow-xl dark:shadow-2xl">
+        <div className="flex justify-between items-center mb-6 sticky top-0 bg-white dark:bg-[#1a1a1a] ">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Class Details</h2>
+        </div>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Student Name</label>
+              <input
+                type="text"
+                value={`${classData.student.studentFirstName} ${classData.student.studentLastName}`}
+                readOnly
+                className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Course</label>
+              <input
+                type="text"
+                value={classData.course?.courseName || "N/A"}
+                readOnly
+                className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Start Date</label>
+              <input
+                type="text"
+                value={new Date(classData.startDate).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                readOnly
+                className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">End Date</label>
+              <input
+                type="text"
+                value={new Date(classData.endDate).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                readOnly
+                className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Start Time</label>
+              <input
+                type="text"
+                value={classData.startTime?.[0]?.replace(/ AM| PM/, "") || "--:--"}
+                readOnly
+                className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">End Time</label>
+              <input
+                type="text"
+                value={classData.endTime?.[0]?.replace(/ AM| PM/, "") || "--:--"}
+                readOnly
+                className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Teacher Name</label>
+              <input
+                type="text"
+                value={classData.teacher.teacherName}
+                readOnly
+                className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Class Type</label>
+              <input
+                type="text"
+                value={classData.sessionClassType}
+                readOnly
+                className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Package</label>
+              <input
+                type="text"
+                value={classData.package || "Not specified"}
+                readOnly
+                className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Status</label>
+              <input
+                type="text"
+                value={classData.scheduleStatus}
+                readOnly
+                className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Class Days</label>
+            <input
+              type="text"
+              value={classData.classDay?.join(", ") || "Not specified"}
+              readOnly
+              className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end space-x-3 pt-4 sticky bottom-0 bg-white dark:bg-[#1a1a1a] pb-3 border-t border-gray-200 dark:border-[#404040]">
+          <button
+            onClick={onClose}
+            className="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-[#404040] dark:hover:bg-[#505050] dark:text-white rounded text-xs font-medium transition-colors duration-200"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onClose}
+            className="px-4 py-1.5 bg-[#576CBC] hover:bg-[#4A5CA8] dark:bg-[#4A5CA8] dark:hover:bg-[#3d4c8f] text-white rounded text-xs font-medium transition-colors duration-200"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </Modal>
   );
 };
 
