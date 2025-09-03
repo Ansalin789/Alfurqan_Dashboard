@@ -23,6 +23,7 @@ export interface Student {
   updatedDate: string | number | Date;
   __v: number;
   classScheduleCount: number;
+  level: string;
   student: {
     studentId: string;
     studentEmail: string;
@@ -33,13 +34,99 @@ export interface Student {
     country: string;
     gender: string;
   };
-  level: string;
+  evaluation?: Evaluation[];
 }
 
-interface Users {
+export interface Evaluation {
+  _id: string;
+  academicCoachId: string;
+  student: EvaluationStudent;
+  classType: string;
+  teacher: {
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+  };
+  joiningDate: string | number | Date;
+  classDay: string[];
+  startTime: string[];
+  endTime: string[];
+  isLanguageLevel: boolean;
+  languageLevel: string;
+  isReadingLevel: boolean;
+  readingLevel: string;
+  isGrammarLevel: boolean;
+  grammarLevel: string;
+  hours: number;
+  subscription: {
+    subscriptionName: string;
+  };
+  planTotalPrice: number;
+  classStartDate: string | number | Date;
+  classEndDate: string | number | Date;
+  classStartTime: string;
+  classEndTime: string;
+  accomplishmentTime: string;
+  studentRate: number;
+  gardianName: string;
+  gardianEmail: string;
+  gardianPhone: string;
+  gardianCity: string;
+  gardianCountry: string;
+  gardianTimeZone: string;
+  gardianLanguage: string;
+  assignedTeacher: string;
+  studentStatus: string;
+  classStatus: string;
+  comments: string;
+  trialClassStatus: string;
+  invoiceStatus: string;
+  paymentLink: string;
+  paymentStatus: string;
+  teacherStatus: string;
+  amount: string;
+  currency: string;
+  status: string;
+  createdDate: string | number | Date;
+  createdBy: string;
+  updatedDate: string | number | Date;
+  updatedBy: string;
+  expectedFinishingDate: number;
+  assignedTeacherId: string;
+  assignedTeacherEmail: string;
+  __v: number;
+}
+
+export interface EvaluationStudent {
+  studentId: string;
+  studentRegisterId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+  studentGender: string;
+  studentPhone: string | number;
+  studentCity: string;
+  studentCountry: string;
+  studentCountryCode: string;
+  learningInterest: string;
+  numberOfStudents: number;
+  preferredTeacher: string;
+  preferredFromTime: string;
+  preferredToTime: string;
+  timeZone: string;
+  referralSource: string;
+  preferredDate: string | number | Date;
+  evaluationStatus: string;
+  status: string;
+  createdDate: string | number | Date;
+  createdBy: string;
+}
+
+export interface Users {
   totalCount: number;
   students: Student[];
 }
+
 const ManageStudents = () => {
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
@@ -575,8 +662,8 @@ const ManageStudents = () => {
                         <td className="px-3 py-2 text-[#3D8FDE] font-medium">
                           {item.username}
                         </td>
-                        <td className="px-3 py-2">{item.teacherName}</td>
-                        <td className="px-3 py-2">{item.sessionClassType}</td>
+                        <td className="px-3 py-2">{item.evaluation?.[0]?.teacher?.teacherName || '-'}</td>
+                        <td className="px-3 py-2">{item.evaluation?.[0]?.classType || '-'}</td>
                         <td className="px-3 py-2">
                           {item.student.studentPhone}
                         </td>
