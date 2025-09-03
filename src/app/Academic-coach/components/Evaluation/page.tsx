@@ -281,6 +281,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
     const transformedData = response.data.students.map(
       (item: {
         _id: string;
+        studentId: string;
         firstName: string;
         lastName: string;
         email: string;
@@ -301,7 +302,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
           allFields: Object.keys(item),
         });
         const transformed = {
-          studentId: item._id,
+          studentId: item.studentId,
           fname: item.firstName,
           lname: item.lastName,
           email: item.email,

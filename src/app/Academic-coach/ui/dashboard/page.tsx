@@ -32,6 +32,8 @@ interface User {
   city?: string;
   students?: number;
   comment?: string;
+  // Used for sorting by most recent
+  sortTimestamp: number;
 }
 
 interface GetAllUsersResponse {
@@ -99,6 +101,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
         date: new Date(item.startDate).toLocaleDateString(),
         time: item.preferredFromTime,
         evaluationStatus: item.evaluationStatus,
+        sortTimestamp: new Date(item.startDate).getTime(),
       })
     );
 
@@ -286,6 +289,9 @@ export default function Dashboard() {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+    const recentItems = [...filteredUsers]
+      .sort((a, b) => b.sortTimestamp - a.sortTimestamp)
+      .slice(0, 5);
   return (
     <BaseLayout1>
       <AcademicHeader currentSection="Dashboard" />
@@ -330,6 +336,7 @@ export default function Dashboard() {
                         { label: "Preferred Teacher" },
                         { label: "Date" },
                         { label: "Time" },
+                        { label: "Status" },
                       ].map((header) => (
                         <th
                           key={header.label}
@@ -341,8 +348,8 @@ export default function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                  {currentItems.length > 0 ? (
-                        currentItems.slice(-5).reverse().map((item, index) => (
+                  {recentItems.length > 0 ? (
+                        recentItems.map((item, index) => (
                       <tr
                         key={item.studentId}
                         className="text-[11px] px-2 py-4 border-none outline-none odd:bg-[#f8f8f8] even:bg-[#ffffff] dark:odd:bg-[#2c2c2c] dark:even:bg-[#303030]"
@@ -355,8 +362,23 @@ export default function Dashboard() {
                         <td className="py-4 px-2 text-left">
                           {item.preferredTeacher}
                         </td>
-                        <td className="py-4 px-2 text-left">{item.date}</td>
+                        <td className="py-4 px-2 text-left">{new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</td>
                         <td className="py-4 px-2 text-left">{item.time}</td>
+                        <td className="py-4 px-2 text-left"><span
+                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                                  item.evaluationStatus === "COMPLETED"
+                                    ? "bg-[#ECFDF3] text-[#377E36] px-2 dark:bg-[#377E3633]"
+                                    : item.evaluationStatus === "INPROGRESS"
+                                    ? " bg-[#FDECEC] text-[#D34645]  px-3 dark:bg-[#D3464533]"
+                                    : "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
+                                }`}
+                              >
+                                {item.evaluationStatus === "COMPLETED"
+                                  ? "COMPLETED"
+                                  : item.evaluationStatus === "INPROGRESS"
+                                  ? "IN PROGRESS"
+                                  : "PENDING"}
+                              </span></td>
                       </tr>
                     ))
                   ) : (

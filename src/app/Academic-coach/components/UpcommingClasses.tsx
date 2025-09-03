@@ -141,19 +141,19 @@ const UpcomingClasses: React.FC = () => {
             return (
               <div key={classItem.id} className="relative flex items-start">
                 {/* Time and dot */}
-                <div className="absolute -left-[46px] mt-6 flex flex-row items-center gap-2 justify-between">
+                <div className="absolute -left-[46px] mt-3 flex flex-row items-center gap-2 justify-between">
                   <span className="text-xs font-medium text-gray-700 dark:text-[#fff]">{classItem.time.split(' ')[0]}</span>
                   <div
-                    className={`w-[10px] h-[10px] rounded-full ${currentColor} ml-[0px]`}
+                    className={`w-[10px] h-[10px] rounded-full ${currentColor} ml-[6px]`}
                   />
                 </div>
 
                 {/* Card */}
                 <div className="bg-[#f4f4f4] dark:bg-[#404040] rounded-md p-2 w-full shadow-sm ml-4">
-                  <div className="flex justify-between text-[10px] text-gray-500 dark:text-[#fff] dark:opacity-85">
+                  {/* <div className="flex justify-between text-[10px] text-gray-500 dark:text-[#fff] dark:opacity-85">
                     <span>{classItem.date}</span>
                     <span>{classItem.time}</span>
-                  </div>
+                  </div> */}
                   <h4 className={`text-[14px] font-medium ${currentTextColor}`}>
                     {classItem.title}
                   </h4>

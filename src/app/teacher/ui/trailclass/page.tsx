@@ -90,6 +90,10 @@ interface FormData {
     createdDate: string; // ISO date string
     createdBy: string;
   };
+  teacher:{
+     teacherId:string;
+     teacherName:string;
+     teacherEmail:string };
   isLanguageLevel: boolean;
   languageLevel: string;
   isReadingLevel: boolean;
@@ -450,6 +454,11 @@ function LiveClass() {
         status: formData?.student.status,
         createdDate: formData?.student.createdDate,
         createdBy: formData?.student.createdBy,
+      },
+      teacher :{
+        teacherId:formData?.teacher.teacherId,
+        teacherName:formData?.teacher.teacherName,
+        teacherEmail:formData?.teacher.teacherEmail,
       },
       isLanguageLevel: formData?.isLanguageLevel,
       languageLevel: formData?.languageLevel,
