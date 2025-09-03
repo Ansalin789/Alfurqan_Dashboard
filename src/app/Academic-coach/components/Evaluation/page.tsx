@@ -67,6 +67,7 @@ interface TransformedUser {
 }
 // Define the return type of the getAllUsers function
 interface User {
+  id: string;
   studentId: string;
   fname: string;
   lname: string;
@@ -302,6 +303,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
           allFields: Object.keys(item),
         });
         const transformed = {
+          id: item._id,
           studentId: item.studentId,
           fname: item.firstName,
           lname: item.lastName,
@@ -611,6 +613,7 @@ const TrailManagement = () => {
       if ("studentId" in data.data) {
         const user = data.data as User;
         const formatted: User = {
+          id:user.id,
           studentId: user.studentId,
           fname: user.fname,
           lname: user.lname,

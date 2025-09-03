@@ -19,6 +19,7 @@ interface PopupProps {
 }
 
 interface User {
+  id:string;
   studentId: string;
   fname: string;
   lname: string;
@@ -67,6 +68,7 @@ const Popup: React.FC<PopupProps> = ({
 }) => {
   console.log('Popup user prop:', user); // Debug user prop
   const [formData, setFormData] = useState<User>({
+    id:"",
     studentId: "",
     fname: "",
     lname: "",
@@ -203,7 +205,7 @@ const Popup: React.FC<PopupProps> = ({
 
   const handleStart = () => {
     console.log("Navigating with Student ID:", formData.studentId);
-    router.push(`/evaluation?studentId=${formData.studentId}`);
+    router.push(`/evaluation?studentId=${formData.id}`);
   };
 
   return (
