@@ -163,11 +163,17 @@ export default function AddGroupAssignClass({
 
     const socket = getSocket(academicId);
     console.log("📤 Sending availableTeachersListRequest");
+    const firstCourse = students[0]?.student.course;
 
+    const position =
+    firstCourse === "Islamic Studies"
+    ? "Islamic Teacher"
+    : `${firstCourse} Teacher`;  
     socket.emit("availableTeachersListRequest", {
       requestId: academicId,
       startDate,
       WeeklySlots: buildWeeklySlots(),
+      position : position
     });
 
     const handleResponse = (data: TeacherList[]) => {
