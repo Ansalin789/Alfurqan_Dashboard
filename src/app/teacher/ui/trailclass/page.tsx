@@ -69,6 +69,7 @@ interface FormData {
   _id: string;
   student: {
     studentId: string;
+    studentRegisterId:string;
     studentFirstName: string;
     studentLastName: string;
     studentEmail: string;
@@ -434,6 +435,7 @@ function LiveClass() {
       _id: formData?._id ?? "",
       student: {
         studentId: formData?.student.studentId,
+        studentRegisterId:formData?.student.studentRegisterId,
         studentFirstName: formData?.student.studentFirstName,
         studentLastName: formData?.student.studentLastName,
         studentEmail: formData?.student.studentEmail,
