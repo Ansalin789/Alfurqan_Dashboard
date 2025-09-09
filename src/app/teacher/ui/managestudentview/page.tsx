@@ -309,7 +309,7 @@ export interface AssignmentData {
   assignmentType: AssignmentType;
   questionName: string;
   assignedDate: string; // ISO Date string
-  dueDate: string;      // ISO Date string
+  dueDate: string; // ISO Date string
   assignmentStatus: string; // e.g., "Completed"
 }
 
@@ -364,7 +364,6 @@ const ManageStudentView = () => {
   const [filters, setFilters] = useState(initialFilters);
   const [searchText, setSearchText] = useState("");
   const [studentListWrite, setStudentListWrite] = useState(false); // For Assign Group Class
-  
 
   const [regularStudents, setRegularStudents] = useState<
     StudentWithAssignments[]
@@ -373,7 +372,7 @@ const ManageStudentView = () => {
     []
   );
   const [selectedStudentAssignments, setSelectedStudentAssignments] = useState<
-     AssignmentData[]
+    AssignmentData[]
   >([]);
 
   const [regularCount, setRegularCount] = useState<number>(0);
@@ -392,31 +391,27 @@ const ManageStudentView = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-         const studentId = searchParams.get("studentId");
-          const assignmentId = searchParams.get("assignmentId");
+        const studentId = searchParams.get("studentId");
+        const assignmentId = searchParams.get("assignmentId");
         const token = localStorage.getItem("TeacherAuthToken");
 
-        if (!token ||  !studentId) {
+        if (!token || !studentId) {
           console.warn("Missing teacherId, token, or studentId");
           return;
         }
 
-      const res = await axios.get(
-  `https://api.blackstoneinfomaticstech.com/assignments/questionlist`,
-  {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    params: {
-      studentId,
-      assignmentId,
-    },
-  }
-);
-
-
-
-        
+        const res = await axios.get(
+          `https://api.blackstoneinfomaticstech.com/assignments/questionlist`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            params: {
+              studentId,
+              assignmentId,
+            },
+          }
+        );
 
         console.log("Filtered Assignments:", res.data.assignmentData);
 
@@ -438,9 +433,11 @@ const ManageStudentView = () => {
   const router = useRouter(); // Add this
 
   const handleViewProfile = (studentId: string) => {
-     const studentId1 = searchParams.get("studentId");
-     const assignmentId = searchParams.get("assignmentId");
-    router.push(`/teacher/ui/question?id=${studentId}&studentId=${studentId1}&assignmentId=${assignmentId}`);
+    const studentId1 = searchParams.get("studentId");
+    const assignmentId = searchParams.get("assignmentId");
+    router.push(
+      `/teacher/ui/question?id=${studentId}&studentId=${studentId1}&assignmentId=${assignmentId}`
+    );
   };
 
   const handleClick = () => {
@@ -465,49 +462,49 @@ const ManageStudentView = () => {
     }
   };
 
-
-
   const [loading, setLoading] = useState(true);
-// Add this state at the top of your component
-const [assignmentStats, setAssignmentStats] = useState({
-  assigned: 0,
-  completed: 0,
-});
+  // Add this state at the top of your component
+  const [assignmentStats, setAssignmentStats] = useState({
+    assigned: 0,
+    completed: 0,
+  });
 
-// Add this useEffect to calculate stats when groupStudents changes
-useEffect(() => {
-  if (groupStudents.length > 0) {
-    let assignedCount = 0;
-    let completedCount = 0;
+  // Add this useEffect to calculate stats when groupStudents changes
+  useEffect(() => {
+    if (groupStudents.length > 0) {
+      let assignedCount = 0;
+      let completedCount = 0;
 
-    groupStudents.forEach(student => {
-      student.assignment.forEach(assignment => {
-        assignedCount++;
-        if (assignment.assignmentStatus === 'Completed' || assignment.status === 'Completed') {
-          completedCount++;
-        }
+      groupStudents.forEach((student) => {
+        student.assignment.forEach((assignment) => {
+          assignedCount++;
+          if (
+            assignment.assignmentStatus === "Completed" ||
+            assignment.status === "Completed"
+          ) {
+            completedCount++;
+          }
+        });
       });
-    });
 
-    setAssignmentStats({
-      assigned: assignedCount,
-      completed: completedCount,
-    });
-  }
-}, [groupStudents]);
-
-
- 
+      setAssignmentStats({
+        assigned: assignedCount,
+        completed: completedCount,
+      });
+    }
+  }, [groupStudents]);
 
   useEffect(() => {
     const fetchAssignmentData = async () => {
       try {
-       const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
-      if (!token) {
-    console.error("❌ TeacherAuthToken not found");
-    return;
-  }
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("TeacherAuthToken")
+            : null;
+        if (!token) {
+          console.error("❌ TeacherAuthToken not found");
+          return;
+        }
         const teacherId = localStorage.getItem("TeacherPortalId");
 
         if (!token || !teacherId) {
@@ -516,10 +513,10 @@ useEffect(() => {
         }
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/assignments/cardcount?studentId=${studentId}`
-          , {
+          `https://api.blackstoneinfomaticstech.com/assignments/cardcount?studentId=${studentId}`,
+          {
             headers: {
-              "Authorization": `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -564,13 +561,11 @@ useEffect(() => {
 
   const { totalAssigned, totalCompleted, totalPending } = assignmentData;
 
-  const completionPercentage = totalAssigned > 0
-    ? Math.round((totalCompleted / totalAssigned) * 100)
-    : 0;
+  const completionPercentage =
+    totalAssigned > 0 ? Math.round((totalCompleted / totalAssigned) * 100) : 0;
 
-  const pendingPercentage = totalAssigned > 0
-    ? Math.round((totalPending / totalAssigned) * 100)
-    : 0;
+  const pendingPercentage =
+    totalAssigned > 0 ? Math.round((totalPending / totalAssigned) * 100) : 0;
 
   console.log("Total Assigned:", totalAssigned);
   console.log("Total Completed:", totalCompleted);
@@ -578,28 +573,93 @@ useEffect(() => {
   console.log("Completion Percentage:", completionPercentage);
   console.log("Pending Percentage:", pendingPercentage);
 
-  const cards = [
-    {
-      title: "Total Assignment Assigned",
-      count: totalAssigned,
-      percentage: 100,
-      ringColor: "#88A2CF",
-      bgColor: "#CDD5E2",
-      pieData: [{ value: 100 }],
-    },
-    {
-      title: "Total Assignment Completed",
-      count: totalCompleted,
-      percentage: completionPercentage,
-      ringColor: "#88CF9B",
-      bgColor: "#CDD5E2",
-      pieData: [
-        { value: completionPercentage },
-        { value: 100 - completionPercentage },
-      ],
-    },
-   
-  ];
+const cards = [
+  {
+    title: "Total Assignment Assigned",
+    count: assignmentData.totalAssigned,
+    percentage:
+      assignmentData.totalAssigned > 0
+        ? Math.round((assignmentData.totalAssigned / assignmentData.totalAssigned) * 100)
+        : 0,
+    ringColor: "#7DB5CB",
+    bgColor: "#CDD5E2",
+    pieData:
+      assignmentData.totalAssigned > 0
+        ? [
+            {
+              value: Math.round(
+                (assignmentData.totalAssigned / assignmentData.totalAssigned) * 100
+              ),
+            },
+            {
+              value:
+                100 -
+                Math.round(
+                  (assignmentData.totalAssigned / assignmentData.totalAssigned) * 100
+                ),
+            },
+          ]
+        : [{ value: 0 }, { value: 100 }],
+  },
+  {
+    title: "Total Assignment Completed",
+    count: assignmentData.totalCompleted,
+    percentage:
+      assignmentData.totalAssigned > 0
+        ? Math.round(
+            (assignmentData.totalCompleted / assignmentData.totalAssigned) * 100
+          )
+        : 0,
+    ringColor: "#88CF9B",
+    bgColor: "#CDD5E2",
+    pieData:
+      assignmentData.totalAssigned > 0
+        ? [
+            {
+              value: Math.round(
+                (assignmentData.totalCompleted / assignmentData.totalAssigned) * 100
+              ),
+            },
+            {
+              value:
+                100 -
+                Math.round(
+                  (assignmentData.totalCompleted / assignmentData.totalAssigned) * 100
+                ),
+            },
+          ]
+        : [{ value: 0 }, { value: 100 }],
+  },
+  // {
+  //   title: "Total Assignment Pending",
+  //   count: assignmentData.totalPending,
+  //   percentage:
+  //     assignmentData.totalAssigned > 0
+  //       ? Math.round((assignmentData.totalPending / assignmentData.totalAssigned) * 100)
+  //       : 0,
+  //   ringColor: "#FC6B57",
+  //   bgColor: "#CDD5E2",
+  //   pieData:
+  //     assignmentData.totalAssigned > 0
+  //       ? [
+  //           {
+  //             value: Math.round(
+  //               (assignmentData.totalPending / assignmentData.totalAssigned) * 100
+  //             ),
+  //           },
+  //           {
+  //             value:
+  //               100 -
+  //               Math.round(
+  //                 (assignmentData.totalPending / assignmentData.totalAssigned) * 100
+  //               ),
+  //           },
+  //         ]
+  //       : [{ value: 0 }, { value: 100 }],
+  // },
+];
+
+
 
   //Rolebyaccess
   useEffect(() => {
@@ -659,8 +719,12 @@ useEffect(() => {
     fromDate: "",
     toDate: "",
   });
-  const [filteredAssignments, setFilteredAssignments] = useState<AssignmentData[]>([]);
-  const [searchedAssignments, setSearchedAssignments] = useState<AssignmentData[]>([]);
+  const [filteredAssignments, setFilteredAssignments] = useState<
+    AssignmentData[]
+  >([]);
+  const [searchedAssignments, setSearchedAssignments] = useState<
+    AssignmentData[]
+  >([]);
 
   // --- FILTER LOGIC ---
   const applyFilters = () => {
@@ -668,22 +732,29 @@ useEffect(() => {
 
     if (filterState.assignmentName) {
       filtered = filtered.filter((a) =>
-        a.assignmentName?.toLowerCase().includes(filterState.assignmentName.toLowerCase())
+        a.assignmentName
+          ?.toLowerCase()
+          .includes(filterState.assignmentName.toLowerCase())
       );
     }
     if (filterState.status) {
-      filtered = filtered.filter((a) =>
-        a.assignmentStatus?.toLowerCase() === filterState.status.toLowerCase()
+      filtered = filtered.filter(
+        (a) =>
+          a.assignmentStatus?.toLowerCase() === filterState.status.toLowerCase()
       );
     }
     if (filterState.course) {
       filtered = filtered.filter((a) =>
-        a.assignmentName?.toLowerCase().includes(filterState.course.toLowerCase())
+        a.assignmentName
+          ?.toLowerCase()
+          .includes(filterState.course.toLowerCase())
       );
     }
     if (filterState.level) {
       filtered = filtered.filter((a) =>
-        a.assignmentName?.toLowerCase().includes(filterState.level.toLowerCase())
+        a.assignmentName
+          ?.toLowerCase()
+          .includes(filterState.level.toLowerCase())
       );
     }
     if (filterState.fromDate && filterState.toDate) {
@@ -720,7 +791,9 @@ useEffect(() => {
     }
     const lowerText = text.toLowerCase();
     const baseData =
-      filteredAssignments.length > 0 ? filteredAssignments : selectedStudentAssignments;
+      filteredAssignments.length > 0
+        ? filteredAssignments
+        : selectedStudentAssignments;
     const searched = baseData.filter((a) =>
       [
         a.assignmentId,
@@ -748,18 +821,17 @@ useEffect(() => {
   const isSearchActive = !!searchText;
 
   // --- DATA TO RENDER ---
-  const tableData =
-    isSearchActive
-      ? searchedAssignments
-      : isFilterActive
-      ? filteredAssignments
-      : selectedStudentAssignments;
-const totalPages = Math.ceil(tableData.length / itemsPerPage);
+  const tableData = isSearchActive
+    ? searchedAssignments
+    : isFilterActive
+    ? filteredAssignments
+    : selectedStudentAssignments;
+  const totalPages = Math.ceil(tableData.length / itemsPerPage);
 
-// Get current items for display
-const indexOfLastItem = currentPage * itemsPerPage;
-const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-const currentItems = tableData.slice(indexOfFirstItem, indexOfLastItem);
+  // Get current items for display
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = tableData.slice(indexOfFirstItem, indexOfLastItem);
   return (
     <BaseLayout>
       <div>
@@ -907,7 +979,8 @@ const currentItems = tableData.slice(indexOfFirstItem, indexOfLastItem);
 
             <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
               <span className="text-left -ml-60 ">
-                Showing {tableData.length} of {selectedStudentAssignments.length}
+                Showing {tableData.length} of{" "}
+                {selectedStudentAssignments.length}
               </span>
             </div>
           </div>
@@ -928,7 +1001,7 @@ const currentItems = tableData.slice(indexOfFirstItem, indexOfLastItem);
                   ].map((header, idx) => (
                     <th
                       key={idx}
-                      className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
+                      className="px-2 py-2 border border-[#4C6993] text-left text-wrap break-words"
                     >
                       {header}
                     </th>
@@ -936,14 +1009,13 @@ const currentItems = tableData.slice(indexOfFirstItem, indexOfLastItem);
                 </tr>
               </thead>
             </table>
-            <div
-              className="overflow-y-auto"
-              style={{ maxHeight: "300px" }}
-            >
+            <div className="overflow-y-auto" style={{ maxHeight: "300px" }}>
               <table className="table-fixed w-full">
                 <tbody>
-                    {currentItems.map((assignmentItem, index) => {
-                    const statusValue = assignmentItem.assignmentStatus?.toLowerCase().trim();
+                  {currentItems.map((assignmentItem, index) => {
+                    const statusValue = assignmentItem.assignmentStatus
+                      ?.toLowerCase()
+                      .trim();
                     return (
                       <tr
                         key={assignmentItem._id}
@@ -968,49 +1040,57 @@ const currentItems = tableData.slice(indexOfFirstItem, indexOfLastItem);
                         <td className="px-3 py-3 break-words text-[12px]">
                           {formatDate(assignmentItem.dueDate)}
                         </td>
-                       <td className="px-3 py-2 break-words text-[12px]">
-  <span
-    className={`py-1 px-3 rounded-md text-[9px] min-w-[60px] inline-block ${
-      getStatusStyle(assignmentItem.assignmentStatus)
-    }`}
-  >
-    {assignmentItem.assignmentStatus || "Not Assigned"}
-  </span>
-</td>
-                       <td className="px-4 py-2 text-left relative">
-  <button
-    className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
-    onClick={() =>
-      setOpenDropdownId(openDropdownId === assignmentItem._id ? null : assignmentItem._id)
-    }
-  >
-    <BsThreeDotsVertical />
-  </button>
+                        <td className="px-3 py-2 break-words text-[12px]">
+                          <span
+                            className={`py-1 px-3 rounded-md text-[9px] min-w-[60px] inline-block ${getStatusStyle(
+                              assignmentItem.assignmentStatus
+                            )}`}
+                          >
+                            {assignmentItem.assignmentStatus || "Not Assigned"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 text-left relative">
+                          <button
+                            className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
+                            onClick={() =>
+                              setOpenDropdownId(
+                                openDropdownId === assignmentItem._id
+                                  ? null
+                                  : assignmentItem._id
+                              )
+                            }
+                          >
+                            <BsThreeDotsVertical className="w-4 h-5" />
+                          </button>
 
-  {openDropdownId === assignmentItem._id && (
-    <div className="absolute right-0 w-40 space-y-2 bg-white rounded-md z-50 dark:bg-[#343434] text-left shadow-lg">
-      <button
-        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff] !text-left"
-        onClick={() => handleViewProfile(assignmentItem._id)}
-      >
-        View Question Form
-      </button>
-      <button
-        className="block text-left w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-        onClick={() => setOpenDropdownId(null)}
-      >
-        Cancel
-      </button>
-    </div>
-  )}
-</td>
-
+                          {openDropdownId === assignmentItem._id && (
+                            <div className="fixed z-50 w-32 space-y-2 bg-white rounded-md dark:bg-[#343434] text-left shadow-lg">
+                              <button
+                                className="block w-full px-3 py-1 text-[10px] dark:text-[#ffff] !text-left"
+                                onClick={() =>
+                                  handleViewProfile(assignmentItem._id)
+                                }
+                              >
+                                View Question Form
+                              </button>
+                              <button
+                                className="block text-center w-full px-3 py-1 text-[10px] dark:text-[#ffff]"
+                                onClick={() => setOpenDropdownId(null)}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
+                        </td>
                       </tr>
                     );
                   })}
                   {tableData.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="text-center py-4 text-gray-400">
+                      <td
+                        colSpan={7}
+                        className="text-center py-4 text-gray-400"
+                      >
                         No assignments found for the selected filter/search.
                       </td>
                     </tr>
@@ -1036,77 +1116,92 @@ const currentItems = tableData.slice(indexOfFirstItem, indexOfLastItem);
         // users={activeTab === "regular" ? scheduledClasses : completedClasses}
       /> */}
       <Modal
-  isOpen={isFilterModalOpen}
-  onRequestClose={() => setIsFilterModalOpen(false)}
-  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white  dark:bg-[#343434] w-[650px] z-50"
-  overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-40"
->
-  <div>
-    <h2 className="text-[16px] font-semibold mb-6 text-[#2D2D2D] dark:text-white">
-      Filter by
-    </h2>
-    <div className="grid grid-cols-2 gap-4 mb-6">
-      <div>
-        <label className="block text-sm font-medium mb-1">Assignment Name</label>
-        <input
-          type="text"
-          className="w-full px-3 py-2 border rounded text-xs"
-          value={filterState.assignmentName}
-          onChange={e => setFilterState({ ...filterState, assignmentName: e.target.value })}
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium mb-1">Status</label>
-        <select
-          className="w-full px-3 py-2 border rounded text-xs"
-          value={filterState.status}
-          onChange={e => setFilterState({ ...filterState, status: e.target.value })}
-        >
-          <option value="">All</option>
-          <option value="Completed">Completed</option>
-          <option value="Pending">Pending</option>
-          <option value="Not Assigned">Not Assigned</option>
-          {/* Add more statuses as needed */}
-        </select>
-      </div>
-      <div>
-        <label className="block text-sm font-medium mb-1">From Date</label>
-        <input
-          type="date"
-          className="w-full px-3 py-2 border rounded text-xs"
-          value={filterState.fromDate}
-          onChange={e => setFilterState({ ...filterState, fromDate: e.target.value })}
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium mb-1">To Date</label>
-        <input
-          type="date"
-          className="w-full px-3 py-2 border rounded text-xs"
-          value={filterState.toDate}
-          onChange={e => setFilterState({ ...filterState, toDate: e.target.value })}
-        />
-      </div>
-    </div>
-    <div className="flex justify-end gap-3">
-      <button
-        onClick={resetFilters}
-        className="px-5 py-2 border border-[#576CBC] text-[#576CBC] bg-white rounded-lg text-sm font-medium hover:bg-[#f6f8ff]"
+        isOpen={isFilterModalOpen}
+        onRequestClose={() => setIsFilterModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white  dark:bg-[#343434] w-[650px] z-50"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-40"
       >
-        Reset
-      </button>
-      <button
-        onClick={() => {
-          applyFilters();
-          setIsFilterModalOpen(false);
-        }}
-        className="px-5 py-2 bg-[#576CBC] text-white rounded-lg text-sm font-medium hover:bg-[#475ab1]"
-      >
-        Show Results
-      </button>
-    </div>
-  </div>
-</Modal>
+        <div>
+          <h2 className="text-[16px] font-semibold mb-6 text-[#2D2D2D] dark:text-white">
+            Filter by
+          </h2>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Assignment Name
+              </label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border rounded text-xs"
+                value={filterState.assignmentName}
+                onChange={(e) =>
+                  setFilterState({
+                    ...filterState,
+                    assignmentName: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Status</label>
+              <select
+                className="w-full px-3 py-2 border rounded text-xs"
+                value={filterState.status}
+                onChange={(e) =>
+                  setFilterState({ ...filterState, status: e.target.value })
+                }
+              >
+                <option value="">All</option>
+                <option value="Completed">Completed</option>
+                <option value="Pending">Pending</option>
+                <option value="Not Assigned">Not Assigned</option>
+                {/* Add more statuses as needed */}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                From Date
+              </label>
+              <input
+                type="date"
+                className="w-full px-3 py-2 border rounded text-xs"
+                value={filterState.fromDate}
+                onChange={(e) =>
+                  setFilterState({ ...filterState, fromDate: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">To Date</label>
+              <input
+                type="date"
+                className="w-full px-3 py-2 border rounded text-xs"
+                value={filterState.toDate}
+                onChange={(e) =>
+                  setFilterState({ ...filterState, toDate: e.target.value })
+                }
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={resetFilters}
+              className="px-5 py-2 border border-[#576CBC] text-[#576CBC] bg-white rounded-lg text-sm font-medium hover:bg-[#f6f8ff]"
+            >
+              Reset
+            </button>
+            <button
+              onClick={() => {
+                applyFilters();
+                setIsFilterModalOpen(false);
+              }}
+              className="px-5 py-2 bg-[#576CBC] text-white rounded-lg text-sm font-medium hover:bg-[#475ab1]"
+            >
+              Show Results
+            </button>
+          </div>
+        </div>
+      </Modal>
     </BaseLayout>
   );
 };
