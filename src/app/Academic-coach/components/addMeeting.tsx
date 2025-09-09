@@ -49,6 +49,19 @@ export default function AddMeeting({ onClose }: Props) {
   const tabs = ["All", "Quran", "Arabic", "Islamic"] as const;
   type Tab = (typeof tabs)[number];
 
+  // Compute tomorrow's date in local time to disable today in the date picker
+  const formatLocalDateYYYYMMDD = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+  const minDateForMeeting = (() => {
+    const today = new Date();
+    const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    return formatLocalDateYYYYMMDD(tomorrow);
+  })();
+
   useEffect(() => {
     const FetachTeachers = async () => {
       console.log("Active tabs", activeTab);
@@ -107,6 +120,20 @@ export default function AddMeeting({ onClose }: Props) {
       selectedTeachers.length === 0
     ) {
       alert("Please fill all required fields!");
+      return;
+    }
+
+    // Prevent scheduling on the same date or past dates
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const picked = selectedDate ? new Date(selectedDate) : null;
+    if (!picked) {
+      alert("Please select a meeting date.");
+      return;
+    }
+    const pickedLocal = new Date(picked.getFullYear(), picked.getMonth(), picked.getDate());
+    if (pickedLocal <= startOfToday) {
+      alert("Meetings cannot be scheduled for today. Please pick a future date.");
       return;
     }
 
@@ -337,7 +364,8 @@ export default function AddMeeting({ onClose }: Props) {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full border rounded px-3 py-2 text-[10px] dark:text-white dark:opacity-80 dark:bg-[#343434] dark:border-[#5C5C5C] [&::-webkit-calendar-picker-indicator]:invert"
+                min={minDateForMeeting}
+                className="w-full border rounded px-3 py-2 text-[10px] dark:text-white dark:opacity-80 dark:bg-[#343434] dark:border-[#5C5C5C] dark:[color-scheme:dark]"
               />
             </div>
             <div className="mb-3">
@@ -351,7 +379,7 @@ export default function AddMeeting({ onClose }: Props) {
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full border rounded px-3 py-2 text-[10px] dark:text-white dark:opacity-80 dark:bg-[#343434] dark:border-[#5C5C5C] [&::-webkit-calendar-picker-indicator]:invert"
+                className="w-full border rounded px-3 py-2 text-[10px] dark:text-white dark:opacity-80 dark:bg-[#343434] dark:border-[#5C5C5C] dark:[color-scheme:dark]"
               />
             </div>
           </div>
