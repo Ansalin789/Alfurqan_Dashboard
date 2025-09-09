@@ -5,6 +5,7 @@ import { AiOutlineClockCircle } from "react-icons/ai";
 import { FaUser } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { MdDateRange } from "react-icons/md";
 
 interface Student {
   studentId: string;
@@ -194,7 +195,6 @@ const NextScheduledClass = () => {
 
   const handleJoinClass = () => {
     if (classData?.classLink) {
-      // window.open(classData.classLink, "_blank");
       router.push(`/teacher/ui/liveclass?id=${classData._id}`);
     }
   };
@@ -206,9 +206,9 @@ const NextScheduledClass = () => {
   if (!classData) return null;
 
   return (
-    <div className="bg-[#71a1db] rounded-xl shadow flex items-center justify-between text-white">
+    <div className="bg-[#78A1DB] rounded-xl shadow flex items-center justify-between text-white">
       <div className="items-center p-2 px-8">
-        <h3 className="text-[13px] font-medium pt-3">
+        <h3 className="text-[15px] font-medium pt-3">
           Your Next Scheduled Class
         </h3>
         <div className="flex items-center space-x-8 py-2">
@@ -217,18 +217,12 @@ const NextScheduledClass = () => {
             <p className="text-[13px]">{classData.student?.studentFirstName}</p>
           </div>
           <div className="flex items-center space-x-2">
-            <AiOutlineClockCircle className="w-[10px]" />
-            <p className="text-[13px]">{classData.startTime[0]}</p>
+           <MdDateRange className="text-white/90 text-base w-[10px]" />
+           <p className="text-[13px]">Session–01</p> 
           </div>{" "}
           <div className="flex items-center space-x-2">
-            <FaUser className="w-[10px]" />
-            <p className="text-[13px]">
-              {new Date(classData.startDate).toLocaleDateString(undefined, {
-                day: "2-digit",
-                month: "long",
-                year: "numeric",
-              })}
-            </p>
+            <AiOutlineClockCircle className="w-[10px]" />
+            <p className="text-[13px]">{classData.startTime[0]}</p>
           </div>
         </div>
       </div>
