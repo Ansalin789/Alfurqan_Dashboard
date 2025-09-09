@@ -400,23 +400,71 @@ useEffect(() => {
     const lowerQuery = query.toLowerCase();
 
     const filtered = dataToShow.filter((item) => {
-      const combinedFields = [
-        item._id,
-        item.student?.studentFirstName,
-        item.student?.studentLastName,
-        item.student?.studentEmail,
-        item.scheduleStatus,
-        item.package,
-        item.status,
-        item.startDate,
-        item.endDate,
-        ...(item.startTime || []),
-        ...(item.endTime || []),
-      ]
-        .map((v) => (v ? String(v).toLowerCase() : ""))
-        .join(" ");
+      const isTrial = item.classType === "Trail class" || (item as any).isTrial;
 
-      return combinedFields.includes(lowerQuery);
+      // Date fields as shown in UI
+      const classDate = isTrial
+        ? (item as any).trialclass?.scheduledStartDate || item.startDate
+        : item.startDate;
+      const dateObj = classDate ? new Date(classDate) : null;
+      const dateIso = classDate ? classDate.slice(0, 10).toLowerCase() : ""; // YYYY-MM-DD
+      const dateReadable = dateObj
+        ? dateObj
+            .toLocaleDateString("en-US", {
+              month: "short",
+              day: "2-digit",
+              year: "numeric",
+            })
+            .toLowerCase()
+        : "";
+
+      // Timing as shown in UI
+      const startTime = isTrial
+        ? (item as any).trialclass?.scheduledFrom || item.startTime?.[0]
+        : item.startTime?.[0];
+      const endTime = isTrial
+        ? (item as any).trialclass?.scheduledTo || item.endTime?.[0]
+        : item.endTime?.[0];
+      const timing = `${startTime || ""} - ${endTime || ""}`.toLowerCase();
+
+      // Status as shown in UI
+      const status = (
+        isTrial
+          ? (item as any).trialclass?.meetingStatus || item.scheduleStatus
+          : item.scheduleStatus
+      )
+        ?.toLowerCase() || "";
+
+      // Course and Class Type as shown in UI
+      const courseName = (
+        isTrial
+          ? (item as any).trialclass?.course?.courseName || item.course?.courseName
+          : item.course?.courseName
+      )
+        ?.toLowerCase() || "";
+      const classType = (item.sessionClassType || item.classType || "")
+        .toLowerCase();
+
+      // Student identifiers
+      const studentFirst = item.student?.studentFirstName?.toLowerCase() || "";
+      const studentLast = item.student?.studentLastName?.toLowerCase() || "";
+      const studentEmail = item.student?.studentEmail?.toLowerCase() || "";
+
+      // ID
+      const classId = (isTrial ? (item as any).trialclass?.trialId || item._id : item._id)?.toLowerCase() || "";
+
+      return (
+        classId.includes(lowerQuery) ||
+        studentFirst.includes(lowerQuery) ||
+        studentLast.includes(lowerQuery) ||
+        studentEmail.includes(lowerQuery) ||
+        courseName.includes(lowerQuery) ||
+        classType.includes(lowerQuery) ||
+        status.includes(lowerQuery) ||
+        timing.includes(lowerQuery) ||
+        dateIso.includes(lowerQuery) ||
+        dateReadable.includes(lowerQuery)
+      );
     });
 
     setFilteredClasses(filtered);
@@ -532,7 +580,7 @@ useEffect(() => {
                             type="text"
                             placeholder="Search by Student name"
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={(e) => handleSearch(e.target.value)}
                             className="w-full text-sm outline-none bg-transparent placeholder-gray-400"
                           />
                         </div>
