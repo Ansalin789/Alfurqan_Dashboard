@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import BaseLayout from "@/components/BaseLayout";
 import moment from "moment";
-import { CalendarDays, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import { FaClock } from "react-icons/fa";
 import { BsFillCalendar2WeekFill } from "react-icons/bs";
 import TeacherHeader from "../../components/TeacherHeader";
@@ -107,21 +107,27 @@ const TeacherSchedulePage = () => {
     )
       .then((response) => response.json())
       .then((data: ClassScheduleApiResponse) => {
-        setClassSchedule(data.classSchedule);
+        const safeList = Array.isArray(data?.classSchedule)
+          ? data.classSchedule
+          : [];
+        setClassSchedule(safeList);
       })
       .catch((error) => console.error("Error fetching class schedule: ", error));
   }, []);
 
   useEffect(() => {
+    const list = Array.isArray(classSchedule) ? classSchedule : [];
     setEvents(
-      classSchedule.map((item) => ({
-        id: item._id,
-        title: `${item.course.courseName} with ${item.student.studentFirstName} ${item.student.studentLastName}`,
-        start: item.startTime[0] || '',
-        end: item.endTime[0] || '',
-        description: `${item.package} | ${item.scheduleStatus}`,
-        date: moment(item.startDate).format("YYYY-MM-DD"),
-        status: item.scheduleStatus,
+      list.map((item) => ({
+        id: item?._id ?? `${Math.random()}`,
+        title: `${item?.course?.courseName ?? "Course"} with ${item?.student?.studentFirstName ?? ""} ${item?.student?.studentLastName ?? ""}`.trim(),
+        start: item?.startTime?.[0] || "",
+        end: item?.endTime?.[0] || "",
+        description: `${item?.package ?? ""} | ${item?.scheduleStatus ?? ""}`.trim(),
+        date: moment(item?.startDate).isValid()
+          ? moment(item.startDate).format("YYYY-MM-DD")
+          : moment().format("YYYY-MM-DD"),
+        status: item?.scheduleStatus,
       }))
     );
   }, [classSchedule]);

@@ -35,7 +35,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
     paidLeave: 0,
     deductionDays: 0,
   });
-  const [leaveRecords, setLeaveRecords] = useState<any[]>([]);
+  
 
   useEffect(() => {
     const Id = localStorage.getItem("TeacherId") ?? "";
@@ -67,19 +67,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
             paidLeave: data.paidLeave || 0,
             deductionDays: data.deductionDays || 0,
           });
-          setLeaveRecords(data.records || []);
-          // Pre-fill form with the latest record if available
-          if (data.records && data.records.length > 0) {
-            const latest = data.records[data.records.length - 1];
-            setForm((prev) => ({
-              ...prev,
-              ...latest,
-              fromDate: latest.fromDate ? latest.fromDate.slice(0, 10) : "",
-              toDate: latest.toDate ? latest.toDate.slice(0, 10) : "",
-              createdDate: latest.createdDate || new Date().toISOString(),
-              UpdatedDate: latest.updatedDate || new Date().toISOString(),
-            }));
-          }
+          // Do not set previous records into form state
         })
         .catch((err) => {
           // Optionally handle error
@@ -127,7 +115,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
       const error = err as AxiosError;
 
       const status = error.response?.status;
-      if (Number(status === 400)) {
+      if (status === 400) {
         console.log("please >");
         setFailedMessage("Please check the form inputs.");
         setFailed(true);
@@ -350,7 +338,16 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
         <div className="border-t pt-4 mt-4 flex justify-end gap-2">
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => {
+              setForm((prev) => ({
+                ...prev,
+                leaveType: "",
+                fromDate: "",
+                toDate: "",
+                reason: "",
+              }));
+              onClose();
+            }}
             className="px-3 py-1 border border-[#576CBC] rounded text-[#576CBC] hover:bg-gray-100 transition "
           >
             Cancel
@@ -364,7 +361,20 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
         </div>
       </form>
       {success && (
-        <SuccessPopup onClose={() => setSucces(false)} title="Leave Request" />
+        <SuccessPopup
+          onClose={() => {
+            setSucces(false);
+            setForm((prev) => ({
+              ...prev,
+              leaveType: "",
+              fromDate: "",
+              toDate: "",
+              reason: "",
+            }));
+            onClose();
+          }}
+          title="Leave Request"
+        />
       )}
       {failed &&  (
         <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />

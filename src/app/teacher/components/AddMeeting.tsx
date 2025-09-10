@@ -515,8 +515,15 @@ endTime,
         </div>
 
         {/* Success & Error Messages */}
-        {success && (
-          <SuccessPopup onClose={() => setSuccess(false)} title="Meeting" />
+
+              {success && (
+          <SuccessPopup
+            onClose={() => {
+              setSuccess(false);
+              onClose();
+            }}
+            title="Meeting"
+          />
         )}
         {failed && (
           <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
