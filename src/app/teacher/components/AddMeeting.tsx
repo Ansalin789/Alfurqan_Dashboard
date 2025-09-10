@@ -150,14 +150,40 @@ export default function AddMeeting({ onClose }: Props) {
 
         const allParticipants = response.data ?? [];
         console.log("Applicants received:", allParticipants);
+        
+        // Debug: Log all unique learning interests
+        const allInterests = allParticipants.map((p: any) => p.studentDetails?.student?.learningInterest).filter(Boolean);
+        const uniqueInterests = allInterests.filter((interest: any, index: number) => allInterests.indexOf(interest) === index);
+        console.log("Unique learning interests found:", uniqueInterests);
 
         const filteredParticipants =
           activeTab === "All"
             ? allParticipants
             : allParticipants.filter(
-                (teacher: any) =>
-                  teacher.studentDetails.student.learningInterest?.toLowerCase() ===
-                  activeTab.toLowerCase()
+                (participant: any) => {
+                  const learningInterest = participant.studentDetails?.student?.learningInterest;
+                  if (!learningInterest) return false;
+                  
+                  // Handle different possible values for Islamic studies
+                  const normalizedInterest = learningInterest.toLowerCase().trim();
+                  const normalizedTab = activeTab.toLowerCase().trim();
+                  
+                  // Debug logging for Islamic tab
+                  if (normalizedTab === "islamic") {
+                    const matches = normalizedInterest === "islamic" || 
+                                   normalizedInterest === "islamic studies" ||
+                                   normalizedInterest === "islam" ||
+                                   normalizedInterest.includes("islamic");
+                    console.log(`Islamic filter: "${learningInterest}" -> "${normalizedInterest}" -> matches: ${matches}`);
+                    return matches;
+                  }
+                  
+                  const matches = normalizedInterest === normalizedTab;
+                  if (normalizedTab !== "all") {
+                    console.log(`${normalizedTab} filter: "${learningInterest}" -> "${normalizedInterest}" -> matches: ${matches}`);
+                  }
+                  return matches;
+                }
               );
 
         setParticipants(filteredParticipants);

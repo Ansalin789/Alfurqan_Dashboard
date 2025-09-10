@@ -882,8 +882,8 @@ const TeachersSchedule = () => {
 
             <div className="flex-1"></div>
 
-            <div className="p-3 sm:p-4 md:p-5 lg:p-6">
-              <hr className="w-full border-t-[1px] border-[#dbdada] dark:border-[#dbdada] mb-3 sm:mb-4" />
+            <div className="p-3 sm:p-4 md:p-5 lg:p-6 sticky bottom-0 bg-white dark:bg-[#343434] z-10">
+              <hr className="w-full border-t-[1px] border-[#dbdada] dark:border-[#5C5C5C] mb-3 sm:mb-4" />
               <div className="flex justify-end">
                 <button
                   type="submit"

@@ -386,9 +386,15 @@ const TeacherSchedulePage = () => {
     const daysInMonth = getDaysInMonth(currentDate);
     const firstDayOfMonth = getFirstDayOfMonth(currentDate);
 
-    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-    const emptyCells = Array.from({ length: firstDayOfMonth }, (_, i) => null);
-    const totalDays = [...emptyCells, ...days];
+    // Get previous month's last days to fill the grid
+    const prevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
+    const prevMonthDays = getDaysInMonth(prevMonth);
+    const prevMonthDates = Array.from({ length: firstDayOfMonth }, (_, i) => 
+      prevMonthDays - firstDayOfMonth + i + 1
+    );
+
+    const currentMonthDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+    const totalDays = [...prevMonthDates, ...currentMonthDays];
 
     return (
       <>
@@ -400,15 +406,24 @@ const TeacherSchedulePage = () => {
 
         <div className="grid grid-cols-7 gap-2 text-sm h-[470px] overflow-scroll scrollbar-none">
           {totalDays.map((day, i) => {
-            if (day === null) {
-              return <div key={i} className="min-h-[80px] bg-transparent" />;
+            const isPrevMonth = i < firstDayOfMonth;
+            const isCurrentMonth = i >= firstDayOfMonth;
+
+            let date: Date;
+            if (isPrevMonth) {
+              date = new Date(
+                prevMonth.getFullYear(),
+                prevMonth.getMonth(),
+                day
+              );
+            } else {
+              date = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth(),
+                day
+              );
             }
 
-            const date = new Date(
-              currentDate.getFullYear(),
-              currentDate.getMonth(),
-              day
-            );
             const dayEvents = getEventsForDate(date);
             const hasEvents = dayEvents.length > 0;
 
@@ -416,40 +431,34 @@ const TeacherSchedulePage = () => {
               <button
                 key={i}
                 onClick={() => handleDateClick(date)}
-                className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${
+                className={`min-h-[80px] rounded-xl flex flex-col items-start justify-start mt-1 p-1 cursor-pointer relative ${
                   hasEvents
                     ? "border border-[#576cbc] text-[#576cbc] bg-[#576cbc]/10"
-                    : isToday(day)
+                    : isToday(day) && isCurrentMonth
                     ? "bg-[#27176518] text-white"
                     : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"
                 }`}
               >
                 <div
-                  className={`font-semibold ${
-                    isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""
+                  className={`font-semibold absolute top-1 right-2 ${
+                    isPrevMonth 
+                      ? "text-gray-300 dark:text-gray-600" 
+                      : isToday(day) 
+                      ? "dark:text-[#4b8cc9] text-[#4b8cc9]" 
+                      : ""
                   }`}
                 >
                   {day}
                 </div>
                 {hasEvents && (
-                  <div className="w-full overflow-hidden">
+                  <div className="w-full overflow-hidden mt-8">
                     <div className="text-[8px] truncate px-1">
                       {dayEvents[0].title}
                     </div>
                     <div className="text-[8px] truncate px-1">
                       {dayEvents[0].start} - {dayEvents[0].end}
                     </div>
-                    {dayEvents[0].status && (
-                      <span
-                        className={`text-[8px] font-bold px-1 rounded ml-1
-                          ${dayEvents[0].status === 'Scheduled' ? ' text-blue-700' :
-                            dayEvents[0].status === 'Completed' ? ' text-green-700' :
-                            dayEvents[0].status === 'Rescheduled' ? ' text-yellow-700' :
-                            'bg-gray-200 text-gray-700'}`}
-                      >
-                        {dayEvents[0].status}
-                      </span>
-                    )}
+                    
                   </div>
                 )}
               </button>
@@ -530,7 +539,20 @@ const TeacherSchedulePage = () => {
                         >
                           <div className="flex justify-between">
                             <h3 className={`font-medium text-[14px] ${currentTextColor}`}>
-                              {item.title}
+                              {(() => {
+                                // Extract course name and student name from the title
+                                const parts = item.title.split(' with ');
+                                if (parts.length === 2) {
+                                  const courseName = parts[0];
+                                  const studentName = parts[1].trim();
+                                  // Remove any duplicate words in student name
+                                  const cleanStudentName = studentName.split(' ').filter((word, index, arr) => 
+                                    arr.indexOf(word) === index
+                                  ).join(' ');
+                                  return `${courseName} with ${cleanStudentName}`;
+                                }
+                                return item.title;
+                              })()}
                             </h3>
                             <div>
                               <div className="flex gap-4">
