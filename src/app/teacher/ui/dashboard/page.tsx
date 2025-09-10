@@ -57,7 +57,7 @@ export default function Academic() {
 
   {/* Class Analytics (4 cols) - with constrained container */}
   <div className="col-span-12 lg:col-span-4 flex">
-    <div className="w-full h-full min-h-[220px]">
+    <div className="w-full h-full min-h-[250px]">
       <ClassAnalyticsChart />
     </div>
   </div>

@@ -235,8 +235,8 @@ const EarningAnalytics = () => {
               </span>
               <span className={`${
                 item.isPositive 
-                  ? 'text-green-600 bg-green-100 dark:bg-green-900' 
-                  : 'text-red-600 bg-red-100 dark:bg-red-900'
+                  ? 'text-green-600 bg-green-100 dark:bg-[#377E3633]/20' 
+                  : 'text-red-600 bg-red-100 dark:bg-red-900/20'
               } text-[11px] font-semibold px-2 py-[2px] rounded-md`}>
                 {item.change}
               </span>
