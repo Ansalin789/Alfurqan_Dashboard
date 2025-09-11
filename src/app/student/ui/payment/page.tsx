@@ -1053,13 +1053,13 @@ const Invoice = () => {
                 <div className="divide-y text-sm">
                   <div className="flex justify-between px-2 py-2">
                     <span className="text-xs text-left">Payment Type</span>
-                    <span className="text-blue-900 font-semibold text-xs text-left">
+                    <span className="text-[#010E30] font-semibold text-xs text-left dark:text-white">
                       Online
                     </span>
                   </div>
                   <div className="flex flex-1 justify-between px-2 py-2 text-left">
                     <span className="text-xs text-left">Total Amount</span>
-                    <span className="text-blue-900 font-semibold text-xs px-4">
+                    <span className="text-[#010E30] font-semibold text-xs px-4 dark:text-white">
                       ${selectedInvoice ? getInvoiceDue(selectedInvoice) : 0}
                     </span>
                   </div>
