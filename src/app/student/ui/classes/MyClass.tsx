@@ -254,7 +254,7 @@ const NextClass = () => {
           <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm sm:text-sm md:text-sm">
             <span className="flex items-center gap-1">
               <FaUser className="text-white/90 text-base sm:text-sm" />
-              {classData?.student?.studentFirstName ?? ""}
+              {classData?.student?.studentFirstName ?? "------"}
             </span>
 
             <span className="flex items-center gap-1">
