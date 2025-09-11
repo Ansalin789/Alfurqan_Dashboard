@@ -134,7 +134,7 @@ const ClassAnalyticsChart = () => {
           {segments.map((item, i) => (
             <div
               key={i}
-              className="flex items-center justify-between w-full gap-1"
+              className="flex items-center justify-between w-full -mt-6 gap-1"
             >
               <div className="flex items-center gap-2">
                 <span
