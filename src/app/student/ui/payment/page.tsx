@@ -364,25 +364,26 @@ const Invoice = () => {
     const fetchInvoices = async () => {
       try {
         const studentId = localStorage.getItem("StudentPortalId");
-  
+
         if (!studentId) {
           console.error("❌ No studentId found in localStorage");
           alert("No studentId found. Please log in again.");
           return;
         }
-  
+
         // Attempt to read human-readable student code (e.g., ALFST-004) from stored studentData
         let studentCodeForApi: string | null = null;
         try {
           const sd = localStorage.getItem("studentData");
           if (sd) {
             const parsed = JSON.parse(sd);
-            studentCodeForApi = parsed?.student?.studentId || parsed?.studentId || null;
+            studentCodeForApi =
+              parsed?.student?.studentId || parsed?.studentId || null;
           }
         } catch {}
-  
+
         const studentIdQuery = studentCodeForApi || studentId;
-        
+
         // Token check
         let token =
           localStorage.getItem("StudentAuthToken") ||
@@ -390,13 +391,13 @@ const Invoice = () => {
           localStorage.getItem("token") ||
           localStorage.getItem("accessToken") ||
           localStorage.getItem("userToken");
-  
+
         if (!token) {
           console.error("❌ No authentication token found");
           alert("No authentication token found. Please log in again.");
           return;
         }
-  
+
         // Parse JSON token if needed
         try {
           const parsed = JSON.parse(token);
@@ -406,7 +407,7 @@ const Invoice = () => {
         } catch {
           // Token is plain string → use directly
         }
-  
+
         // ✅ API call with query param
         const response = await axios.get(
           `http://localhost:5001/studentinvoiceById`,
@@ -418,26 +419,26 @@ const Invoice = () => {
             },
           }
         );
-         
-         console.log("✅ API response:", response.data);
-         console.log("🔎 studentId sent:", studentIdQuery);
-         
-         // Normalize response shape to an Invoice[] list
-         const payload: any = response.data;
-         const list: Invoice[] = Array.isArray(payload?.data)
-           ? payload.data
-           : Array.isArray(payload?.invoice)
-           ? payload.invoice
-           : Array.isArray(payload)
-           ? payload
-           : [];
- 
-         // ✅ No filtering needed, backend already filters by studentId
-         setInvoices(list);
- 
-         if (list.length > 0) {
-           setSelectedInvoice(list[0]);
-         }
+
+        console.log("✅ API response:", response.data);
+        console.log("🔎 studentId sent:", studentIdQuery);
+
+        // Normalize response shape to an Invoice[] list
+        const payload: any = response.data;
+        const list: Invoice[] = Array.isArray(payload?.data)
+          ? payload.data
+          : Array.isArray(payload?.invoice)
+          ? payload.invoice
+          : Array.isArray(payload)
+          ? payload
+          : [];
+
+        // ✅ No filtering needed, backend already filters by studentId
+        setInvoices(list);
+
+        if (list.length > 0) {
+          setSelectedInvoice(list[0]);
+        }
       } catch (error: any) {
         console.error("❌ Failed to fetch invoices:", error);
         if (error.response?.status === 401) {
@@ -447,11 +448,9 @@ const Invoice = () => {
         }
       }
     };
-  
+
     fetchInvoices();
   }, []);
-  
-  
 
   const handleInvoiceClick = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
@@ -574,13 +573,13 @@ const Invoice = () => {
     const year = date.getFullYear();
     return `${day}-${month}-${year}`;
   }
- 
+
   // Formats to: sep20 , 2025
   function formatDateMonDayYear(input?: string | number | Date) {
     if (input === undefined || input === null || input === "") return "";
- 
+
     let date: Date | null = null;
- 
+
     if (typeof input === "number") {
       // Treat as epoch seconds or ms based on magnitude
       const ms = input < 1e12 ? input * 1000 : input;
@@ -599,15 +598,17 @@ const Invoice = () => {
     } else if (input instanceof Date) {
       date = input;
     }
- 
+
     if (!date || isNaN(date.getTime())) return "";
- 
-    const month = date.toLocaleString("en-US", { month: "short" }).toLowerCase();
+
+    const month = date
+      .toLocaleString("en-US", { month: "short" })
+      .toLowerCase();
     const day = date.getDate();
     const year = date.getFullYear();
     return `${month} ${day} , ${year}`;
   }
-  
+
   function toDateString(date: string) {
     return new Date(date).toISOString().slice(0, 10);
   }
@@ -904,7 +905,14 @@ const Invoice = () => {
               <img
                 src="/assets/images/alf.png"
                 alt="Al Furqan Academy"
-                className="w-40 dark:text-[#ffffff]"
+                className="w-40 block dark:hidden"
+              />
+
+              {/* Dark mode logo */}
+              <img
+                src="/assets/images/alfwhitelogo.png"
+                alt="Al Furqan Academy"
+                className="w-40 hidden dark:block"
               />
             </div>
 
@@ -999,7 +1007,9 @@ const Invoice = () => {
                             Payment on {formatDateDMY(payment.date)}
                           </td>
                           <td className="p-2 border"></td>
-                          <td className="p-2 border text-left">-${payment.amount}</td>
+                          <td className="p-2 border text-left">
+                            -${payment.amount}
+                          </td>
                           <td className="p-2 border"></td>
                           <td className="p-2 border"></td>
                           <td className="p-2 border text-left">
@@ -1271,7 +1281,10 @@ const Invoice = () => {
                         <React.Fragment key={invoice._id || index}>
                           <tr
                             onClick={() => {
-                              if ((invoice.invoiceStatus || "").toLowerCase() === "pending") {
+                              if (
+                                (invoice.invoiceStatus || "").toLowerCase() ===
+                                "pending"
+                              ) {
                                 handleInvoiceClick(invoice);
                               }
                             }}
@@ -1282,7 +1295,8 @@ const Invoice = () => {
                             } cursor-pointer`}
                           >
                             <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 rounded-l-lg dark:text-[#ffffff]">
-                              {formatDateDMY(invoice.createdDate) || formatDateMonDayYear(invoice.lastUpdatedDate)}
+                              {formatDateDMY(invoice.createdDate) ||
+                                formatDateMonDayYear(invoice.lastUpdatedDate)}
                             </td>
                             <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
                               {invoice._id}
@@ -1300,7 +1314,9 @@ const Invoice = () => {
                             </td>
                             <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap  border-b border-gray-200 dark:text-[#ffffff]">
                               {(() => {
-                                const statusLower = (invoice.invoiceStatus || "").toLowerCase();
+                                const statusLower = (
+                                  invoice.invoiceStatus || ""
+                                ).toLowerCase();
                                 const cls =
                                   statusLower === "paid"
                                     ? "bg-[#ECFDF3] text-[#377E36] border border-green-600 dark:bg-[#377E3633] dark:text-[#377E36]"
@@ -1308,7 +1324,9 @@ const Invoice = () => {
                                     ? "bg-[#FDF6EC] text-[#F0AD4E] border border-orange-600 dark:bg-[#F0AD4E33] dark:text-[#F0AD4E]"
                                     : "bg-gray-100 text-gray-600 border border-gray-400";
                                 return (
-                                  <span className={`${cls} py-0.5 px-1  rounded-sm text-[10px] min-w-[70px] inline-block text-center`}>
+                                  <span
+                                    className={`${cls} py-0.5 px-1  rounded-sm text-[10px] min-w-[70px] inline-block text-center`}
+                                  >
                                     {invoice.invoiceStatus}
                                   </span>
                                 );
@@ -1337,7 +1355,9 @@ const Invoice = () => {
                               </button>
                               {actionMenuOpen === invoice._id && (
                                 <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-10 dark:bg-[#343434]">
-                                  {(invoice.invoiceStatus || "").toLowerCase() === "paid" ? (
+                                  {(
+                                    invoice.invoiceStatus || ""
+                                  ).toLowerCase() === "paid" ? (
                                     <button
                                       className="block w-full text-left px-4 py-2 text-xs dark:text-[#ffffff]"
                                       onClick={() => {
@@ -1357,7 +1377,9 @@ const Invoice = () => {
                                     >
                                       View Receipt
                                     </button>
-                                  ) : (invoice.invoiceStatus || "").toLowerCase() === "failed" ? (
+                                  ) : (
+                                      invoice.invoiceStatus || ""
+                                    ).toLowerCase() === "failed" ? (
                                     <button
                                       className="block w-full text-left px-4 py-2 text-xs dark:text-[#ffffff]"
                                       onClick={() => {
@@ -1425,16 +1447,15 @@ const Invoice = () => {
                       ))}
                   </tbody>
                 </table>
-                
               </div>
               <div className="mt-4 text-right">
-                  <Link
-                    href="/student/ui/allstudentsinvoice"
-                    className="text-[#576CBC] text-[10px] border border-[#576CBC] px-3 py-1 rounded-md bg-white dark:bg-[#3C3C3C]"
-                  >
-                    View All
-                  </Link>
-                </div>
+                <Link
+                  href="/student/ui/allstudentsinvoice"
+                  className="text-[#576CBC] text-[10px] border border-[#576CBC] px-3 py-1 rounded-md bg-white dark:bg-[#3C3C3C]"
+                >
+                  View All
+                </Link>
+              </div>
             </div>
           )}
           {/* Modal for Payment Form */}
