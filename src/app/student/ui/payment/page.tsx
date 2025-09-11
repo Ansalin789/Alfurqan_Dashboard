@@ -65,6 +65,11 @@ interface InvoiceResponse {
   invoice: Invoice[];
 }
 
+interface StudentInvoiceByIdResponse {
+  count: number;
+  data: Invoice[];
+}
+
 interface CheckoutFormProps {
   clientSecret: string;
   invoiceId: string;
@@ -358,122 +363,95 @@ const Invoice = () => {
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
-        // Debug: Check all localStorage items
-        console.log("🔍 All localStorage items:");
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key) {
-            const value = localStorage.getItem(key);
-            console.log(
-              `  ${key}: ${value ? value.substring(0, 50) + "..." : "null"}`
-            );
+        const studentId = localStorage.getItem("StudentPortalId");
+  
+        if (!studentId) {
+          console.error("❌ No studentId found in localStorage");
+          alert("No studentId found. Please log in again.");
+          return;
+        }
+  
+        // Attempt to read human-readable student code (e.g., ALFST-004) from stored studentData
+        let studentCodeForApi: string | null = null;
+        try {
+          const sd = localStorage.getItem("studentData");
+          if (sd) {
+            const parsed = JSON.parse(sd);
+            studentCodeForApi = parsed?.student?.studentId || parsed?.studentId || null;
           }
-        }
-
-        const studentIdToFilter = localStorage.getItem("StudentPortalId");
-
-        // Try different possible token keys
-        let token = localStorage.getItem("StudentAuthToken");
+        } catch {}
+  
+        const studentIdQuery = studentCodeForApi || studentId;
+        
+        // Token check
+        let token =
+          localStorage.getItem("StudentAuthToken") ||
+          localStorage.getItem("authToken") ||
+          localStorage.getItem("token") ||
+          localStorage.getItem("accessToken") ||
+          localStorage.getItem("userToken");
+  
         if (!token) {
-          token = localStorage.getItem("authToken");
-        }
-        if (!token) {
-          token = localStorage.getItem("token");
-        }
-        if (!token) {
-          token = localStorage.getItem("accessToken");
-        }
-        if (!token) {
-          token = localStorage.getItem("userToken");
-        }
-
-        if (!token) {
-          console.error("❌ No authentication token found in localStorage");
-          console.error(
-            "❌ Checked keys: StudentAuthToken, authToken, token, accessToken, userToken"
-          );
+          console.error("❌ No authentication token found");
           alert("No authentication token found. Please log in again.");
           return;
         }
-
-        // Try to parse token if it's stored as JSON
+  
+        // Parse JSON token if needed
         try {
-          if (token) {
-            const parsedToken = JSON.parse(token);
-            if (typeof parsedToken === "object" && parsedToken.token) {
-              token = parsedToken.token;
-            } else if (
-              typeof parsedToken === "object" &&
-              parsedToken.accessToken
-            ) {
-              token = parsedToken.accessToken;
-            }
+          const parsed = JSON.parse(token);
+          if (typeof parsed === "object") {
+            token = parsed.token || parsed.accessToken || token;
           }
-        } catch (e) {
-          // Token is not JSON, use as is
-          console.log("🔍 Token is not JSON format, using as string");
+        } catch {
+          // Token is plain string → use directly
         }
-
-        // Debug: Log the token to see its format
-        if (token) {
-          console.log("🔍 Token being sent:", token);
-          console.log("🔍 Token length:", token.length);
-          console.log("🔍 Token starts with:", token.substring(0, 20));
-
-          // Validate token format (should be a JWT token)
-          if (!token.includes(".") || token.split(".").length !== 3) {
-            console.error("❌ Invalid token format - not a valid JWT");
-            console.error(
-              "❌ Token format check failed. Token should be in JWT format (xxx.yyy.zzz)"
-            );
-            return;
-          }
-        } else {
-          console.error("❌ Token is null after parsing");
-          return;
-        }
-
-        const response = await axios.get<InvoiceResponse>(
-          "https://api.blackstoneinfomaticstech.com/studentinvoice",
+  
+        // ✅ API call with query param
+        const response = await axios.get(
+          `http://localhost:5001/studentinvoiceById`,
           {
+            params: { studentId: studentIdQuery },
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
           }
         );
-        console.log("✅ API response:", response);
-        const filteredInvoices = response.data.invoice.filter(
-          (invoice) => invoice.student.studentId === studentIdToFilter
-        );
-        setInvoices(filteredInvoices);
-        // Set the first invoice as selected by default if available
-        if (filteredInvoices.length > 0) {
-          setSelectedInvoice(filteredInvoices[0]);
-        }
+         
+         console.log("✅ API response:", response.data);
+         console.log("🔎 studentId sent:", studentIdQuery);
+         
+         // Normalize response shape to an Invoice[] list
+         const payload: any = response.data;
+         const list: Invoice[] = Array.isArray(payload?.data)
+           ? payload.data
+           : Array.isArray(payload?.invoice)
+           ? payload.invoice
+           : Array.isArray(payload)
+           ? payload
+           : [];
+ 
+         // ✅ No filtering needed, backend already filters by studentId
+         setInvoices(list);
+ 
+         if (list.length > 0) {
+           setSelectedInvoice(list[0]);
+         }
       } catch (error: any) {
         console.error("❌ Failed to fetch invoices:", error);
-
-        // Handle specific authentication errors
         if (error.response?.status === 401) {
-          console.error(
-            "❌ Authentication failed - token may be invalid or expired"
-          );
-          console.error("❌ Error details:", error.response.data);
-
-          // Optionally redirect to login or show a message
           alert("Authentication failed. Please log in again.");
-          // You might want to redirect to login page here
-          // window.location.href = '/login';
         } else {
-          console.error("❌ Network or server error:", error.message);
           alert("Failed to fetch invoices. Please try again.");
         }
       }
     };
-
+  
     fetchInvoices();
   }, []);
+  
+  
 
   const handleInvoiceClick = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
@@ -596,7 +574,40 @@ const Invoice = () => {
     const year = date.getFullYear();
     return `${day}-${month}-${year}`;
   }
-
+ 
+  // Formats to: sep20 , 2025
+  function formatDateMonDayYear(input?: string | number | Date) {
+    if (input === undefined || input === null || input === "") return "";
+ 
+    let date: Date | null = null;
+ 
+    if (typeof input === "number") {
+      // Treat as epoch seconds or ms based on magnitude
+      const ms = input < 1e12 ? input * 1000 : input;
+      date = new Date(ms);
+    } else if (typeof input === "string") {
+      const trimmed = input.trim();
+      if (/^\d+$/.test(trimmed)) {
+        // Numeric string → seconds or ms
+        const num = Number(trimmed);
+        const ms = num < 1e12 ? num * 1000 : num;
+        date = new Date(ms);
+      } else {
+        // ISO or other parseable string
+        date = new Date(trimmed);
+      }
+    } else if (input instanceof Date) {
+      date = input;
+    }
+ 
+    if (!date || isNaN(date.getTime())) return "";
+ 
+    const month = date.toLocaleString("en-US", { month: "short" }).toLowerCase();
+    const day = date.getDate();
+    const year = date.getFullYear();
+    return `${month} ${day} , ${year}`;
+  }
+  
   function toDateString(date: string) {
     return new Date(date).toISOString().slice(0, 10);
   }
@@ -956,12 +967,12 @@ const Invoice = () => {
                 <table className="w-full text-xs border">
                   <thead className="bg-[#505050] text-white">
                     <tr>
-                      <th className="p-2 border">Description</th>
-                      <th className="p-2 border">Quantity</th>
-                      <th className="p-2 border">Price</th>
-                      <th className="p-2 border">Discount</th>
-                      <th className="p-2 border">GST</th>
-                      <th className="p-2 border">Amount</th>
+                      <th className="p-2 border text-left">Description</th>
+                      <th className="p-2 border text-left">Quantity</th>
+                      <th className="p-2 border text-left">Price</th>
+                      <th className="p-2 border text-left">Discount</th>
+                      <th className="p-2 border text-left">GST</th>
+                      <th className="p-2 border text-left">Amount</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -969,13 +980,13 @@ const Invoice = () => {
                       <td className="p-2 border font-semibold text-left">
                         {selectedInvoice?.courseName}
                       </td>
-                      <td className="p-2 border">1</td>
-                      <td className="p-2 border">
+                      <td className="p-2 border text-left">1</td>
+                      <td className="p-2 border text-left">
                         ${selectedInvoice?.amount ?? 0}
                       </td>
-                      <td className="p-2 border">0.00</td>
-                      <td className="p-2 border">0.00</td>
-                      <td className="p-2 border text-right">
+                      <td className="p-2 border text-left">0.00</td>
+                      <td className="p-2 border text-left">0.00</td>
+                      <td className="p-2 border text-left">
                         ${selectedInvoice?.amount ?? 0}
                       </td>
                     </tr>
@@ -988,10 +999,10 @@ const Invoice = () => {
                             Payment on {formatDateDMY(payment.date)}
                           </td>
                           <td className="p-2 border"></td>
-                          <td className="p-2 border">-${payment.amount}</td>
+                          <td className="p-2 border text-left">-${payment.amount}</td>
                           <td className="p-2 border"></td>
                           <td className="p-2 border"></td>
-                          <td className="p-2 border text-right">
+                          <td className="p-2 border text-left">
                             -${payment.amount}
                           </td>
                         </tr>
@@ -1001,14 +1012,14 @@ const Invoice = () => {
                         Sub total (Excl. GST):
                       </td>
                       <td colSpan={4} className="p-2 border"></td>
-                      <td className="p-2 border text-right">
+                      <td className="p-2 border text-left">
                         ${selectedInvoice?.amount ?? 0}
                       </td>
                     </tr>
                     <tr>
                       <td className="p-2 border font-semibold">Total GST:</td>
                       <td colSpan={4} className="p-2 border"></td>
-                      <td className="p-2 border text-right">$0.00</td>
+                      <td className="p-2 border text-left">$0.00</td>
                     </tr>
                     <tr>
                       <td className="p-2 border font-semibold">
@@ -1016,7 +1027,7 @@ const Invoice = () => {
                         {formatDateDMY(selectedInvoice?.dueDate)}
                       </td>
                       <td colSpan={4} className="p-2 border"></td>
-                      <td className="p-2 border text-right">
+                      <td className="p-2 border text-left">
                         ${selectedInvoice ? getInvoiceDue(selectedInvoice) : 0}
                       </td>
                     </tr>
@@ -1031,14 +1042,14 @@ const Invoice = () => {
                 </div>
                 <div className="divide-y text-sm">
                   <div className="flex justify-between px-2 py-2">
-                    <span className="text-xs">Payment Type</span>
-                    <span className="text-blue-900 font-semibold text-xs">
+                    <span className="text-xs text-left">Payment Type</span>
+                    <span className="text-blue-900 font-semibold text-xs text-left">
                       Online
                     </span>
                   </div>
-                  <div className="flex justify-between px-2 py-2">
-                    <span className="text-xs">Total Amount</span>
-                    <span className="text-blue-900 font-semibold text-xs">
+                  <div className="flex flex-1 justify-between px-2 py-2 text-left">
+                    <span className="text-xs text-left">Total Amount</span>
+                    <span className="text-blue-900 font-semibold text-xs px-4">
                       ${selectedInvoice ? getInvoiceDue(selectedInvoice) : 0}
                     </span>
                   </div>
@@ -1260,7 +1271,7 @@ const Invoice = () => {
                         <React.Fragment key={invoice._id || index}>
                           <tr
                             onClick={() => {
-                              if (invoice.invoiceStatus === "Pending") {
+                              if ((invoice.invoiceStatus || "").toLowerCase() === "pending") {
                                 handleInvoiceClick(invoice);
                               }
                             }}
@@ -1271,7 +1282,7 @@ const Invoice = () => {
                             } cursor-pointer`}
                           >
                             <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 rounded-l-lg dark:text-[#ffffff]">
-                              {formatDateDMY(invoice.createdDate)}
+                              {formatDateDMY(invoice.createdDate) || formatDateMonDayYear(invoice.lastUpdatedDate)}
                             </td>
                             <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
                               {invoice._id}
@@ -1284,24 +1295,24 @@ const Invoice = () => {
                             </td>
                             <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
                               {invoice.paymentDate
-                                ? formatDateDMY(
-                                    new Date(invoice.paymentDate).toISOString()
-                                  )
-                                : ""}
+                                ? formatDateMonDayYear(invoice.paymentDate)
+                                : formatDateMonDayYear(invoice.lastUpdatedDate)}
                             </td>
-                            <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
-                              <span
-                                className={
-                                  (invoice.invoiceStatus === "Paid"
-                                    ? "bg-[#ECFDF3] text-[#377E36] border border-green-600"
-                                    : invoice.invoiceStatus === "Pending"
-                                    ? "bg-[#FDF6EC] text-[#F0AD4E] border border-orange-600"
-                                    : "bg-gray-100 text-gray-600 border border-gray-400") +
-                                  " py-0.5 px-1  rounded-lg text-[10px] min-w-[70px] inline-block text-center"
-                                }
-                              >
-                                {invoice.invoiceStatus}
-                              </span>
+                            <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap  border-b border-gray-200 dark:text-[#ffffff]">
+                              {(() => {
+                                const statusLower = (invoice.invoiceStatus || "").toLowerCase();
+                                const cls =
+                                  statusLower === "paid"
+                                    ? "bg-[#ECFDF3] text-[#377E36] border border-green-600 dark:bg-[#377E3633] dark:text-[#377E36]"
+                                    : statusLower === "pending"
+                                    ? "bg-[#FDF6EC] text-[#F0AD4E] border border-orange-600 dark:bg-[#F0AD4E33] dark:text-[#F0AD4E]"
+                                    : "bg-gray-100 text-gray-600 border border-gray-400";
+                                return (
+                                  <span className={`${cls} py-0.5 px-1  rounded-sm text-[10px] min-w-[70px] inline-block text-center`}>
+                                    {invoice.invoiceStatus}
+                                  </span>
+                                );
+                              })()}
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap border-b border-gray-200 rounded-r-lg relative">
                               <button
@@ -1326,7 +1337,7 @@ const Invoice = () => {
                               </button>
                               {actionMenuOpen === invoice._id && (
                                 <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-10 dark:bg-[#343434]">
-                                  {invoice.invoiceStatus === "Paid" ? (
+                                  {(invoice.invoiceStatus || "").toLowerCase() === "paid" ? (
                                     <button
                                       className="block w-full text-left px-4 py-2 text-xs dark:text-[#ffffff]"
                                       onClick={() => {
@@ -1346,7 +1357,7 @@ const Invoice = () => {
                                     >
                                       View Receipt
                                     </button>
-                                  ) : invoice.invoiceStatus === "Failed" ? (
+                                  ) : (invoice.invoiceStatus || "").toLowerCase() === "failed" ? (
                                     <button
                                       className="block w-full text-left px-4 py-2 text-xs dark:text-[#ffffff]"
                                       onClick={() => {

@@ -556,16 +556,16 @@ const GroupStudents = () => {
 
   const getStatusStyle = (status: string) => {
     switch (status) {
-     case "Completed":
-        return "bg-[#ECFDF3] text-[#377E36]";
+      case "Completed":
+        return "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633] dark:text-[#377E36]";
       case "Not Completed":
-        return "bg-[#FDF6EC] text-[#F0AD4E]";
+        return "bg-[#FDF6EC] text-[#F0AD4E] dark:bg-[#F0AD4E33] dark:text-[#F0AD4E]";
       case "Not Assigned":
-        return "bg-[#FDECEC] text-[#D34645]";
+        return "bg-[#FDECEC] text-[#D34645] dark:text-[#D34645] dark:bg-[#D3464533]" ;
       case "Assigned":
-        return "bg-[#225BAA] text[#225BAA]";
+        return "bg-[#225BAA] text[#225BAA] dark:bg-[#225BAA33] dark:text-[#225BAA]";
       case "Pending":
-        return "bg-blue-100 text-blue-700";
+        return "bg-blue-100 text-blue-700 dark:bg-[#F0AD4E33] dark:text-[#F0AD4E]";
       default:
         return "bg-gray-100 text-gray-600";
     }
