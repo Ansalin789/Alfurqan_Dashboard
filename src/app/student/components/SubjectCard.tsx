@@ -18,7 +18,7 @@ interface ApiResponse {
 }
 
 const COLORS = {
-  Completed: "#90CAF9", // light blue
+  Completed: "#9FD0FF", // light blue
   Pending: "#AFC0FF",   // light purple
 };
 
@@ -159,9 +159,9 @@ const Subjectcard: React.FC = () => {
         </h3>
         <div className="flex gap-3">
           {data.map((item) => (
-            <div key={item.name} className="flex items-center gap-1">
+            <div key={item.name} className="flex items-center gap-[2px]">
               <div
-                className="w-3 h-3 rounded-sm"
+                className="w-[10px] h-[10px] rounded-[3px] -mt-1"
                 style={{ backgroundColor: item.color }}
               ></div>
               <span className="text-[10px] text-[#010E30] dark:text-white">
@@ -214,7 +214,7 @@ const Subjectcard: React.FC = () => {
         </PieChart>
 
         {/* Center Label */}
-        <div className="absolute text-center text-[#010E30] dark:text-white text-[20px] font-bold">
+        <div className="absolute text-center text-[#010E30] dark:text-white text-[20px] font-semibold">
           100%
         </div>
       </div>

@@ -842,7 +842,7 @@ const TeacherFilter = () => {
                     value={rescheduleTime}
                     onChange={(e) => setRescheduleTime(e.target.value)}
                     className="w-full text-sm px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white dark:[color-scheme:dark]"
-                  />
+                  />     
                 </div>
               </div>
             </div>
