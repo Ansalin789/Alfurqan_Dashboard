@@ -3,9 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import PdfCard from '@/app/student/components/knowlegdebase/PdfCard';
 import BaseLayout2 from '@/components/BaseLayout2';
-import TeacherHeader from '@/app/teacher/components/TeacherHeader';
 import { MdTune } from 'react-icons/md';
-import { Search } from 'lucide-react';
+import { Search, Zap } from 'lucide-react';
 import RecordedClassesBase from '../../components/knowlegdebase/RecordedClassesBase';
 import StudentHeader from '../../components/StudentHeader';
 
@@ -59,14 +58,6 @@ const Knowledge: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (showPopup) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-  }, [showPopup]);
-
-  useEffect(() => {
     const fetchKnowledgeList = async () => {
       try {
         const token =
@@ -102,7 +93,10 @@ const Knowledge: React.FC = () => {
           }));
           setFilteredClass(formatted);
         } else {
-          console.error('❌ Failed to fetch knowledge base list:', result.message);
+          console.error(
+            '❌ Failed to fetch knowledge base list:',
+            result.message
+          );
         }
       } catch (error) {
         console.error('❌ Error fetching knowledge base list:', error);
@@ -171,8 +165,11 @@ const Knowledge: React.FC = () => {
   return (
     <BaseLayout2>
       <StudentHeader currentSection="Knowledge Base" />
-      <div className="w-full px-2 sm:px-4 py-6 min-h-screen">
+
+      {/* ✅ Content Wrapper */}
+      <div className="w-full px-2 sm:px-4 py-6 min-h-screen relative">
         <section className="w-full bg-[#F5F5F5] dark:bg-[#3B3B3B] py-3 rounded-xl shadow">
+          {/* Search + Filter */}
           <div className="flex flex-col md:flex-row items-center justify-between w-full bg-[#FAFAFB] dark:bg-[#343434] px-4 sm:px-6 -mt-3 rounded-t-xl gap-4">
             <div className="flex-1 flex items-center gap-2 text-sm text-gray-500">
               <Search className="w-5 h-5 text-gray-400" />
@@ -201,6 +198,7 @@ const Knowledge: React.FC = () => {
             </div>
           </div>
 
+          {/* PDF Cards */}
           <div className="grid grid-cols-1 p-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {displayedClasses.map((item, index) => (
               <PdfCard
@@ -215,6 +213,7 @@ const Knowledge: React.FC = () => {
 
         {renderPagination()}
 
+        {/* Recorded Classes */}
         <div className="mt-6">
           <h2 className="text-xl font-semibold text-[#0a0a0a] dark:text-white dark:bg-[#242424] pb-3">
             Recorded Classes
@@ -252,9 +251,9 @@ const Knowledge: React.FC = () => {
         </div>
       </div>
 
-      {/* 🔒 Popup if not Pro */}
+      {/* 🔒 Popup (covers header + content, NOT sidebar) */}
       {showPopup && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 dark:bg-black/70">
+        <div className="absolute top-0 right-0  bottom-0 left-60 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60">
           <div className="bg-white dark:bg-[#2c2c2c] text-gray-800 dark:text-white rounded-2xl p-6 w-[320px] shadow-2xl flex flex-col items-center space-y-5 transition-all duration-300">
             <div className="w-16 h-16 rounded-full bg-gradient-to-b from-purple-500 to-cyan-400 flex items-center justify-center text-white text-3xl font-bold shadow-md">
               !
@@ -262,11 +261,10 @@ const Knowledge: React.FC = () => {
             <p className="text-center text-[16px] font-medium">
               Applicable for Only <br /> Pro Users!
             </p>
-            <button
-              className="w-full bg-gradient-to-r from-purple-500 to-cyan-400 text-white text-[14px] font-semibold py-2 rounded-full hover:opacity-90 transition-all flex items-center justify-center gap-2"
-            >
-              Upgrade Now <span className="text-white text-sm">⚡</span>
-            </button>
+            <button className="w-full bg-gradient-to-r from-purple-500 to-cyan-400 text-white text-[14px] font-semibold py-2 rounded-full hover:opacity-90 transition-all flex items-center justify-center gap-2">
+  Upgrade Now 
+  <Zap className="w-4 h-4 stroke-[2.5] text-white" fill="none" />
+</button>
           </div>
         </div>
       )}

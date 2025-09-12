@@ -10,7 +10,8 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import { Bell } from "lucide-react";
 import StudentHeader from "../../components/StudentHeader";
-// Define your interfaces
+import { TbSend } from "react-icons/tb";
+
 interface IMessage {
   _id: string;
   messages: string;
@@ -70,52 +71,57 @@ interface IMessagesend {
   receiverEmail: string;
   notificationStatus: "Unseen" | "Seen";
   status: "Active" | "Inactive";
-  createdDate: Date; // ISO date string
+  createdDate: Date;
   createdBy: string;
-  updatedDate: Date; // ISO date string
+  updatedDate: Date;
   updatedBy: string;
 }
 
 const Message = () => {
   const [teachers, setTeachers] = useState<IUser[]>([]);
   const [invoice, setInvoice] = useState<Invoice | null>(null);
-
   const [academicCoaches, setAcademicCoaches] = useState<IUser[]>([]);
   const [activeTab, setActiveTab] = useState<
     "teachers" | "academicCoaches" | "all"
   >("all");
-
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
   const [messages, setMessages] = useState<IMessageData[]>([]);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [messageCount, setMessageCount] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userData, setUserData] = useState({
+    userId: "",
+    userName: "",
+    studentName: "",
+    studentEmail: "",
+    token: ""
+  });
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<any>(null);
 
-  let userId: string | null = null;
-  const userName =
-    typeof window !== "undefined"
-      ? localStorage.getItem("StudentPortalName")
-      : null;
-  let studentName: string = "";
-  let studentEmail: string = "";
+  useEffect(() => {
+    const userId = localStorage.getItem("StudentPortalId") || "";
+    const userName = localStorage.getItem("StudentPortalName") || "";
+    const studentName = localStorage.getItem("StudentName") || "Student";
+    const studentEmail = localStorage.getItem("StudentEmail") || "student@blackstone.com";
+    const token = localStorage.getItem("StudentAuthToken") || "";
 
-  if (typeof window !== "undefined") {
-    userId = localStorage.getItem("StudentPortalId");
-    studentName = localStorage.getItem("StudentName") || "Student";
-    studentEmail =
-      localStorage.getItem("StudentEmail") || "student@blackstone.com";
-  }
+    setUserData({
+      userId,
+      userName,
+      studentName,
+      studentEmail,
+      token
+    });
+    
+    setIsLoading(false);
+  }, []);
 
   const fetchUsersByRole = async (role: string): Promise<IUser[]> => {
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("StudentAuthToken")
-          : null;
-
-      if (!token) {
+      if (!userData.token) {
         console.error("❌ StudentAuthToken not found");
         return [];
       }
@@ -125,12 +131,11 @@ const Message = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${userData.token}`,
           },
         }
       );
 
-      // 🔥 Client-side filtering here
       const allUsers = response.data.users;
       const filtered = allUsers.filter((user) =>
         user.role.some(
@@ -165,34 +170,27 @@ const Message = () => {
 
   const fetchMessages = async (receiverId: string) => {
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("StudentAuthToken")
-          : null;
-
-      if (!token) {
+      if (!userData.token) {
         console.error("❌ StudentAuthToken not found");
         return;
       }
 
       const { data } = await axios.get<IMessageResponse>(
-        `https://api.blackstoneinfomaticstech.com/realtimemessage/${userId}/${receiverId}`,
+        `https://api.blackstoneinfomaticstech.com/realtimemessage/${userData.userId}/${receiverId}`,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${userData.token}`,
           },
         }
       );
 
       const fetchedMessages = data?.data;
-      setMessages(fetchedMessages); // for rendering
+      setMessages(fetchedMessages);
 
-      // Count unread messages in all groups
       const allMessages = fetchedMessages.flatMap((group) => group.messages);
       const unreadCount = allMessages.filter((m) => !m.isRead).length;
       setMessageCount(unreadCount);
-      // Update the unread message count
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
@@ -208,21 +206,6 @@ const Message = () => {
     }
   }, [messages]);
 
-  // useEffect(() => {
-  //   const fetchUsers = async () => {
-  //     if (activeTab === "teachers" && teachers.length === 0) {
-  //       const result = await fetchUsersByRole("TEACHER");
-  //       setTeachers(result);
-  //     } else if (
-  //       activeTab === "academicCoaches" &&
-  //       academicCoaches.length === 0
-  //     ) {
-  //       const result = await fetchUsersByRole("ACADEMICCOACH");
-  //       setAcademicCoaches(result);
-  //     }
-  //   };
-  //   fetchUsers();
-  // }, [activeTab]);
   useEffect(() => {
     const fetchUsers = async () => {
       if (teachers.length === 0) {
@@ -234,15 +217,18 @@ const Message = () => {
         setAcademicCoaches(result);
       }
     };
-    fetchUsers();
+    
+    if (userData.token) {
+      fetchUsers();
+    }
+  }, [activeTab, userData.token]);
+
+  useEffect(() => {
+    setSelectedUser(null);
   }, [activeTab]);
 
   useEffect(() => {
-    setSelectedUser(null); // clear selected user on tab change
-  }, [activeTab]);
-
-  useEffect(() => {
-    if (!socketRef.current) {
+    if (!socketRef.current && userData.userId) {
       socketRef.current = io("https://api.blackstoneinfomaticstech.com", {
         transports: ["websocket"],
         withCredentials: true,
@@ -253,7 +239,7 @@ const Message = () => {
 
       socketRef.current.on("connect", () => {
         console.log("Connected to Socket.IO with ID:", socketRef.current?.id);
-        socketRef.current?.emit("subscribe", userId);
+        socketRef.current?.emit("subscribe", userData.userId);
       });
 
       socketRef.current.on("disconnect", () => {
@@ -264,45 +250,36 @@ const Message = () => {
         console.error("Connection error:", err);
       });
     }
+    
     const handleNewMessage = (newMessage: IMessage) => {
-      console.log("Received new message:", newMessage);
-
-      // Check if message is relevant to current chat or should increment count
       const isForCurrentChat =
-        (newMessage.senderId === userId &&
+        (newMessage.senderId === userData.userId &&
           newMessage.receiverId === selectedUser?._id) ||
         (newMessage.senderId === selectedUser?._id &&
-          newMessage.receiverId === userId);
-      console.log(userId);
-      console.log(selectedUser?._id);
-      // Always update message count for unread messages
-      if (newMessage.receiverId === userId && !newMessage.isRead) {
+          newMessage.receiverId === userData.userId);
+
+      if (newMessage.receiverId === userData.userId && !newMessage.isRead) {
         setMessageCount((prev) => prev + 1);
       }
 
-      // Only update messages if it's for the current chat
       if (isForCurrentChat) {
         setMessages((prev) => {
           const dateKey = new Date(newMessage.createdDate)
             .toISOString()
             .split("T")[0];
-          console.log("enter");
-          // Find if we already have messages for this date
+          
           const existingGroupIndex = prev.findIndex(
             (group) => group._id === dateKey
           );
 
-          // Create a new state array
           const newState = [...prev];
 
           if (existingGroupIndex !== -1) {
-            // Add to existing date group - append to maintain chronological order
             newState[existingGroupIndex] = {
               ...newState[existingGroupIndex],
               messages: [...newState[existingGroupIndex].messages, newMessage],
             };
           } else {
-            // Create new date group at the beginning (since we're using flex-col-reverse)
             newState.unshift({
               _id: dateKey,
               messages: [newMessage],
@@ -312,7 +289,6 @@ const Message = () => {
           return newState;
         });
 
-        // Scroll to bottom after new message
         setTimeout(() => {
           if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -321,12 +297,17 @@ const Message = () => {
       }
     };
 
-    socketRef.current.on("newmessage", handleNewMessage);
+    if (socketRef.current) {
+      socketRef.current.on("newmessage", handleNewMessage);
+    }
 
     return () => {
-      socketRef.current?.off("newmessage", handleNewMessage);
+      if (socketRef.current) {
+        socketRef.current.off("newmessage", handleNewMessage);
+      }
     };
-  }, [userId, selectedUser]);
+  }, [userData.userId, selectedUser]);
+
   const formatDateLabel = (dateString: string): string => {
     const inputDate = new Date(dateString);
     const today = new Date();
@@ -345,7 +326,8 @@ const Message = () => {
       month: "short",
       day: "numeric",
     });
-  }; // Replace your current groupedMessages logic with:
+  };
+
   const groupedMessages = messages
     .flatMap((group) => group.messages)
     .reduce((acc, msg) => {
@@ -356,19 +338,19 @@ const Message = () => {
     }, {} as Record<string, IMessage[]>);
 
   const handleSendMessage = async () => {
-    if (!selectedUser || !messageText.trim()) return;
+    if (!selectedUser || !messageText.trim() || !userData.userId) return;
 
     const newMessage: IMessagesend = {
       messages: messageText,
-      senderId: userId ?? "",
-      senderName: studentName,
+      senderId: userData.userId,
+      senderName: userData.studentName,
       receiverId: selectedUser._id,
       receiverName: selectedUser.userName,
       createdDate: new Date(),
       notificationStatus: "Unseen",
       isRead: false,
       status: "Active",
-      senderEmail: studentEmail,
+      senderEmail: userData.studentEmail,
       receiverEmail: selectedUser.email,
       createdBy: "System",
       updatedDate: new Date(),
@@ -376,23 +358,18 @@ const Message = () => {
     };
 
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("StudentAuthToken")
-          : null;
-
-      if (!token) {
+      if (!userData.token) {
         console.error("❌ StudentAuthToken not found");
         return;
       }
-      // Send the new message to the backend API
+
       const response = await axios.post(
         "https://api.blackstoneinfomaticstech.com/realtimemessage",
         newMessage,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${userData.token}`,
           },
         }
       );
@@ -421,18 +398,16 @@ const Message = () => {
           );
 
           if (existingGroupIndex !== -1) {
-            // Append to existing group
             const updated = [...prev];
             updated[existingGroupIndex] = {
               ...updated[existingGroupIndex],
               messages: [
                 ...updated[existingGroupIndex].messages,
                 convertedMessage,
-              ], // Append to end
+              ],
             };
             return updated;
           } else {
-            // Add new group at the end
             return [
               ...prev,
               {
@@ -464,12 +439,33 @@ const Message = () => {
     }
   };
 
+  const formatRole = (roles: string[]) => {
+    return roles.map(role => {
+      return role.toLowerCase()
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }).join(', ');
+  };
+
+  if (isLoading) {
+    return (
+      <BaseLayout2>
+        <StudentHeader currentSection="Message" />
+        <div className="py-3 px-5">
+          <div className="flex items-center justify-center h-screen">
+            <p>Loading...</p>
+          </div>
+        </div>
+      </BaseLayout2>
+    );
+  }
+
   return (
     <BaseLayout2>
       <StudentHeader currentSection="Message" />
       <div className="py-3 px-5">
         <div className="flex flex-col md:flex-row gap-4 h-[85vh]">
-          {/* Left Panel */}
           <motion.div
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -487,15 +483,8 @@ const Message = () => {
               <div>
                 <div className="flex">
                   <h3 className="text-[18px] font-medium text-[#010E30] dark:text-[#fff]">
-                    {userName}
+                    {userData.userName}
                   </h3>
-                  <button className="ml-[4px] text-gray-500">
-                    {messageCount > 0 && (
-                      <span className="-mt-2 ml-1 bg-red-600 text-white text-[8px] rounded-full h-3 w-3 flex items-center justify-center animate-pulse">
-                        {messageCount}
-                      </span>
-                    )}
-                  </button>
                 </div>
                 <p className="text-[12px] text-[#010e30a7] font-medium dark:text-[#fff] dark:opacity-[60%]">
                   Student
@@ -503,7 +492,6 @@ const Message = () => {
               </div>
             </div>
 
-            {/* Search Bar */}
             <motion.div
               whileHover={{ scale: 1.01 }}
               className="relative mt-2 mb-3"
@@ -520,7 +508,6 @@ const Message = () => {
               />
             </motion.div>
 
-            {/* Tabs */}
             <div className="flex border-b dark:border-[#505050]">
               <button
                 className={`px-2 py-1.5 text-[13px] ${
@@ -554,7 +541,6 @@ const Message = () => {
               </button>
             </div>
 
-            {/* User List */}
             <div className="mt-2 flex-1 overflow-y-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
               <AnimatePresence>
                 {filteredUsers.map((user) => (
@@ -592,12 +578,12 @@ const Message = () => {
                           {user.userName}
                         </h5>
                         <p className="text-[10px] text-gray-500 dark:text-[#fff] dark:text-opacity-[60%] truncate max-w-[180px]">
-                          {user.email}
+                          {user.lastSeen}
                         </p>
                       </div>
                     </div>
-                    <span className="text-[10px] text-gray-500 dark:text-[#fff] dark:text-opacity-[60%] truncate max-w-[180px]">
-                      {user.lastSeen}
+                    <span className="text-[10px] text-green-600 dark:text-green-400 font-medium">
+                      {formatRole(user.role)}
                     </span>
                   </motion.button>
                 ))}
@@ -605,7 +591,6 @@ const Message = () => {
             </div>
           </motion.div>
 
-          {/* Chat Panel */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -614,7 +599,7 @@ const Message = () => {
           >
             {selectedUser ? (
               <>
-                <div className="p-3">
+                <div className="p-3 border-b dark:border-[#505050] flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <motion.div
                       whileHover={{ scale: 1.05 }}
@@ -635,11 +620,9 @@ const Message = () => {
                       <h3 className="text-xs font-medium dark:text-[#fff]">
                         {selectedUser.userName}
                       </h3>
-                      <div className="flex items-center">
-                        <p className="text-[10px] text-gray-400 dark:text-[#fff] dark:text-opacity-[60%] capitalize">
-                          {selectedUser.status} • {selectedUser.role}
-                        </p>
-                      </div>
+                      <p className="text-[10px] text-[#010E3099]/60 dark:text-[#010E3099]/60 font-medium">
+                        {formatRole(selectedUser.role)}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -658,9 +641,9 @@ const Message = () => {
                               {formatDateLabel(date)}
                             </div>
                             {msgs
-                              .toSorted(
+                              .sort(
                                 (a, b) =>
-                                  new Date(a.createdDate).getTime() -
+                                  new Date(a.createdDate).getTime() - 
                                   new Date(b.createdDate).getTime()
                               )
                               .map((msg) => (
@@ -670,7 +653,7 @@ const Message = () => {
                                   animate={{ opacity: 1, y: 0 }}
                                   transition={{ duration: 0.2 }}
                                   className={`flex flex-col mb-3 ${
-                                    msg.senderId === userId
+                                    msg.senderId === userData.userId
                                       ? "items-end"
                                       : "items-start"
                                   }`}
@@ -678,7 +661,7 @@ const Message = () => {
                                   <motion.div
                                     whileHover={{ scale: 1.01 }}
                                     className={`p-2 rounded-lg max-w-[80%] ${
-                                      msg.senderId === userId
+                                      msg.senderId === userData.userId
                                         ? "bg-[#576CBC] text-[#FFFFFF]"
                                         : "bg-[#F1F1F1] dark:bg-[#444] text-[#010E30] dark:text-[#FFFFFF]"
                                     }`}
@@ -693,7 +676,7 @@ const Message = () => {
                                           minute: "2-digit",
                                         })}
                                       </span>
-                                      {msg.senderId === userId && (
+                                      {msg.senderId === userData.userId && (
                                         <span className="text-[9px] dark:text-[#fff]">
                                           {msg.isRead ? "✓✓" : "✓"}
                                         </span>
@@ -708,48 +691,50 @@ const Message = () => {
                     <div ref={messagesEndRef} />
                   </div>
                 </div>
+<motion.div
+  initial={{ y: 10, opacity: 0 }}
+  animate={{ y: 0, opacity: 1 }}
+  className=" border-gray-200 dark:border-[#252525] p-3 bg-white dark:bg-[#272727]"
+>
+  <div className="flex items-center w-full bg-gray-100 dark:bg-[#343434] rounded px-3 py-2">
+    {/* Attachment */}
+    <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-300">
+      <GrAttachment size={16} />
+    </button>
 
-                <motion.div
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  className="border-t border-gray-200 dark:border-[#505050] p-3 bg-[#FAFAFB] dark:bg-[#343434]"
-                >
-                  <div className="flex items-center rounded-lg bg-gray-50 dark:bg-[#444] p-1">
-                    <button className="p-1 text-[#010E30] dark:text-[#FFFFFF] hover:text-gray-700 ml-1">
-                      <GrAttachment size={14} />
-                    </button>
-                    <input
-                      type="text"
-                      placeholder="Type a message..."
-                      className="flex-1 px-2 py-1.5 text-xs bg-transparent outline-none text-[#010E30] dark:text-[#FFFFFF]"
-                      value={messageText}
-                      onChange={(e) => setMessageText(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (
-                          e.key === "Enter" &&
-                          selectedUser &&
-                          messageText.trim()
-                        ) {
-                          handleSendMessage();
-                        }
-                      }}
-                    />
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={handleSendMessage}
-                      disabled={!messageText.trim()}
-                      className={`p-1 rounded-lg flex items-center ${
-                        messageText.trim()
-                          ? "bg-[#576CBC] text-white"
-                          : "bg-gray-200 dark:bg-[#505050] text-gray-400 cursor-not-allowed"
-                      }`}
-                    >
-                      <FaTelegramPlane size={14} />
-                    </motion.button>
-                  </div>
-                </motion.div>
+    {/* Input */}
+    <input
+      type="text"
+      placeholder="Type a message"
+      className="flex-1 px-2 text-sm bg-transparent outline-none text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+      value={messageText}
+      onChange={(e) => setMessageText(e.target.value)}
+      onKeyDown={(e) => {
+        if (
+          e.key === "Enter" &&
+          selectedUser &&
+          messageText.trim()
+        ) {
+          handleSendMessage();
+        }
+      }}
+    />
+
+    {/* Send */}
+    <motion.button
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={handleSendMessage}
+      className="p-2 rounded-full"
+    >
+      <FaTelegramPlane size={16} className="text-[#576CBC]" />
+    </motion.button>
+  </div>
+</motion.div>
+
+
+
+
               </>
             ) : (
               <motion.div
