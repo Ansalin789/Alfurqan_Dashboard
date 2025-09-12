@@ -44,8 +44,21 @@ const StudentProfile = () => {
   // ✅ Move this line INSIDE the component
   const [invoices, setInvoices] = useState<IStudentInvoice[]>([]);
 
-  // Define paymentStatus
-  const paymentStatus = "Pending"; // Set this to the desired status
+  // Helper: robust date display for ISO or epoch (s/ms) strings
+  const toDateDisplay = (value?: string) => {
+    if (!value) return "";
+    const trimmed = String(value).trim();
+    let date: Date;
+    if (/^\d+$/.test(trimmed)) {
+      const n = Number(trimmed);
+      const ms = n < 1e12 ? n * 1000 : n;
+      date = new Date(ms);
+    } else {
+      date = new Date(trimmed);
+    }
+    if (isNaN(date.getTime())) return "";
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  };
 
   useEffect(() => {
     const studentId = localStorage.getItem("StudentPortalId");
@@ -65,9 +78,9 @@ const StudentProfile = () => {
         }
 
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/studentinvoiceById",
+          "http://localhost:5001/studentinvoiceById",
           {
-            params: { studentId, paymentStatus }, // Include paymentStatus here
+            params: { studentId }, // fetch ALL statuses
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
@@ -79,8 +92,23 @@ const StudentProfile = () => {
 
         // Check if the response contains data
         if (response.data && Array.isArray(response.data.data)) {
-          setInvoices(response.data.data); // Set the invoices state
-          console.log("Invoices:", response.data.data); // Log the invoices
+          // Optionally sort by recency: lastUpdatedDate -> paymentDate -> createdDate
+          const toMs = (v?: string) => {
+            if (!v) return 0;
+            const s = String(v).trim();
+            if (/^\d+$/.test(s)) {
+              const n = Number(s);
+              return n < 1e12 ? n * 1000 : n;
+            }
+            return new Date(s).getTime();
+          };
+          const sorted = [...response.data.data].sort((a: IStudentInvoice, b: IStudentInvoice) => {
+            const tb = toMs(b.lastUpdatedDate) || toMs(b.paymentDate) || new Date(b.createdDate).getTime();
+            const ta = toMs(a.lastUpdatedDate) || toMs(a.paymentDate) || new Date(a.createdDate).getTime();
+            return tb - ta;
+          });
+          setInvoices(sorted);
+          console.log("Invoices:", sorted);
         } else {
           console.warn("Invalid data format from API:", response.data);
         }
@@ -175,11 +203,11 @@ const StudentProfile = () => {
           Upcoming Payments
         </h3>
 
-        {invoices.filter((i) => i.invoiceStatus === "Pending").length === 0 ? (
+        {invoices.filter((i) => (i.invoiceStatus || "").toLowerCase() === "pending").length === 0 ? (
           <p className="text-gray-500 text-sm">No pending payments found</p>
         ) : (
           invoices
-            .filter((i) => i.paymentStatus === "Pending")
+            .filter((i) => (i.invoiceStatus || "").toLowerCase() === "pending")
             .slice(0, 2)
             .map((invoice) => (
               <div
@@ -204,11 +232,7 @@ const StudentProfile = () => {
                 <div className="flex flex-col items-end">
                   <p className="text-gray-400 text-[11px]">{invoice.invoiceStatus}</p>
                   <p className="text-gray-400 text-[12px]">
-                    {new Date(invoice.dueDate).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
+                    {toDateDisplay(invoice.dueDate)}
                   </p>
                 </div>
               </div>
@@ -222,11 +246,11 @@ const StudentProfile = () => {
           Recent Payments
         </h3>
 
-        {invoices.filter((i) => i.invoiceStatus === "Paid").length === 0 ? (
+        {invoices.filter((i) => (i.invoiceStatus || "").toLowerCase() === "paid").length === 0 ? (
           <p className="text-gray-500 text-sm">No paid payments found</p>
         ) : (
           invoices
-            .filter((i) => i.invoiceStatus === "Paid")
+            .filter((i) => (i.invoiceStatus || "").toLowerCase() === "paid")
             .slice(0, 2)
             .map((invoice) => (
               <div
@@ -251,11 +275,7 @@ const StudentProfile = () => {
                 <div className="flex flex-col items-end">
                   <p className="text-[#377E36] text-[11px]">{invoice.invoiceStatus}</p>
                   <p className="text-gray-400 text-[12px]">
-                    {new Date(invoice.paymentDate).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
+                    {toDateDisplay(invoice.paymentDate || invoice.lastUpdatedDate || invoice.createdDate)}
                   </p>
                 </div>
               </div>
