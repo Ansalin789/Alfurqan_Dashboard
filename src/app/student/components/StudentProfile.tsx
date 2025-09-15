@@ -44,28 +44,15 @@ const StudentProfile = () => {
   // ✅ Move this line INSIDE the component
   const [invoices, setInvoices] = useState<IStudentInvoice[]>([]);
 
-  // Helper: robust date display for ISO or epoch (s/ms) strings
-  const toDateDisplay = (value?: string) => {
-    if (!value) return "";
-    const trimmed = String(value).trim();
-    let date: Date;
-    if (/^\d+$/.test(trimmed)) {
-      const n = Number(trimmed);
-      const ms = n < 1e12 ? n * 1000 : n;
-      date = new Date(ms);
-    } else {
-      date = new Date(trimmed);
-    }
-    if (isNaN(date.getTime())) return "";
-    return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-  };
+  // Define paymentStatus
+  const paymentStatus = "Pending"; // Set this to the desired status
 
   useEffect(() => {
     const studentId = localStorage.getItem("StudentPortalId");
     const token = localStorage.getItem("StudentAuthToken");
 
     setStudentName(localStorage.getItem("StudentPortalName"));
-    setStudentEmail(localStorage.getItem("StudentPortalEmail"));
+    setStudentEmail(localStorage.getItem("StudentcourseName"));
 
     console.log("Student ID:", studentId);
     console.log("Token:", token);
@@ -78,9 +65,9 @@ const StudentProfile = () => {
         }
 
         const response = await axios.get(
-          "http://localhost:5001/studentinvoiceById",
+          "https://api.blackstoneinfomaticstech.com/studentinvoiceById",
           {
-            params: { studentId }, // fetch ALL statuses
+            params: { studentId, paymentStatus }, // Include paymentStatus here
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
@@ -92,23 +79,8 @@ const StudentProfile = () => {
 
         // Check if the response contains data
         if (response.data && Array.isArray(response.data.data)) {
-          // Optionally sort by recency: lastUpdatedDate -> paymentDate -> createdDate
-          const toMs = (v?: string) => {
-            if (!v) return 0;
-            const s = String(v).trim();
-            if (/^\d+$/.test(s)) {
-              const n = Number(s);
-              return n < 1e12 ? n * 1000 : n;
-            }
-            return new Date(s).getTime();
-          };
-          const sorted = [...response.data.data].sort((a: IStudentInvoice, b: IStudentInvoice) => {
-            const tb = toMs(b.lastUpdatedDate) || toMs(b.paymentDate) || new Date(b.createdDate).getTime();
-            const ta = toMs(a.lastUpdatedDate) || toMs(a.paymentDate) || new Date(a.createdDate).getTime();
-            return tb - ta;
-          });
-          setInvoices(sorted);
-          console.log("Invoices:", sorted);
+          setInvoices(response.data.data); // Set the invoices state
+          console.log("Invoices:", response.data.data); // Log the invoices
         } else {
           console.warn("Invalid data format from API:", response.data);
         }
@@ -168,7 +140,7 @@ const StudentProfile = () => {
 
   return (
     <div className="w-[310px] flex flex-col gap-4 cursor-pointer" onClick={() => router.push("student-profile")} >
-      <div className="rounded-xl shadow-lg bg-white h-[280px] dark:bg-[#343434] p-4 relative">
+      <div className="rounded-xl shadow-lg bg-white h-[300px] dark:bg-[#343434] p-4 relative">
         <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">
           Student Profile
         </h3>
@@ -182,9 +154,9 @@ const StudentProfile = () => {
         <h3 className="text-[#010E30] font-bold text-[16px] dark:text-white text-center">
           {studentName ?? "Loading..."}
         </h3>
-        {/* <p className="text-gray-500 text-[12px] text-center">
+        <p className="text-gray-500 text-[12px] text-center">
           {studentEmail ?? "Loading..."}
-        </p> */}
+        </p>
         <p className="text-gray-500 text-[12px] mb-2 text-center">Level {dashboardCounts.totalLevel}</p>
 
         <div className="flex justify-center space-x-1 mb-2">
@@ -198,16 +170,16 @@ const StudentProfile = () => {
       </div>
 
       {/* Payment Item */}
-      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] p-4 h-[180px] mt-1 w-full">
+      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] p-4 h-[185px] mt-1 w-full">
         <h3 className="text-[#010E30] font-semibold text-[16px] mb-3 dark:text-white">
           Upcoming Payments
         </h3>
 
-        {invoices.filter((i) => (i.invoiceStatus || "").toLowerCase() === "pending").length === 0 ? (
+        {invoices.filter((i) => i.invoiceStatus === "Pending").length === 0 ? (
           <p className="text-gray-500 text-sm">No pending payments found</p>
         ) : (
           invoices
-            .filter((i) => (i.invoiceStatus || "").toLowerCase() === "pending")
+            .filter((i) => i.paymentStatus === "Pending")
             .slice(0, 2)
             .map((invoice) => (
               <div
@@ -232,7 +204,11 @@ const StudentProfile = () => {
                 <div className="flex flex-col items-end">
                   <p className="text-gray-400 text-[11px]">{invoice.invoiceStatus}</p>
                   <p className="text-gray-400 text-[12px]">
-                    {toDateDisplay(invoice.dueDate)}
+                    {new Date(invoice.dueDate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
                   </p>
                 </div>
               </div>
@@ -241,16 +217,16 @@ const StudentProfile = () => {
       </div>
 
       {/* Payment Item */}
-      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] mt-2 h-[180px] p-4 w-full">
+      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] mt-1 h-[185px] p-4 w-full">
         <h3 className="text-[#010E30] font-semibold text-[16px] mb-3 dark:text-white">
           Recent Payments
         </h3>
 
-        {invoices.filter((i) => (i.invoiceStatus || "").toLowerCase() === "paid").length === 0 ? (
+        {invoices.filter((i) => i.invoiceStatus === "Paid").length === 0 ? (
           <p className="text-gray-500 text-sm">No paid payments found</p>
         ) : (
           invoices
-            .filter((i) => (i.invoiceStatus || "").toLowerCase() === "paid")
+            .filter((i) => i.invoiceStatus === "Paid")
             .slice(0, 2)
             .map((invoice) => (
               <div
@@ -275,7 +251,11 @@ const StudentProfile = () => {
                 <div className="flex flex-col items-end">
                   <p className="text-[#377E36] text-[11px]">{invoice.invoiceStatus}</p>
                   <p className="text-gray-400 text-[12px]">
-                    {toDateDisplay(invoice.paymentDate || invoice.lastUpdatedDate || invoice.createdDate)}
+                    {new Date(invoice.paymentDate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
                   </p>
                 </div>
               </div>
@@ -284,7 +264,7 @@ const StudentProfile = () => {
       </div>
 
       {/* Gradient Action Cards - Example 1 */}
-      <div className="flex items-center justify-between p-4 mt-2 rounded-xl mb-0 bg-gradient-to-r from-[#7e57c2] to-[#5c6bc0] text-white">
+      <div className="flex items-center justify-between p-4 mt-1 rounded-xl mb-0 bg-gradient-to-r from-[#7e57c2] to-[#5c6bc0] text-white">
         <div className="flex items-center gap-4">
           {/* ICON CIRCLE with image */}
           <div className="bg-white bg-opacity-20 p-3 rounded-full w-10 h-10 flex items-center justify-center">
@@ -320,7 +300,7 @@ const StudentProfile = () => {
       </div>
 
       {/* Gradient Action Cards - Example 2 */}
-      <div className="flex items-center justify-between p-4 mt-2 rounded-xl bg-gradient-to-r from-[#ef5350] via-[#ec407a] to-[#ab47bc] text-white mb-3">
+      <div className="flex items-center justify-between p-4 mt-1 rounded-xl bg-gradient-to-r from-[#ef5350] via-[#ec407a] to-[#ab47bc] text-white mb-3">
         <div className="flex items-center gap-4">
           {/* Image icon in circle */}
           <div className="bg-white bg-opacity-20 p-3 rounded-full w-10 h-10 flex items-center justify-center">

@@ -30,7 +30,7 @@ const Dashboard = () => {
 
           {/* Charts Row */}
           <div className="flex gap-4">
-            <div className="w-[67%] rounded-xl h-[270px] flex flex-col">
+            <div className="w-[67%] rounded-xl h-[250px] flex flex-col">
               <div className="flex-1 flex items-center justify-center">
                 <ApplicationChart />
               </div>
