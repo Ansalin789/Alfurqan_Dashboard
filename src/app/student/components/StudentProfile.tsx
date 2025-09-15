@@ -139,8 +139,8 @@ const StudentProfile = () => {
   }, []);
 
   return (
-    <div className="w-[310px] flex flex-col gap-4 cursor-pointer" onClick={() => router.push("student-profile")} >
-      <div className="rounded-xl shadow-lg bg-white h-[300px] dark:bg-[#343434] p-4 relative">
+    <div className="w-[310px] flex flex-col gap-4" >
+      <div className="rounded-xl shadow-lg bg-white h-[300px] dark:bg-[#343434] p-4 relative cursor-pointer" onClick={() => router.push("student-profile")}>
         <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">
           Student Profile
         </h3>
@@ -170,13 +170,13 @@ const StudentProfile = () => {
       </div>
 
       {/* Payment Item */}
-      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] p-4 h-[185px] mt-1 w-full">
-        <h3 className="text-[#010E30] font-semibold text-[16px] mb-3 dark:text-white">
+      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] p-4 h-[185px] mt-1 w-full cursor-pointer" onClick={() => router.push("payment")}>
+        <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">
           Upcoming Payments
         </h3>
 
         {invoices.filter((i) => i.invoiceStatus === "Pending").length === 0 ? (
-          <p className="text-gray-500 text-sm">No pending payments found</p>
+          <p className="text-gray-500 text-xs text-center mt-12 align-middle">No pending payments found</p>
         ) : (
           invoices
             .filter((i) => i.paymentStatus === "Pending")
@@ -217,13 +217,13 @@ const StudentProfile = () => {
       </div>
 
       {/* Payment Item */}
-      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] mt-1 h-[185px] p-4 w-full">
-        <h3 className="text-[#010E30] font-semibold text-[16px] mb-3 dark:text-white">
+      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] mt-1 h-[185px] p-4 w-full cursor-pointer" onClick={() => router.push("payment")}>
+        <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">
           Recent Payments
         </h3>
 
         {invoices.filter((i) => i.invoiceStatus === "Paid").length === 0 ? (
-          <p className="text-gray-500 text-sm">No paid payments found</p>
+          <p className="text-gray-500 text-xs text-center mt-12 align-middle">No paid payments found</p>
         ) : (
           invoices
             .filter((i) => i.invoiceStatus === "Paid")
