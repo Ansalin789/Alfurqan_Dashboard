@@ -320,21 +320,27 @@ if (Array.isArray(response.data.trialclasses)) {
     // Filter completed classes
     const now = new Date();
 
-    const completed = allClasses.filter(cls => {
-      const endDate = new Date(cls.endDate);
-      return (
-        cls.scheduleStatus === "Completed" ||
-        endDate < now // Auto-complete if end date passed
-      );
-    });
-    
-    const upcoming = allClasses.filter(cls => {
-      const endDate = new Date(cls.endDate);
-      return (
-        ["Scheduled", "Rescheduled", "RequestReschedule", "BothAbsent", "StudentAbsent", "TeacherAbsent"].includes(cls.scheduleStatus) &&
-        endDate >= now
-      );
-    });
+   const completed = allClasses
+  .filter(cls => {
+    const endDate = new Date(cls.endDate);
+    return (
+      ["Completed", "BothAbsent", "StudentAbsent", "TeacherAbsent"].includes(cls.scheduleStatus) &&
+      endDate < now
+    );
+  })
+  .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+const upcoming = allClasses
+  .filter(cls => {
+    const endDate = new Date(cls.endDate);
+    return (
+      ["Scheduled", "Rescheduled", "RequestReschedule"].includes(cls.scheduleStatus) &&
+      endDate >= now
+    );
+  })
+  .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+
     
     console.log("Completed Classes:", completed);
 
@@ -394,23 +400,71 @@ useEffect(() => {
     const lowerQuery = query.toLowerCase();
 
     const filtered = dataToShow.filter((item) => {
-      const combinedFields = [
-        item._id,
-        item.student?.studentFirstName,
-        item.student?.studentLastName,
-        item.student?.studentEmail,
-        item.scheduleStatus,
-        item.package,
-        item.status,
-        item.startDate,
-        item.endDate,
-        ...(item.startTime || []),
-        ...(item.endTime || []),
-      ]
-        .map((v) => (v ? String(v).toLowerCase() : ""))
-        .join(" ");
+      const isTrial = item.classType === "Trail class" || (item as any).isTrial;
 
-      return combinedFields.includes(lowerQuery);
+      // Date fields as shown in UI
+      const classDate = isTrial
+        ? (item as any).trialclass?.scheduledStartDate || item.startDate
+        : item.startDate;
+      const dateObj = classDate ? new Date(classDate) : null;
+      const dateIso = classDate ? classDate.slice(0, 10).toLowerCase() : ""; // YYYY-MM-DD
+      const dateReadable = dateObj
+        ? dateObj
+            .toLocaleDateString("en-US", {
+              month: "short",
+              day: "2-digit",
+              year: "numeric",
+            })
+            .toLowerCase()
+        : "";
+
+      // Timing as shown in UI
+      const startTime = isTrial
+        ? (item as any).trialclass?.scheduledFrom || item.startTime?.[0]
+        : item.startTime?.[0];
+      const endTime = isTrial
+        ? (item as any).trialclass?.scheduledTo || item.endTime?.[0]
+        : item.endTime?.[0];
+      const timing = `${startTime || ""} - ${endTime || ""}`.toLowerCase();
+
+      // Status as shown in UI
+      const status = (
+        isTrial
+          ? (item as any).trialclass?.meetingStatus || item.scheduleStatus
+          : item.scheduleStatus
+      )
+        ?.toLowerCase() || "";
+
+      // Course and Class Type as shown in UI
+      const courseName = (
+        isTrial
+          ? (item as any).trialclass?.course?.courseName || item.course?.courseName
+          : item.course?.courseName
+      )
+        ?.toLowerCase() || "";
+      const classType = (item.sessionClassType || item.classType || "")
+        .toLowerCase();
+
+      // Student identifiers
+      const studentFirst = item.student?.studentFirstName?.toLowerCase() || "";
+      const studentLast = item.student?.studentLastName?.toLowerCase() || "";
+      const studentEmail = item.student?.studentEmail?.toLowerCase() || "";
+
+      // ID
+      const classId = (isTrial ? (item as any).trialclass?.trialId || item._id : item._id)?.toLowerCase() || "";
+
+      return (
+        classId.includes(lowerQuery) ||
+        studentFirst.includes(lowerQuery) ||
+        studentLast.includes(lowerQuery) ||
+        studentEmail.includes(lowerQuery) ||
+        courseName.includes(lowerQuery) ||
+        classType.includes(lowerQuery) ||
+        status.includes(lowerQuery) ||
+        timing.includes(lowerQuery) ||
+        dateIso.includes(lowerQuery) ||
+        dateReadable.includes(lowerQuery)
+      );
     });
 
     setFilteredClasses(filtered);
@@ -492,7 +546,7 @@ useEffect(() => {
           <div className="flex space-x-6 px-4 py-2 rounded-md">
             <button
               onClick={() => setActiveTab("upcoming")}
-              className={`relative text-[14px] transition font-medium ${
+              className={`relative text-[15px] transition font-medium ${
                 activeTab === "upcoming"
                   ? "text-[#576CBC] font-semibold"
                   : "text-[#0A0A12] dark:text-[#fff] opacity-80"
@@ -505,7 +559,7 @@ useEffect(() => {
             </button>
             <button
               onClick={() => setActiveTab("completed")}
-              className={`relative text-[14px] transition font-medium ${
+              className={`relative text-[15px] transition font-medium ${
                 activeTab === "completed"
                   ? "text-[#576CBC] font-semibold"
                   : "text-[#0A0A12] dark:text-[#fff] opacity-80"
@@ -519,49 +573,72 @@ useEffect(() => {
           </div>
 
           <div className="mt-2">
-            <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
-              <div className="flex justify-between gap-2 items-center px-4 py-0">
-                <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search by keyword"
-                  className="bg-transparent outline-none text-[14px] w-52 py-3"
-                  value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
-              </div>
-              <div
-                onClick={() => setIsFilterModalOpen(true)}
-                className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-              >
-                <MdTune className="w-4 h-4" />
-                <span>Filter</span>
-              </div>
-              <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
-                <span className="text-left -ml-60">
-                  Showing {currentItems.length} Of {filteredClasses.length}
-                </span>
-              </div>
-            </div>
+            <div className=" w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg justify-between  flex flex-col md:flex-row items-start md:items-center px-4 relative gap-4 md:gap-0">
+                        <div className="flex-1 flex items-center gap-2 text-sm text-gray-500 justify-start px-4">
+                          <Search className="w-5 h-5 text-gray-400" />
+                          <input
+                            type="text"
+                            placeholder="Search by Student name"
+                            value={searchQuery}
+                            onChange={(e) => handleSearch(e.target.value)}
+                            className="w-full text-sm outline-none bg-transparent placeholder-gray-400"
+                          />
+                        </div>
+                        <button
+                          onClick={() => setIsFilterModalOpen(true)}
+                          className="flex-1 flex items-center gap-2 text-sm text-gray-400 cursor-pointer justify-start border-y-0 border-l-2 border-r-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4"
+                        >
+                          <MdTune className="w-5 h-5" />
+                          <span>Filter</span>
+                        </button>
+                        <div className="flex-1 flex items-center text-sm  px-4 text-gray-500 justify-start">
+                          <span>
+                            Showing {currentItems.length} Of {filteredClasses.length}
+                          </span>
+                        </div>
+                      </div>
           </div>
 
           <div className="overflow-x-auto scrollbar-none">
             <table
-              className="w-full table-auto border-collapse text-[13px] sm:text-sm"
+              className="w-full table-auto border-collapse text-[12px]"
               style={{ tableLayout: "fixed" }}
             >
-              <thead className="text-[12px] bg-[#4C6993] text-white">
-                <tr className="font-medium">
-                  <th className="text-left px-4 py-3 w-[180px]">Class ID</th>
-                  <th className="text-left px-4 py-3">Student Name</th>
-                  <th className="text-left px-4 py-3">Course</th>
-                  <th className="text-left px-4 py-3">Class Type</th>
-                  <th className="text-left px-4 py-3">Date</th>
-                  <th className="text-left px-4 py-3">Timing</th>
-                  <th className="text-left px-4 py-3 w-[180px]">Status</th>
-                  <th className="text-left px-4 py-3 ">Action</th>
+              <thead className="px-4 py-3.5 text-center border text-[14px] border-[#4C6993] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                <tr className="font-extralight">
+                  <th className="text-left px-4 py-3 w-[180px] font-normal">Class ID</th>
+                  <th className="text-left px-4 py-3 font-normal">Student Name</th>
+                  <th className="text-left px-4 py-3 font-normal">Course</th>
+                  <th className="text-left px-4 py-3 font-normal">Class Type</th>
+                  <th className="text-left px-4 py-3 font-normal">Date</th>
+                  <th className="text-left px-4 py-3 font-normal">Timing</th>
+                  <th className="text-left px-4 py-3 w-[180px] font-normal">Status</th>
+                  <th className="text-left px-4 py-3 font-normal">Action</th>
                 </tr>
               </thead>
+              {/* <thead>
+                <tr>
+                  {[
+                    "Class ID",
+                    "Student Name",
+                    "Course",
+                    "Class Type",
+                    "Date",
+                    "Time",
+                    "Status",
+                    "Action",
+                  ].map((col) => (
+                    <th
+                      key={col}
+                      className="px-4 py-3.5 text-center font-light border border-[#4C6993] bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                    >
+                      {col}
+                    </th>
+                  ))}
+                </tr>
+              </thead> */}
+
+
 <tbody>
   {currentItems.length > 0 ? (
     currentItems.map((item, index) => {
@@ -620,48 +697,49 @@ const studentName =
       return (
         <tr
           key={item._id}
-          className={`text-[12px] ${
+          className={`text-[12px] justify-center ${
             index % 2 === 0
               ? "bg-[#fff] dark:bg-[#2C2C2C]"
               : "bg-[#F8F8F8] dark:bg-[#303030]"
           }`}
         >
-          <td className="px-3 py-2 text-[10px] text-left break-words whitespace-normal">
+          <td className="px-3 py-2 text-[10px] text-left w-[200px] break-words whitespace-normal">
             {isTrial ? item.trialclass?.trialId || item._id : item._id || "N/A"}
           </td>
           <td className="text-[#3D8FDE] px-3 py-2 text-left w-[180px] break-words whitespace-normal">
             {studentName || "N/A"}
           </td>
-          <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
+          <td className="px-3 py-2 text-left w-[170px] break-words whitespace-normal">
             {courseName || "N/A"}
           </td>
-          <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
+          <td className="px-3 py-2 text-left w-[170px] break-words whitespace-normal">
             {classType || "N/A"}
           </td>
-          <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
+          <td className="px-3 py-2 text-left w-[170px] break-words whitespace-normal">
             {formattedDate}
           </td>
-          <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
+          <td className="px-3 py-2 text-left w-[170px] break-words whitespace-normal">
             {timeDisplay}
           </td>
-          <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[10px] w-[200px] break-words whitespace-normal">
-          <span
-  className={`px-3 py-1 font-semibold text-[11px] text-center rounded-md ${
-    status === "Scheduled"
-      ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633] px-7 py-1"
-      : status === "Rescheduled"
-      ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE] px-6 py-1" // <-- Custom Rescheduled style
-      : status === "RequestReschedule"
-      ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]  text-[9px]" // <-- Custom RequestReschedule style
-      : status === "BothAbsent"
-      ? "bg-[#FEF2F2] text-[#B91C1C] dark:bg-[#B91C1C33] px-6 py-1"
-      : "bg-[#E5E7EB] text-[#374151] dark:bg-[#DEDEDE]"
-  }`}
->
-  {status}
-</span>
-          </td>
-        <td className="px-3 py-2 relative w-[20px] break-words whitespace-normal">
+          <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-xs w-[200px] break-words whitespace-normal">
+  <span
+    className={`inline-block text-center rounded-md font-semibold text-[11px] px-3 py-1
+      ${
+        status === "Scheduled"
+          ? "bg-green-100 text-green-800 dark:bg-green-800/20"
+          : status === "Rescheduled" || status === "RequestReschedule"
+          ? "bg-gray-200 text-gray-800 dark:bg-gray-500/20"
+          : status === "BothAbsent"
+          ? "bg-red-100 text-red-700 dark:bg-red-700/20"
+          : "bg-gray-300 text-gray-600 dark:bg-gray-500/20"
+      }
+    `}
+  >
+    {status}
+  </span>
+</td>
+
+        <td className="px-3 py-2 relative w-[10px] break-words whitespace-normal">
           <div className="relative inline-block text-left">
             <button
               onClick={() =>
@@ -672,7 +750,7 @@ const studentName =
               <MoreVertical className="w-4 h-4 text-slate-600 dark:text-white" />
             </button>
 
-            {openDropdownId === item._id && (
+            {activeTab !== "completed" && openDropdownId === item._id && (
               <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-[#2C2C2C] shadow-lg ring-1 ring-black ring-opacity-5">
                 <div className="py-1 text-sm text-gray-700 dark:text-white">
                   <button

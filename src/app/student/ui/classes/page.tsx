@@ -76,6 +76,7 @@ const Classes = () => {
   const [filterFromTime, setFilterFromTime] = useState("");
   const [filterToTime, setFilterToTime] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [filterDataCountShow , setFilterDataCountShow] = useState(false);
   const [showLateReschedulePopup, setShowLateReschedulePopup] = useState(false);
   useEffect(() => {
     const fetchClasses = async () => {
@@ -127,13 +128,15 @@ const Classes = () => {
           );
 
         const completed = classes
-          .filter((cls) => cls.scheduleStatus === "Completed")
+          .filter((cls) => cls.scheduleStatus === "Completed" || cls.scheduleStatus === "BothAbsent" || cls.scheduleStatus === "StudentAbsent" || cls.scheduleStatus === "TeacherAbsent" )
           .sort(
             (a, b) =>
               new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
           );
         setUpcomingClasses(upcoming);
         setCompletedClasses(completed);
+        console.log("upcomoinig class",upcoming);
+        console.log("completed clasees",completed);
       } catch (error) {
         console.error("Error fetching class data:", error);
       }
@@ -284,6 +287,13 @@ const Classes = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredClass.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredClass.length / itemsPerPage);
+  const scheduledCount = filteredClass.filter(cls =>
+  ["Scheduled", "Rescheduled", "RequestReschedule"].includes(cls.scheduleStatus)
+).length;
+
+const completedCount = filteredClass.filter(cls =>
+  ["Completed", "BothAbsent", "TeacherAbsent", "StudentAbsent"].includes(cls.scheduleStatus)
+).length;
 
   return (
     <BaseLayout2>
@@ -292,27 +302,48 @@ const Classes = () => {
         <MyClass />
         {/* Tabs */}
         <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-4 py-4">
-          {["Scheduled", "Completed"].map((tab) => (
-            <button
-              key={tab}
-              className={`relative text-xs sm:text-sm md:text-base font-medium transition ${
-                activeTab === tab
-                  ? "text-[#576CBC] font-semibold"
-                  : "text-[#010E30] dark:text-white"
-              }`}
-              onClick={() => setActiveTab(tab as "Scheduled" | "Completed")}
-            >
-              {tab} (
-              {tab === "Scheduled"
-                ? filteredClasses.length
-                : filteredClasses.filter(cls => cls.status === "Completed").length}
-              )
-              {activeTab === tab && (
-                <span className="absolute left-0 -bottom-1 w-full h-[2px] rounded-full bg-[#576CBC]" />
-              )}
-            </button>
-          ))}
-        </div>
+        <button
+          className={`relative text-xs sm:text-sm md:text-base font-medium transition ${
+            activeTab === "Scheduled"
+              ? "text-[#576CBC] font-semibold"
+              : "text-[#010E30] dark:text-white"
+          }`}
+          onClick={() => setActiveTab("Scheduled")}
+        >
+          Scheduled{" "}
+          <span className={`font-medium  ${
+            activeTab === "Scheduled"
+              ? "text-[#576CBC] font-semibold"
+              : "text-[#010E30] dark:text-white"
+          }`}>
+            {filterDataCountShow ? (`(${scheduledCount})`) : (`(${upcomingClasses.length})`) }
+          </span>
+          {activeTab === "Scheduled" && (
+            <span className="absolute left-0 -bottom-1 w-full h-[2px] rounded-full bg-[#576CBC]" />
+          )}
+        </button>
+
+        <button
+          className={`relative text-xs sm:text-sm md:text-base font-medium transition ${
+            activeTab === "Completed"
+              ? "text-[#576CBC] font-semibold"
+              : "text-[#010E30] dark:text-white"
+          }`}
+          onClick={() => setActiveTab("Completed")}
+        >
+          Completed{" "}
+          <span className={`font-medium ${
+            activeTab === "Completed"
+              ? "text-[#576CBC] font-semibold"
+              : "text-[#010E30] dark:text-white"
+          }`}>
+            { filterDataCountShow ? (`(${completedCount})`) : (`(${completedClasses.length})`) }
+          </span>
+          {activeTab === "Completed" && (
+            <span className="absolute left-0 -bottom-1 w-full h-[2px] rounded-full bg-[#576CBC]" />
+          )}
+        </button>
+      </div>
 
         {/* Table Header & Filters */}
         <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-lg overflow-x-auto scrollbar-none">
@@ -357,7 +388,7 @@ const Classes = () => {
                   ].map((col) => (
                     <th
                       key={col}
-                      className="px-4 py-3.5 text-center font-medium border border-[#4C6993] bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                      className="px-4 py-3.5 text-left font-medium border border-[#4C6993] bg-[#4C6993] text-white dark:bg-[#6087C0]"
                     >
                       {col}
                     </th>
@@ -381,23 +412,23 @@ const Classes = () => {
                           : "bg-[#F8F8F8] dark:bg-[#303030]"
                       }`}
                     >
-                      <td className="px-4 py-3 text-center break-words">
+                      <td className="px-4 py-3 text-left break-words">
                         <span className="text-xs">{cls._id}</span>
                       </td>
-                      <td className="px-4 py-3 text-center text-[#576CBC] text-xs sm:text-sm">
+                      <td className="px-4 py-3 text-left text-[#576CBC] text-xs sm:text-sm">
                         {cls.teacher?.teacherName || "N/A"}
                       </td>
-                      <td className="px-4 py-3 text-center text-xs">
+                      <td className="px-4 py-3 text-left text-xs">
                         {cls.course.courseName}
                       </td>
-                      <td className="px-4 py-3 text-center text-xs">
+                      <td className="px-4 py-3 text-left text-xs">
                         {new Date(cls.startDate).toLocaleDateString("en-US", {
                           month: "short",
                           day: "2-digit",
                           year: "numeric",
                         })}
                       </td>
-                      <td className="px-4 py-3 text-center text-xs">
+                      <td className="px-4 py-3 text-left text-xs">
                         {cls.startTime[0]} - {cls.endTime[0]}
                       </td>
                       <td className="px-4 py-3 text-center text-xs">
@@ -409,7 +440,7 @@ const Classes = () => {
                           {cls.scheduleStatus}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-center relative">
+                      <td className="px-4 py-3 text-left relative">
                         {activeTab === "Scheduled" &&
                         cls.scheduleStatus === "Scheduled" ? (
                           <>
@@ -620,13 +651,14 @@ const Classes = () => {
                     setFilterToTime("");
                     setFilterStatus("");
                     setShowFilter(false);
+                    setFilterDataCountShow(false);
                   }}
                   className="px-4 py-1 border border-[#576CBC] rounded text-[#576CBC] hover:bg-gray-100 transition "
                 >
                   Reset
                 </button>
                 <button
-                  onClick={() => setShowFilter(false)}
+                  onClick={() => {setShowFilter(false) , setFilterDataCountShow(true)}}
                   className="px-5 py-1 bg-[#576CBC] text-white rounded hover:bg-blue-700 transition"
                 >
                   Show {filteredClass.length} results
