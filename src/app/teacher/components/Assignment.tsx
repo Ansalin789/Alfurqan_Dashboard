@@ -77,38 +77,60 @@ useEffect(() => {
   if (error) return <div className="text-center py-8 text-red-500">Error: {error}</div>;
   if (!data) return <div className="text-center py-8">No data available</div>;
 
-  const cards = [
-    {
-      title: "Total Assignment Assigned",
-      count: data.assignments.assigned,
-      percentage: Math.round((data.assignments.assigned / data.assignments.total) * 100),
-      ringColor: "#7DB5CB",
-      bgColor: "#CDD5E2",
-      pieData: [{ value: 100 }],
-    },
-    {
-      title: "Total Assignment Completed",
-      count: data.assignments.completed,
-      percentage: Math.round((data.assignments.completed / data.assignments.total) * 100),
-      ringColor: "#88CF9B",
-      bgColor: "#CDD5E2",
-      pieData: [
-        { value: Math.round((data.assignments.completed / data.assignments.total) * 100) },
-        { value: 100 - Math.round((data.assignments.completed / data.assignments.total) * 100) },
-      ],
-    },
-    {
-      title: "Total Assignment Pending",
-      count: data.assignments.pending,
-      percentage: Math.round((data.assignments.pending / data.assignments.total) * 100),
-      ringColor: "#FC6B57",
-      bgColor: "#CDD5E2",
-      pieData: [
-        { value: Math.round((data.assignments.pending / data.assignments.total) * 100) },
-        { value: 100 - Math.round((data.assignments.pending / data.assignments.total) * 100) },
-      ],
-    },
-  ];
+const cards = [
+  {
+    title: "Total Assignment Assigned",
+    count: data.assignments.assigned,
+    percentage:
+      data.assignments.total > 0
+        ? Math.round((data.assignments.assigned / data.assignments.total) * 100)
+        : 0,
+    ringColor: "#7DB5CB",
+    bgColor: "#CDD5E2",
+    pieData:
+      data.assignments.total > 0
+        ? [
+            { value: Math.round((data.assignments.assigned / data.assignments.total) * 100) },
+            { value: 100 - Math.round((data.assignments.assigned / data.assignments.total) * 100) },
+          ]
+        : [{ value: 0 }, { value: 100 }],
+  },
+  {
+    title: "Total Assignment Completed",
+    count: data.assignments.completed,
+    percentage:
+      data.assignments.total > 0
+        ? Math.round((data.assignments.completed / data.assignments.total) * 100)
+        : 0,
+    ringColor: "#88CF9B",
+    bgColor: "#CDD5E2",
+    pieData:
+      data.assignments.total > 0
+        ? [
+            { value: Math.round((data.assignments.completed / data.assignments.total) * 100) },
+            { value: 100 - Math.round((data.assignments.completed / data.assignments.total) * 100) },
+          ]
+        : [{ value: 0 }, { value: 100 }],
+  },
+  {
+    title: "Total Assignment Pending",
+    count: data.assignments.pending,
+    percentage:
+      data.assignments.total > 0
+        ? Math.round((data.assignments.pending / data.assignments.total) * 100)
+        : 0,
+    ringColor: "#FC6B57",
+    bgColor: "#CDD5E2",
+    pieData:
+      data.assignments.total > 0
+        ? [
+            { value: Math.round((data.assignments.pending / data.assignments.total) * 100) },
+            { value: 100 - Math.round((data.assignments.pending / data.assignments.total) * 100) },
+          ]
+        : [{ value: 0 }, { value: 100 }],
+  },
+];
+
 
   return (
     <div className="md:p-0 mx-auto">
@@ -116,10 +138,10 @@ useEffect(() => {
         {cards.map((item, idx) => {
           const bgClass =
             idx === 0
-              ? "bg-gradient-to-b from-white to-[#F6FCFF] dark:from-[#343434] dark:to-[#343434]"
+              ? "bg-gradient-to-b from-white to-[#F2FCFF] dark:from-[#343434] dark:to-[#343434]"
               : idx === 1
-              ? "bg-gradient-to-b from-white to-[#F6FFFF]  dark:from-[#343434] dark:to-[#343434]"
-              : "bg-gradient-to-b from-white to-[#F8F6FF]  dark:from-[#343434] dark:to-[#343434]";
+              ? "bg-gradient-to-b from-white to-[#F0FFFF]  dark:from-[#343434] dark:to-[#343434]"
+              : "bg-gradient-to-b from-white to-[#F8F1FF]  dark:from-[#343434] dark:to-[#343434]";
 
           return (
             <div

@@ -113,6 +113,19 @@ export default function AddMeeting({ onClose }: Props) {
   >([]);
   const [Participants, setParticipants] = useState<Participants[]>([]);
 
+  // Compute tomorrow's date in local time to disable today in the date picker
+  const formatLocalDateYYYYMMDD = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+  const minDateForMeeting = (() => {
+    const today = new Date();
+    const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    return formatLocalDateYYYYMMDD(tomorrow);
+  })();
+
   useEffect(() => {
     if (!open) return; // ✅ Only run when modal is open
 
@@ -137,14 +150,40 @@ export default function AddMeeting({ onClose }: Props) {
 
         const allParticipants = response.data ?? [];
         console.log("Applicants received:", allParticipants);
+        
+        // Debug: Log all unique learning interests
+        const allInterests = allParticipants.map((p: any) => p.studentDetails?.student?.learningInterest).filter(Boolean);
+        const uniqueInterests = allInterests.filter((interest: any, index: number) => allInterests.indexOf(interest) === index);
+        console.log("Unique learning interests found:", uniqueInterests);
 
         const filteredParticipants =
           activeTab === "All"
             ? allParticipants
             : allParticipants.filter(
-                (teacher: any) =>
-                  teacher.studentDetails.student.learningInterest?.toLowerCase() ===
-                  activeTab.toLowerCase()
+                (participant: any) => {
+                  const learningInterest = participant.studentDetails?.student?.learningInterest;
+                  if (!learningInterest) return false;
+                  
+                  // Handle different possible values for Islamic studies
+                  const normalizedInterest = learningInterest.toLowerCase().trim();
+                  const normalizedTab = activeTab.toLowerCase().trim();
+                  
+                  // Debug logging for Islamic tab
+                  if (normalizedTab === "islamic") {
+                    const matches = normalizedInterest === "islamic" || 
+                                   normalizedInterest === "islamic studies" ||
+                                   normalizedInterest === "islam" ||
+                                   normalizedInterest.includes("islamic");
+                    console.log(`Islamic filter: "${learningInterest}" -> "${normalizedInterest}" -> matches: ${matches}`);
+                    return matches;
+                  }
+                  
+                  const matches = normalizedInterest === normalizedTab;
+                  if (normalizedTab !== "all") {
+                    console.log(`${normalizedTab} filter: "${learningInterest}" -> "${normalizedInterest}" -> matches: ${matches}`);
+                  }
+                  return matches;
+                }
               );
 
         setParticipants(filteredParticipants);
@@ -177,6 +216,20 @@ export default function AddMeeting({ onClose }: Props) {
       selectedParticipants.length === 0
     ) {
       alert("Please fill all required fields!");
+      return;
+    }
+
+    // Prevent scheduling on the same date or past dates
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const picked = selectedDate ? new Date(selectedDate) : null;
+    if (!picked) {
+      alert("Please select a meeting date.");
+      return;
+    }
+    const pickedLocal = new Date(picked.getFullYear(), picked.getMonth(), picked.getDate());
+    if (pickedLocal <= startOfToday) {
+      alert("Meetings cannot be scheduled for today. Please pick a future date.");
       return;
     }
 
@@ -328,9 +381,9 @@ endTime,
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#576CBC]"
+              className="absolute inset-y-0 right-0 flex items-center"
             >
-              <Plus size={18} />
+              <Plus size={19} className="dark:text-[#fff] border border-[#858B94] rounded-sm -ml-7 p-[2px]"/>
             </button>
           </div>
           <Dialog
@@ -377,13 +430,13 @@ endTime,
                 <div className="flex justify-end mt-4 gap-2">
                   <button
                     onClick={() => setOpen(false)}
-                    className="px-3 py-1 border text-[#576CBC] rounded"
+                    className="px-3 py-1 border text-[#576CBC] rounded text-[12px] hover:bg-[#576bbc1a]"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={() => setOpen(false)}
-                    className="px-4 py-1 bg-[#576CBC] text-white rounded"
+                    className="px-4 py-1 bg-[#576CBC] text-white rounded text-[12px] hover:bg-[#576bbcaf]"
                   >
                     Done
                   </button>
@@ -406,11 +459,12 @@ endTime,
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full border rounded px-3 py-2 text-sm dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+              min={minDateForMeeting}
+              className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C] dark:[color-scheme:dark]"
             />
           </div>
 
-          <div className="mt-2">
+          <div className="mt-1">
             <label
               htmlFor="uyvuhvyuc"
               className="block text-sm text-gray-600 dark:text-white"
@@ -428,7 +482,7 @@ endTime,
           </div>
         </div>
 
-        <div>
+        <div className="mb-4">
           <label
             htmlFor="meetingtime"
             className="block text-sm text-gray-600 dark:text-white mb-1"
@@ -440,20 +494,20 @@ endTime,
               type="time"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="w-full border rounded px-3 py-2 text-sm dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+              className="w-full border rounded px-3 py-2 text-sm dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C] dark:[color-scheme:dark]"
             />
             <span className="text-gray-500 dark:text-white">-</span>
             <input
               type="time"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
-              className="w-full border rounded px-3 py-2 text-sm dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+              className="w-full border rounded px-3 py-2 text-sm dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C] dark:[color-scheme:dark]"
             />
           </div>
         </div>
 
         {/* Description */}
-        <div className="mb-6">
+        <div className="mb-4">
           <label
             htmlFor="description"
             className="block text-sm text-gray-600 dark:text-white mb-1"
@@ -465,7 +519,7 @@ endTime,
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
             placeholder="Write a description here..."
-            className="w-full border rounded px-3 py-2 text-sm dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+            className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
           />
         </div>
 
@@ -474,21 +528,28 @@ endTime,
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-[#576CBC] border border-[#576CBC] rounded hover:bg-gray-100"
+            className="px-3 py-2 text-[#576CBC] border rounded hover:bg-[#576bbc1a] text-[12px]"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-[#576CBC] text-white rounded hover:bg-blue-700"
+            className="px-3 py-2 bg-[#576CBC] text-white rounded hover:bg-[#576bbcaf] text-[12px]"
           >
             Submit
           </button>
         </div>
 
         {/* Success & Error Messages */}
-        {success && (
-          <SuccessPopup onClose={() => setSuccess(false)} title="Meeting" />
+
+              {success && (
+          <SuccessPopup
+            onClose={() => {
+              setSuccess(false);
+              onClose();
+            }}
+            title="Meeting"
+          />
         )}
         {failed && (
           <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />

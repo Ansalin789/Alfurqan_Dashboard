@@ -8,7 +8,6 @@ import Pagination from "@/components/Pagination";
 import Modal from "react-modal";
 import StudentHeader from "../../components/StudentHeader";
 
-
 import Image from "next/image";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
 import BaseLayout2 from "@/components/BaseLayout2";
@@ -53,15 +52,27 @@ type CardProps = {
   title: string;
   value: string | number;
   description: string;
+  image?: string; // <-- added
 };
 
-const Card = ({ title, value, description }: CardProps) => (
-  <div className="bg-[#7689BD] rounded-lg shadow-md p-4">
-    <div className="text-[20px] text-[#fff] font font-semibold mb-4">
-      {title}
+const Card = ({ title, value, description, image }: CardProps) => (
+  <div className="bg-[#7689BD] rounded-lg shadow-md p-4 flex items-center gap-4">
+    <div>
+      <div className="text-[20px] text-[#fff] font-semibold mb-2">{title}</div>
+      <div className="text-[14px] text-[#fff] font-semibold flex gap-2">
+        {value}{" "}
+        {image && (
+          <Image
+            src={image}
+            alt={title}
+            width={50}
+            height={50}
+            className="object-cover w-4 h-4"
+          />
+        )}
+      </div>
+      <div className="text-[12px] text-[#fff]">{description}</div>
     </div>
-    <div className="text-[14px] text-[#fff] font-semibold ">{value}</div>
-    <div className="text-[12px] text-[#fff] ">{description}</div>
   </div>
 );
 
@@ -90,26 +101,29 @@ const StudentProfile = () => {
   }
   useEffect(() => {
     const studentId = localStorage.getItem("StudentPortalId");
-   
 
     console.log("Retrieved Student ID:", studentId);
 
     if (studentId) {
       const fetchData = async () => {
         try {
-const token =
-    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+          const token =
+            typeof window !== "undefined"
+              ? localStorage.getItem("StudentAuthToken")
+              : null;
 
-  if (!token) {
-    console.error("❌ StudentAuthToken not found");
-    return;
-  }  
+          if (!token) {
+            console.error("❌ StudentAuthToken not found");
+            return;
+          }
           const studentId = localStorage.getItem("StudentPortalId");
           const response = await axios.get<ApiResponse>(
-            "https://api.blackstoneinfomaticstech.com/alstudents",{
-               headers: { "Content-Type": "application/json",
-               'Authorization': `Bearer ${token}`,
-           },
+            "https://api.blackstoneinfomaticstech.com/alstudents",
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
             }
           );
 
@@ -153,7 +167,8 @@ const token =
   }, []);
 
   // Add state for dashboard stats
-  const [dashboardStats, setDashboardStats] = useState<StudentDashboardCounts | null>(null);
+  const [dashboardStats, setDashboardStats] =
+    useState<StudentDashboardCounts | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState<string | null>(null);
 
@@ -161,7 +176,10 @@ const token =
     // Fetch dashboard stats
     const fetchStats = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("StudentAuthToken")
+            : null;
         const studentId = localStorage.getItem("StudentPortalId");
         if (!token || !studentId) {
           setStatsError("Missing student ID or token");
@@ -201,45 +219,50 @@ const token =
           {/* Profile Card */}
           <div className="w-[560px] h-[246px] bg-[#54638C] rounded-lg text-white p-4 sm:p-6 flex flex-col sm:flex-row items-center sm:items-start">
             {/* Profile Image + Name */}
-            <div className="flex flex-col items-center sm:pr-6 sm:border-r border-white/30">
+            <div className="flex flex-col items-center px-5 py-6">
               <img
-                src="/assets/images/alstudent.jpg"
+                src="/assets/images/stportfolio.svg"
                 alt="profile"
-                className="w-[150px] h-[150px] rounded-full object-cover"
+                className="w-[112px] h-[112px] rounded-full object-cover bg-center"
               />
-              <h2 className="text-center text-[18px] font-semibold mt-3">
-              {studentData?.username ?? ""}
+              <h2 className="text-center text-[18px] font-semibold mt-2">
+                {studentData?.username ?? ""}
               </h2>
-              <p className="text-[12px] text-[#C9C9C9] mt-2">
-              {studentData?.student?.studentEmail}
+              <p className="text-[12px] text-[#C9C9C9] mt-0">
+                {studentData?.student?.studentEmail}
               </p>
             </div>
 
             {/* Personal Info */}
-            <div className="pt-8 sm:pl-6 w-full">
+            <div className="pt-8 sm:pl-8 ml-6 w-full sm:border-l border-[#BCBCBC] h-full">
               <h3 className="text-[16px] font-semibold mb-3">Personal Info</h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-white text-[14px]">Contact</span>
                   <span className="text-[#DADADACC] text-[12px]">
-                  {studentData?.student?.studentPhone}
+                    {studentData?.student?.studentPhone}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white text-[14px]">Level</span>
                   <span className="text-[#DADADACC] text-[12px]">
-                  {dashboardStats?dashboardStats.totalLevel : "N/A"}</span>
+                    {dashboardStats ? dashboardStats.totalLevel : "N/A"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white text-[14px]">Package</span>
                   <span className="text-[#DADADACC] text-[12px]">
-                    {studentData && studentData.student && studentData.student.package ? studentData.student.package : "-"}
+                    {studentData &&
+                    studentData.student &&
+                    studentData.student.package
+                      ? studentData.student.package
+                      : "-"}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white text-[14px]">Course</span>
                   <span className="text-[#DADADACC] text-[12px]">
-                  {studentData?.student?.course}
+                    {studentData?.student?.course}
                   </span>
                 </div>
               </div>
@@ -252,10 +275,17 @@ const token =
               title="Performance"
               value="72%"
               description="60% increase than Last Month"
+              image="/performance.svg"
             />
             <Card
               title="Package"
-              value={studentData && studentData.student && studentData.student.package ? studentData.student.package : "-"}
+              value={
+                studentData &&
+                studentData.student &&
+                studentData.student.package
+                  ? studentData.student.package
+                  : "-"
+              }
               description="Upgraded package"
             />
             <Card
@@ -271,63 +301,69 @@ const token =
           </div>
         </div>
 
-
-
         <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-2">
-              <div className="mx-auto p-3">
-                <h2 className="text-[18px] font-semibold text-black px-4">
-                  Terms and Conditions
-                </h2>
-                <h3 className="text-[13px] font-semibold mt-2 px-4">
-                  Your Agreement
-                </h3>
-                <div className="mt-2 p-4 bg-gray-50 rounded-md max-h-[300px] overflow-y-auto  scrollbar-thin">
-                  <p className="text-[10px] text-gray-600">
-                    Last Revised: December 16, 2013
-                  </p>
-                  <p className="mt-2 text-gray-700 text-[11px]">
-                    Welcome to www.lorem-ipsum.info. This site is provided as a
-                    service to our visitors and may be used for informational
-                    purposes only. Because the Terms and Conditions contain
-                    legal obligations, please read them carefully.
-                  </p>
-                  <h4 className="font-semibold mt-3 text-gray-800 text-[11px]">
-                    1. YOUR AGREEMENT
-                  </h4>
-                  <p className="text-gray-700 text-[11px] mt-1">
-                    By using this Site, you agree to be bound by, and to comply
-                    with, these Terms and Conditions. If you do not agree to
-                    these Terms and Conditions, please do not use this site.
-                  </p>
-                  <p className="text-gray-700 text-[11px] mt-2">
-                    PLEASE NOTE: We reserve the right, at our sole discretion,
-                    to change, modify or otherwise alter these Terms and
-                    Conditions at any time. Unless otherwise indicated,
-                    amendments will become effective immediately. Please review
-                    these Terms and Conditions periodically.
-                  </p>
-                  <h4 className="font-semibold mt-3 text-gray-800 text-[11px]">
-                    2. PRIVACY
-                  </h4>
-                  <p className="text-gray-700 text-[11px] mt-1">
-                    Please review our Privacy Policy, which also governs your
-                    visit to this Site, to understand our practices.
-                  </p>
-                  <h4 className="font-semibold mt-3 text-gray-800 text-[11px]">
-                    3. LINKED SITES
-                  </h4>
-                  <p className="text-gray-700 text-[11px] mt-1">
-                    This Site may contain links to other independent third-party
-                    Web sites (&quot;Linked Sites&quot;). These Linked Sites are
-                    provided solely as a convenience to our visitors.
-                  </p>
-                </div>
+          <div className="mx-auto p-3">
+            <h2 className="text-[18px] font-semibold text-black dark:text-white px-4 mt-3">
+              Terms and Conditions
+            </h2>
+            <h3 className="text-[15px] text-black dark:text-white font-semibold mt-4 px-4">
+              Your Agreement
+            </h3>
+            <div className="px-4 pr-12 pb-6 mt-4 rounded-md max-h-[300px] overflow-y-auto  scrollbar-none">
+              <p className="mt-2 text-[13px] dark:text-[#ccc] text-justify">
+                We advise that the user read the Terms and Conditions carefully
+                as they govern your use of the application whether as a guest or
+                registered user, explain the policies governing your use of this
+                application, and provide other information regarding your
+                rights.
+              </p>
+              <h4 className="mt-4 text-[13px] dark:text-[#ccc]">
+                Admission & Registration:
+              </h4>
+              <p className=" text-[13px] mt-1 dark:text-[#ccc] text-justify">
+                The academy’s selection is solely based on the information
+                provided in the application form. If the academy finds out that
+                you have merely provided misleading information or overlooked
+                important information, it maintains the right to deny admission.
+              </p>
+              <h4 className="mt-4 text-[13px] dark:text-[#ccc]">
+                Fees & Payments:
+              </h4>
+              <p className="text-[13px] mt-1 dark:text-[#ccc] text-justify">
+                All fee payments made to the Academy—whether for the course or
+                the application—are non-refundable.
+              </p>
+              <p className="text-[13px] mt-1 dark:text-[#ccc] text-justify">
+                If a student decides to withdraw from the course midway, the
+                fees already paid will not be refunded. This is precisely why we
+                offer a monthly payment structure, allowing students who choose
+                to discontinue to forfeit only the fee for one month.{" "}
+              </p>
+              <p className="text-[13px] mt-1 dark:text-[#ccc] text-justify">
+                The Academy reserves the right to increase the course fees at
+                any point during the program. However, any such increase will be
+                communicated at least one month in advance. Increase in fee
+                structure will only be made if the Academy is unable to sustain
+                the rising costs associated with maintaining the quality of the
+                study system.
+              </p>
+              <div className="text-[13px] mt-1 dark:text-[#ccc] text-justify">
+                Our payment schedule is every 28 days. The payment schedule will
+                cover all sessions as per the selected Plan. Students are
+                required to pay the monthly fee within due date of 2 days from
+                the invoice generation date.
               </div>
-            </div>  
+              <p className="text-[13px] mt-1 dark:text-[#ccc] text-justify">
+                If failed to pay any amount in accordance with the payment
+                schedule, the Academy reserves the right to charge a late fee of
+                10% on the outstanding amount(s).
+              </p>
+            </div>
+          </div>
         </div>
+      </div>
     </BaseLayout2>
   );
 };
 
 export default StudentProfile;
-

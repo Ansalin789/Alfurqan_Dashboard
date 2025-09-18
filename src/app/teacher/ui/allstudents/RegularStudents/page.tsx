@@ -118,7 +118,7 @@ export interface StudentWithAssignments extends StudentCoreInfo {
   groupClassId: string;
   assignment: AssignmentItem[];
   level?: string;
-  course : string;
+  course: string;
 }
 interface AssignmentQuestion {
   _id: string;
@@ -229,22 +229,28 @@ const RegularStudents = () => {
   const [comment, setComment] = useState("");
   const itemsPerPage = 8;
 
-  const formatDate = (dateStr: string | undefined): string => {
-    if (!dateStr) return "-";
-    const date = new Date(dateStr);
-    const day = date.getDate(); // e.g., 7
-    const month = String(date.getMonth() + 1).padStart(2, "0"); // e.g., 06
-    const year = date.getFullYear(); // e.g., 2025
-    return `${day}-${month}-${year}`;
-  };
+  // Format date as 'Sep 20, 2020'
+  function formatDate(dateString?: string) {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "-";
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    });
+  }
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filters, setFilters] = useState({
     studentName: "",
     studentId: "",
+    assignmentId: "",
     assignmentName: "",
     status: "",
     fromDate: "",
     toDate: "",
+    dueFromDate: "",
+    dueToDate: "",
     course: "",
     level: "",
   });
@@ -363,10 +369,13 @@ const RegularStudents = () => {
     setFilters({
       studentName: "",
       studentId: "",
+      assignmentId: "",
       assignmentName: "",
       status: "",
       fromDate: "",
       toDate: "",
+      dueFromDate: "",
+      dueToDate: "",
       course: "",
       level: "",
     });
@@ -393,9 +402,9 @@ const RegularStudents = () => {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            params: { 
-              teacherId
-             },
+            params: {
+              teacherId,
+            },
           }
         );
 
@@ -468,30 +477,40 @@ const RegularStudents = () => {
             const isUint8Array = q.uploadFile instanceof Uint8Array;
             let isBase64 = false;
             if (typeof q.uploadFile === "string") {
-              isBase64 = /^[A-Za-z0-9+/=]+$/.test((q.uploadFile as string).replace(/\s/g, ""));
+              isBase64 = /^[A-Za-z0-9+/=]+$/.test(
+                (q.uploadFile as string).replace(/\s/g, "")
+              );
             }
-            console.log(`[GET ASSIGNMENT] AssignmentId: ${item.assignmentId}, Question ${idx} uploadFile type:`, {
-              isArrayBuffer,
-              isUint8Array,
-              isBase64,
-              typeof: typeof q.uploadFile,
-              value: q.uploadFile
-            });
+            console.log(
+              `[GET ASSIGNMENT] AssignmentId: ${item.assignmentId}, Question ${idx} uploadFile type:`,
+              {
+                isArrayBuffer,
+                isUint8Array,
+                isBase64,
+                typeof: typeof q.uploadFile,
+                value: q.uploadFile,
+              }
+            );
           }
           if (q.audioFile) {
             const isArrayBuffer = q.audioFile instanceof ArrayBuffer;
             const isUint8Array = q.audioFile instanceof Uint8Array;
             let isBase64 = false;
             if (typeof q.audioFile === "string") {
-              isBase64 = /^[A-Za-z0-9+/=]+$/.test((q.audioFile as string).replace(/\s/g, ""));
+              isBase64 = /^[A-Za-z0-9+/=]+$/.test(
+                (q.audioFile as string).replace(/\s/g, "")
+              );
             }
-            console.log(`[GET ASSIGNMENT] AssignmentId: ${item.assignmentId}, Question ${idx} audioFile type:`, {
-              isArrayBuffer,
-              isUint8Array,
-              isBase64,
-              typeof: typeof q.audioFile,
-              value: q.audioFile
-            });
+            console.log(
+              `[GET ASSIGNMENT] AssignmentId: ${item.assignmentId}, Question ${idx} audioFile type:`,
+              {
+                isArrayBuffer,
+                isUint8Array,
+                isBase64,
+                typeof: typeof q.audioFile,
+                value: q.audioFile,
+              }
+            );
           }
         });
       });
@@ -528,246 +547,319 @@ const RegularStudents = () => {
     setAssignmentMap({});
   };
 
- const handleSaveAssignment = async ({
-  adminTitle,
-  adminAssignedDate,
-  adminDueDate,
-  adminComment,
-  selectedAssignments,
-}: {
-  adminTitle: string;
-  adminAssignedDate: string;
-  adminDueDate: string;
-  adminComment: string;
-  selectedAssignments: string[];
-}) => {
-  try {
-    if (!selectedAssignments.length) {
-      setFailedMessage("Please select at least one assignment");
-      setFailed(true);
-      return;
-    }
+  const handleSaveAssignment = async ({
+    adminTitle,
+    adminAssignedDate,
+    adminDueDate,
+    adminComment,
+    selectedAssignments,
+  }: {
+    adminTitle: string;
+    adminAssignedDate: string;
+    adminDueDate: string;
+    adminComment: string;
+    selectedAssignments: string[];
+  }) => {
+    try {
+      if (!selectedAssignments.length) {
+        setFailedMessage("Please select at least one assignment");
+        setFailed(true);
+        return;
+      }
 
-    const formData = new FormData();
-    const token = localStorage.getItem("TeacherAuthToken") || "";
-    const teacherName = localStorage.getItem("TeacherPortalName") || "";
-    const teacherId = localStorage.getItem("TeacherPortalId") || "";
+      const formData = new FormData();
+      const token = localStorage.getItem("TeacherAuthToken") || "";
+      const teacherName = localStorage.getItem("TeacherPortalName") || "";
+      const teacherId = localStorage.getItem("TeacherPortalId") || "";
 
-    // Add shared fields that will be merged with each assignment
-    formData.append("studentId", assignData.studentId);
-    formData.append("studentName", assignData.studentFirstName);
-    formData.append("title", adminTitle.trim());
-    formData.append("assignedTeacher", teacherName);
-    formData.append("assignedTeacherId", teacherId);
-    formData.append("sessionClassType", "REGULARCLASS");
-    formData.append("course", assignData.course?.trim() || "");
-formData.append("level", assignData.level?.trim() || "");
-    formData.append("createdBy", "System");
-    formData.append("updatedBy", teacherName);
-    formData.append("assignmentStatus", "Assigned");
-    formData.append("commends", adminComment?.trim() || "");
-    formData.append("score", "0");
-  
-    // Process each assignment
-    selectedAssignments.forEach((assignmentId, index) => {
-      const questions = assignmentMap[assignmentId] || [];
-      questions.forEach((q: AssignmentQuestion, qIndex) => {
-        const prefix = `assignments[${index}]`;
+      // Add shared fields that will be merged with each assignment
+      formData.append("studentId", assignData.studentId);
+      formData.append("studentName", assignData.studentFirstName);
+      formData.append("title", adminTitle.trim());
+      formData.append("assignedTeacher", teacherName);
+      formData.append("assignedTeacherId", teacherId);
+      formData.append("sessionClassType", "REGULARCLASS");
+      formData.append("course", assignData.course?.trim() || "");
+      formData.append("level", assignData.level?.trim() || "");
+      formData.append("createdBy", "System");
+      formData.append("updatedBy", teacherName);
+      formData.append("assignmentStatus", "Assigned");
+      formData.append("commends", adminComment?.trim() || "");
+      formData.append("score", "0");
 
-        // Debug: Log question file info before appending
-        console.log(`[SAVE ASSIGNMENT] Question ${qIndex} uploadFile:`, q.uploadFile);
+      // Process each assignment
+      selectedAssignments.forEach((assignmentId, index) => {
+        const questions = assignmentMap[assignmentId] || [];
+        questions.forEach((q: AssignmentQuestion, qIndex) => {
+          const prefix = `assignments[${index}]`;
 
-        // ...existing code for assignmentTypeValue and fields...
-        let assignmentTypeValue;
-        try {
-          assignmentTypeValue = JSON.stringify({
-            type: q.assignmentType?.toLowerCase() === "image" 
-              ? "image identification" 
-              : q.assignmentType?.toLowerCase() === "wordmatch" 
-                ? "word match" 
-                : q.assignmentType?.toLowerCase(),
-            name: q.assignmentType
-          });
-        } catch (err) {
-          console.error("Error stringifying assignmentType:", err);
-          assignmentTypeValue = JSON.stringify({
-            type: "quiz",
-            name: "quiz"
-          });
-        }
+          // Debug: Log question file info before appending
+          console.log(
+            `[SAVE ASSIGNMENT] Question ${qIndex} uploadFile:`,
+            q.uploadFile
+          );
 
-        formData.append(`${prefix}[questionName]`, q.questionName || "");
-        formData.append(`${prefix}[questionType]`, q.chooseType ? "choose" : q.trueorfalseType ? "truefalse" : "noOption");
-        formData.append(`${prefix}[typeofQuestion]`, q.chooseType ? "choose" : q.trueorfalseType ? "truefalse" : "noOption");
-        formData.append(`${prefix}[assignmentName]`, q.assignmentName || "");
-        formData.append(`${prefix}[assignmentType]`, assignmentTypeValue);
-        formData.append(`${prefix}[chooseType]`, String(q.chooseType));
-        formData.append(`${prefix}[trueorfalseType]`, String(q.trueorfalseType));
-        formData.append(`${prefix}[question]`, q.question || q.questionName || "");
-        formData.append(`${prefix}[hasOptions]`, String(q.chooseType || q.trueorfalseType));
-
-        try {
-          const optionsValue = JSON.stringify({
-            optionOne: q.options?.[0] ?? "",
-            optionTwo: q.options?.[1] ?? "",
-            optionThree: q.options?.[2] ?? "",
-            optionFour: q.options?.[3] ?? ""
-          });
-          formData.append(`${prefix}[options]`, optionsValue);
-        } catch (err) {
-          console.error("Error stringifying options:", err);
-          formData.append(`${prefix}[options]`, JSON.stringify({}));
-        }
-
-        formData.append(`${prefix}[status]`, "active");
-        formData.append(`${prefix}[createdDate]`, new Date().toISOString());
-        formData.append(`${prefix}[updatedDate]`, new Date().toISOString());
-        formData.append(`${prefix}[level]`, q.levelName || "");
-        // Do not append courses as a field in each assignment; only use root-level course
-        formData.append(`${prefix}[assignedDate]`, new Date(adminAssignedDate).toISOString());
-        formData.append(`${prefix}[dueDate]`, new Date(adminDueDate).toISOString());
-        formData.append(`${prefix}[answer]`, "");
-        formData.append(`${prefix}[answerValidation]`, q.answerValidation || "");
-        formData.append(`${prefix}[rating]`, "");
-
-        // Handle file uploads - critical change for backend compatibility
-        if (q.uploadFile) {
+          // ...existing code for assignmentTypeValue and fields...
+          let assignmentTypeValue;
           try {
-            if (q.uploadFile instanceof File) {
-              console.log(`[SAVE ASSIGNMENT] Appending File object for question ${qIndex}`);
-              formData.append(`${prefix}[uploadFile]`, q.uploadFile, `assignment_${index}_${qIndex}.${q.uploadFile.name.split('.').pop()}`);
-            } else if (typeof q.uploadFile === 'string') {
-              let base64Data = q.uploadFile;
-              let mimeType = 'application/octet-stream';
-              if (q.uploadFile.startsWith('data:')) {
-                mimeType = q.uploadFile.match(/^data:(.*?);/)?.[1] || mimeType;
-                base64Data = q.uploadFile.split(',')[1];
-              } else {
-                base64Data = q.uploadFile;
-              }
-              if (/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
-                console.log(`[SAVE ASSIGNMENT] Appending raw base64 string as Blob for question ${qIndex}`);
-                const byteCharacters = atob(base64Data);
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let j = 0; j < byteCharacters.length; j++) {
-                  byteNumbers[j] = byteCharacters.charCodeAt(j);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-                const blob = new Blob([byteArray], { type: mimeType });
-                formData.append(
-                  `${prefix}[uploadFile]`, 
-                  blob, 
-                  `assignment_${index}_${qIndex}.jpg`
-                );
-              } else {
-                console.warn(`[SAVE ASSIGNMENT] Unknown string file type for question ${qIndex}:`, q.uploadFile);
-              }
-            } else {
-              console.warn(`[SAVE ASSIGNMENT] Unknown file type for question ${qIndex}:`, q.uploadFile);
-            }
+            assignmentTypeValue = JSON.stringify({
+              type:
+                q.assignmentType?.toLowerCase() === "image"
+                  ? "image identification"
+                  : q.assignmentType?.toLowerCase() === "wordmatch"
+                  ? "word match"
+                  : q.assignmentType?.toLowerCase(),
+              name: q.assignmentType,
+            });
           } catch (err) {
-            console.error('Error processing file:', err);
-            // Continue without file if processing fails
+            console.error("Error stringifying assignmentType:", err);
+            assignmentTypeValue = JSON.stringify({
+              type: "quiz",
+              name: "quiz",
+            });
           }
-        }
 
-        // Handle audio file uploads for word match and other types
-        if (q.audioFile) {
+          formData.append(`${prefix}[questionName]`, q.questionName || "");
+          formData.append(
+            `${prefix}[questionType]`,
+            q.chooseType
+              ? "choose"
+              : q.trueorfalseType
+              ? "truefalse"
+              : "noOption"
+          );
+          formData.append(
+            `${prefix}[typeofQuestion]`,
+            q.chooseType
+              ? "choose"
+              : q.trueorfalseType
+              ? "truefalse"
+              : "noOption"
+          );
+          formData.append(`${prefix}[assignmentName]`, q.assignmentName || "");
+          formData.append(`${prefix}[assignmentType]`, assignmentTypeValue);
+          formData.append(`${prefix}[chooseType]`, String(q.chooseType));
+          formData.append(
+            `${prefix}[trueorfalseType]`,
+            String(q.trueorfalseType)
+          );
+          formData.append(
+            `${prefix}[question]`,
+            q.question || q.questionName || ""
+          );
+          formData.append(
+            `${prefix}[hasOptions]`,
+            String(q.chooseType || q.trueorfalseType)
+          );
+
           try {
-            if (q.audioFile instanceof File) {
-              console.log(`[SAVE ASSIGNMENT] Appending audio File object for question ${qIndex}`);
-              formData.append(`${prefix}[audioFile]`, q.audioFile, `assignment_${index}_${qIndex}.mp3`);
-            } else if (typeof q.audioFile === 'string') {
-              let base64Data = q.audioFile;
-              let mimeType = 'audio/mpeg';
-              if (q.audioFile.startsWith('data:')) {
-                mimeType = q.audioFile.match(/^data:(.*?);/)?.[1] || mimeType;
-                base64Data = q.audioFile.split(',')[1];
-              } else {
-                base64Data = q.audioFile;
-              }
-              if (/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
-                console.log(`[SAVE ASSIGNMENT] Appending raw base64 audio string as Blob for question ${qIndex}`);
-                const byteCharacters = atob(base64Data);
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let j = 0; j < byteCharacters.length; j++) {
-                  byteNumbers[j] = byteCharacters.charCodeAt(j);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-                const blob = new Blob([byteArray], { type: mimeType });
+            const optionsValue = JSON.stringify({
+              optionOne: q.options?.[0] ?? "",
+              optionTwo: q.options?.[1] ?? "",
+              optionThree: q.options?.[2] ?? "",
+              optionFour: q.options?.[3] ?? "",
+            });
+            formData.append(`${prefix}[options]`, optionsValue);
+          } catch (err) {
+            console.error("Error stringifying options:", err);
+            formData.append(`${prefix}[options]`, JSON.stringify({}));
+          }
+
+          formData.append(`${prefix}[status]`, "active");
+          formData.append(`${prefix}[createdDate]`, new Date().toISOString());
+          formData.append(`${prefix}[updatedDate]`, new Date().toISOString());
+          formData.append(`${prefix}[level]`, q.levelName || "");
+          // Do not append courses as a field in each assignment; only use root-level course
+          formData.append(
+            `${prefix}[assignedDate]`,
+            new Date(adminAssignedDate).toISOString()
+          );
+          formData.append(
+            `${prefix}[dueDate]`,
+            new Date(adminDueDate).toISOString()
+          );
+          formData.append(`${prefix}[answer]`, "");
+          formData.append(
+            `${prefix}[answerValidation]`,
+            q.answerValidation || ""
+          );
+          formData.append(`${prefix}[rating]`, "");
+
+          // Handle file uploads - critical change for backend compatibility
+          if (q.uploadFile) {
+            try {
+              if (q.uploadFile instanceof File) {
+                console.log(
+                  `[SAVE ASSIGNMENT] Appending File object for question ${qIndex}`
+                );
                 formData.append(
-                  `${prefix}[audioFile]`, 
-                  blob, 
+                  `${prefix}[uploadFile]`,
+                  q.uploadFile,
+                  `assignment_${index}_${qIndex}.${q.uploadFile.name
+                    .split(".")
+                    .pop()}`
+                );
+              } else if (typeof q.uploadFile === "string") {
+                let base64Data = q.uploadFile;
+                let mimeType = "application/octet-stream";
+                if (q.uploadFile.startsWith("data:")) {
+                  mimeType =
+                    q.uploadFile.match(/^data:(.*?);/)?.[1] || mimeType;
+                  base64Data = q.uploadFile.split(",")[1];
+                } else {
+                  base64Data = q.uploadFile;
+                }
+                if (/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
+                  console.log(
+                    `[SAVE ASSIGNMENT] Appending raw base64 string as Blob for question ${qIndex}`
+                  );
+                  const byteCharacters = atob(base64Data);
+                  const byteNumbers = new Array(byteCharacters.length);
+                  for (let j = 0; j < byteCharacters.length; j++) {
+                    byteNumbers[j] = byteCharacters.charCodeAt(j);
+                  }
+                  const byteArray = new Uint8Array(byteNumbers);
+                  const blob = new Blob([byteArray], { type: mimeType });
+                  formData.append(
+                    `${prefix}[uploadFile]`,
+                    blob,
+                    `assignment_${index}_${qIndex}.jpg`
+                  );
+                } else {
+                  console.warn(
+                    `[SAVE ASSIGNMENT] Unknown string file type for question ${qIndex}:`,
+                    q.uploadFile
+                  );
+                }
+              } else {
+                console.warn(
+                  `[SAVE ASSIGNMENT] Unknown file type for question ${qIndex}:`,
+                  q.uploadFile
+                );
+              }
+            } catch (err) {
+              console.error("Error processing file:", err);
+              // Continue without file if processing fails
+            }
+          }
+
+          // Handle audio file uploads for word match and other types
+          if (q.audioFile) {
+            try {
+              if (q.audioFile instanceof File) {
+                console.log(
+                  `[SAVE ASSIGNMENT] Appending audio File object for question ${qIndex}`
+                );
+                formData.append(
+                  `${prefix}[audioFile]`,
+                  q.audioFile,
                   `assignment_${index}_${qIndex}.mp3`
                 );
+              } else if (typeof q.audioFile === "string") {
+                let base64Data = q.audioFile;
+                let mimeType = "audio/mpeg";
+                if (q.audioFile.startsWith("data:")) {
+                  mimeType = q.audioFile.match(/^data:(.*?);/)?.[1] || mimeType;
+                  base64Data = q.audioFile.split(",")[1];
+                } else {
+                  base64Data = q.audioFile;
+                }
+                if (/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
+                  console.log(
+                    `[SAVE ASSIGNMENT] Appending raw base64 audio string as Blob for question ${qIndex}`
+                  );
+                  const byteCharacters = atob(base64Data);
+                  const byteNumbers = new Array(byteCharacters.length);
+                  for (let j = 0; j < byteCharacters.length; j++) {
+                    byteNumbers[j] = byteCharacters.charCodeAt(j);
+                  }
+                  const byteArray = new Uint8Array(byteNumbers);
+                  const blob = new Blob([byteArray], { type: mimeType });
+                  formData.append(
+                    `${prefix}[audioFile]`,
+                    blob,
+                    `assignment_${index}_${qIndex}.mp3`
+                  );
+                } else {
+                  console.warn(
+                    `[SAVE ASSIGNMENT] Unknown string audio file type for question ${qIndex}:`,
+                    q.audioFile
+                  );
+                }
               } else {
-                console.warn(`[SAVE ASSIGNMENT] Unknown string audio file type for question ${qIndex}:`, q.audioFile);
+                console.warn(
+                  `[SAVE ASSIGNMENT] Unknown audio file type for question ${qIndex}:`,
+                  q.audioFile
+                );
               }
-            } else {
-              console.warn(`[SAVE ASSIGNMENT] Unknown audio file type for question ${qIndex}:`, q.audioFile);
+            } catch (err) {
+              console.error("Error processing audio file:", err);
+              // Continue without audio if processing fails
             }
-          } catch (err) {
-            console.error('Error processing audio file:', err);
-            // Continue without audio if processing fails
           }
-        }
 
-        // Debug: Log FormData after file append
-        if (q.uploadFile) {
-          const lastKey = `${prefix}[uploadFile]`;
-          const lastValue = formData.get(lastKey);
-          console.log(`[SAVE ASSIGNMENT] FormData after file append for ${lastKey}:`, lastValue);
-        }
+          // Debug: Log FormData after file append
+          if (q.uploadFile) {
+            const lastKey = `${prefix}[uploadFile]`;
+            const lastValue = formData.get(lastKey);
+            console.log(
+              `[SAVE ASSIGNMENT] FormData after file append for ${lastKey}:`,
+              lastValue
+            );
+          }
+        });
       });
-    });
 
-    // Debug: Log FormData contents (remove in production)
-    formData.forEach((value, key) => {
-      console.log(key, value instanceof Blob ? `[Blob ${(value as Blob).type}]` : value);
-    });
+      // Debug: Log FormData contents (remove in production)
+      formData.forEach((value, key) => {
+        console.log(
+          key,
+          value instanceof Blob ? `[Blob ${(value as Blob).type}]` : value
+        );
+      });
 
-    // Submit to API
-    const res = await axios.post(
-      "https://api.blackstoneinfomaticstech.com/assignments",
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
+      // Submit to API
+      const res = await axios.post(
+        "https://api.blackstoneinfomaticstech.com/assignments",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if ([200, 201].includes(res.status)) {
+        setSucces(true);
+        handleAdminClose();
       }
-    );
+    } catch (err) {
+      console.error("Submission error:", err);
+      const error = err as AxiosError;
 
-    if ([200, 201].includes(res.status)) {
-      setSucces(true);
-      handleAdminClose();
-    }
-  } catch (err) {
-    console.error('Submission error:', err);
-    const error = err as AxiosError;
-    
-    let errorMessage = "Failed to submit assignment";
-    if (error.response) {
-      switch (error.response.status) {
-        case 400: 
-          errorMessage = "Invalid request data - please check all fields";
-          break;
-        case 401: 
-          errorMessage = "Session expired - please login again";
-          break;
-        case 403: 
-          errorMessage = "You don't have permission to perform this action";
-          break;
-        case 500: 
-          errorMessage = "Server error - please try again later";
-          break;
+      let errorMessage = "Failed to submit assignment";
+      if (error.response) {
+        switch (error.response.status) {
+          case 400:
+            errorMessage = "Invalid request data - please check all fields";
+            break;
+          case 401:
+            errorMessage = "Session expired - please login again";
+            break;
+          case 403:
+            errorMessage = "You don't have permission to perform this action";
+            break;
+          case 500:
+            errorMessage = "Server error - please try again later";
+            break;
+        }
       }
+
+      setFailedMessage(errorMessage);
+      setFailed(true);
     }
-    
-    setFailedMessage(errorMessage);
-    setFailed(true);
-  }
-};
+  };
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -778,7 +870,15 @@ formData.append("level", assignData.level?.trim() || "");
       const fullName = `${studentInfo?.studentFirstName || ""} ${
         studentInfo?.studentLastName || ""
       }`.toLowerCase();
-      const firstAssignment = user.assignment?.[0] || {};
+      // Check all assignments, not just the first
+      const assignmentMatch = user.assignment.some((assignment) =>
+        (
+          assignment.assignmentName?.toLowerCase().includes(lowerQuery) ||
+          assignment.assignmentStatus?.toLowerCase().includes(lowerQuery) ||
+          assignment.assignmentType?.toLowerCase().includes(lowerQuery) ||
+          assignment.title?.toLowerCase().includes(lowerQuery)
+        )
+      );
 
       return (
         user.studentId?.toLowerCase()?.includes(lowerQuery) ||
@@ -792,11 +892,7 @@ formData.append("level", assignData.level?.trim() || "");
         studentInfo?.preferredTeacher?.toLowerCase()?.includes(lowerQuery) ||
         studentInfo?.preferredFromTime?.toLowerCase()?.includes(lowerQuery) ||
         studentInfo?.evaluationStatus?.toLowerCase()?.includes(lowerQuery) ||
-        firstAssignment?.assignmentName?.toLowerCase()?.includes(lowerQuery) ||
-        firstAssignment?.assignmentStatus
-          ?.toLowerCase()
-          ?.includes(lowerQuery) ||
-        firstAssignment?.assignmentType?.toLowerCase()?.includes(lowerQuery)
+        assignmentMatch
       );
     });
 
@@ -847,15 +943,15 @@ formData.append("level", assignData.level?.trim() || "");
   const getStatusStyle = (status: string) => {
     switch (status) {
       case "Completed":
-        return "bg-green-100 text-green-700";
+        return "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633] dark:text-[#377E36]";
       case "Not Completed":
-        return "bg-yellow-100 text-yellow-700";
+        return "bg-[#FDF6EC] text-[#F0AD4E] dark:bg-[#F0AD4E33] dark:text-[#F0AD4E]";
       case "Not Assigned":
-        return "bg-red-100 text-red-700";
+        return "bg-[#FDECEC] text-[#D34645] dark:text-[#D34645] dark:bg-[#D3464533]" ;
       case "Assigned":
-        return "bg-green-100 text-green-800";
+        return "bg-[#225BAA] text[#225BAA] dark:bg-[#225BAA33] dark:text-[#225BAA]";
       case "Pending":
-        return "bg-blue-100 text-blue-700";
+        return "bg-blue-100 text-blue-700 dark:bg-[#F0AD4E33] dark:text-[#F0AD4E]";
       default:
         return "bg-gray-100 text-gray-600";
     }
@@ -897,139 +993,166 @@ formData.append("level", assignData.level?.trim() || "");
                 <span>Filter</span>
               </div>
               {showFilterModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
-                  <div className="bg-white p-5 rounded-lg w-[400px] relative dark:bg-[#252525]">
+                <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30 ">
+                  <div className="bg-white p-5 rounded-lg w-[500px] h-[560px] relative dark:bg-[#252525] flex flex-col scrollbar-none">
                     <button
                       className="absolute top-2 right-3 text-gray-400 text-xl"
                       onClick={() => setShowFilterModal(false)}
                     >
                       &times;
                     </button>
-                    <h2 className="text-lg font-semibold mb-4 dark:text-[#fff]">
+
+                    <h2 className="text-lg font-semibold mb-3 dark:text-[#fff]">
                       Filter Students
                     </h2>
 
-                    <div className="mb-4">
-                      <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                        Student Name
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                        value={filters.studentName}
-                        onChange={(e) =>
-                          setFilters({
-                            ...filters,
-                            studentName: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-
-                    <div className="mb-4">
-                      <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                        Student ID
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                        value={filters.studentId}
-                        onChange={(e) =>
-                          setFilters({ ...filters, studentId: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    <div className="mb-4">
-                      <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                        Assignment Name
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                        value={filters.assignmentName}
-                        onChange={(e) =>
-                          setFilters({
-                            ...filters,
-                            assignmentName: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-
-                    <div className="mb-4">
-                      <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                        Course
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                        value={filters.course}
-                        onChange={(e) =>
-                          setFilters({ ...filters, course: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    <div className="mb-4">
-                      <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                        Level
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                        value={filters.level}
-                        onChange={(e) =>
-                          setFilters({ ...filters, level: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                        Assignment Date
-                      </label>
-                      <div className="flex gap-2">
+                    {/* Scrollable content */}
+                    <div className="flex-1 overflow-y-scroll scrollbar-none pr-2">
+                      <div className="mb-3">
+                        <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                          Assignment Id
+                        </label>
                         <input
-                          type="date"
-                          className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] [&::-webkit-calendar-picker-indicator]:dark:invert"
-                          value={filters.fromDate}
+                          type="text"
+                          className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                          value={filters.assignmentId}
                           onChange={(e) =>
-                            setFilters({ ...filters, fromDate: e.target.value })
-                          }
-                        />
-                        <input
-                          type="date"
-                          className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] [&::-webkit-calendar-picker-indicator]:dark:invert"
-                          value={filters.toDate}
-                          onChange={(e) =>
-                            setFilters({ ...filters, toDate: e.target.value })
+                            setFilters({
+                              ...filters,
+                              assignmentId: e.target.value, // ✅ fixed bug, was assignmentName
+                            })
                           }
                         />
                       </div>
+
+                      <div className="mb-3">
+                        <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                          Assignment Name
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                          value={filters.assignmentName}
+                          onChange={(e) =>
+                            setFilters({
+                              ...filters,
+                              assignmentName: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                          Course
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                          value={filters.course}
+                          onChange={(e) =>
+                            setFilters({ ...filters, course: e.target.value })
+                          }
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                          Level
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                          value={filters.level}
+                          onChange={(e) =>
+                            setFilters({ ...filters, level: e.target.value })
+                          }
+                        />
+                      </div>
+
+                      {/* Assigned Date */}
+                      <div className="mb-3">
+                        <label className="block text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                          Assigned Date
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="date"
+                            className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                            value={filters.fromDate}
+                            onChange={(e) =>
+                              setFilters({
+                                ...filters,
+                                fromDate: e.target.value,
+                              })
+                            }
+                          />
+                          <input
+                            type="date"
+                            className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                            value={filters.toDate}
+                            onChange={(e) =>
+                              setFilters({ ...filters, toDate: e.target.value })
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      {/* Due Date */}
+                      <div className="mb-3">
+                        <label className="block text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                          Due Date
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="date"
+                            className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                            value={filters.dueFromDate}
+                            onChange={(e) =>
+                              setFilters({
+                                ...filters,
+                                dueFromDate: e.target.value,
+                              })
+                            }
+                          />
+                          <input
+                            type="date"
+                            className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                            value={filters.dueToDate}
+                            onChange={(e) =>
+                              setFilters({
+                                ...filters,
+                                dueToDate: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      {/* Status */}
+                      <div className="mb-4">
+                        <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                          Status
+                        </label>
+                        <select
+                          className="w-full border rounded-md p-2 text-[12px] dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                          value={filters.status}
+                          onChange={(e) =>
+                            setFilters({ ...filters, status: e.target.value })
+                          }
+                        >
+                          <option value="">Select status</option>
+                          <option value="Completed">Completed</option>
+                          <option value="Not Completed">Not Completed</option>
+                          <option value="Not Assigned">Not Assigned</option>
+                          <option value="Assigned">Assigned</option>
+                          <option value="Pending">Pending</option>
+                        </select>
+                      </div>
                     </div>
 
-                    <div className="mb-6">
-                      <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                        Status
-                      </label>
-                      <select
-                        className="w-full border rounded-md p-2 text-[12px] dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                        value={filters.status}
-                        onChange={(e) =>
-                          setFilters({ ...filters, status: e.target.value })
-                        }
-                      >
-                        <option value="">Select status</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Not Completed">Not Completed</option>
-                        <option value="Not Assigned">Not Assigned</option>
-                        <option value="Assigned">Assigned</option>
-                        <option value="Pending">Pending</option>
-                      </select>
-                    </div>
-
-                    <div className="flex justify-end gap-3">
+                    {/* Footer fixed at bottom */}
+                    <div className="flex justify-end gap-3 pt-3 border-t dark:border-[#444]">
                       <button
                         onClick={handleResetFilters}
                         className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium dark:text-[#576CBC] dark:border-[#576CBC]"
@@ -1077,7 +1200,7 @@ formData.append("level", assignData.level?.trim() || "");
                   ].map((header, idx) => (
                     <th
                       key={header.label}
-                      className={`px-2 py-1 text-left text-wrap break-words ${header.width}`}
+                      className={`px-2 py-2 text-left text-wrap break-words ${header.width}`}
                     >
                       {header.label}
                     </th>
@@ -1158,7 +1281,7 @@ formData.append("level", assignData.level?.trim() || "");
                                   )
                                 }
                               >
-                                Assign
+                               Admin Assign
                               </button>
                               <button
                                 className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
@@ -1446,18 +1569,18 @@ formData.append("level", assignData.level?.trim() || "");
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                  handleAssign(
-                                    student.studentId,
-                                    student.studentDetails.student
-                                      .studentFirstName,
-                                    student.studentDetails.student
-                                      .learningInterest,
-                                    student.level || "",
-                                    // student.course || ''
-                                  )
-                                }
+                                            handleAssign(
+                                              student.studentId,
+                                              student.studentDetails.student
+                                                .studentFirstName,
+                                              student.studentDetails.student
+                                                .learningInterest,
+                                              student.level || ""
+                                              // student.course || ''
+                                            )
+                                          }
                                         >
-                                          Assign
+                                         Admin Assign
                                         </button>
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
@@ -1502,17 +1625,17 @@ formData.append("level", assignData.level?.trim() || "");
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                  handleAssign(
-                                    student.studentId,
-                                    student.studentDetails.student
-                                      .studentFirstName,
-                                    student.studentDetails.student
-                                      .learningInterest,
-                                    student.level || ""
-                                  )
-                                }
+                                            handleAssign(
+                                              student.studentId,
+                                              student.studentDetails.student
+                                                .studentFirstName,
+                                              student.studentDetails.student
+                                                .learningInterest,
+                                              student.level || ""
+                                            )
+                                          }
                                         >
-                                          Assign
+                                         Admin Assign
                                         </button>
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
@@ -1610,7 +1733,9 @@ formData.append("level", assignData.level?.trim() || "");
                                         type="text"
                                         placeholder="Enter title"
                                         value={title}
-                                        onChange={(e) => setTitle(e.target.value)}
+                                        onChange={(e) =>
+                                          setTitle(e.target.value)
+                                        }
                                         className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
                                       />
                                     </div>

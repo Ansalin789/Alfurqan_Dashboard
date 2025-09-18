@@ -3,7 +3,6 @@
 import BaseLayout1 from "@/components/BaseLayout1";
 import React, { useState, useRef, useEffect } from "react";
 import { FaTelegramPlane } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
 import { FiSearch } from "react-icons/fi";
 import axios from "axios";
 import { io } from "socket.io-client";
@@ -67,11 +66,6 @@ interface IStudentResponse {
     password: string;
     role: string;
     status: string;
-    createdDate: string;
-    createdBy: string;
-    updatedDate: string;
-    __v: number;
-    classScheduleCount: number;
   }>;
 }
 
@@ -93,7 +87,6 @@ interface IMessagesend {
 }
 
 const Message = () => {
-  // Set a sample userId, it should be dynamic based on logged-in user
   const [teachers, setTeachers] = useState<IUser[]>([]);
   const [admin, setAdmin] = useState<IUser[]>([]);
   const [students, setStudents] = useState<IUser[]>([]);
@@ -107,24 +100,25 @@ const Message = () => {
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [messageCount, setMessageCount] = useState<number>(0);
+  const [userName, setUserName] = useState<string>("");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<any>(null);
-  let userId: string | null = null;
-  const userName =
-    typeof window !== "undefined"
-      ? localStorage.getItem("AcademicCoachPortalName")
-      : null;
-  if (typeof window !== "undefined") {
-    userId = localStorage.getItem("AcademicCoachPortalId");
-  }
+
+  // Get user data from localStorage on client side only
+  useEffect(() => {
+    setIsClient(true);
+    const name = localStorage.getItem("AcademicCoachPortalName");
+    const id = localStorage.getItem("AcademicCoachPortalId");
+    setUserName(name || "");
+    setUserId(id);
+  }, []);
 
   // Separate function to fetch students
   const fetchStudents = async (): Promise<IUser[]> => {
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("AcademicCoachAuthToken")
-          : null;
+      const token = localStorage.getItem("AcademicCoachAuthToken");
 
       if (!token) {
         console.error("❌ AcademicCoachAuthToken not found");
@@ -148,8 +142,6 @@ const Message = () => {
         email: student.student.studentEmail,
         role: [student.role],
         status: student.status,
-        // lastLoginDate: student.updatedDate,
-        // lastSeen: new Date(student.updatedDate).toLocaleString(),
       }));
     } catch (err) {
       console.error("❌ Failed to fetch students:", err);
@@ -159,10 +151,7 @@ const Message = () => {
 
   const fetchUsersByRole = async (role: string): Promise<IUser[]> => {
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("AcademicCoachAuthToken")
-          : null;
+      const token = localStorage.getItem("AcademicCoachAuthToken");
 
       if (!token) {
         console.error("❌ SupervisorAuthToken not found");
@@ -194,13 +183,13 @@ const Message = () => {
   // Filter users based on search query
   const filteredUsers = (
     activeTab === "teachers"
-      ? teachers // Fixed: Return teachers array instead of empty array
+      ? teachers
       : activeTab === "admin"
       ? admin
       : activeTab === "all"
-      ? [...admin, ...students, ...teachers, ...supervisors] // Include all user types
+      ? [...admin, ...students, ...teachers, ...supervisors]
       : activeTab === "supervisor"
-      ? supervisors // Fixed: Return supervisors array instead of empty array
+      ? supervisors
       : students
   ).filter(
     (user) =>
@@ -211,23 +200,20 @@ const Message = () => {
   // Handle message selection
   const handleUserClick = (user: IUser) => {
     setSelectedUser(user);
-    // Load messages for this user
-    setMessages([]); // Clear previous messages
-    fetchMessages(user._id); // Fetch new messages from the API
+    setMessages([]);
+    fetchMessages(user._id);
   };
 
   // Fetch messages from API
   const fetchMessages = async (receiverId: string) => {
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("AcademicCoachAuthToken")
-          : null;
+      const token = localStorage.getItem("AcademicCoachAuthToken");
 
-      if (!token) {
-        console.error("❌ AdminAuthToken not found");
+      if (!token || !userId) {
+        console.error("❌ Auth token or user ID not found");
         return;
       }
+      
       const { data } = await axios.get<IMessageResponse>(
         `https://api.blackstoneinfomaticstech.com/realtimemessage/${userId}/${receiverId}`,
         {
@@ -238,17 +224,17 @@ const Message = () => {
         }
       );
       const fetchedMessages = data?.data;
-      setMessages(fetchedMessages); // for rendering
+      setMessages(fetchedMessages);
 
       // Count unread messages in all groups
       const allMessages = fetchedMessages.flatMap((group) => group.messages);
       const unreadCount = allMessages.filter((m) => !m.isRead).length;
       setMessageCount(unreadCount);
-      // Update the unread message count
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
   };
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -257,6 +243,8 @@ const Message = () => {
 
   // Initialize socket connection
   useEffect(() => {
+    if (!userId) return;
+    
     if (!socketRef.current) {
       socketRef.current = io("https://api.blackstoneinfomaticstech.com", {
         transports: ["websocket"],
@@ -282,16 +270,12 @@ const Message = () => {
 
     // Handle incoming messages
     const handleNewMessage = (newMessage: IMessage) => {
-      console.log("Received new message:", newMessage);
-
-      // Check if message is relevant to current chat or should increment count
       const isForCurrentChat =
         (newMessage.senderId === userId &&
           newMessage.receiverId === selectedUser?._id) ||
         (newMessage.senderId === selectedUser?._id &&
           newMessage.receiverId === userId);
-      console.log(userId);
-      console.log(selectedUser?._id);
+
       // Always update message count for unread messages
       if (newMessage.receiverId === userId && !newMessage.isRead) {
         setMessageCount((prev) => prev + 1);
@@ -303,23 +287,18 @@ const Message = () => {
           const dateKey = new Date(newMessage.createdDate)
             .toISOString()
             .split("T")[0];
-          console.log("enter");
-          // Find if we already have messages for this date
           const existingGroupIndex = prev.findIndex(
             (group) => group._id === dateKey
           );
 
-          // Create a new state array
           const newState = [...prev];
 
           if (existingGroupIndex !== -1) {
-            // Add to existing date group - append to maintain chronological order
             newState[existingGroupIndex] = {
               ...newState[existingGroupIndex],
               messages: [...newState[existingGroupIndex].messages, newMessage],
             };
           } else {
-            // Create new date group at the beginning (since we're using flex-col-reverse)
             newState.unshift({
               _id: dateKey,
               messages: [newMessage],
@@ -329,7 +308,6 @@ const Message = () => {
           return newState;
         });
 
-        // Scroll to bottom after new message
         setTimeout(() => {
           if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -359,11 +337,11 @@ const Message = () => {
 
     fetchAllUsers();
     
-    // Cleanup: remove only the message listener
     return () => {
       socketRef.current?.off("newmessage", handleNewMessage);
     };
   }, [userId, selectedUser]);
+
   const formatDateLabel = (dateString: string): string => {
     const inputDate = new Date(dateString);
     const today = new Date();
@@ -383,7 +361,7 @@ const Message = () => {
       day: "numeric",
     });
   };
-  // Replace your current groupedMessages logic with:
+
   const groupedMessages = messages
     .flatMap((group) => group.messages)
     .reduce((acc, msg) => {
@@ -395,15 +373,14 @@ const Message = () => {
 
   // Handle sending messages
   const handleSendMessage = async () => {
-    if (!selectedUser || !messageText.trim()) return;
+    if (!selectedUser || !messageText.trim() || !userId) return;
 
-    // Create the message object in IMessagesend format
     const newMessage: IMessagesend = {
       messages: messageText,
-      senderId: userId ?? "",
-      senderName: "userName",
+      senderId: userId,
+      senderName: userName || "Academic Coach",
       receiverId: selectedUser._id,
-      receiverName: `${selectedUser.userName}`,
+      receiverName: selectedUser.userName,
       createdDate: new Date(),
       notificationStatus: "Unseen",
       isRead: false,
@@ -416,16 +393,13 @@ const Message = () => {
     };
 
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("AcademicCoachAuthToken")
-          : null;
+      const token = localStorage.getItem("AcademicCoachAuthToken");
 
       if (!token) {
         console.error("❌ AcademicCoachAuthToken not found");
         return;
       }
-      // Send the new message to the backend API
+
       const response = await axios.post(
         "https://api.blackstoneinfomaticstech.com/realtimemessage",
         newMessage,
@@ -437,24 +411,20 @@ const Message = () => {
         }
       );
 
-      // Check if the message was successfully posted
       if (response.data.status === "success") {
-        // Convert IMessagesend to IMessage before updating state
         const convertedMessage: IMessage = {
-          _id: Date.now().toString(), // Generate a unique _id
+          _id: Date.now().toString(),
           messages: newMessage.messages,
           senderId: newMessage.senderId,
           senderName: newMessage.senderName,
           receiverId: newMessage.receiverId,
           receiverName: newMessage.receiverName,
-          createdDate: newMessage.createdDate.toISOString(), // Ensure date is in string format
+          createdDate: newMessage.createdDate.toISOString(),
           time: new Date().toLocaleTimeString(),
           notificationStatus: newMessage.notificationStatus,
           isRead: newMessage.isRead,
           status: newMessage.status,
         };
-
-        // In handleSendMessage and handleNewMessage, ensure new messages are appended:
 
         setMessages((prev) => {
           const dateKey = new Date(convertedMessage.createdDate)
@@ -465,18 +435,16 @@ const Message = () => {
           );
 
           if (existingGroupIndex !== -1) {
-            // Append to existing group
             const updated = [...prev];
             updated[existingGroupIndex] = {
               ...updated[existingGroupIndex],
               messages: [
                 ...updated[existingGroupIndex].messages,
                 convertedMessage,
-              ], // Append to end
+              ],
             };
             return updated;
           } else {
-            // Add new group at the end
             return [
               ...prev,
               {
@@ -486,7 +454,7 @@ const Message = () => {
             ];
           }
         });
-        setMessageText(""); // Clear the message input
+        setMessageText("");
       } else {
         console.error("Error posting message:", response.data.message);
       }
@@ -496,7 +464,7 @@ const Message = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case "online":
         return "bg-green-500";
       case "offline":
@@ -508,40 +476,61 @@ const Message = () => {
     }
   };
 
+  const formatRole = (roles: string[]) => {
+    return roles.map(role => {
+      return role.toLowerCase()
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }).join(', ');
+  };
+
+  if (!isClient) {
+    return (
+      <BaseLayout1>
+        <AcademicHeader currentSection="Message" />
+        <div className="py-3 px-5">
+          <div className="flex flex-col md:flex-row gap-4 h-[85vh]">
+            {/* Loading state */}
+            <div className="w-full md:w-[350px] bg-[#fff] dark:bg-[#343434] p-4 rounded-[12px] shadow-md flex flex-col">
+              <div className="animate-pulse">
+                <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4"></div>
+                <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4"></div>
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </BaseLayout1>
+    );
+  }
+
   return (
     <BaseLayout1>
       <AcademicHeader currentSection="Message" />
       <div className="py-3 px-5">
         <div className="flex flex-col md:flex-row gap-4 h-[85vh]">
           {/* Left Panel */}
-          <motion.div
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            className="w-full md:w-[350px] bg-[#fff] dark:bg-[#343434] dark:text-[#fff] p-4 rounded-[12px] shadow-md flex flex-col"
-          >
+          <div className="w-full md:w-[350px] bg-[#fff] dark:bg-[#343434] dark:text-[#fff] p-4 rounded-[12px] shadow-md flex flex-col">
             <div className="flex items-center space-x-3 p-2">
-              <motion.div whileHover={{ scale: 1.05 }}>
+              <div>
                 <img
                   src="/assets/images/account.png"
                   alt="Admin"
                   className="w-12 h-12 rounded-lg"
                 />
-              </motion.div>
+              </div>
               <div>
                 <div className="flex">
                   <h3 className="text-[18px] font-semibold text-[#010E30] dark:text-[#fff]">
-                    {userName}
+                    {userName || "Academic Coach"}
                   </h3>
-                  <button className="ml-[4px] text-gray-500">
-                    {messageCount > 0 && (
-                      <span className=" -mt-2 ml-1 bg-red-600 text-white text-[8px] rounded-full h-3 w-3 flex items-center justify-center animate-pulse">
-                        {messageCount}
-                      </span>
-                    )}
-                  </button>
+                  {messageCount > 0 && (
+                    <span className="ml-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                      {messageCount}
+                    </span>
+                  )}
                 </div>
-
                 <p className="text-[12px] text-[#010e30a7] font-semibold dark:text-[#fff] dark:opacity-[60%]">
                   Academic coach
                 </p>
@@ -549,12 +538,9 @@ const Message = () => {
             </div>
 
             {/* Search Bar */}
-            <motion.div
-              whileHover={{ scale: 1.01 }}
-              className="relative mt-2 mb-3 "
-            >
+            <div className="relative mt-2 mb-3">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiSearch className="text-gray-400 h-[18px] w-[18px] dark:border " />
+                <FiSearch className="text-gray-400 h-[18px] w-[18px] dark:border" />
               </div>
               <input
                 type="text"
@@ -563,22 +549,10 @@ const Message = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-            </motion.div>
+            </div>
 
             {/* Tabs */}
-            <div
-              className="flex overflow-x-auto whitespace-nowrap gap-0"
-              onWheel={(e) => {
-                e.currentTarget.scrollLeft += e.deltaY;
-              }}
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-            >
-              <style jsx>{`
-                div::-webkit-scrollbar {
-                  display: none;
-                }
-              `}</style>
-
+            <div className="flex border-b dark:border-[#505050]">
               <button
                 className={`px-2 py-1.5 text-[13px] ${
                   activeTab === "all"
@@ -589,7 +563,6 @@ const Message = () => {
               >
                 All
               </button>
-
               <button
                 className={`px-2 py-1.5 text-[13px] ${
                   activeTab === "admin"
@@ -630,102 +603,86 @@ const Message = () => {
               >
                 Supervisor
               </button>
-
-              
             </div>
+            
             {/* User List */}
             <div className="mt-2 flex-1 overflow-y-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
-              <AnimatePresence>
-                {filteredUsers.map((user) => (
-                  <motion.button
-                    key={user._id}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className={`flex items-center border-b-2 dark:border-b-[#504c4c]  justify-between w-full p-2  cursor-pointer ${
-                      selectedUser?._id === user._id
-                        ? "bg-[#f0efef] dark:bg-[#3c3c3c] rounded"
-                        : "hover:bg-[#f0efef] dark:hover:bg-[#3c3c3c] hover:rounded"
-                    }`}
-                    onClick={() => handleUserClick(user)}
-                  >
-                    <div className="flex space-x-2 items-center">
-                      <div className="relative">
-                        <motion.div
-                          whileHover={{ scale: 1.05 }}
-                          className="w-9 h-9 bg-[#D0D0D0] dark:bg-[#D0D0D0] rounded-lg flex items-center justify-center"
-                        >
-                          <span className="text-[#959595] dark:text-[#959595] font-medium text-[14px]">
-                            {user.userName.charAt(0)}
-                          </span>
-                        </motion.div>
-                        <div
-                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border bg-green-600 ${getStatusColor(
-                            user.status ?? "offline"
-                          )}`}
-                        ></div>
-                      </div>
-                      <div className="text-left">
-                        <h5 className="font-medium  text-[11px] text-[#010E30] dark:text-[#fff]">
-                          {user.userName}
-                        </h5>
-                        <p className="text-[10px] text-gray-500 dark:text-[#fff] dark:text-opacity-[60%] truncate max-w-[180px]">
-                          {user.email}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-[9px] text-gray-400">
-                      {user.lastSeen}
-                    </span>
-                  </motion.button>
-                ))}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-          {/* Chat Panel */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="w-full md:flex-1 bg-white dark:bg-[#2c2c2c] dark:text-[#fff] rounded-lg shadow-md flex flex-col overflow-hidden"
-          >
-            {selectedUser ? (
-              <>
-                <div className=" p-3">
-                  <div className="flex items-center space-x-2">
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      className="relative"
-                    >
-                      <div className="w-10 h-10 bg-[#D0D0D0] dark:bg-[#D0D0D0]  rounded-lg flex items-center justify-center">
-                        <span className="dark:text-[#959595] text-sm">
-                          {selectedUser.userName.charAt(0)}
+              {filteredUsers.map((user) => (
+                <button
+                  key={user._id}
+                  className={`flex items-center border-b-2 dark:border-b-[#504c4c] justify-between w-full p-2 cursor-pointer ${
+                    selectedUser?._id === user._id
+                      ? "bg-[#f0efef] dark:bg-[#3c3c3c] rounded"
+                      : "hover:bg-[#f0efef] dark:hover:bg-[#3c3c3c] hover:rounded"
+                  }`}
+                  onClick={() => handleUserClick(user)}
+                >
+                  <div className="flex space-x-2 items-center">
+                    <div className="relative">
+                      <div className="w-9 h-9 bg-[#D0D0D0] dark:bg-[#444] rounded-lg flex items-center justify-center">
+                        <span className="text-[#959595] dark:text-[#FFFFFF] font-medium text-[14px]">
+                          {user.userName.charAt(0)}
                         </span>
                       </div>
                       <div
-                        className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-white bg-green-500 ${getStatusColor(
-                          selectedUser.status ?? "offline"
+                        className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(
+                          user.status ?? "offline"
                         )}`}
                       ></div>
-                    </motion.div>
-                    <div>
-                      <h3 className="text-xs font-medium">
-                        {selectedUser.userName}
-                      </h3>
-                      <div className="flex items-center">
-                        <p className="text-[10px] text-gray-400 capitalize">
-                          {selectedUser.status} • {selectedUser.role}
+                    </div>
+                    <div className="text-left">
+                      <h5 className="font-medium text-[12px] text-[#010E30] dark:text-[#fff]">
+                        {user.userName}
+                      </h5>
+                      <p className="text-[10px] text-green-600 dark:text-green-400 font-medium truncate max-w-[180px]">
+                        {formatRole(user.role)}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-gray-500 dark:text-[#fff] dark:text-opacity-[60%] truncate max-w-[180px]">
+                    {user.lastSeen}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Chat Panel */}
+          <div className="w-full md:flex-1 bg-white dark:bg-[#2c2c2c] dark:text-[#fff] rounded-lg shadow-md flex flex-col overflow-hidden">
+            {selectedUser ? (
+              <>
+                <div className="p-3 border-b dark:border-[#505050]">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="relative">
+                        <div className="w-10 h-10 bg-[#D0D0D0] dark:bg-[#444] rounded-lg flex items-center justify-center">
+                          <span className="dark:text-[#FFFFFF] text-sm">
+                            {selectedUser.userName.charAt(0)}
+                          </span>
+                        </div>
+                        <div
+                          className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(
+                            selectedUser.status ?? "offline"
+                          )}`}
+                        ></div>
+                      </div>
+                      <div>
+                        <h3 className="text-xs font-medium dark:text-[#fff]">
+                          {selectedUser.userName}
+                        </h3>
+                        <p className="text-[10px] text-gray-400 dark:text-[#fff] dark:text-opacity-[60%] capitalize">
+                          {selectedUser.status}
                         </p>
                       </div>
                     </div>
+                    <p className="text-[10px] text-green-600 dark:text-green-400 font-medium">
+                      {formatRole(selectedUser.role)}
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex-1 p-3 overflow-y-auto scrollbar-none bg-[#fbfbfb] dark:bg-[#343434] flex flex-col">
-                  {" "}
-                  {/* Added flex-col-reverse */}
-                  <AnimatePresence>
+                <div className="relative flex-1 h-[calc(85vh-100px)]">
+                  <div className="absolute inset-0 overflow-y-auto p-3 flex flex-col bg-gray-50 dark:bg-[#2C2C2C] chat-scroll-container scrollbar-none">
                     {Object.entries(groupedMessages)
                       .sort(
                         (a, b) =>
@@ -733,38 +690,34 @@ const Message = () => {
                       )
                       .map(([date, msgs]) => (
                         <div key={date}>
-                          <div className="text-center text-gray-500  text-xs my-2 font-medium">
+                          <div className="text-center text-[#010E30] dark:text-[#FFFFFF] opacity-60 text-xs my-2 font-medium">
                             {formatDateLabel(date)}
                           </div>
                           {msgs
-                            .toSorted(
+                            .sort(
                               (a, b) =>
                                 new Date(a.createdDate).getTime() -
                                 new Date(b.createdDate).getTime()
                             )
                             .map((msg) => (
-                              <motion.div
+                              <div
                                 key={msg._id}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.2 }}
                                 className={`flex flex-col mb-3 ${
                                   msg.senderId === userId
                                     ? "items-end"
                                     : "items-start"
                                 }`}
                               >
-                                <motion.div
-                                  whileHover={{ scale: 1.01 }}
+                                <div
                                   className={`p-2 rounded-lg max-w-[80%] ${
                                     msg.senderId === userId
-                                      ? "bg-[#576CBC] text-[#fff]  rounded-lg"
-                                      : "bg-[#F1F1F1] rounded-lg dark:bg-[#2c2c2c]"
+                                      ? "bg-[#576CBC] text-[#FFFFFF]"
+                                      : "bg-[#F1F1F1] dark:bg-[#444] text-[#010E30] dark:text-[#FFFFFF]"
                                   }`}
                                 >
                                   <p className="text-xs">{msg.messages}</p>
                                   <div className="flex items-center justify-end mt-1 space-x-1">
-                                    <span className="text-[9px] opacity-70">
+                                    <span className="text-[9px] opacity-70 dark:text-[#fff]">
                                       {new Date(
                                         msg.createdDate
                                       ).toLocaleTimeString([], {
@@ -773,65 +726,61 @@ const Message = () => {
                                       })}
                                     </span>
                                     {msg.senderId === userId && (
-                                      <span className="text-[9px]">
+                                      <span className="text-[9px] dark:text-[#fff]">
                                         {msg.isRead ? "✓✓" : "✓"}
                                       </span>
                                     )}
                                   </div>
-                                </motion.div>
-                              </motion.div>
+                                </div>
+                              </div>
                             ))}
                         </div>
                       ))}
-                  </AnimatePresence>
-                  <div ref={messagesEndRef} />
+                    <div ref={messagesEndRef} />
+                  </div>
                 </div>
 
-                <motion.div
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  className="p-3 bg-white dark:bg-[#2c2c2c]"
-                >
-                  <div className="flex items-center rounded-lg bg-[#f3f3f3] p-1 dark:bg-[#343434]">
-                    <button className="p-1 text-[#5F6368] ml-1">
+                <div className="border-t border-gray-200 dark:border-[#505050] p-3 bg-[#FAFAFB] dark:bg-[#343434]">
+                  <div className="flex items-center rounded-lg bg-gray-50 dark:bg-[#444] p-1">
+                    <button className="p-1 text-[#010E30] dark:text-[#FFFFFF] hover:text-gray-700 ml-1">
                       <CgAttachment size={14} />
                     </button>
                     <input
                       type="text"
                       placeholder="Type a message..."
-                      className="flex-1 px-2 py-1.5 text-xs text-[#010E30]/50 dark:text-[#b3b3b3] bg-transparent outline-none"
+                      className="flex-1 px-2 py-1.5 text-xs bg-transparent outline-none text-[#010E30] dark:text-[#FFFFFF]"
                       value={messageText}
                       onChange={(e) => setMessageText(e.target.value)}
-                      onKeyPress={(e) =>
-                        e.key === "Enter" && handleSendMessage()
-                      }
+                      onKeyDown={(e) => {
+                        if (
+                          e.key === "Enter" &&
+                          selectedUser &&
+                          messageText.trim()
+                        ) {
+                          handleSendMessage();
+                        }
+                      }}
                     />
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                    <button
                       onClick={handleSendMessage}
                       disabled={!messageText.trim()}
                       className={`p-1 rounded-lg flex items-center ${
                         messageText.trim()
-                          ? "bg-[#576cbc] text-white"
-                          : "bg-gray-200 dark:bg-[#2c2c2c] text-gray-400 cursor-not-allowed"
+                          ? "bg-[#576CBC] text-white"
+                          : "bg-gray-200 dark:bg-[#505050] text-gray-400 cursor-not-allowed"
                       }`}
                     >
                       <FaTelegramPlane size={14} />
-                    </motion.button>
+                    </button>
                   </div>
-                </motion.div>
+                </div>
               </>
             ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex items-center justify-center h-full bg-gray-50 dark:bg-[#343434]"
-              >
+              <div className="flex items-center justify-center h-full bg-gray-50 dark:bg-[#2C2C2C]">
                 <div className="text-center">
-                  <div className="w-16 h-16 mx-auto bg-gray-200 dark:bg-[#2c2c2c] rounded-full mb-3 flex items-center justify-center">
+                  <div className="w-16 h-16 mx-auto bg-gray-200 dark:bg-[#444] rounded-full mb-3 flex items-center justify-center">
                     <svg
-                      className="w-8 h-8 text-gray-400"
+                      className="w-8 h-8 text-gray-400 dark:text-[#FFFFFF]"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -844,13 +793,13 @@ const Message = () => {
                       ></path>
                     </svg>
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-[#010E30] dark:text-[#FFFFFF] opacity-60">
                     Select a conversation to start chatting
                   </p>
                 </div>
-              </motion.div>
+              </div>
             )}
-          </motion.div>
+          </div>
         </div>
       </div>
     </BaseLayout1>

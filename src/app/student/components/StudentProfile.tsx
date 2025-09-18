@@ -52,7 +52,7 @@ const StudentProfile = () => {
     const token = localStorage.getItem("StudentAuthToken");
 
     setStudentName(localStorage.getItem("StudentPortalName"));
-    setStudentEmail(localStorage.getItem("StudentPortalEmail"));
+    setStudentEmail(localStorage.getItem("StudentcourseName"));
 
     console.log("Student ID:", studentId);
     console.log("Token:", token);
@@ -139,8 +139,8 @@ const StudentProfile = () => {
   }, []);
 
   return (
-    <div className="w-[310px] flex flex-col gap-4 cursor-pointer" onClick={() => router.push("student-profile")} >
-      <div className="rounded-xl shadow-lg bg-white h-[280px] dark:bg-[#343434] p-4 relative">
+    <div className="w-[310px] flex flex-col gap-4" >
+      <div className="rounded-xl shadow-lg bg-white h-[300px] dark:bg-[#343434] p-4 relative cursor-pointer" onClick={() => router.push("student-profile")}>
         <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">
           Student Profile
         </h3>
@@ -154,9 +154,9 @@ const StudentProfile = () => {
         <h3 className="text-[#010E30] font-bold text-[16px] dark:text-white text-center">
           {studentName ?? "Loading..."}
         </h3>
-        {/* <p className="text-gray-500 text-[12px] text-center">
+        <p className="text-gray-500 text-[12px] text-center">
           {studentEmail ?? "Loading..."}
-        </p> */}
+        </p>
         <p className="text-gray-500 text-[12px] mb-2 text-center">Level {dashboardCounts.totalLevel}</p>
 
         <div className="flex justify-center space-x-1 mb-2">
@@ -170,13 +170,13 @@ const StudentProfile = () => {
       </div>
 
       {/* Payment Item */}
-      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] p-4 h-[180px] mt-1 w-full">
-        <h3 className="text-[#010E30] font-semibold text-[16px] mb-3 dark:text-white">
+      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] p-4 h-[185px] mt-1 w-full cursor-pointer" onClick={() => router.push("payment")}>
+        <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">
           Upcoming Payments
         </h3>
 
         {invoices.filter((i) => i.invoiceStatus === "Pending").length === 0 ? (
-          <p className="text-gray-500 text-sm">No pending payments found</p>
+          <p className="text-gray-500 text-xs text-center mt-12 align-middle">No pending payments found</p>
         ) : (
           invoices
             .filter((i) => i.paymentStatus === "Pending")
@@ -217,13 +217,13 @@ const StudentProfile = () => {
       </div>
 
       {/* Payment Item */}
-      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] mt-2 h-[180px] p-4 w-full">
-        <h3 className="text-[#010E30] font-semibold text-[16px] mb-3 dark:text-white">
+      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] mt-1 h-[185px] p-4 w-full cursor-pointer" onClick={() => router.push("payment")}>
+        <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">
           Recent Payments
         </h3>
 
         {invoices.filter((i) => i.invoiceStatus === "Paid").length === 0 ? (
-          <p className="text-gray-500 text-sm">No paid payments found</p>
+          <p className="text-gray-500 text-xs text-center mt-12 align-middle">No paid payments found</p>
         ) : (
           invoices
             .filter((i) => i.invoiceStatus === "Paid")
@@ -264,7 +264,7 @@ const StudentProfile = () => {
       </div>
 
       {/* Gradient Action Cards - Example 1 */}
-      <div className="flex items-center justify-between p-4 mt-2 rounded-xl mb-0 bg-gradient-to-r from-[#7e57c2] to-[#5c6bc0] text-white">
+      <div className="flex items-center justify-between p-4 mt-1 rounded-xl mb-0 bg-gradient-to-r from-[#7e57c2] to-[#5c6bc0] text-white">
         <div className="flex items-center gap-4">
           {/* ICON CIRCLE with image */}
           <div className="bg-white bg-opacity-20 p-3 rounded-full w-10 h-10 flex items-center justify-center">
@@ -300,7 +300,7 @@ const StudentProfile = () => {
       </div>
 
       {/* Gradient Action Cards - Example 2 */}
-      <div className="flex items-center justify-between p-4 mt-2 rounded-xl bg-gradient-to-r from-[#ef5350] via-[#ec407a] to-[#ab47bc] text-white mb-3">
+      <div className="flex items-center justify-between p-4 mt-1 rounded-xl bg-gradient-to-r from-[#ef5350] via-[#ec407a] to-[#ab47bc] text-white mb-3">
         <div className="flex items-center gap-4">
           {/* Image icon in circle */}
           <div className="bg-white bg-opacity-20 p-3 rounded-full w-10 h-10 flex items-center justify-center">

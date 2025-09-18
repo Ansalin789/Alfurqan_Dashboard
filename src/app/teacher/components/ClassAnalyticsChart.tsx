@@ -10,9 +10,9 @@ interface StatsData {
 }
 
 const COLORS = {
-  scheduled: "#B1A7F2", // Purple
-  completed: "#6BE6C1", // Green
-  absent: "#FFA9A9",   // Red
+  scheduled: "#B1A7F2", // light purple
+  completed: "#6BE6C1", // green
+  absent: "#FFA9A9", // pink
 };
 
 const ClassAnalyticsChart = () => {
@@ -52,95 +52,100 @@ const ClassAnalyticsChart = () => {
     fetchData();
   }, []);
 
-  const total = data.scheduled + data.completed + data.absent;
-
-  if (loading) {
+  if (loading)
     return (
-      <div className="w-full h-full bg-white rounded-xl shadow-md p-3 flex items-center justify-center">
-        <div className="text-sm text-gray-600">Loading class analytics...</div>
+      <div className="w-full h-full flex items-center justify-center">
+        Loading...
       </div>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
-      <div className="w-full h-full bg-white rounded-xl shadow-md p-3 flex items-center justify-center">
-        <div className="text-sm text-red-600 text-center">{error}</div>
+      <div className="w-full h-full flex items-center justify-center text-red-600">
+        {error}
       </div>
     );
-  }
+
+  const segments = [
+    { label: "Scheduled", value: data.scheduled, color: COLORS.scheduled },
+    { label: "Completed", value: data.completed, color: COLORS.completed },
+    { label: "Absent", value: data.absent, color: COLORS.absent },
+  ];
+
+  const radii = [66, 58, 48];
+  const SIZE = 112;
+  const CENTER = SIZE / 2;
+
+  const getDashArray = (value: number, radius: number) => {
+    const circumference = 2 * Math.PI * radius;
+    const percent = Math.min(value, 100);
+    const dash = (percent / 100) * circumference;
+    const gap = circumference - dash;
+    return `${dash} ${gap}`;
+  };
 
   return (
-    <div className="w-full h-full bg-white dark:bg-[#343434] rounded-xl shadow-md p-3 flex flex-col overflow-hidden">
-      {/* Heading */}
-      <h2 className="text-base font-semibold dark:text-[#FFFFFF] text-gray-900 mt-3 text-left">
+    <div className="w-full h-full bg-white dark:bg-[#343434] rounded-2xl shadow p-4 sm:p-6 flex flex-col">
+      <h2 className="text-[clamp(14px,2vw,18px)] font-bold text-gray-900 dark:text-white mb-6">
         Class Analytics
       </h2>
 
-      {/* Content area that fills available space without overflowing */}
-      <div className="flex flex-col md:flex-row items-center justify-center flex-1 gap-2 min-h-0">
-        {/* Donut Chart - sized to always fit */}
-        <div className="relative flex-shrink-0 aspect-square w-2/5 max-w-[110px]">
-          <svg viewBox="0 0 100 100" className="w-full h-full">
-            {[
-              { scale: 0.9, color: COLORS.scheduled, value: data.scheduled },
-              { scale: 0.7, color: COLORS.completed, value: data.completed },
-              { scale: 0.5, color: COLORS.absent, value: data.absent },
-            ].map((circle, i) => {
-              const radius = 50 * circle.scale;
-              const circumference = 2 * Math.PI * radius;
-              const dashLength = (circle.value / (total || 1)) * circumference;
-              const gapLength = circumference - dashLength;
-
+      {/* Chart + Legend */}
+      <div className="flex-1 flex flex-col sm:flex-row items-center justify-center w-full">
+        {/* Donut Chart */}
+        <div className="relative w-[40vw] max-w-[220px] aspect-square">
+          <svg
+            viewBox={`0 0 ${SIZE} ${SIZE}`}
+            className="w-full h-full overflow-visible"
+          >
+            {segments.map((seg, i) => {
+              const radius = radii[i];
               return (
                 <circle
                   key={i}
+                  cx={CENTER}
+                  cy={CENTER}
                   r={radius}
-                  cx="50"
-                  cy="50"
-                  stroke={circle.color}
-                  strokeWidth="5"
+                  stroke={seg.color}
+                  strokeWidth={6}
                   fill="none"
                   strokeLinecap="round"
-                  strokeDasharray={`${dashLength} ${gapLength}`}
-                  transform="rotate(-90 50 50)"
+                  strokeDasharray={getDashArray(seg.value, radius)}
+                  transform={`rotate(-90 ${CENTER} ${CENTER})`}
+                  style={{ transition: "stroke-dasharray 0.8s ease-in-out" }}
                 />
               );
             })}
           </svg>
 
-          {/* Center text */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="text-lg font-extrabold text-gray-900 dark:text-[#FFFFFF] leading-none">
-              {total}
+          {/* Center value */}
+          <div className="absolute -mt-7 inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <div className="text-[24px] font-extrabold text-gray-900 dark:text-white">
+              {data.scheduled + data.completed + data.absent}
             </div>
-            <div className="text-[9px] text-gray-700 dark:text-[#FFFFFF] text-center leading-tight uppercase mt-0.5">
+            <div className="text-[8px] text-gray-500 dark:text-gray-300 uppercase text-center -mt-1 leading-tight">
               TOTAL CLASS <br /> ASSIGNED
             </div>
           </div>
         </div>
 
-        {/* Legend - compact and always fits */}
-        <div className="w-full space-y-1.5 max-w-[120px]">
-          {[
-            { label: "Scheduled", value: data.scheduled, color: COLORS.scheduled },
-            { label: "Completed", value: data.completed, color: COLORS.completed },
-            { label: "Absent", value: data.absent, color: COLORS.absent },
-          ].map((item, i) => (
+        {/* Legend */}
+        <div className="flex flex-col space-y-2 mt-6 sm:mt-0 sm:ml-10 w-[70%] sm:w-40">
+          {segments.map((item, i) => (
             <div
               key={i}
-              className="flex justify-between items-center"
+              className="flex items-center justify-between w-full -mt-6 gap-1"
             >
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <span
-                  className="w-2.5 h-2.5 rounded flex-shrink-0"
+                  className="w-[clamp(10px,1.2vw,14px)] h-[clamp(10px,1.2vw,14px)] rounded-md"
                   style={{ backgroundColor: item.color }}
                 />
-                <span className="text-gray-800 dark:text-[#FFFFFF] text-xs">
+                <span className="text-gray-700 dark:text-white text-[clamp(10px,1.5vw,14px)] font-medium">
                   {item.label}
                 </span>
               </div>
-              <span className="font-semibold text-xs dark:text-[#FFFFFF] text-gray-900">
+              <span className="text-gray-900 dark:text-white text-[clamp(10px,1.5vw,14px)] font-bold text-right">
                 {item.value}
               </span>
             </div>

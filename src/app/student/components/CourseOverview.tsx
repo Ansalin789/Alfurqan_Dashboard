@@ -24,6 +24,20 @@ const CourseOverview = () => {
   const [courseName, setCourseName] = useState<string>("");
   const [maxDuration, setMaxDuration] = useState<number | undefined>(undefined); // No default value
   const [maxClasses, setMaxClasses] = useState<number | undefined>(undefined); // No default value
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    // detect dark mode
+    const checkDarkMode = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    checkDarkMode();
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const storedCourseName = localStorage.getItem("StudentcourseName"); // Check the casing
@@ -133,7 +147,7 @@ const CourseOverview = () => {
                     stroke="none"
                     isAnimationActive={false}
                   >
-                    <Cell fill={item.bgColor} />
+                    <Cell fill={isDark? "#4d4d4d" : item.bgColor} />
                   </Pie>
                   <Pie
                     data={[

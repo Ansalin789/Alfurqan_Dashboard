@@ -313,12 +313,12 @@ export default function TeacherHeader({
           </button>
         </div>
       )}
-      {showNotification && (
+        {showNotification && (
         <div
           ref={notificationRef}
-          className="absolute right-8 w-90 max-w-full bg-gradient-to-br bg-white border-[#939299] rounded-lg shadow-2xl z-30 animate-fade-in-up dark:bg-[#252525]"
+          className="absolute pb-6 ml-[810px] w-[90vw] sm:w-[470px] max-w-[95vw] -mt-1 bg-white/90 dark:bg-[#252525]/80 backdrop-blur-md border rounded-lg shadow-2xl z-30 animate-fade-in-up animation-transition-all duration-300"
         >
-          <div className="pt-3 pb-2 pl-4 border-b border-white flex justify-between items-center bg-white/10 rounded-t-xl backdrop-blur-sm dark:border-[#252525] dark:bg-[#252525]">
+          <div className="pt-3 pb-2 pl-4 border-b border-white flex justify-between items-center dark:border-[#252525]">
             <h4 className="font-semibold text-[#010E30] text-lg dark:text-[#FFFFFF]">
               Notifications
             </h4>
@@ -333,7 +333,7 @@ export default function TeacherHeader({
             </button>
           </div>
 
-          <div className="flex justify-start backdrop-blur-md px-3">
+          <div className="flex justify-start backdrop-blur-md px-5">
             <div className="flex w-full justify-start gap-3">
               {["Unseen", "Seen"].map((tab) => (
                 <button
@@ -354,7 +354,7 @@ export default function TeacherHeader({
             </div>
           </div>
 
-          <div className="h-64 overflow-y-auto scrollbar-hide p-1 px-3">
+          <div className="h-64 overflow-y-auto scrollbar-hide p-1 px-5">
             {notifications && notifications.length > 0 ? (
               notifications
                 .filter((n) =>
@@ -374,7 +374,7 @@ export default function TeacherHeader({
                     className={`w-full text-left p-2   flex items-start gap-3 transition-all duration-200 border-b border-[#D9D9D9]  ${
                       notification.notificationStatus === "Seen"
                         ? "bg-white/20 text-gray-900 hover:bg-white/50 dark:bg-[#252525]"
-                        : "bg-white text-gray-900 font-medium hover:bg-[#bfc5e8] dark:bg-[#252525] dark:hover:bg-[#5a5858]"
+                        : " text-gray-900 font-medium hover:bg-[#bfc5e8] dark:bg-[#252525] dark:hover:bg-[#5a5858]"
                     }`}
                   >
                     <div className="w-8 h-8 rounded-lg bg-[#E4E7F4] flex items-center justify-center relative shrink-0 dark:bg-[#343434] ">

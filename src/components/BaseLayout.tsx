@@ -64,18 +64,24 @@ function Sidebar() {
 
       {/* Logo Section */}
       <div className='flex items-center gap-2 mt-5 mb-6 px-2'>
-        <Image
-          src="/assets/images/alfwhite.png"
-          width={40}
-          height={40}
-          className='w-10 h-10 object-contain'
-          alt='logo'
-        />
-        <div className="text-white leading-tight">
-          <h3 className="font-bold text-[18px] sm:text-[20px] xl:text-[22px]">AL FURQAN</h3>
-          <h4 className="font-light text-[14px] sm:text-[15px] xl:text-[16px] font-sans">academy</h4>
-        </div>
-      </div>
+  <Image
+    src="/assets/images/alfwhite.png"
+    width={40}
+    height={40}
+    className='w-10 h-10 object-contain'
+    alt='logo'
+  />
+  <div className="text-white leading-tight flex flex-col items-end">
+    <h3 className="font-bold text-[20px] sm:text-[22px] xl:text-[22px] tracking-wide uppercase">
+      AL FURQAN
+    </h3>
+    <h4 className="-mt-1 mr-2 font-light text-[14px] sm:text-[15px] xl:text-[15px] font-sans tracking-wide">
+      academy
+    </h4>
+  </div>
+</div>
+
+
 
       {/* Menu List */}
       <ul className="space-y-2 flex-1">

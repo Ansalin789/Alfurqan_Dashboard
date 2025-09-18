@@ -242,10 +242,24 @@ const GroupStudents = () => {
       (acc, [groupId, students]) => {
         const matchingStudents = students.filter((student) => {
           const studentInfo = student.studentDetails?.student;
-          const fullName = `${studentInfo?.studentFirstName || ""} ${
-            studentInfo?.studentLastName || ""
-          }`.toLowerCase();
-          const firstAssignment = student.assignment?.[0] || {};
+          const fullName = `${studentInfo?.studentFirstName || ""} ${studentInfo?.studentLastName || ""}`.toLowerCase();
+
+          // Check all assignments for this student
+          const assignmentMatch = student.assignment.some((assignment) => {
+            // Format dates for search
+            const assignedDateStr = assignment.assignedDate ? formatDate(assignment.assignedDate).toLowerCase() : "";
+            const dueDateStr = assignment.dueDate ? formatDate(assignment.dueDate).toLowerCase() : "";
+
+            return (
+              assignment.assignmentId?.toLowerCase().includes(lowerQuery) ||
+              assignment.assignmentName?.toLowerCase().includes(lowerQuery) ||
+              assignment.assignmentStatus?.toLowerCase().includes(lowerQuery) ||
+              assignment.assignmentType?.toLowerCase().includes(lowerQuery) ||
+              assignment.title?.toLowerCase().includes(lowerQuery) ||
+              assignedDateStr.includes(lowerQuery) ||
+              dueDateStr.includes(lowerQuery)
+            );
+          });
 
           return (
             student.studentId?.toLowerCase()?.includes(lowerQuery) ||
@@ -253,28 +267,14 @@ const GroupStudents = () => {
             studentInfo?.studentEmail?.toLowerCase()?.includes(lowerQuery) ||
             studentInfo?.studentPhone?.toString()?.includes(lowerQuery) ||
             studentInfo?.studentCountry?.toLowerCase()?.includes(lowerQuery) ||
-            student.studentDetails?.subscription?.subscriptionName
-              ?.toLowerCase()
-              ?.includes(lowerQuery) ||
-            studentInfo?.preferredTeacher
-              ?.toLowerCase()
-              ?.includes(lowerQuery) ||
-            studentInfo?.preferredFromTime
-              ?.toLowerCase()
-              ?.includes(lowerQuery) ||
-            studentInfo?.evaluationStatus
-              ?.toLowerCase()
-              ?.includes(lowerQuery) ||
-            firstAssignment?.assignmentName
-              ?.toLowerCase()
-              ?.includes(lowerQuery) ||
-            firstAssignment?.assignmentStatus
-              ?.toLowerCase()
-              ?.includes(lowerQuery) ||
-            firstAssignment?.assignmentType
-              ?.toLowerCase()
-              ?.includes(lowerQuery) ||
-            groupId.toLowerCase().includes(lowerQuery)
+            student.studentDetails?.subscription?.subscriptionName?.toLowerCase()?.includes(lowerQuery) ||
+            studentInfo?.preferredTeacher?.toLowerCase()?.includes(lowerQuery) ||
+            studentInfo?.preferredFromTime?.toLowerCase()?.includes(lowerQuery) ||
+            studentInfo?.evaluationStatus?.toLowerCase()?.includes(lowerQuery) ||
+            (student.level || "").toLowerCase().includes(lowerQuery) ||
+            (student.studentDetails?.student?.learningInterest || "").toLowerCase().includes(lowerQuery) ||
+            groupId.toLowerCase().includes(lowerQuery) ||
+            assignmentMatch
           );
         });
 
@@ -557,15 +557,15 @@ const GroupStudents = () => {
   const getStatusStyle = (status: string) => {
     switch (status) {
       case "Completed":
-        return "bg-green-100 text-green-700";
+        return "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633] dark:text-[#377E36]";
       case "Not Completed":
-        return "bg-yellow-100 text-yellow-700";
+        return "bg-[#FDF6EC] text-[#F0AD4E] dark:bg-[#F0AD4E33] dark:text-[#F0AD4E]";
       case "Not Assigned":
-        return "bg-red-100 text-red-700";
+        return "bg-[#FDECEC] text-[#D34645] dark:text-[#D34645] dark:bg-[#D3464533]" ;
       case "Assigned":
-        return "bg-green-100 text-green-800";
+        return "bg-[#225BAA] text[#225BAA] dark:bg-[#225BAA33] dark:text-[#225BAA]";
       case "Pending":
-        return "bg-blue-100 text-blue-700";
+        return "bg-blue-100 text-blue-700 dark:bg-[#F0AD4E33] dark:text-[#F0AD4E]";
       default:
         return "bg-gray-100 text-gray-600";
     }
@@ -574,13 +574,16 @@ const GroupStudents = () => {
   const toggleStudentList = (groupId: string) => {
     setExpandedGroupId(expandedGroupId === groupId ? null : groupId);
   };
+  // Format date as 'Sep 20, 2020'
   const formatDate = (dateStr: string | undefined): string => {
     if (!dateStr) return "-";
     const date = new Date(dateStr);
-    const day = date.getDate(); // e.g., 7
-    const month = String(date.getMonth() + 1).padStart(2, "0"); // e.g., 06
-    const year = date.getFullYear(); // e.g., 2025
-    return `${day}-${month}-${year}`;
+    if (isNaN(date.getTime())) return "-";
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    });
   };
   const handleAssign = async (
     studentIds: string[],
@@ -949,7 +952,6 @@ const GroupStudents = () => {
       });
 
       // Debug: Log FormData before sending
-      console.log("FormData contents:");
       formData.forEach((value, key) => {
         console.log(
           key,
@@ -1169,20 +1171,20 @@ const GroupStudents = () => {
               <thead className="text-[12px] bg-[#4C6993] text-white">
                 <tr>
                   {[
-                    { label: "Assignment ID", width: "w-[18%]" },
-                    { label: "Student Name", width: "w-[15%]" },
-                    { label: "Group ID", width: "w-[17%]" },
-                    { label: "Level", width: "w-[8%]" },
+                    { label: "Assignment ID", width: "w-[14%]" },
+                    { label: "Student Name", width: "w-[13%]" },
+                    { label: "Group ID", width: "w-[15%]" },
+                    { label: "Level", width: "w-[6%]" },
                     { label: "Course", width: "w-[10%]" },
-                    { label: "Assignment Name", width: "w-[13%]" },
-                    { label: "Assign Date", width: "w-[12%]" },
-                    { label: "Due Date", width: "w-[12%]" },
+                    { label: "Assignment Name", width: "w-[15%]" },
+                    { label: "Assign Date", width: "w-[11%]" },
+                    { label: "Due Date", width: "w-[11%]" },
                     { label: "Status", width: "w-[12%]" },
                     { label: "Action", width: "w-[8%]" },
                   ].map((header) => (
                     <th
                       key={header.label}
-                      className={`px-2 py-1 border border-[#4C6993] text-left text-wrap break-words ${header.width}`}
+                      className={`px-2 py-2 border border-[#4C6993] text-left text-wrap break-words ${header.width}`}
                     >
                       {header.label}
                     </th>
@@ -1308,7 +1310,7 @@ const GroupStudents = () => {
                                       );
                                     }}
                                   >
-                                    Assign
+                                   Admin Assign
                                   </button>
                                   <button
                                     className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
@@ -1588,14 +1590,15 @@ const GroupStudents = () => {
                               <td className="px-3 py-2 break-words">
                                 {groupId === "no-group" ? "-" : groupId}
                               </td>
-                              <td className="px-3 py-2 break-words">
-                                {assignmentItem.title}
-                              </td>
+                           
                               <td className="px-3 py-2 break-words">
                                 {students[0]?.level || "-"}
                               </td>
                               <td className="px-3 py-2 break-words">
                                 {studentDetails?.student?.learningInterest}
+                              </td>
+                                 <td className="px-3 py-2 break-words">
+                                {assignmentItem.title}
                               </td>
                               <td className="px-3 py-2 break-words">
                                 {formatDate(assignmentItem?.assignedDate)}
@@ -1741,7 +1744,7 @@ const GroupStudents = () => {
                                                 );
                                               }}
                                             >
-                                              Assign
+                                             Admin Assign
                                             </button>
                                             <button
                                               className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
@@ -1791,7 +1794,7 @@ const GroupStudents = () => {
                                                 )
                                               }
                                             >
-                                              Assign
+                                             Admin Assign
                                             </button>
                                             <button
                                               className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"

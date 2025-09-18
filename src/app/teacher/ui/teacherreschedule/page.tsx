@@ -823,7 +823,7 @@ const TeachersSchedule = () => {
                       setRescheduleDate(date);
                     }}
                     min={moment().format("YYYY-MM-DD")}
-                    className="w-full h-[36px] sm:h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full h-[36px] sm:h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:border-transparent dark:[color-scheme:dark]"
                   />
                 </div>
 
@@ -841,7 +841,7 @@ const TeachersSchedule = () => {
                       onChange={(e) =>
                         handleInputChange("fromTime", e.target.value)
                       }
-                      className="w-full h-[36px] sm:h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full h-[36px] sm:h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent dark:border-[#5C5C5C] dark:[color-scheme:dark]"
                     />
                   </div>
                   <div>
@@ -857,7 +857,7 @@ const TeachersSchedule = () => {
                       onChange={(e) =>
                         handleInputChange("toTime", e.target.value)
                       }
-                      className="w-full h-[36px] sm:h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full h-[36px] sm:h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent dark:border-[#5C5C5C] dark:[color-scheme:dark]"
                     />
                   </div>
                 </div>
@@ -874,7 +874,7 @@ const TeachersSchedule = () => {
                       handleInputChange("comment", e.target.value)
                     }
                     rows={3}
-                    className="w-full h-[80px] sm:h-[90px] md:h-[110px] px-3 py-2 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full h-[80px] sm:h-[90px] md:h-[110px] px-3 py-2 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent resize-none dark:border-[#5C5C5C] dark:[color-scheme:dark]"
                   />
                 </div>
               </div>
@@ -882,8 +882,8 @@ const TeachersSchedule = () => {
 
             <div className="flex-1"></div>
 
-            <div className="p-3 sm:p-4 md:p-5 lg:p-6">
-              <hr className="w-full border-t-[1px] border-[#dbdada] dark:border-[#dbdada] mb-3 sm:mb-4" />
+            <div className="p-3 sm:p-4 md:p-5 lg:p-6 sticky bottom-0 bg-white dark:bg-[#343434] z-10">
+              <hr className="w-full border-t-[1px] border-[#dbdada] dark:border-[#5C5C5C] mb-3 sm:mb-4" />
               <div className="flex justify-end">
                 <button
                   type="submit"
