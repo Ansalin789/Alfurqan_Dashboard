@@ -331,8 +331,8 @@ const ManageTeacher: React.FC = () => {
             <div className="grid grid-cols-5 gap-4 gap-x-7 p-3 px-2 bg-[#f5f5f5]  dark:bg-[#3b3b3b]">              {currentApplicants.map((teacher: ICandidateApplication) => (
                 <div
                   key={teacher._id}
-                  className="bg-white dark:bg-[#343434] h-[260px] rounded-lg p-4"
-                >
+                  className="bg-white dark:bg-[#343434] h-[260px] rounded-lg p-4 max-w-[200px] mx-auto"
+                  >
                   <div className="items-center">
                     <div className="h-[126px] rounded-md  dark:bg-[#dadada] flex items-center justify-center">
                       <Image

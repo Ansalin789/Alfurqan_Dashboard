@@ -1463,7 +1463,7 @@ const TrailSection = () => {
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[8%]">
                               <span
-                                className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
+                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
                                   item.trialClassStatus === "COMPLETED"
                                     ? "bg-[#ECFDF3] text-[#377E36] px-2 dark:bg-[#377E3633]"
                                     : item.trialClassStatus === "INPROGRESS"
@@ -1479,7 +1479,7 @@ const TrailSection = () => {
                               </span>
                             </td>
 
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] w-[8%]">
+                            <td className="px-3 py-2 text-[11px] text-[#010E30E5] dark:text-[#FDFDFD] w-[8%]">
                               {(() => {
                                 // Debug log for table display
                                 console.log("Table display studentStatus:", {
@@ -1497,7 +1497,7 @@ const TrailSection = () => {
                                 });
                                 return (
                                   <span
-                                    className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
+                                    className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
                                       item.studentStatus?.toUpperCase() ===
                                       "JOINED"
                                         ? "bg-[#ECFDF3] text-[#377E36] px-6 dark:bg-[#377E3633]"
@@ -1519,7 +1519,7 @@ const TrailSection = () => {
 
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD]  w-[8%] break-words">
                               <span
-                                className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
+                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
                                   item.paymentStatus === "PAID"
                                     ? "bg-[#ECFDF3] text-[#377E36] px-5 dark:bg-[#377E3633]"
                                     : item.paymentStatus === "FAILED"

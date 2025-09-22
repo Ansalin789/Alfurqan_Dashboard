@@ -588,11 +588,11 @@ const TeacherDetails = () => {
         overlayClassName="fixed inset-0 bg-black bg-opacity-50"
       >
         <div className="fixed inset-0 bg-opacity-40 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg w-[320px] relative dark:bg-[#252525]">
+          <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-sm font-semibold text-gray-800 dark:text-white">
+              <h1 className="text-lg font-semibold text-gray-800 dark:text-white">
                 Filter by
-              </h2>
+              </h1>
               <button
                 onClick={onClose}
                 className="text-gray-400 text-xl absolute top-4 right-4"
@@ -638,7 +638,7 @@ const TeacherDetails = () => {
 
               {/* Date */}
               <div>
-                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6] ">
                   Date
                 </label>
                 <input
@@ -647,7 +647,7 @@ const TeacherDetails = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, Date: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  className="w-full px-3 py-2 border rounded text-sm dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] dark:[color-scheme:dark]"
                 />
               </div>
 
@@ -662,7 +662,7 @@ const TeacherDetails = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, Time: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  className="w-full px-3 py-2 border rounded text-sm dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] dark:[color-scheme:dark]"
                 />
               </div>
 
@@ -845,15 +845,15 @@ const handleViewDetails = (_id: string) => {
           <div className="rounded-xl flex items-center p-6 w-[633px] h-[247px] border bg-[#5e6578] text-white ">
               {/* Profile Section */}
   <div className="flex flex-col items-center w-1/3 px-4 text-center">
-    <div className="relative mb-4">
-      <Image
-        src="/assets/images/proff.jpg"
-        width={100}
-        height={100}
-        alt="Profile"
-        className="rounded-full border-4 border-white object-cover"
-      />
-    </div>
+  <div className="relative mb-1 w-[160px] h-[160px]">
+  <Image
+    src="/assets/images/student-portfolio.svg"
+    alt="Profile"
+    fill
+    className="rounded-full object-cover"
+  />
+</div>
+
     <h2 className="text-lg font-semibold text-white break-words mb-1">
       {teachers?.candidateFirstName}
     </h2>
