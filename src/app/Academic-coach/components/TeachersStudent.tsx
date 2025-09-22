@@ -69,7 +69,7 @@ export default function Academic() {
 
   return (
     <Link
-      href="/Academic/manageStudents"
+      href="/Academic-coach/ui/manageteacher"
     >
       <div className="col-span-12 p-2 text-[#000] dark:text-[#fff]">
         <h3 className="text-[16px] font-semibold text-[#000] dark:text-[#fff] mb-1 px-3 py-2 justify-between flex items-center">

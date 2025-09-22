@@ -162,17 +162,23 @@
   margin: 4px 4px;
   margin-top: 10px;
   cursor: pointer;
-  transition: background 0.2s ease-in-out; 
+  /* transition: background 0.2s ease-in-out;  */
 }
-.custom-calendar .react-calendar__navigation__arrow {
+.dark .custom-calendar .react-calendar__navigation__arrow {
   /* position: relative; */
   /* margin-top: 8px !important; */
+  background: #414141 !important;
+  color: #efefef !important;
 }
 
 
 .custom-calendar .react-calendar__navigation__arrow:enabled:hover {
   background: #EFEFEF !important;
   color: #000 !important;
+}
+.dark .custom-calendar .react-calendar__navigation__arrow:enabled:hover {
+  background: #414141 !important;
+  color: #efefef !important;
 }
 
 /* Ensure the arrow glyph sits perfectly centered inside the button */
@@ -237,11 +243,12 @@
 }
 
 .dark .custom-calendar .react-calendar__navigation {
-  background: #343434;
+  background: #343434 !important;
 }
 
 .dark .custom-calendar .react-calendar__navigation button {
   color: #FFFFFF;
+
 }
 
 .dark .custom-calendar .react-calendar__navigation button:enabled:hover,
