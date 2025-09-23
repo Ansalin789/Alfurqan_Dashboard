@@ -949,11 +949,14 @@ useEffect(() => {
           <div className="w-[560px] h-[246px] bg-[#5E6578] rounded-lg text-white p-4 sm:p-6 flex flex-col sm:flex-row items-center sm:items-start">
             {/* Profile Image + Name */}
             <div className="flex flex-col items-center sm:pr-6 sm:border-r border-white/30">
-              <img
-                src="/assets/images/alstudent.jpg"
-                alt="profile"
-                className="w-[150px] h-[150px] rounded-full object-cover"
-              />
+            <div className="w-[150px] h-[150px] rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+  <img
+    src="/assets/images/student-portfolio.svg"
+    alt="profile"
+    className="w-full h-full object-contain"
+  />
+</div>
+
               <h2 className="text-center text-[18px] font-semibold mt-3">
                 {data?.studentDetails?.username}
               </h2>
