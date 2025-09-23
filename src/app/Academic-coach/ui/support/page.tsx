@@ -12,12 +12,12 @@ const Support = () => {
    <AcademicHeader currentSection="Support"/>
       <div className="p-4 mx-auto">
         <div className="flex gap-x-5 w-auto">
-          <div className="bg-[#7689BD] shadow-lg rounded-xl p-4 h-[616px] w-[340px]">
+          <div className="bg-[#7689BD] shadow-lg rounded-xl p-4 h-[616px] w-[580px]">
             <h2 className="text-[20px] font-semibold text-[#fff] mb-4 p-4">
               Contact
             </h2>
             <div className="text-gray-800 space-y-4 justify-evenly px-6">
-              <p>
+              <p className="pb-5">
                 <strong className="text-white text-[16px] font-medium flex items-center gap-2">
                   <img
                     src="/assets/images/location.png"
@@ -38,7 +38,7 @@ const Support = () => {
                 </div>
                 
               </p>
-              <p>
+              <p className="pb-5">
                 <strong className="text-white text-[16px] font-medium flex items-center gap-2">
                   <img
                     src="/assets/images/call.png"
@@ -81,7 +81,7 @@ const Support = () => {
             </div>
           </div>
 
-         <div className="bg-[#5E6578] shadow-lg rounded-xl p-6 w-[915px] relative pb-20">
+         <div className="bg-[#5E6578] shadow-lg rounded-xl p-6 w-full relative pb-20">
             <h2 className="text-[20px] p-4 text-left font-semibold text-[#FAFAFA] mb-7">
               Do you have questions?
             </h2>
