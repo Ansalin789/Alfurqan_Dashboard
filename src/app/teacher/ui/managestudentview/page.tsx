@@ -320,10 +320,14 @@ export interface AssignmentApiResponse {
 const formatDate = (dateStr: string | undefined): string => {
   if (!dateStr) return "-";
   const date = new Date(dateStr);
-  const day = date.getDate(); // e.g., 7
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // e.g., 06
-  const year = date.getFullYear(); // e.g., 2025
-  return `${day}-${month}-${year}`;
+  const day = date.getDate();
+  const monthNames = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+  const month = monthNames[date.getMonth()];
+  const year = date.getFullYear();
+  return `${month} ${day}, ${year}`;
 };
 type CardProps = {
   title: string;

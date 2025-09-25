@@ -138,10 +138,10 @@ const cards = [
         {cards.map((item, idx) => {
           const bgClass =
             idx === 0
-              ? "bg-gradient-to-b from-white to-[#F2FCFF] dark:from-[#343434] dark:to-[#343434]"
+              ? "bg-gradient-to-b from-white to-[#F6F7FF] dark:from-[#343434] dark:to-[#343434]"
               : idx === 1
-              ? "bg-gradient-to-b from-white to-[#F0FFFF]  dark:from-[#343434] dark:to-[#343434]"
-              : "bg-gradient-to-b from-white to-[#F8F1FF]  dark:from-[#343434] dark:to-[#343434]";
+              ? "bg-gradient-to-b from-white to-[#F6FFF9]  dark:from-[#343434] dark:to-[#343434]"
+              : "bg-gradient-to-b from-white to-[#FFF6F6]  dark:from-[#343434] dark:to-[#343434]";
 
           return (
             <div
