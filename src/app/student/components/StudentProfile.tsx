@@ -51,11 +51,27 @@ const StudentProfile = () => {
     const studentId = localStorage.getItem("StudentPortalId");
     const token = localStorage.getItem("StudentAuthToken");
 
-    setStudentName(localStorage.getItem("StudentPortalName"));
-    setStudentEmail(localStorage.getItem("StudentcourseName"));
-
-    console.log("Student ID:", studentId);
-    console.log("Token:", token);
+    // Fetch student details from API and set name/email
+    const fetchStudentDetails = async () => {
+      if (!studentId || !token) return;
+      try {
+        const res = await axios.get(
+          `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        // Defensive: check for studentDetails and student
+        const details = res.data?.studentDetails;
+        setStudentName(details?.username || null);
+        setStudentEmail(details?.student?.studentEmail || null);
+      } catch (err) {
+        console.error("Failed to fetch student details", err);
+      }
+    };
+    fetchStudentDetails();
 
     const fetchStudentInvoices = async () => {
       try {
@@ -89,7 +105,7 @@ const StudentProfile = () => {
       }
     };
 
-    fetchStudentInvoices();
+  fetchStudentInvoices();
   }, []);
   const [dashboardCounts, setDashboardCounts] = useState({
     totalLevel: 0,
