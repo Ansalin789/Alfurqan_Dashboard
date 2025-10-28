@@ -96,6 +96,10 @@ const Academic: React.FC = () => {
             next2Label={null}
             prev2Label={null}
             showNeighboringMonth={true}
+            formatShortWeekday={(_locale, date) => {
+              const map = ["S", "M", "T", "W", "T", "F", "S"]; // Sun..Sat
+              return map[date.getDay()];
+            }}
             tileClassName={({ date, view }) =>
               view === "month" && isMeetingDate(date) ? "event-day" : undefined
             }

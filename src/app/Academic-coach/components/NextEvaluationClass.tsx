@@ -38,7 +38,7 @@ const NextEvaluationClass = () => {
   const [error, setError] = useState<string | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch all today's classes
+  // Fetch all upcoming classes
   useEffect(() => {
     const fetchNextEvaluationClass = async () => {
       try {
@@ -70,15 +70,10 @@ const NextEvaluationClass = () => {
         }
 
         const now = new Date();
-        const todayClasses = response.data
+        const upcoming = response.data
           .filter((item: UpcomingClass) => {
             const classStartDate = new Date(item.scheduledStartDate);
-            return (
-              classStartDate.getDate() === now.getDate() &&
-              classStartDate.getMonth() === now.getMonth() &&
-              classStartDate.getFullYear() === now.getFullYear() &&
-              classStartDate > now // Only future classes for today
-            );
+            return classStartDate > now; // keep only future classes (any date)
           })
           .sort((a: UpcomingClass, b: UpcomingClass) => {
             return (
@@ -87,7 +82,8 @@ const NextEvaluationClass = () => {
             );
           });
 
-        setTodaysClasses(todayClasses);
+        // Only keep the single next upcoming class
+        setTodaysClasses(upcoming.slice(0, 1));
         setCurrentClassIndex(0);
       } catch (err) {
         if (err instanceof Error) {
@@ -186,7 +182,7 @@ const NextEvaluationClass = () => {
   if (!classData) {
     return (
       <div className="bg-[#71a1db] rounded-xl shadow flex items-center justify-center text-white p-6">
-        <span>No more classes for today.</span>
+        <span>No upcoming classes.</span>
       </div>
     );
   }
