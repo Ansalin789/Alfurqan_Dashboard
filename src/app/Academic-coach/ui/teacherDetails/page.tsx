@@ -407,9 +407,7 @@ const TeacherDetails = () => {
 
   schedule.forEach((item: ClassSchedule) => {
     if (item.student && item.student.studentId) { // Add check for studentId
-      const fullName = `${item.student.studentFirstName} ${
-        item.student.studentLastName || ""
-      }`.trim();
+      const fullName = item.student.studentFirstName || "";
       const courseName = item.course?.courseName || "";
       const studentId = item.student.studentId;
 
@@ -1079,8 +1077,7 @@ const handleViewDetails = (_id: string) => {
                   }`}
                 >
                   <td className="px-3 py-3 text-[#3D8FDE] font-medium text-left">
-                    {item.student.studentFirstName}{" "}
-                    {item.student.studentLastName}
+                    {item.student.studentFirstName}
                   </td>
                   <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                     {item.course?.courseName || "N/A"}
