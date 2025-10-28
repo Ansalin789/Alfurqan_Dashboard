@@ -408,6 +408,7 @@ const TrailSection = () => {
     { teacherId: string; teacherName: string; teacherEmail?: string }[]
   >([]);
   const [isLoadingTeachers, setIsLoadingTeachers] = useState(false);
+  const [openActionMenuForId, setOpenActionMenuForId] = useState<string | null>(null);
 
   // Function to handle editable field changes
   const handleEditableFieldChange = (field: string, value: string) => {
@@ -1091,6 +1092,17 @@ const TrailSection = () => {
   const handleCloseModal = () => {
     setShowModal(false);
   };
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (openActionMenuForId) {
+        setOpenActionMenuForId(null);
+      }
+    };
+    if (openActionMenuForId) {
+      document.addEventListener("click", onDocClick);
+    }
+    return () => document.removeEventListener("click", onDocClick);
+  }, [openActionMenuForId]);
   // Add filter handling function
   const handleApplyFilters = (filters: {
     country: string;
@@ -1395,13 +1407,13 @@ const TrailSection = () => {
                         {[
                           { label: "Trial ID", width: "w-[10%]" },
                           { label: "Student Name", width: "w-[12%]" },
-                          { label: "Mobile", width: "w-[10%]" },
+                          { label: "Mobile", width: "w-[8%]" },
                           { label: "Country", width: "w-[8%]" },
                           { label: "Course", width: "w-[9%]" },
+                          { label: "Time", width: "w-[8%]" },
                           { label: "Date", width: "w-[8%]" },
                           { label: "Preferred Teacher", width: "w-[10%]" },
                           { label: "Assigned Teacher", width: "w-[10%]" },
-                          { label: "Time", width: "w-[8%]" },
                           { label: "Trial Status", width: "w-[12%]" },
                           { label: "Student Status", width: "w-[10%]" },
                           { label: "Payment Status", width: "w-[10%]" },
@@ -1442,6 +1454,9 @@ const TrailSection = () => {
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
                               {item.course}
                             </td>
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[8%]">
+                              {item.time}
+                            </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
                               {new Date(item.prefferedDate).toLocaleDateString(
                                 "en-US",
@@ -1458,9 +1473,7 @@ const TrailSection = () => {
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
                               {item.assignedTeacher}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[8%]">
-                              {item.time}
-                            </td>
+                            
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[8%]">
                               <span
                                 className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
@@ -1531,15 +1544,42 @@ const TrailSection = () => {
                               </span>
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[5%]">
-                              <button
-                                onClick={() => handleClick(item._id.toString())}
-                                className="hover:cursor-pointer text-center p-2"
-                              >
-                                <FaEllipsisV
-                                  size={14}
-                                  className="text-[#5F6368] dark:text-white"
-                                />
-                              </button>
+                              <div className="relative inline-block text-left">
+                                <button
+                                  onClick={() =>
+                                    setOpenActionMenuForId((prev) =>
+                                      prev === item._id ? null : item._id
+                                    )
+                                  }
+                                  className="hover:cursor-pointer text-center p-2"
+                                >
+                                  <FaEllipsisV
+                                    size={14}
+                                    className="text-[#5F6368] dark:text-white"
+                                  />
+                                </button>
+                                {openActionMenuForId === item._id && (
+                                  <div className="absolute right-0 mt-2 w-28 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-20 dark:bg-[#2E2E2E]">
+                                    <div className="py-1">
+                                      <button
+                                        className="block w-full px-3 py-2 text-left text-[11px] text-[#010E30E5] hover:bg-gray-100 dark:text-white dark:hover:bg-[#3A3A3A]"
+                                        onClick={() => {
+                                          handleClick(item._id.toString());
+                                          setOpenActionMenuForId(null);
+                                        }}
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        className="block w-full px-3 py-2 text-left text-[11px] text-[#D34645] hover:bg-gray-100 dark:hover:bg-[#3A3A3A]"
+                                        onClick={() => setOpenActionMenuForId(null)}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))
@@ -1912,10 +1952,11 @@ const TrailSection = () => {
                   className=" bg-[#576CBC1A] text-[#576CBC] px-5 py-2 rounded-lg hover:shadow-lg transition-all duration-300 text-sm font-medium border border-[#576CBC1A] hover:bg-[#576CBC33] hover:text-[#576CBC] dark:hover:bg-[#576CBC33] dark:hover:text-[#576CBC]"
                 >
                   Cancel
-                </button>
-                {(editableData.availableTeacher &&
+                  </button>
+                {( (editableData.availableTeacher || formData?.assignedTeacherId) &&
                   ((editableData.changeDate || formData?.student.preferredDate) &&
-                   (editableData.changeTime || formData?.student.preferredFromTime))) && (
+                   (editableData.changeTime || formData?.student.preferredFromTime))
+                ) && (
                     <button
                       type="button"
                       onClick={handleSaveChanges}
