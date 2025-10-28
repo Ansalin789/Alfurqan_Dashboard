@@ -1400,28 +1400,34 @@ const TrailSection = () => {
                     </span>
                   </div>
                 </div>
-                <div className="overflow-x-auto w-full">
-                  <table className="w-full table-fixed">
+                <div className="overflow-x-auto w-full thin-scroll">
+                  <table className="w-full table-fixed min-w-max">
                     <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                       <tr>
                         {[
-                          { label: "Trial ID", width: "w-[10%]" },
-                          { label: "Student Name", width: "w-[12%]" },
-                          { label: "Mobile", width: "w-[8%]" },
+                          { label: "Trial ID", width: "w-[18%]" },
+                          { label: "Student Name", width: "w-[14%]" },
+                          { label: "Mobile", width: "w-[10%]" },
                           { label: "Country", width: "w-[8%]" },
-                          { label: "Course", width: "w-[9%]" },
+                          { label: "Course", width: "w-[10%]" },
                           { label: "Time", width: "w-[8%]" },
-                          { label: "Date", width: "w-[8%]" },
-                          { label: "Preferred Teacher", width: "w-[10%]" },
-                          { label: "Assigned Teacher", width: "w-[10%]" },
+                          { label: "Date", width: "w-[10%]" },
+                          { label: "Preferred Teacher", width: "w-[12%]" },
+                          { label: "Assigned Teacher", width: "w-[12%]" },
                           { label: "Trial Status", width: "w-[12%]" },
-                          { label: "Student Status", width: "w-[10%]" },
-                          { label: "Payment Status", width: "w-[10%]" },
+                          { label: "Student Status", width: "w-[12%]" },
+                          { label: "Payment Status", width: "w-[12%]" },
                           { label: "Action", width: "w-[7%]" },
                         ].map((header, index) => (
                           <th
                             key={header.label}
-                            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words ${header.width}`}
+                            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] whitespace-nowrap ${header.width} ${
+                              index === 0
+                                ? "sticky left-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                                : index === 12
+                                ? "sticky right-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                                : ""
+                            }`}
                           >
                             {header.label}
                           </th>
@@ -1439,25 +1445,29 @@ const TrailSection = () => {
                                 : "bg-[#F8F8F8] dark:bg-[#303030]"
                             }`}
                           >
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
+                            <td className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[18%] sticky left-0 z-10 ${
+                              index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
+                            }`}>
                               {item._id}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[15%]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[14%]">
                               {item.studentFirstName} {item.studentLastName}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.number}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[8%]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[8%]">
                               {item.country}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.course}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[8%]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[8%]">
                               {item.time}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {new Date(item.prefferedDate).toLocaleDateString(
                                 "en-US",
                                 {
@@ -1467,14 +1477,14 @@ const TrailSection = () => {
                                 }
                               )}{" "}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[12%]">
                               {item.preferredTeacher}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[12%]">
                               {item.assignedTeacher}
                             </td>
                             
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[8%]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[12%]">
                               <span
                                 className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
                                   item.trialClassStatus === "COMPLETED"
@@ -1492,7 +1502,7 @@ const TrailSection = () => {
                               </span>
                             </td>
 
-                            <td className="px-3 py-2 text-[11px] text-[#010E30E5] dark:text-[#FDFDFD] w-[8%]">
+                            <td className="px-3 py-2 text-[11px] text-[#010E30E5] dark:text-[#FDFDFD] whitespace-nowrap w-[12%]">
                               {(() => {
                                 // Debug log for table display
                                 console.log("Table display studentStatus:", {
@@ -1529,8 +1539,8 @@ const TrailSection = () => {
                                 );
                               })()}
                             </td>
-
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD]  w-[8%] break-words">
+                              
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD]  w-[12%] whitespace-nowrap">
                               <span
                                 className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
                                   item.paymentStatus === "PAID"
@@ -1543,7 +1553,11 @@ const TrailSection = () => {
                                 {item.paymentStatus ?? "PAID"}
                               </span>
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[5%]">
+                            <td className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[7%] sticky right-0 z-10 ${
+                              index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
+                            }`}>
                               <div className="relative inline-block text-left">
                                 <button
                                   onClick={() =>
@@ -1593,6 +1607,12 @@ const TrailSection = () => {
                     </tbody>
                   </table>
                 </div>
+                <style jsx>{`
+                  .thin-scroll { scrollbar-width: thin; scrollbar-color: rgba(100,100,100,.5) transparent; }
+                  .thin-scroll::-webkit-scrollbar { height: 3px; }
+                  .thin-scroll::-webkit-scrollbar-track { background: transparent; }
+                  .thin-scroll::-webkit-scrollbar-thumb { background-color: rgba(100,100,100,.5); border-radius: 9999px; }
+                `}</style>
               </div>
             </div>
           </div>
