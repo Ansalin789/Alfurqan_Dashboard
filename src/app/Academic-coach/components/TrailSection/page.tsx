@@ -1539,7 +1539,7 @@ const TrailSection = () => {
                                 );
                               })()}
                             </td>
-                              
+
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD]  w-[12%] whitespace-nowrap">
                               <span
                                 className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
@@ -1559,19 +1559,19 @@ const TrailSection = () => {
                                 : "bg-[#F8F8F8] dark:bg-[#303030]"
                             }`}>
                               <div className="relative inline-block text-left">
-                                <button
+                              <button
                                   onClick={() =>
                                     setOpenActionMenuForId((prev) =>
                                       prev === item._id ? null : item._id
                                     )
                                   }
-                                  className="hover:cursor-pointer text-center p-2"
-                                >
-                                  <FaEllipsisV
-                                    size={14}
-                                    className="text-[#5F6368] dark:text-white"
-                                  />
-                                </button>
+                                className="hover:cursor-pointer text-center p-2"
+                              >
+                                <FaEllipsisV
+                                  size={14}
+                                  className="text-[#5F6368] dark:text-white"
+                                />
+                              </button>
                                 {openActionMenuForId === item._id && (
                                   <div className="absolute right-0 mt-2 w-28 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-20 dark:bg-[#2E2E2E]">
                                     <div className="py-1">
