@@ -320,7 +320,6 @@ const handleFormSubmit = async (e: React.FormEvent) => {
   };
 
   return (
-    <GoogleOAuthProvider clientId="45636645803-6arfjuthmcvfj3r6e6qep23dlpfntrc7.apps.googleusercontent.com">
       <div className="flex h-screen items-center justify-center bg-gray-100">
         {showError && error && (
           <div className="fixed top-0 right-4 p-4 bg-red-600 text-white rounded-lg shadow-lg z-50">
@@ -427,7 +426,6 @@ const handleFormSubmit = async (e: React.FormEvent) => {
           </div>
         </div>
       </div>
-    </GoogleOAuthProvider>
   );
 };
 
