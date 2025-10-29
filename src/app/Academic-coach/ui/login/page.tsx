@@ -242,7 +242,7 @@ const handleFormSubmit = async (e: React.FormEvent) => {
       try {
         // Send a POST request to the backend to check if the email exists
         const response = await axios.post(
-          `https://api.blackstoneinfomaticstech.com/allcheck-email`,
+          `http://localhost:5001/allcheck-email`,
           { email }
         );
 
