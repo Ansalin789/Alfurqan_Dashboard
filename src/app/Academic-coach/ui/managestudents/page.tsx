@@ -686,13 +686,28 @@ const ManageStudents = () => {
                             .replace(",", ",")}
                         </td>
                         <td className="px-3 py-2 text-[#3D8FDE] font-medium">
-                          {item.username}
+                          {(() => {
+                            const val = item.username ?? "";
+                            return val
+                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                              : "";
+                          })()}
                         </td>
                         <td className="px-3 py-2">
-                          {item.evaluation?.[0]?.teacher?.teacherName || "-"}
+                          {(() => {
+                            const val = item.evaluation?.[0]?.teacher?.teacherName;
+                            return val
+                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                              : "-";
+                          })()}
                         </td>
                         <td className="px-3 py-2">
-                          {item.evaluation?.[0]?.classType || "-"}
+                          {(() => {
+                            const val = item.evaluation?.[0]?.classType;
+                            return val
+                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                              : "-";
+                          })()}
                         </td>
                         <td className="px-3 py-2">
                           {item.student.studentPhone}
