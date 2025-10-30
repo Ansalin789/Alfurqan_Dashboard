@@ -136,6 +136,50 @@ interface TransformedUser {
   studentStatus: string; // Optional if not always present
 }
 
+export interface IMeeting {
+  _id: string;
+  subject: string;
+  meetingLocation: string;
+  classType: string;
+  meetingType: string;
+  meetingLink: string;
+  isScheduledMeeting: boolean;
+  scheduledStartDate: string;
+  scheduledEndDate: string;
+  scheduledFrom: string;
+  scheduledTo: string;
+  timeZone: string;
+  description: string;
+  meetingStatus: string;
+  studentResponse: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  lastUpdatedDate: string;
+  lastUpdatedBy: string;
+  academicCoach: {
+    academicCoachId: string;
+    name: string;
+    email: string;
+  };
+  teacher: {
+    teacherId: string | null;
+    name: string | null;
+    email: string | null;
+  };
+  student: {
+    studentId: string;
+    name: string;
+    email: string;
+  };
+  course: {
+    courseId: string;
+    courseName: string;
+  };
+}
+
+
+
 const getAllUsers = async (): Promise<{
   success: boolean;
   data: TransformedUser[];
@@ -386,7 +430,10 @@ const TrailSection = () => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchText, setSearchText] = useState("");
-
+  const [meetings, setMeetings] = useState<IMeeting[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState<any>(null);
   const [trialClassStatus, setTrialClassStatus] = useState("");
@@ -409,7 +456,23 @@ const TrailSection = () => {
   >([]);
   const [isLoadingTeachers, setIsLoadingTeachers] = useState(false);
   const [openActionMenuForId, setOpenActionMenuForId] = useState<string | null>(null);
-
+  useEffect(() => {
+    const fetchMeetings = async () => {
+      try {
+        const response = await fetch("http://localhost:5001/meetinglist");
+        if (!response.ok) throw new Error("Failed to fetch meetings");
+        const data = await response.json();
+        setMeetings(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchMeetings();
+  }, []);
+  
   // Function to handle editable field changes
   const handleEditableFieldChange = (field: string, value: string) => {
     setEditableData((prev) => ({
@@ -1366,6 +1429,13 @@ const TrailSection = () => {
     );
   }
 
+  // Utility to find relevant meeting for a user
+  const getMeetingForUser = (user: TransformedUser) => {
+    return meetings.find(
+      (m) => m.student && m.student.studentId && m.student.studentId === user.studentId
+    );
+  };
+
   return (
     <div>
       <div className="">
@@ -1458,30 +1528,39 @@ const TrailSection = () => {
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.number}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[8%]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.country}
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.course}
                             </td>
+                           
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[8%]">
-                              {item.time}
+                              {(() => {
+                                 const meeting = getMeetingForUser(item);
+                                 return meeting
+                                  ? `${meeting.scheduledFrom || ''}${meeting.scheduledTo ? ' - ' + meeting.scheduledTo : ''}`
+                                  : item.time;
+                              })()}
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
-                              {new Date(item.prefferedDate).toLocaleDateString(
-                                "en-US",
-                                {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                }
-                              )}{" "}
+                              {(() => {
+                                 const meeting = getMeetingForUser(item);
+                                 return meeting
+                                  ? (meeting.scheduledStartDate ? new Date(meeting.scheduledStartDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "")
+                                  : (item.prefferedDate ? new Date(item.prefferedDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "");
+                              })()}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[12%]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.preferredTeacher}
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[12%]">
-                              {item.assignedTeacher}
+                              {(() => {
+                                 const meeting = getMeetingForUser(item);
+                                 return meeting && meeting.teacher && meeting.teacher.name
+                                    ? meeting.teacher.name
+                                    : item.assignedTeacher;
+                              })()}
                             </td>
                             
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[12%]">
