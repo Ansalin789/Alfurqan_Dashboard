@@ -194,6 +194,7 @@ const handleFormSubmit = async (e: React.FormEvent) => {
     const response = await signIn(username, password);
     const data = response.data;
     const { accessToken, role, _id, userName } = data;
+    const userEmail: string = data.email ?? data.userEmail ?? "";
 
     // Only Academic Coaches
     if (!role?.includes("ACADEMICCOACH")) {
@@ -204,6 +205,7 @@ const handleFormSubmit = async (e: React.FormEvent) => {
     localStorage.setItem("AcademicCoachAuthToken", accessToken);
     localStorage.setItem("AcademicCoachPortalId", _id);
     localStorage.setItem("AcademicCoachPortalName", userName);
+    localStorage.setItem("AcademicCoachPortalEmail", userEmail);
 
     await fetchrolebasedaccesscontrol(_id, accessToken, role);
 

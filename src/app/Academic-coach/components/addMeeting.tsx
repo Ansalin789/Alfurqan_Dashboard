@@ -1,6 +1,7 @@
 "use client";
 
 import React, { FormEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Dialog } from "@headlessui/react";
 import { Plus } from "lucide-react";
 import axios, { AxiosError } from "axios";
@@ -34,7 +35,16 @@ export interface StudentData {
   __v?: number;
 }
 
+type SimpleUser = {
+  _id: string;
+  username: string;
+  email?: string;
+  role: string;
+  position?: string;
+};
+
 export default function AddMeeting({ onClose, onSuccess }: Props) {
+  const router = useRouter();
   const [meetingTitle, setMeetingTitle] = useState("Weekly Meeting");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
@@ -47,6 +57,13 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("All");
   const [selectedTeachers, setSelectedTeachers] = useState<StudentData[]>([]);
   const [Teachers, setTeachers] = useState<StudentData[]>([]);
+  const [allUsers, setAllUsers] = useState<SimpleUser[]>([]);
+  const [roleTab, setRoleTab] = useState<"Student" | "Teacher" | "Admin">("Student");
+  const [selectedTeacherUsers, setSelectedTeacherUsers] = useState<SimpleUser[]>([]);
+  const [selectedAdminUsers, setSelectedAdminUsers] = useState<SimpleUser[]>([]);
+  const [teacherCategoryTab, setTeacherCategoryTab] = useState<
+    "All" | "Quran Teacher" | "Arabic Teacher" | "Islamic Teacher"
+  >("All");
   const tabs = ["All", "Quran", "Arabic", "Islamic"] as const;
   type Tab = (typeof tabs)[number];
 
@@ -101,6 +118,38 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
     FetachTeachers();
   }, [activeTab]);
 
+  useEffect(() => {
+    const fetchAllUsers = async () => {
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("AcademicCoachAuthToken")
+            : null;
+        if (!token) return;
+        const url = `https://api.blackstoneinfomaticstech.com/users`;
+        const response = await axios.get(url, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const users: SimpleUser[] = (response.data?.users || response.data || []).map((u: any) => {
+          const roleValue = Array.isArray(u.role) ? (u.role[0] ?? "") : (u.role ?? u.userRole ?? "");
+          const nameValue = u.userName ?? u.username ?? `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim();
+          return {
+            _id: u._id ?? u.id ?? "",
+            username: nameValue,
+            email: u.email ?? u.userEmail ?? "",
+            role: String(roleValue),
+            position: u.position ?? "",
+          } as SimpleUser;
+        });
+        setAllUsers(users);
+      } catch (e) {
+        console.error("Failed to fetch users", e);
+        setAllUsers([]);
+      }
+    };
+    fetchAllUsers();
+  }, []);
+
   const toggleTeacher = (teacher: StudentData) => {
     setSelectedTeachers((prev) => {
       const exists = prev.some((t) => t._id === teacher._id);
@@ -110,27 +159,35 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
     });
   };
 
+  const toggleUserByRole = (user: SimpleUser, role: "Teacher" | "Admin") => {
+    if (role === "Teacher") {
+      setSelectedTeacherUsers((prev) => {
+        const exists = prev.some((t) => t._id === user._id);
+        return exists ? prev.filter((t) => t._id !== user._id) : [...prev, user];
+      });
+    } else {
+      setSelectedAdminUsers((prev) => {
+        const exists = prev.some((t) => t._id === user._id);
+        return exists ? prev.filter((t) => t._id !== user._id) : [...prev, user];
+      });
+    }
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    if (
-      !meetingTitle ||
-      !selectedDate ||
-      !startTime ||
-      !endTime ||
-      selectedTeachers.length === 0
-    ) {
+  
+    // 🧩 Validation
+    if (!meetingTitle || !selectedDate || !startTime || !endTime) {
       alert("Please fill all required fields!");
       return;
     }
-
+  
     if (!description || description.trim().length < 5) {
       setFailedMessage("Description must contain at least 5 characters.");
       setFailed(true);
       return;
     }
-
-    // Prevent scheduling on the same date or past dates
+  
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const picked = selectedDate ? new Date(selectedDate) : null;
@@ -138,92 +195,109 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
       alert("Please select a meeting date.");
       return;
     }
+  
     const pickedLocal = new Date(picked.getFullYear(), picked.getMonth(), picked.getDate());
     if (pickedLocal <= startOfToday) {
       alert("Meetings cannot be scheduled for today. Please pick a future date.");
       return;
     }
-
+  
     const formattedDate = new Date(selectedDate).toISOString();
     const createdDate = new Date().toISOString();
-
-    const teachers = selectedTeachers.map((teacher, idx) => ({
-      studentId: teacher.student.studentId,
-      studentName: teacher.username,
-      studentEmail: teacher.student.studentEmail,
-      _id: teacher._id,
-    }));
-
-    const requestData = {
+  
+    // ✅ Combine all selected participants (typed)
+    const participants = [
+      ...selectedTeacherUsers.map((u) => ({
+        participantId: u._id,
+        participantName: u.username,
+        participantEmail: u.email || "",
+        role: "teacher" as const,
+        attendee: "Teacher",
+      })),
+      ...selectedTeachers.map((t) => ({
+        participantId: t.student.studentId,
+        participantName: t.username,
+        participantEmail: t.student.studentEmail || "",
+        role: "student" as const,
+        attendee: "Student",
+      })),
+      ...selectedAdminUsers.map((u) => ({
+        participantId: u._id,
+        participantName: u.username,
+        participantEmail: u.email || "",
+        role: "admin" as const,
+        attendee: "Admin",
+      })),
+    ];
+    
+  
+    // 🧩 Supervisor info
+    const supervisorId = localStorage.getItem("AcademicCoachPortalId") || "";
+    const supervisorName = localStorage.getItem("AcademicCoachPortalName") || "";
+    const supervisorEmail = localStorage.getItem("AcademicCoachPortalEmail") || "";
+  
+    const supervisor =
+      supervisorEmail && supervisorEmail.includes("@")
+        ? { supervisorId, supervisorName, supervisorEmail }
+        : { supervisorId, supervisorName };
+  
+    // ✅ Final payload (typed as IMeetingCreate)
+    const formattedPayload = {
       meetingName: meetingTitle,
-      selectedDate: formattedDate,
+      meetingId: `meet-${crypto.randomUUID()}`,
+      selectedDate: new Date(formattedDate),
       startTime,
       endTime,
       meetingStatus: "Scheduled",
-      Academic: {
-        academicCoachId: localStorage.getItem("AcademicCoachPortalId"),
-      },
-      student: teachers,
+      supervisor,
+      participants,
       description,
       status: "Active",
-      createdDate,
-      createdBy: localStorage.getItem("AcademicCoachPortalName"),
+      duration: "", // optional — add your duration logic if any
+      createdDate: new Date(createdDate),
+      createdBy: supervisorName || "System",
     };
-
+  
+    console.log("🧾 Final Payload:", formattedPayload);
+  
+    // 🚀 API call
     try {
       const token = localStorage.getItem("AcademicCoachAuthToken");
       if (!token) {
-        console.error("❌ AcademicCoachAuthToken not found");
         setFailedMessage("Please login again.");
         setFailed(true);
         return;
       }
-
-      const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/addMeeting",
-        requestData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
+  
+      const response = await axios.post("http://localhost:5001/addMeeting", formattedPayload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      console.log("✅ Response:", response.data);
       if (response.status >= 200 && response.status < 300) {
-        setSuccess(true); // show popup for 5s, then onClose handler will reset and close
+        setSuccess(true);
       } else {
         setFailedMessage("Request failed. Please try again.");
         setFailed(true);
       }
     } catch (err) {
       const error = err as AxiosError;
-      const status = error.response?.status;
-      if (status === 400) {
-        setFailedMessage("Please check the form inputs.");
-        setFailed(true);
-      } else if (status === 401) {
-        setFailedMessage("Please login again.");
-        setFailed(true);
-      } else if (status === 403) {
-        setFailedMessage("You don't have permission to perform this action.");
-        setFailed(true);
-      } else if (status === 500) {
-        setFailedMessage("Server error");
-        setFailed(true);
-      } else {
-        setFailedMessage("Something went wrong. Please try again.");
-        setFailed(true);
-        console.error(`Unexpected error: ${status}`);
-      }
+      console.error("❌ API Error:", error.response?.data || error.message);
+      setFailedMessage("Something went wrong. Please try again.");
+      setFailed(true);
     }
   };
+  
+  
 
   return (
 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
   <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-[#1D1D1D] rounded-lg shadow-xl p-5 w-full max-w-2xl mx-3 text-sm"
+        className="bg-white dark:bg-[#1D1D1D] rounded-lg shadow-xl p-5 w-full max-w-2xl mx-3 text-sm scrollbar-none"
                 style={{ maxHeight: "90vh", overflowY: "auto" }}
       >
     <h1 className="text-xl font-semibold text-gray-800 mb-5 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
@@ -264,12 +338,11 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
                 htmlFor="uyvuhvyuc"
                 className="block text-sm mb-1 text-gray-600 dark:text-gray-300">
               
-                Add Students
+                Add Participants
               </label>
               <div className="relative flex items-center border border-gray-300 dark:border-[#5C5C5C] rounded-lg px-2 py-2 dark:bg-[#2B2B2B]">
               <div className="flex-1 px-2 text-[13px] text-gray-500 dark:text-gray-300 font-light">
-              Select Students
-                </div>
+              Select Participants                </div>
                 <button
                   type="button"
                   onClick={() => setOpen(true)}
@@ -287,52 +360,93 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
                 <div className="fixed inset-0 flex items-center justify-center p-4">
                 <section className="bg-white dark:bg-[#1D1D1D] rounded-xl p-6 w-full max-w-md shadow-xl">
                 <h2 className="text-base font-semibold mb-4 text-gray-800 dark:text-white">
-                      Select Students
+                      Select Participants
                     </h2>
-                    <div className="flex gap-2 mb-4">
-                      {tabs.map((tab) => (
-                        <button
-                          key={tab}
-                          onClick={() => setActiveTab(tab)}
-                          className={`px-3 py-2 text-xs rounded-md transition ${
-                            activeTab === tab
-                              ? "bg-[#576CBC] text-white"
-                              : "bg-gray-100 dark:bg-[#2B2B2B] text-gray-800 dark:text-white"
-                            }`}
-                        >
-                          {tab}
-                        </button>
-                      ))}
+                    <div className="flex items-center gap-2 mb-3">
+                      <button onClick={() => setRoleTab("Student")} className={`px-3 py-1.5 text-xs rounded-md ${roleTab === "Student" ? "bg-[#576CBC] text-white" : "bg-gray-100 dark:bg-[#2B2B2B] text-gray-800 dark:text-white"}`}>Students</button>
+                      <button onClick={() => setRoleTab("Teacher")} className={`px-3 py-1.5 text-xs rounded-md ${roleTab === "Teacher" ? "bg-[#576CBC] text-white" : "bg-gray-100 dark:bg-[#2B2B2B] text-gray-800 dark:text-white"}`}>Teachers</button>
+                      <button onClick={() => setRoleTab("Admin")} className={`px-3 py-1.5 text-xs rounded-md ${roleTab === "Admin" ? "bg-[#576CBC] text-white" : "bg-gray-100 dark:bg-[#2B2B2B] text-gray-800 dark:text-white"}`}>Admins</button>
                     </div>
-                    <div className="space-y-2 max-h-48 overflow-y-auto text-sm pr-1">
-                    {Teachers.filter((teacher) => {
-                        if (activeTab === "All") return true;
-                        return teacher.student.course === activeTab;
-                      })
-                        .reduce((unique: typeof Teachers, teacher) => {
-                          const exists = unique.find(
-                            (t) =>
-                              t.student.studentId === teacher.student.studentId
-                          );
-                          if (!exists) unique.push(teacher);
-                          return unique;
-                        }, [])
-                        .map((teacher) => (
-                          <label
-                            key={teacher.student.studentId}
-                            className="flex items-center gap-2 px-1"
+                    {roleTab === "Student" && (
+                      <>
+                        <div className="flex gap-2 mb-2">
+                          {tabs.map((tab) => (
+                            <button key={tab} onClick={() => setActiveTab(tab)} className={`px-3 py-1.5 text-xs rounded-md transition ${activeTab === tab ? "bg-[#576CBC] text-white" : "bg-gray-100 dark:bg-[#2B2B2B] text-gray-800 dark:text-white"}`}>{tab}</button>
+                          ))}
+                        </div>
+                        <div className="space-y-2 max-h-48 overflow-y-auto text-sm pr-1">
+                          {Teachers.filter((teacher) => {
+                            if (activeTab === "All") return true;
+                            return teacher.student.course === activeTab;
+                          })
+                            .reduce((unique: typeof Teachers, teacher) => {
+                              const exists = unique.find((t) => t.student.studentId === teacher.student.studentId);
+                              if (!exists) unique.push(teacher);
+                              return unique;
+                            }, [])
+                            .map((teacher) => (
+                              <label key={teacher.student.studentId} className="flex items-center gap-2 px-1">
+                                <input type="checkbox" checked={selectedTeachers.includes(teacher)} onChange={() => toggleTeacher(teacher)} />
+                                <span className="dark:text-white text-gray-700">{teacher.username}</span>
+                              </label>
+                            ))}
+                        </div>
+                      </>
+                    )}
+                    {roleTab === "Teacher" && (
+                      <>
+                        <div className="flex gap-2 mb-2">
+                          {(["All", "Quran Teacher", "Arabic Teacher", "Islamic Teacher"] as const).map((tab) => (
+                            <button
+                              key={tab}
+                              onClick={() => setTeacherCategoryTab(tab)}
+                              className={`px-3 py-1.5 text-xs rounded-md transition ${
+                                teacherCategoryTab === tab
+                                  ? "bg-[#576CBC] text-white"
+                                  : "bg-gray-100 dark:bg-[#2B2B2B] text-gray-800 dark:text-white"
+                              }`}
                             >
-                            <input
-                              type="checkbox"
-                              checked={selectedTeachers.includes(teacher)}
-                              onChange={() => toggleTeacher(teacher)}
-                            />
-                        <span className="dark:text-white text-gray-700">
-                        {teacher.username}
-                            </span>
-                          </label>
-                        ))}
-                    </div>
+                              {tab}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="space-y-2 max-h-48 overflow-y-auto text-sm pr-1">
+                          {allUsers
+                            .filter((u) => {
+                              const r = (u.role || "").toLowerCase();
+                              if (r !== "teacher") return false;
+                              if (teacherCategoryTab === "All") return true;
+                              return (u.position || "").toLowerCase() === teacherCategoryTab.toLowerCase();
+                            })
+                            .map((user) => (
+                              <label key={user._id} className="flex items-center gap-2 px-1">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedTeacherUsers.some((t) => t._id === user._id)}
+                                  onChange={() => toggleUserByRole(user, "Teacher")}
+                                />
+                                <span className="dark:text-white text-gray-700">{user.username}</span>
+                              </label>
+                            ))}
+                        </div>
+                      </>
+                    )}
+                    {roleTab === "Admin" && (
+                      <div className="space-y-2 max-h-48 overflow-y-auto text-sm pr-1">
+                        {allUsers
+                          .filter((u) => (u.role || "").toLowerCase() === "admin")
+                          .map((user) => (
+                            <label key={user._id} className="flex items-center gap-2 px-1">
+                              <input
+                                type="checkbox"
+                                checked={selectedAdminUsers.some((t) => t._id === user._id)}
+                                onChange={() => toggleUserByRole(user, "Admin")}
+                              />
+                              <span className="dark:text-white text-gray-700">{user.username}</span>
+                            </label>
+                          ))}
+                      </div>
+                    )}
                     <div className="flex justify-end mt-6 gap-3">
                     <button
                         onClick={() => setOpen(false)}
@@ -368,6 +482,50 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
                         onClick={() =>
                           setSelectedTeachers((prev) => prev.filter((p) => p._id !== t._id))
                         }
+                        className="ml-1 text-gray-500 hover:text-red-600"
+                        aria-label="Remove"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {selectedTeacherUsers.length > 0 && (
+              <div className="mt-3">
+                <label className="block text-sm mb-1 text-gray-600 dark:text-gray-300">
+                  Selected Teachers
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {selectedTeacherUsers.map((t) => (
+                    <span key={t._id} className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[12px] border border-gray-300 text-gray-700 dark:text-white dark:border-[#5C5C5C] dark:bg-[#2B2B2B]">
+                      {t.username}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedTeacherUsers((prev) => prev.filter((p) => p._id !== t._id))}
+                        className="ml-1 text-gray-500 hover:text-red-600"
+                        aria-label="Remove"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {selectedAdminUsers.length > 0 && (
+              <div className="mt-3">
+                <label className="block text-sm mb-1 text-gray-600 dark:text-gray-300">
+                  Selected Admins
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {selectedAdminUsers.map((t) => (
+                    <span key={t._id} className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[12px] border border-gray-300 text-gray-700 dark:text-white dark:border-[#5C5C5C] dark:bg-[#2B2B2B]">
+                      {t.username}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedAdminUsers((prev) => prev.filter((p) => p._id !== t._id))}
                         className="ml-1 text-gray-500 hover:text-red-600"
                         aria-label="Remove"
                       >
@@ -464,6 +622,9 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
             setSelectedTeachers([]);
             setDescription("");
             onClose();
+            try {
+              router.push("/Academic-coach/ui/schedule");
+            } catch {}
           }}
           title="Meeting"
         />
