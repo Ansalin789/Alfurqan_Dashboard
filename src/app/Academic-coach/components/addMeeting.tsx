@@ -269,7 +269,7 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
           return;
         }
     
-        const response = await axios.post("http://localhost:5001/addMeeting", formattedPayload, {
+        const response = await axios.post("https://api.blackstoneinfomaticstech.com/addMeeting", formattedPayload, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
