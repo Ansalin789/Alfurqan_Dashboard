@@ -210,6 +210,7 @@ const handleFormSubmit = async (e: React.FormEvent) => {
     localStorage.setItem("AcademicCoachPortalId", _id);
     localStorage.setItem("AcademicCoachPortalName", userName);
     localStorage.setItem("AcademicCoachPortalEmail", userEmail);
+    localStorage.setItem("AcademicCoachPortalRole", role);
 
     await fetchrolebasedaccesscontrol(_id, accessToken, role);
 

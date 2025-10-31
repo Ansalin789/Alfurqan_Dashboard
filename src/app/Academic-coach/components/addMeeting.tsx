@@ -173,123 +173,123 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
     }
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-  
-    // 🧩 Validation
-    if (!meetingTitle || !selectedDate || !startTime || !endTime) {
-      alert("Please fill all required fields!");
-      return;
-    }
-  
-    if (!description || description.trim().length < 5) {
-      setFailedMessage("Description must contain at least 5 characters.");
-      setFailed(true);
-      return;
-    }
-  
-    const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const picked = selectedDate ? new Date(selectedDate) : null;
-    if (!picked) {
-      alert("Please select a meeting date.");
-      return;
-    }
-  
-    const pickedLocal = new Date(picked.getFullYear(), picked.getMonth(), picked.getDate());
-    if (pickedLocal <= startOfToday) {
-      alert("Meetings cannot be scheduled for today. Please pick a future date.");
-      return;
-    }
-  
-    const formattedDate = new Date(selectedDate).toISOString();
-    const createdDate = new Date().toISOString();
-  
-    // ✅ Combine all selected participants (typed)
-    const participants = [
-      ...selectedTeacherUsers.map((u) => ({
-        participantId: u._id,
-        participantName: u.username,
-        participantEmail: u.email || "",
-        role: "teacher" as const,
-        attendee: "Teacher",
-      })),
-      ...selectedTeachers.map((t) => ({
-        participantId: t.student.studentId,
-        participantName: t.username,
-        participantEmail: t.student.studentEmail || "",
-        role: "student" as const,
-        attendee: "Student",
-      })),
-      ...selectedAdminUsers.map((u) => ({
-        participantId: u._id,
-        participantName: u.username,
-        participantEmail: u.email || "",
-        role: "admin" as const,
-        attendee: "Admin",
-      })),
-    ];
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
     
-  
-    // 🧩 Supervisor info
-    const supervisorId = localStorage.getItem("AcademicCoachPortalId") || "";
-    const supervisorName = localStorage.getItem("AcademicCoachPortalName") || "";
-    const supervisorEmail = localStorage.getItem("AcademicCoachPortalEmail") || "";
-  
-    const supervisor =
-      supervisorEmail && supervisorEmail.includes("@")
-        ? { supervisorId, supervisorName, supervisorEmail }
-        : { supervisorId, supervisorName };
-  
-    // ✅ Final payload (typed as IMeetingCreate)
-    const formattedPayload = {
-      meetingName: meetingTitle,
-      meetingId: `meet-${crypto.randomUUID()}`,
-      selectedDate: new Date(formattedDate),
-      startTime,
-      endTime,
-      meetingStatus: "Scheduled",
-      supervisor,
-      participants,
-      description,
-      status: "Active",
-      duration: "", // optional — add your duration logic if any
-      createdDate: new Date(createdDate),
-      createdBy: supervisorName || "System",
-    };
-  
-    console.log("🧾 Final Payload:", formattedPayload);
-  
-    // 🚀 API call
-    try {
-      const token = localStorage.getItem("AcademicCoachAuthToken");
-      if (!token) {
-        setFailedMessage("Please login again.");
+      // 🧩 Validation
+      if (!meetingTitle || !selectedDate || !startTime || !endTime) {
+        alert("Please fill all required fields!");
+        return;
+      }
+    
+      if (!description || description.trim().length < 5) {
+        setFailedMessage("Description must contain at least 5 characters.");
         setFailed(true);
         return;
       }
+    
+      const now = new Date();
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const picked = selectedDate ? new Date(selectedDate) : null;
+      if (!picked) {
+        alert("Please select a meeting date.");
+        return;
+      }
+    
+      const pickedLocal = new Date(picked.getFullYear(), picked.getMonth(), picked.getDate());
+      if (pickedLocal <= startOfToday) {
+        alert("Meetings cannot be scheduled for today. Please pick a future date.");
+        return;
+      }
+    
+      const formattedDate = new Date(selectedDate).toISOString();
+      const createdDate = new Date().toISOString();
+    
+      // ✅ Combine all selected participants (typed)
+      const participants = [
+        ...selectedTeacherUsers.map((u) => ({
+          participantId: u._id,
+          participantName: u.username,
+          participantEmail: u.email || "",
+          role: "teacher" as const,
+          attendee: "Teacher",
+        })),
+        ...selectedTeachers.map((t) => ({
+          participantId: t.student.studentId,
+          participantName: t.username,
+          participantEmail: t.student.studentEmail || "",
+          role: "student" as const,
+          attendee: "Student",
+        })),
+        ...selectedAdminUsers.map((u) => ({
+          participantId: u._id,
+          participantName: u.username,
+          participantEmail: u.email || "",
+          role: "admin" as const,
+          attendee: "Admin",
+        })),
+      ];
+      
+    
+      // 🧩 Supervisor info
+      const organizerId = localStorage.getItem("AcademicCoachPortalId") || "";
+      const organizerName = localStorage.getItem("AcademicCoachPortalName") || "";
+      const organizerEmail = localStorage.getItem("AcademicCoachPortalEmail") || "";
+      const organizerRole = localStorage.getItem("AcademicCoachPortalRole") || "Academic Coach";
+
+      const organizer = organizerEmail && organizerEmail.includes("@")
+        ? { organizerId, organizerName, organizerEmail, organizerRole }
+        : { organizerId, organizerName, organizerRole };
   
-      const response = await axios.post("http://localhost:5001/addMeeting", formattedPayload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-  
-      console.log("✅ Response:", response.data);
-      if (response.status >= 200 && response.status < 300) {
-        setSuccess(true);
-      } else {
-        setFailedMessage("Request failed. Please try again.");
+      // ✅ Final payload (typed as IMeetingCreate)
+      const formattedPayload = {
+        meetingName: meetingTitle,
+        meetingId: `meet-${crypto.randomUUID()}`,
+        selectedDate: formattedDate,
+        startTime,
+        endTime,
+        meetingStatus: "Scheduled",
+        organizer,
+        participants,
+        description,
+        status: "Active",
+        duration: "", // optional — add your duration logic if any
+        createdDate,
+        createdBy: organizerName || "System",
+      };
+    
+      console.log("🧾 Final Payload:", formattedPayload);
+    
+      // 🚀 API call
+      try {
+        const token = localStorage.getItem("AcademicCoachAuthToken");
+        if (!token) {
+          setFailedMessage("Please login again.");
+          setFailed(true);
+          return;
+        }
+    
+        const response = await axios.post("http://localhost:5001/addMeeting", formattedPayload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+    
+        console.log("✅ Response:", response.data);
+        if (response.status >= 200 && response.status < 300) {
+          setSuccess(true);
+        } else {
+          setFailedMessage("Request failed. Please try again.");
+          setFailed(true);
+        }
+      } catch (err) {
+        const error = err as AxiosError;
+        console.error("❌ API Error:", error.response?.data || error.message);
+        setFailedMessage("Something went wrong. Please try again.");
         setFailed(true);
       }
-    } catch (err) {
-      const error = err as AxiosError;
-      console.error("❌ API Error:", error.response?.data || error.message);
-      setFailedMessage("Something went wrong. Please try again.");
-      setFailed(true);
-    }
-  };
+    };
   
   
 
