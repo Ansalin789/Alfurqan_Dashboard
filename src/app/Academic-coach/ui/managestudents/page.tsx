@@ -249,33 +249,38 @@ const ManageStudents = () => {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    const queryLower = query.toLowerCase();
+    const q = query.trim().toLowerCase();
+    if (!q) {
+      setFilteredUsers(null);
+      setCurrentPage(1);
+      return;
+    }
 
     const filtered = studentData.students.filter((item) => {
-      const studentId = item.student?.studentId?.toLowerCase() || "";
-      const fullName = (item.username || "").toLowerCase();
-      const teacher = (item.teacherName || "").toLowerCase();
-      const contact = item.student?.studentPhone?.toString() || "";
-      const classType = item.sessionClassType.toLowerCase() || "";
-      const classCount = item.classScheduleCount?.toString() || "";
-      const level = (item.level || "").toLowerCase();
-      const joiningDate = new Date(item.createdDate)
-        .toLocaleDateString("en-US", {
-          month: "short",
-          day: "2-digit",
-          year: "numeric",
-        })
-        .toLowerCase(); // normalize date string too
+      const studentId = (item.student?.studentId ?? "").toString().toLowerCase();
+      const datePretty = new Date(item.createdDate)
+        .toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })
+        .toLowerCase();
+      const fullName = (item.username ?? "").toLowerCase();
+      const teacherEval = (item.evaluation?.[0]?.teacher?.teacherName ?? "").toLowerCase();
+      const teacherTop = (item.teacherName ?? "").toLowerCase();
+      const teacher = teacherEval || teacherTop;
+      const classTypeEval = (item.evaluation?.[0]?.classType ?? "").toLowerCase();
+      const classTypeTop = (item.sessionClassType ?? "").toLowerCase();
+      const classType = classTypeEval || classTypeTop;
+      const contact = (item.student?.studentPhone ?? "").toString().toLowerCase();
+      const classCount = (item.classScheduleCount ?? "").toString().toLowerCase();
+      const level = (item.level ?? "").toLowerCase();
 
       return (
-        studentId.includes(queryLower) ||
-        fullName.includes(queryLower) ||
-        teacher.includes(queryLower) ||
-        contact.includes(queryLower) ||
-        classType.includes(queryLower) ||
-        classCount.includes(queryLower) ||
-        level.includes(queryLower) ||
-        joiningDate.includes(queryLower)
+        studentId.includes(q) ||
+        datePretty.includes(q) ||
+        fullName.includes(q) ||
+        teacher.includes(q) ||
+        classType.includes(q) ||
+        contact.includes(q) ||
+        classCount.includes(q) ||
+        level.includes(q)
       );
     });
 
@@ -635,7 +640,7 @@ const ManageStudents = () => {
                       <th className="text-left px-3 py-2 text-[12px] font-medium border border-[#4C6993] dark:border-[#6087C0] w-[140px]">
                         Contact
                       </th>
-                      <th className="text-left px-3 py-2 text-[12px] font-medium border border-[#4C6993] dark:border-[#6087C0] whitespace-nowrap w-[150px]">
+                      <th className="text-left px-3 py-2 text-[12px] font-medium border border-[#4C6993] dark:border-[#6087C0] w-[100px]">
                         Scheduled Classes
                       </th>
                       <th className="text-left px-3 py-2 text-[12px] font-medium border border-[#4C6993] dark:border-[#6087C0] w-[80px]">
