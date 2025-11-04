@@ -6,6 +6,8 @@ import FailedPopup from "@/app/supervisor/components/failedPopup";
 import axios, { AxiosError } from "axios";
 import { getSocket } from "@/app/utils/socket";
 import dayjs from "dayjs";
+import { X, ChevronDown, Trash2 } from "lucide-react";
+import { toast, ToastContainer } from "react-toastify";
 
 export interface Student {
   _id: string;
@@ -61,7 +63,7 @@ export interface ScheduleData {
   sessionStarttime: string;
   sessionsEndtime: string;
   totalHourse: number;
-  weeklySlots:WeeklySlotMap; 
+  weeklySlots: WeeklySlotMap;
   startDate: string;
   endDate: string;
   classDay: DayOption[];
@@ -75,6 +77,9 @@ export interface ScheduleData {
 type Props = {
   readonly onClose: () => void;
   students: Student[];
+  packageName?: string;
+  totalHours?: number;
+  course?: string;
 };
 interface TeacherList {
   teacherId: string;
@@ -97,11 +102,17 @@ type WeeklySlotMap = {
 export default function AddGroupAssignClass({
   onClose,
   students,
+  course,
+  packageName,
+  totalHours,
 }: Readonly<Props>) {
   const [teachers, setTeachers] = useState<TeacherList[]>([]);
   const [selectedTeacher, setSelectedTeacher] = useState<TeacherList | null>(
     null
   );
+  const [showStudentDropdown, setShowStudentDropdown] = useState(false);
+  const [showTeacherDropdown, setShowTeacherDropdown] = useState(false);
+  const [openDay, setOpenDay] = useState<string | null>(null);
   const [studentInfos, setStudentInfos] = useState<StudentInfo[]>([]);
   const [success, setSuccess] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -111,6 +122,7 @@ export default function AddGroupAssignClass({
   }, [students]);
 
   const [startDate, setStartDate] = useState("");
+  const [suggestedSlots, setSuggestedSlots] = useState<WeeklySlotMap>({});
   const [schedule, setSchedule] = useState<ScheduleItem[]>(
     [
       "Monday",
@@ -126,9 +138,9 @@ export default function AddGroupAssignClass({
       isSelected: false,
     }))
   );
-  const scheduleHash = useMemo(() => {
-    return JSON.stringify({ startDate, schedule });
-  }, [startDate, schedule]);
+
+  const weeklyHourLimit = totalHours || 0;
+
   const buildWeeklySlots = () => {
     const map: WeeklySlotMap = {};
     schedule.forEach((item) => {
@@ -148,85 +160,178 @@ export default function AddGroupAssignClass({
       studentEmail: stu.student.studentEmail,
     }));
     setStudentInfos(mapped);
-  }, [students]);
+
+    const fetchTeachers = async () => {
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("AcademicCoachAuthToken")
+            : null;
+
+        const url = `https://api.blackstoneinfomaticstech.com/users?role=TEACHER`;
+
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        // ✅ Safely extract array
+        let teachersList = [];
+        if (Array.isArray(response.data)) {
+          teachersList = response.data;
+        } else if (Array.isArray(response.data.users)) {
+          teachersList = response.data.users;
+        } else if (Array.isArray(response.data.teachers)) {
+          teachersList = response.data.teachers;
+        }
+
+        // ✅ Filter based on position (course + 'Teacher')
+        if (course && teachersList.length > 0) {
+          const adjustedPosition =
+            course === "Islamic Studies" ? "Islamic" : course;
+          const expectedPosition =
+            `${adjustedPosition.trim()} Teacher`.toLowerCase();
+          teachersList = teachersList.filter(
+            (t: any) => t.position?.toLowerCase() === expectedPosition
+          );
+        }
+
+        // ✅ Format the structure for dropdown
+        const formattedTeachers = teachersList.map((t: any) => ({
+          teacherId: t.userId,
+          teacherName: t.userName,
+        }));
+
+        setTeachers(formattedTeachers);
+      } catch (err) {
+        console.error("Error fetching teachers", err);
+        setTeachers([]); // fallback to avoid further crashes
+      }
+    };
+
+    fetchTeachers();
+  }, [students, course]);
+
+  const calculateTotalHours = () => {
+    let totalHours = 0;
+
+    schedule.forEach((item) => {
+      if (item.isSelected) {
+        item.times.forEach((time) => {
+          if (time.startTime && time.endTime) {
+            const start = new Date(`2023-01-01T${time.startTime}`);
+            const end = new Date(`2023-01-01T${time.endTime}`);
+            const diff = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // Convert to hours
+            totalHours += diff;
+          }
+        });
+      }
+    });
+
+    return totalHours;
+  };
+  const showRemainingHoursPopup = () => {
+    const totalHours = calculateTotalHours();
+    const remainingHours = Number(weeklyHourLimit) - totalHours;
+    console.log("remaining", remainingHours);
+    if (remainingHours === 0) {
+      toast.warning(" You've reached your weekly hour limit.", {
+        className:
+          "w-[340px] px-4 py-3 text-sm rounded-lg shadow bg-yellow-600 text-white",
+      });
+    } else {
+      toast.info(
+        `You have ${remainingHours.toFixed(2)} hours remaining this week.`,
+        {
+          className:
+            "w-[340px] px-4 py-3 text-sm rounded-lg shadow bg-blue-600 text-white",
+        }
+      );
+    }
+  };
   useEffect(() => {
     const academicId =
       typeof window !== "undefined"
         ? localStorage.getItem("AcademicCoachPortalId")
         : null;
-    if (!academicId) return;
-
-    const hasSelection = schedule.some(
-      (item) => item.isSelected && item.times.length > 0
-    );
-    if (!hasSelection || !startDate) return;
-
+    if (!academicId || !startDate) return;
     const socket = getSocket(academicId);
-    console.log("📤 Sending availableTeachersListRequest");
-    const firstCourse = students[0]?.student.course;
-
-    const position =
-    firstCourse === "Islamic Studies"
-    ? "Islamic Teacher"
-    : `${firstCourse} Teacher`;  
-    socket.emit("availableTeachersListRequest", {
+    console.log("📤 Sending academicTeacherWeeklySlotsListRequest");
+    socket.emit("academicTeacherWeeklySlotsListRequest", {
       requestId: academicId,
-      startDate,
-      WeeklySlots: buildWeeklySlots(),
-      position : position
+      startDate: startDate,
+      teacherId: selectedTeacher?.teacherId,
     });
 
-    const handleResponse = (data: TeacherList[]) => {
-      console.log("📥 Teacher list received:", data);
-      setTeachers(data);
+    const handleResponse = (data: WeeklySlotMap) => {
+      console.log("weekyl", data);
+      setSuggestedSlots(data);
     };
 
-    socket.on("availableTeachersListResponse", handleResponse);
-
+    socket.on("academicTeacherWeeklySlotsListResponse", handleResponse);
     return () => {
-      socket.off("availableTeachersListResponse", handleResponse);
+      socket.off("academicTeacherWeeklySlotsListResponse", handleResponse);
     };
-  }, [scheduleHash]);
-  const handleClassSelection = (index: number) => {
-    const updatedSchedule = [...schedule];
-    updatedSchedule[index].isSelected = !updatedSchedule[index].isSelected;
-    setSchedule(updatedSchedule);
-  };
-  const handleAddTimeSlot = (index: number) => {
-    const updatedSchedule = [...schedule];
-    if (updatedSchedule[index].times.length > 0) {
-      const lastSlot =
-        updatedSchedule[index].times[updatedSchedule[index].times.length - 1];
-      if (!lastSlot.startTime || !lastSlot.endTime) {
-        alert("⚠️ Please fill the last time slot before adding a new one.");
-        return;
-      }
+  }, [startDate, selectedTeacher]);
+  const normalizeTime = (time: string) => time.slice(0, 5);
+
+  const handleAddSuggestedSlot = (day: string, from: string, to: string) => {
+    if (calculateTotalHours() >= Number(weeklyHourLimit)) {
+      toast.warning(" You've reached your weekly hour limit.");
+      return;
     }
-    updatedSchedule[index].times.push({ startTime: "09:00", endTime: "09:30" });
+    const index = schedule.findIndex((item) => item.day === day);
+    if (index === -1) return;
 
-    setSchedule(updatedSchedule);
-  };
-  const handleRemoveTimeSlot = (dayIndex: number, timeIndex: number) => {
-    const updatedSchedule = [...schedule];
-    updatedSchedule[dayIndex].times.splice(timeIndex, 1);
-    setSchedule(updatedSchedule);
+    const updated = [...schedule];
+    const times = updated[index].times;
+
+    const isDuplicate = times.some(
+      (t) =>
+        normalizeTime(t.startTime) === normalizeTime(from) &&
+        normalizeTime(t.endTime) === normalizeTime(to)
+    );
+
+    if (isDuplicate) {
+      alert("⛔ Already added.");
+      return;
+    }
+
+    updated[index].isSelected = true;
+    updated[index].times.push({
+      startTime: normalizeTime(from),
+      endTime: normalizeTime(to),
+    });
+
+    updated[index].times.sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+    setSchedule(updated);
+    showRemainingHoursPopup();
   };
 
-  const handleTimeChange = (
-    dayIndex: number,
-    timeIndex: number,
-    field: "startTime" | "endTime",
-    value: string
-  ) => {
-    const updatedSchedule = [...schedule];
-    updatedSchedule[dayIndex].times[timeIndex][field] = value;
-    setSchedule(updatedSchedule);
-  };
+  const handleRemoveSlot = (day: string, from: string, to: string) => {
+    const index = schedule.findIndex((item) => item.day === day);
+    if (index === -1) return;
 
-  const hours = Array.from({ length: 24 }, (_, i) =>
-    String(i).padStart(2, "0")
-  );
-  const minutes = ["00", "30"];
+    const updated = [...schedule];
+
+    updated[index].times = updated[index].times.filter(
+      (t) =>
+        !(
+          normalizeTime(t.startTime) === normalizeTime(from) &&
+          normalizeTime(t.endTime) === normalizeTime(to)
+        )
+    );
+
+    if (updated[index].times.length === 0) {
+      updated[index].isSelected = false;
+    }
+
+    setSchedule(updated);
+    showRemainingHoursPopup();
+  };
 
   const handleSubmit = async () => {
     console.log(startDate);
@@ -311,7 +416,8 @@ export default function AddGroupAssignClass({
       const status = error.response?.status;
       if (Number(status === 400)) {
         const message =
-          (error.response?.data as any)?.message ?? "Please check the form inputs.";
+          (error.response?.data as any)?.message ??
+          "Please check the form inputs.";
         setFailedMessage(message);
         setFailed(true);
       } else if (status === 401) {
@@ -332,212 +438,408 @@ export default function AddGroupAssignClass({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
-      <form
-        className="bg-white dark:bg-[#1D1D1D] rounded-lg shadow-xl p-5 w-full max-w-md mx-3 text-sm border border-[#DFE0EB] dark:border-[#444] scrollbar-none"
-        style={{ maxHeight: "90vh", overflowY: "auto" }}
+      <div
+        className="w-[95%] max-w-6xl mx-auto 
+    bg-white dark:bg-[#1F1F1F] rounded-xl shadow-xl 
+    p-10 my-6 overflow-y-auto max-h-[90vh] transition-all duration-300 scrollbar-none"
       >
-        <h1 className="text-sm font-medium text-[#010E30] dark:text-white mb-3">
+        {/* Title */}
+        <h1 className="text-2xl font-semibold text-[#1E1E1E] dark:text-white mb-8">
           Schedule Classes
         </h1>
-        <label
-          htmlFor="ugcuc"
-          className="text-[14px] text-[#010E30] dark:text-white mb-3"
-        >
-          Join Date:
-        </label>
-        <input
-          type="date"
-          id="ugcuc"
-          className="w-full border text-xs rounded px-3 py-2 dark:bg-[#2A2A2A] dark:text-white mb-2"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-        />
-        {schedule.map((item, dayIndex) => (
-          <div key={item.day} className="mb-4 border rounded-md px-3 py-2">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[14px] text-[#010E30CC] dark:text-white">
-                {item.day}
-              </label>
-              <input
-                type="checkbox"
-                checked={item.isSelected}
-                onChange={() => handleClassSelection(dayIndex)}
+
+        <div className="space-y-5">
+          {/* Assigned Students */}
+          <div className="relative">
+            <label className="block text-[18px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-2">
+              Assigned Students
+            </label>
+
+            {/* Dropdown Header */}
+            <div
+              onClick={() => setShowStudentDropdown(!showStudentDropdown)}
+              className={`flex justify-between items-center gap-2 border border-[#D4D4D4] dark:border-[#3F3F46] 
+    rounded-lg p-3 min-h-[44px] bg-white dark:bg-[#2A2A2A] cursor-pointer transition-all duration-300 relative z-30 ${
+      showStudentDropdown ? "bg-[#F4F4F5] dark:bg-[#3A3A3A]" : ""
+    }`}
+            >
+              <div className="flex flex-wrap items-center gap-2 flex-1">
+                {studentInfos.length > 0 ? (
+                  studentInfos.map((student) => (
+                    <span
+                      key={student.studentId}
+                      className="px-3 py-1 bg-[#F4F4F5] dark:bg-[#3A3A3A] text-[#3F3F46] dark:text-[#E4E4E7] text-sm rounded-full"
+                    >
+                      {student.studentName}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-sm text-[#71717A] dark:text-[#A1A1AA]">
+                    Select students...
+                  </span>
+                )}
+              </div>
+
+              {/* Chevron icon on right */}
+              <ChevronDown
+                size={18}
+                className={`text-gray-400 transform transition-transform duration-300 ${
+                  showStudentDropdown ? "rotate-180" : ""
+                }`}
               />
             </div>
 
-            {item.isSelected && (
-              <>
-                {item.times.map((time, timeIndex) => (
-                  <div
-                    key={timeIndex}
-                    className="flex items-center justify-between gap-2 mb-2"
-                  >
-                    <div className="flex gap-1 w-full">
-                      {/* From Time - HH */}
-                      <select
-                        value={time.startTime.split(":")[0]}
-                        onChange={(e) =>
-                          handleTimeChange(
-                            dayIndex,
-                            timeIndex,
-                            "startTime",
-                            `${e.target.value}:${time.startTime.split(":")[1]}`
-                          )
-                        }
-                        className="w-full border rounded px-2 py-1 dark:bg-[#2A2A2A] dark:text-white"
+            {/* Floating Dropdown */}
+            {showStudentDropdown && (
+              <div
+                className="absolute left-0 top-full mt-2 w-full border border-[#E4E4E7] dark:border-[#3F3F46] 
+      rounded-lg shadow-lg bg-white dark:bg-[#2A2A2A] max-h-[200px] overflow-y-auto z-40 animate-fadeIn"
+              >
+                {studentInfos.length > 0 ? (
+                  studentInfos.map((student) => {
+                    const isSelected = studentInfos.some(
+                      (s) => s.studentId === student.studentId
+                    );
+
+                    return (
+                      <div
+                        key={student.studentId}
+                        className={`flex justify-between items-center px-4 py-2 border-b last:border-none cursor-pointer transition-colors ${
+                          isSelected
+                            ? "bg-[#EEF2FF] dark:bg-[#3F3F46]"
+                            : "hover:bg-[#F4F4F5] dark:hover:bg-[#3A3A3A]"
+                        }`}
                       >
-                        {hours.map((h) => (
-                          <option key={h}>{h}</option>
-                        ))}
-                      </select>
+                        <span className="text-sm text-[#3F3F46] dark:text-[#E4E4E7]">
+                          {student.studentName}
+                        </span>
 
-                      {/* From Time - MM */}
-                      <span className="text-[#293453] pt-1 dark:text-white">
-                        :
-                      </span>
-                      <select
-                        value={time.startTime.split(":")[1]}
-                        onChange={(e) =>
-                          handleTimeChange(
-                            dayIndex,
-                            timeIndex,
-                            "startTime",
-                            `${time.startTime.split(":")[0]}:${e.target.value}`
-                          )
-                        }
-                        className="w-full border rounded px-2 py-1 dark:bg-[#2A2A2A] dark:text-white"
-                      >
-                        {minutes.map((m) => (
-                          <option key={m}>{m}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Separator */}
-                    <span className="text-[#293453] dark:text-white">-</span>
-
-                    <div className="flex gap-1 w-full">
-                      {/* To Time - HH */}
-                      <select
-                        value={time.endTime.split(":")[0]}
-                        onChange={(e) =>
-                          handleTimeChange(
-                            dayIndex,
-                            timeIndex,
-                            "endTime",
-                            `${e.target.value}:${time.endTime.split(":")[1]}`
-                          )
-                        }
-                        className="w-full border rounded px-2 py-1 dark:bg-[#2A2A2A] dark:text-white"
-                      >
-                        <option value="">HH</option>
-                        {hours.map((h) => (
-                          <option key={h}>{h}</option>
-                        ))}
-                      </select>
-
-                      {/* To Time - MM */}
-                      <span className="text-[#293453] pt-1 dark:text-white">
-                        :
-                      </span>
-                      <select
-                        value={time.endTime.split(":")[1]}
-                        onChange={(e) =>
-                          handleTimeChange(
-                            dayIndex,
-                            timeIndex,
-                            "endTime",
-                            `${time.endTime.split(":")[0]}:${e.target.value}`
-                          )
-                        }
-                        className="w-full border rounded px-2 py-1 dark:bg-[#2A2A2A] dark:text-white"
-                      >
-                        <option value="">MM</option>
-                        {minutes.map((m) => (
-                          <option key={m}>{m}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveTimeSlot(dayIndex, timeIndex)}
-                      className="ml-2 text-red-500 hover:text-red-700 text-[8px]"
-                      title="Remove this time slot"
-                    >
-                      ❌
-                    </button>
+                        {isSelected && (
+                          <span className="text-xs text-[#6366F1]">
+                            Selected
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="px-4 py-3 text-sm text-[#71717A] dark:text-[#A1A1AA]">
+                    No students available
                   </div>
-                ))}
-
-                <button
-                  type="button"
-                  onClick={() => handleAddTimeSlot(dayIndex)}
-                  className="w-full bg-[#576CBC] text-white py-1 rounded text-sm"
-                >
-                  Add
-                </button>
-              </>
+                )}
+              </div>
             )}
           </div>
-        ))}
 
-        <div className="mt-4">
-          <label
-            htmlFor="teachers"
-            className="text-[14px] text-[#010E30] dark:text-white mb-1 block"
-          >
-            Select Teacher
-          </label>
-          <select
-            value={selectedTeacher?.teacherId ?? ""}
-            onChange={(e) => {
-              const selected = teachers.find(
-                (teacher) => teacher.teacherId === e.target.value
-              );
-              setSelectedTeacher(selected || null);
-            }}
-            className="border rounded px-3 py-2 w-full dark:bg-[#2A2A2A] dark:text-white"
-          >
-            <option value="">Select a Teacher</option>
-            {teachers.map((teacher) => (
-              <option
-                key={teacher.teacherId}
-                value={teacher.teacherId}
-                className="text-[#010E30] text-xs dark:text-white bg-white dark:bg-[#343434]"
-              >
-                {teacher.teacherName}
-              </option>
+          {/* Course */}
+          <div>
+            <label className="block text-[18px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-2">
+              Course
+            </label>
+            <input
+              type="text"
+              defaultValue={course}
+              readOnly
+              className="w-full border border-[#D4D4D4] dark:border-[#3F3F46] rounded-lg px-3 py-2.5 
+          focus:outline-none focus:ring-1 focus:ring-[#6366F1] bg-white dark:bg-[#2A2A2A] 
+          text-[#1E1E1E] dark:text-[#E4E4E7]"
+            />
+          </div>
+
+          {/* Package + Hours */}
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { label: "Package", value: packageName },
+              { label: "Hours", value: totalHours },
+            ].map((item) => (
+              <div key={item.label}>
+                <label className="block text-[18px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-2">
+                  {item.label}
+                </label>
+                <input
+                  type="text"
+                  defaultValue={item.value}
+                  readOnly
+                  className="w-full border border-[#E4E4E7] dark:border-[#3F3F46] rounded-lg px-3 py-2.5 
+              focus:outline-none focus:ring-1 focus:ring-[#6366F1] bg-white dark:bg-[#2A2A2A] 
+              text-[#1E1E1E] dark:text-[#E4E4E7]"
+                />
+              </div>
             ))}
-          </select>
+          </div>
+
+          {/* Join Date */}
+          <div>
+            <label
+              htmlFor="join-date"
+              className="text-[18px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-2 block"
+            >
+              Start Date
+            </label>
+            <input
+              type="date"
+              id="join-date"
+              className="w-full border border-[#D4D4D4] dark:border-[#3F3F46] rounded-lg px-3 py-2 
+          bg-white dark:bg-[#2A2A2A] text-[#1E1E1E] dark:text-[#E4E4E7]"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </div>
+
+          {/* Teacher */}
+          <div className="relative">
+            <label className="text-[18px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-2 block">
+              Teacher
+            </label>
+
+            {/* Dropdown Header */}
+            <div
+              onClick={() => setShowTeacherDropdown(!showTeacherDropdown)}
+              className={`flex justify-between items-center border border-[#D4D4D4] dark:border-[#3F3F46]
+    rounded-lg px-3 py-2.5 cursor-pointer transition-all duration-300 
+    bg-white dark:bg-[#2A2A2A] ${
+      showTeacherDropdown ? "bg-[#F4F4F5] dark:bg-[#3A3A3A]" : ""
+    }`}
+            >
+              <span
+                className={`text-sm ${
+                  selectedTeacher
+                    ? "text-[#3F3F46] dark:text-[#E4E4E7]"
+                    : "text-[#71717A] dark:text-[#A1A1AA]"
+                }`}
+              >
+                {selectedTeacher
+                  ? selectedTeacher.teacherName
+                  : "Select a teacher"}
+              </span>
+
+              <ChevronDown
+                size={18}
+                className={`text-gray-400 transform transition-transform duration-300 ${
+                  showTeacherDropdown ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+
+            {/* Floating Dropdown */}
+            {showTeacherDropdown && (
+              <div
+                className="absolute left-0 top-full mt-2 w-full border border-[#E4E4E7] dark:border-[#3F3F46]
+      rounded-lg shadow-lg bg-white dark:bg-[#2A2A2A] max-h-[200px] overflow-y-auto z-40 animate-fadeIn"
+              >
+                {Array.isArray(teachers) && teachers.length > 0 ? (
+                  teachers.map((teacher) => (
+                    <div
+                      key={teacher.teacherId}
+                      className={`px-4 py-2 text-sm cursor-pointer border-b last:border-none
+            transition-colors ${
+              selectedTeacher?.teacherId === teacher.teacherId
+                ? "bg-[#EEF2FF] dark:bg-[#3F3F46]"
+                : "hover:bg-[#F4F4F5] dark:hover:bg-[#3A3A3A]"
+            }`}
+                      onClick={() => {
+                        setSelectedTeacher(teacher);
+                        setShowTeacherDropdown(false);
+                      }}
+                    >
+                      {teacher.teacherName}
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-4 py-3 text-sm text-[#71717A] dark:text-[#A1A1AA]">
+                    No teachers available
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Preferred day & time */}
+          <div>
+            <label className="block text-[18px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-2">
+              Preferred day & time
+            </label>
+
+            <div className="grid grid-cols-2 gap-4">
+              {schedule.map((day) => {
+                const selectedTimes = day.times.map(
+                  (t) => `${t.startTime} - ${t.endTime}`
+                );
+                const preview =
+                  selectedTimes.length > 2
+                    ? `${selectedTimes.slice(0, 2).join(", ")} ...`
+                    : selectedTimes.join(", ");
+
+                return (
+                  <div key={day.day} className="relative">
+                    {/* Header Row */}
+                    <div
+                      onClick={() =>
+                        setOpenDay(openDay === day.day ? null : day.day)
+                      }
+                      className={`flex justify-between items-center border border-[#D4D4D4] dark:border-[#3F3F46] 
+            rounded-lg px-3 py-2 cursor-pointer transition-all duration-300 relative z-30 ${
+              openDay === day.day
+                ? "bg-[#F4F4F5] dark:bg-[#3A3A3A]"
+                : "bg-white dark:bg-[#2A2A2A]"
+            }`}
+                    >
+                      {/* Left side: Day name */}
+                      <span className="text-[#3F3F46] dark:text-[#E4E4E7] font-medium">
+                        {day.day}
+                      </span>
+
+                      {/* Right side: preview text + chevron */}
+                      <div className="flex items-center gap-2">
+                        {selectedTimes.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {selectedTimes.slice(0, 2).map((time, idx) => (
+                              <span
+                                key={idx}
+                                className="inline-flex items-center px-2 py-0.5 text-sm 
+        bg-[#F4F4F5] text-[#3F3F46] rounded-md
+        dark:bg-[#3A3A3A] dark:text-[#E4E4E7]"
+                              >
+                                {time}
+                              </span>
+                            ))}
+
+                            {selectedTimes.length > 2 && (
+                              <span
+                                className="inline-flex items-center px-2 py-0.5 text-xs 
+        bg-[#E4E4E7] text-[#3F3F46] rounded-md
+        dark:bg-[#3F3F46] dark:text-[#A1A1AA]"
+                              >
+                                +{selectedTimes.length - 2} more
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        <ChevronDown
+                          size={16}
+                          className={`text-gray-400 transform transition-transform duration-300 ${
+                            openDay === day.day ? "rotate-180" : ""
+                          }`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Floating Dropdown */}
+                    {openDay === day.day && (
+                      <div
+                        className="absolute left-0 top-full mt-2 w-full border border-[#E4E4E7] dark:border-[#3F3F46]
+              rounded-lg shadow-lg bg-white dark:bg-[#2A2A2A] max-h-[200px] overflow-y-auto z-40 animate-fadeIn"
+                      >
+                        {suggestedSlots[day.day]?.map(
+                          (slot: any, i: number) => {
+                            const isAdded = day.times.some(
+                              (t) =>
+                                normalizeTime(t.startTime) ===
+                                  normalizeTime(slot.from) &&
+                                normalizeTime(t.endTime) ===
+                                  normalizeTime(slot.to)
+                            );
+
+                            return (
+                              <div
+                                key={i}
+                                className={`flex justify-between items-center px-4 py-2 border-b last:border-none transition-colors ${
+                                  isAdded
+                                    ? "bg-[#EEF2FF] dark:bg-[#3F3F46]"
+                                    : "bg-white dark:bg-[#2A2A2A]"
+                                }`}
+                              >
+                                <span className="text-sm text-[#3F3F46] dark:text-[#E4E4E7]">
+                                  {slot.from} - {slot.to}
+                                </span>
+
+                                <div className="flex items-center gap-2">
+                                  {isAdded ? (
+                                    <>
+                                      <button className="text-xs bg-[#576CBC] dark:bg-[#3F3F46] text-[#FFFFFF] dark:text-[#E4E4E7] px-2 py-1 rounded-md">
+                                        Added
+                                      </button>
+                                      <button
+                                        onClick={() =>
+                                          handleRemoveSlot(
+                                            day.day,
+                                            slot.from,
+                                            slot.to
+                                          )
+                                        }
+                                        className="bg-red-500 text-white p-1 rounded-md"
+                                      >
+                                        <Trash2 size={14} />
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        handleAddSuggestedSlot(
+                                          day.day,
+                                          slot.from,
+                                          slot.to
+                                        )
+                                      }
+                                      className="text-xs border border-[#6366F1] text-[#6366F1] px-3 py-1 rounded-md hover:bg-[#6366F1] hover:text-white transition"
+                                    >
+                                      Add
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          }
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
-        <div className="border-t pt-4 mt-4 flex justify-end gap-2">
+        {/* Divider */}
+        <div className="border-t border-[#E4E4E7] dark:border-[#3F3F46] mt-8 mb-6"></div>
+
+        {/* Footer */}
+        <div className="flex justify-end gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1 border border-[#576CBC] text-[#576CBC] hover:border-[#4459A9] rounded hover:bg-[#E6E9F5] dark:hover:bg-[#333]"
+            className="px-5 py-2 text-sm font-medium border border-[#576CBC] text-[#576CBC] rounded-lg hover:bg-[#E6E9F5] dark:hover:bg-[#2B2B2B]"
           >
             Cancel
           </button>
           <button
-            type="button"
             onClick={handleSubmit}
-            className="px-3 py-1 bg-[#576CBC] text-white  rounded hover:bg-[#4459A9]"
+            type="button"
+            className="px-5 py-2 text-sm font-medium bg-[#576CBC] hover:bg-[#4459A9] text-white rounded-lg"
           >
             Submit
           </button>
         </div>
-      </form>
+      </div>
+
+      {/* Popups */}
       {success && (
-        <SuccessPopup
-          onClose={() => setSuccess(false)}
-          title="Group Class "
-        />
+        <SuccessPopup onClose={() => setSuccess(false)} title="Group Class" />
       )}
       {failed && (
         <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
       )}
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="dark"
+      />
     </div>
   );
 }
