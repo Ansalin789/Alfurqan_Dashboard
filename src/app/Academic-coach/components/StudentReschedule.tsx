@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import moment from "moment";
 import { useSearchParams } from "next/navigation";
 
-import { MdOutlineKeyboardArrowRight, MdExpandMore, MdAccessTime } from "react-icons/md";
+import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
@@ -147,13 +147,11 @@ const SchedulePage = () => {
   const [selectedTeacher, setSelectedTeacher] = useState<TeacherSlot | null>(
     null
   );
-  const [selectedSlotByTeacher, setSelectedSlotByTeacher] = useState<Record<string, { fromTime: string; toTime: string } | null>>({});
   const [rescheduleReason, setRescheduleReason] = useState("");
   const [success, setSuccess] = useState(false);
   const [failed, setFailed] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
-  const [openDropdownFor, setOpenDropdownFor] = useState<string | null>(null);
 
   useEffect(() => {
     const queryStudentId = searchParams?.get("studentId");
@@ -200,9 +198,7 @@ const SchedulePage = () => {
         const allSchedules: ClassSchedule[] = data.classSchedule;
 
         setScheduledClasses(
-          allSchedules.filter(
-            (c) => c.scheduleStatus === "Scheduled" || c.scheduleStatus === "Rescheduled"
-          )
+          allSchedules.filter((c) => c.scheduleStatus === "Scheduled")
         );
       } catch (err) {
         console.error("Failed to fetch class schedule", err);
@@ -478,7 +474,7 @@ const SchedulePage = () => {
     scheduledClasses,
   }: {
     selectedDate: Date;
-    scheduledClasses: ClassSchedule[];
+    scheduledClasses: ClassData[];
   }) => {
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
     const startOfWeek = moment(selectedDate).startOf("week");
@@ -493,7 +489,7 @@ const SchedulePage = () => {
       if (!acc[day]) acc[day] = [];
       acc[day].push(cls);
       return acc;
-    }, {} as Record<string, ClassSchedule[]>);
+    }, {} as Record<string, ClassData[]>);
 
     const handleDayClick = (day: string) => {
       setSelectedDay((prev) => (prev === day ? null : day));
@@ -568,11 +564,6 @@ const SchedulePage = () => {
                             {cls.startTime[0]} – {cls.endTime[0]}
                           </div>
                         </div>
-                        {cls.scheduleStatus === "Rescheduled" && (
-                          <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-300">
-                            <span className="font-semibold">Rescheduled:</span> {moment(cls.createdDate).format("MMM D, YYYY")} → {moment(cls.lastUpdatedDate).format("MMM D, YYYY")}
-                          </div>
-                        )}
                       </div>
                     );
                   })}
@@ -590,7 +581,7 @@ const SchedulePage = () => {
     scheduledClasses,
   }: {
     selectedDate: Date;
-    scheduledClasses: ClassSchedule[];
+    scheduledClasses: ClassData[];
   }) => {
     const currentDay = moment(selectedDate);
     const dayClasses = scheduledClasses.filter((cls) =>
@@ -648,7 +639,7 @@ const SchedulePage = () => {
     const totalDays = [...emptyCells, ...days];
 
     const getClassesForDate = (date: Date) =>
-      scheduledClasses.filter((cls: ClassSchedule) =>
+      scheduledClasses.filter((cls: ClassData) =>
         moment(cls.startDate).isSame(date, "day")
       );
 
@@ -710,7 +701,7 @@ const SchedulePage = () => {
             const courseColorClass = getCourseColorClass(courseName);
 
             return (
-              <button   
+              <button
                 key={i}
                 onClick={() => handleDateClick(date, courseName)}
                 className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer duration-200
@@ -727,7 +718,7 @@ const SchedulePage = () => {
                 <div className="font-semibold text-sm text-inherit">{day}</div>
 
                 {hasClasses && (
-                  <div className="w-full mt-0 text-center">
+                  <div className="w-full mt-2 text-center">
                     <div
                       className={`text-[10px] font-medium truncate ${courseColorClass}`}
                     >
@@ -736,11 +727,6 @@ const SchedulePage = () => {
                     <div className={`text-[9px] truncate ${courseColorClass}`}>
                       {dayClasses[0].startTime[0]} - {dayClasses[0].endTime[0]}
                     </div>
-                    {dayClasses[0].scheduleStatus === "Rescheduled" && (
-                      <div className={`text-[7px] truncate ${courseColorClass}`}>
-                        Rescheduled from {moment(dayClasses[0].createdDate).format("MMM D")}
-                      </div>
-                    )}
                   </div>
                 )}
               </button>
@@ -749,25 +735,6 @@ const SchedulePage = () => {
         </div>
       </>
     );
-  };
-
-  const groupedByTeacher = React.useMemo(() => {
-    const map: Record<string, { teacherId: string; name: string; slots: { fromTime: string; toTime: string }[] }> = {};
-    availableTeachers.forEach((t) => {
-      if (!map[t.teacherId]) {
-        map[t.teacherId] = { teacherId: t.teacherId, name: t.name, slots: [] };
-      }
-      map[t.teacherId].slots.push({ fromTime: t.fromTime, toTime: t.toTime });
-    });
-    return Object.values(map);
-  }, [availableTeachers]);
-
-  const toTitleCase = (value: string) => {
-    if (!value) return value;
-    return value
-      .split(" ")
-      .map((part) => (part.length > 0 ? part[0].toUpperCase() + part.slice(1).toLowerCase() : part))
-      .join(" ");
   };
 
   return (
@@ -840,111 +807,43 @@ const SchedulePage = () => {
                 </p>
               ) : (
                 <AnimatePresence>
-                  <div className="h-[550px] bg-gray-50 dark:bg-[#414141] p-4 rounded-xl">
-                  {groupedByTeacher.map((group) => {
-                    const selected = selectedSlotByTeacher[group.teacherId] || group.slots[0] || null;
-                    return (
-                      
-                      <motion.div
-                        key={group.teacherId}
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ duration: 0.25 }}
-                        className="flex items-center justify-between py-4 px-2 border-b-2 dark:border-[#5c5c5c]"
-                      >
-                        {/* Left Side */}
-                        <div className="flex items-center gap-4">
-                          <img
-                            src={`https://api.dicebear.com/7.x/initials/svg?seed=${group.name}`}
-                            alt={group.name}
-                            className="w-10 h-10 rounded-full"
-                          />
-                          <div>
-                            <p className="text-sm font-medium text-gray-800 dark:text-white">
-                              {toTitleCase(group.name)}
-                            </p>
-                          </div>
+                  {availableTeachers.map((teacher, index) => (
+                    <motion.div
+                      key={`${teacher.teacherId}-${teacher.fromTime}-${teacher.toTime}`}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.25 }}
+                      className="flex items-center justify-between py-4 px-2 border-b-2 dark:border-[#5c5c5c]"
+                    >
+                      {/* Left Side */}
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={`https://api.dicebear.com/7.x/initials/svg?seed=${teacher.name}`}
+                          alt={teacher.name}
+                          className="w-10 h-10 rounded-full"
+                        />
+                        <div>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white">
+                            {teacher.name}
+                          </p>
                         </div>
+                      </div>
 
-                        {/* Right Side */}
-                        <div className="flex items-center gap-2 relative">
-                          <button
-                            onClick={() => setOpenDropdownFor((prev) => (prev === group.teacherId ? null : group.teacherId))}
-                            className="flex items-center gap-2 border border-gray-200 dark:border-[#5c5c5c] bg-gray-100 dark:bg-[#4a4a4a] hover:bg-gray-200 dark:hover:bg-[#5a5a5a] rounded-full pl-2 pr-3 py-1 transition"
-                          >
-                            <span className="inline-flex items-center gap-1 text-[12px] font-medium text-gray-700 dark:text-gray-100 bg-white dark:bg-[#3f3f3f] border border-gray-200 dark:border-[#5c5c5c] rounded-full px-2 py-[2px]">
-                              <MdAccessTime className="text-gray-500" />
-                              {selected ? `${selected.fromTime} - ${selected.toTime}` : "Select slot"}
-                            </span>
-                            <MdExpandMore className={`text-gray-600 dark:text-gray-200 transition-transform ${openDropdownFor === group.teacherId ? "rotate-180" : "rotate-0"}`} />
-                          </button>
-
-                          <AnimatePresence>
-                            {openDropdownFor === group.teacherId && (
-                              <motion.div
-                                initial={{ opacity: 0, y: -6 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -6 }}
-                                transition={{ duration: 0.15 }}
-                                className="absolute right-10 top-full mt-2 w-56 bg-white dark:bg-[#3a3a3a] border border-gray-200 dark:border-[#5c5c5c] rounded-xl shadow-lg z-10 overflow-hidden"
-                              >
-                                <div className="max-h-64 overflow-y-scroll scrollbar-none py-1">
-                                  {group.slots.map((slot, idx) => {
-                                    const isActive = selected && selected.fromTime === slot.fromTime && selected.toTime === slot.toTime;
-                                    return (
-                                      <div className="rounded-lg mx-1">
-                                      <button
-                                        key={`${group.teacherId}-${idx}`}
-                                        onClick={() => {
-                                          setSelectedSlotByTeacher((prev) => ({
-                                            ...prev,
-                                            [group.teacherId]: { fromTime: slot.fromTime, toTime: slot.toTime },
-                                          }));
-                                          setOpenDropdownFor(null);
-                                        }}
-                                        className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between rounded-lg hover:bg-gray-100 dark:hover:bg-[#4a4a4a] ${isActive ? "bg-gray-100 dark:bg-[#4a4a4a]" : ""}`}
-                                      >
-                                        <span className="flex items-center gap-2">
-                                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-700 dark:text-gray-100 bg-gray-50 dark:bg-[#2f2f2f] border border-gray-200 dark:border-[#5c5c5c] rounded-full px-2 py-[1px]">
-                                            <MdAccessTime className="text-gray-500" />
-                                            {slot.fromTime} - {slot.toTime}
-                                          </span>
-                                        </span>
-                                        {isActive && (
-                                          <span className="text-[10px] text-[#576CBC] font-semibold">Selected</span>
-                                        )}
-                                      </button>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-
-                          <button
-                            onClick={() => {
-                              const chosen = selected || group.slots[0];
-                              if (!chosen) return;
-                              handleTeacherClick({
-                                teacherId: group.teacherId,
-                                name: group.name,
-                                fromTime: chosen.fromTime,
-                                toTime: chosen.toTime,
-                                isStatus: true,
-                              } as TeacherSlot);
-                            }}
-                            className="p-1 hover:bg-gray-200 dark:hover:bg-[#5c5c5c] rounded-full transition"
-                          >
-                            <MdOutlineKeyboardArrowRight className="text-xl text-gray-500 dark:text-[#5c5c5c]" />
-                          </button>
+                      {/* Right Side */}
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm text-gray-700 dark:text-gray-300 text-right">
+                          {teacher.fromTime} - {teacher.toTime}
                         </div>
-                      </motion.div>
-                      
-                    );
-                  })}
-                  </div>
+                        <button
+                          onClick={() => handleTeacherClick(teacher)}
+                          className="p-1 hover:bg-gray-200 dark:hover:bg-[#5c5c5c] rounded-full transition"
+                        >
+                          <MdOutlineKeyboardArrowRight className="text-xl text-gray-500 dark:text-[#5c5c5c]" />
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
                 </AnimatePresence>
               )}
             </div>
