@@ -118,6 +118,7 @@ interface ApiResponse {
 // Define the transformed user structure
 interface TransformedUser {
   _id: string;
+  trialId: string;
   studentId: string;
   studentFirstName: string;
   studentLastName: string;
@@ -214,6 +215,7 @@ const getAllUsers = async (): Promise<{
         console.log("Item studentStatus before transform:", item.studentStatus);
         return {
           _id: item._id,
+          trialId: item.trialId,
           studentId: item.student.studentId,
           studentFirstName: item.student.studentFirstName,
           studentLastName: item.student.studentLastName,
@@ -1508,7 +1510,7 @@ const TrailSection = () => {
                       {currentItems.length > 0 ? (
                         currentItems.map((item, index) => (
                           <tr
-                            key={item._id}
+                            key={item.trialId}
                             className={`text-[12px] ${
                               index % 2 === 0
                                 ? "bg-[#fff] dark:bg-[#2C2C2C] "
@@ -1520,7 +1522,7 @@ const TrailSection = () => {
                                 ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                 : "bg-[#F8F8F8] dark:bg-[#303030]"
                             }`}>
-                              {item._id}
+                              {item.trialId}
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[14%]">
                               {item.studentFirstName} {item.studentLastName}
