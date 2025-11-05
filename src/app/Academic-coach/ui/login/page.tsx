@@ -335,7 +335,7 @@ const handleFormSubmit = async (e: React.FormEvent) => {
   
   return (
 
-       <div className="min-h-screen flex">
+    <div className="h-screen flex overflow-hidden">
         {showError && error && (
   <AnimatePresence>
     <motion.div
@@ -362,24 +362,24 @@ const handleFormSubmit = async (e: React.FormEvent) => {
   </AnimatePresence>
 )}
       {/* Left Section - Sign In Form */}
-      <div className="w-full lg:w-1/2 bg-white flex flex-col">
-        <div className="px-8 py-1">
-          <Image src="/assets/images/Logo - Website - big size 1.svg" alt="logo" width={180} height={190} className='justify-left ml-32 mt-10 p-0'/>
-        </div>
+      <div className="w-full lg:w-1/2 h-screen bg-white flex flex-col overflow-hidden">
+      <div className="px-8 py-1">
+                <Image src="/assets/images/Logo - Website - big size 1.svg" alt="logo" width={150} height={160} priority style={{ height: 'auto' }} className='justify-left ml-[38px] mt-5 p-0'/>
+              </div>
 
-        <div className="flex-1 flex items-center justify-center px-8">
+        <div className="flex-1 flex items-center justify-center px-8 overflow-auto scrollbar-none">
           <div className="w-full max-w-md">
-            <h1 className="text-5xl  font-[620] text-[#171923] mb-8">Sign in</h1>
-            <p className="text-[#718096] mb-8">
-              Don't have an account?{' '}
+          <h2 className="text-[32px] font-bold text-black mb-2 mt-32 ">Sign in</h2>
+          <p className="text-[#718096] mb-8 text-[14px]">
+          Don't have an account?{' '}
               <a href="#" className="text-[#5A73B3] hover:text-[#4d6295] underline ">
                 Create now
               </a>
             </p>
 
             <form onSubmit={handleFormSubmit}>
-              <div className="mb-6">
-                <label htmlFor="email" className="block text-sm font-medium text-[#718096] mb-2">
+              <div className="mb-4">
+                <label htmlFor="email" className="block text-sm font-medium text-[#718096] mb-1">
                   Username
                 </label>
                 <input
@@ -406,7 +406,7 @@ const handleFormSubmit = async (e: React.FormEvent) => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="@#*%"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg  focus:ring-2 focus:ring-[#5A73B3] focus:border-transparent outline-none transition-all pr-12"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg  focus:ring-2 focus:ring-[#5A73B3] focus:border-transparent outline-none transition-all pr-12"
                   />
                   <button
                     type="button"
@@ -422,22 +422,22 @@ const handleFormSubmit = async (e: React.FormEvent) => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center justify-between mb-6">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    className="w-4 h-4 rounded border-gray-300 text-[#5A73B3] focus:ring-[#5A73B3]"
+                    className="w-3 h-3 rounded border-gray-300 text-[#5A73B3] focus:ring-[#5A73B3]"
                   />
-                  <span className="text-sm text-[#718096]">Remember me</span>
+                  <span className="text-[12px] text-[#718096]">Remember me</span>
                 </label>
-                <a href="#" className="text-sm text-[#5A73B3] hover:text-[#4d6295] underline">
+                <a href="#" className="text-[12px] text-[#5A73B3] hover:text-[#4d6295] underline">
                   Forgot Password?
                 </a>
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-[#5A73B3] hover:bg-[#4d6299] text-white font-medium py-3 rounded-2xl transition-colors mb-8"
+                className="w-full bg-[#5A73B3] hover:bg-[#4d6299] text-white font-medium py-3 rounded-2xl transition-colors mb-4"
               >
                 Sign in
               </button>
@@ -499,87 +499,87 @@ const handleFormSubmit = async (e: React.FormEvent) => {
       </div>
 
       {/* Right Section - Feature Showcase */}
-        <div className="relative w-full lg:w-1/2 h-screen">
-      {/* Background Image */}
-      <Image
-        src="/assets/images/Frame 2147226048.svg"
-        alt="logo"
-        width={1920}
-        height={1080}
-        className="hidden lg:block w-full h-full object-cover absolute inset-0"
-      />
-
-      {/* Overlay Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center w-full px-6 lg:px-16 text-center">
-        {/* Top Card */}
-        <div className="bg-white rounded-xl p-8 max-w-lg mt-48 mb-16 shadow-2xl">
-          <div className="flex flex-col md:flex-row items-start gap-4">
-            <div className="flex-1 text-left">
-              <h2 className="text-3xl font-bold text-[#5A73B3] mb-4">
-                Lorem ipsum dolor sit amet
-              </h2>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem
-                ipsum dolor sit amet.
-              </p>
-              <button className="bg-[#5A73B3] hover:bg-[#4d6295] text-sm text-white px-8 py-3 rounded-full font-medium transition-colors">
-                Learn more
-              </button>
-            </div>
-            <div className="flex-shrink-0">
-              <img
-                src="/assets/images/close-up-hands-holding-diplomas-caps.svg"
-                alt="Students"
-                className="w-48 h-52 object-cover rounded-xl"
+      <div className="relative w-full lg:w-1/2 h-screen overflow-hidden">
+              {/* Background Image */}
+              <Image
+                src="/assets/images/Frame 2147226048.svg"
+                alt="logo"
+                width={1920}
+                height={1080}
+                priority
+                className="hidden lg:block w-full h-full object-cover absolute inset-0 "
               />
+
+              {/* Overlay Content */}
+              <div className="relative z-10 flex flex-col justify-between w-full h-full px-6 lg:px-12 text-center py-6">
+                {/* Top Card */}
+                <div className="bg-white rounded-xl p-6 max-w-sm mx-auto shadow-2xl mt-14">
+                  <div className="flex flex-col md:flex-row items-start gap-4">
+                    <div className="flex-1 text-left">
+                      <h2 className="text-2xl font-bold text-[#5A73B3] mb-2">
+                        Lorem ipsum dolor sit amet
+                      </h2>
+                      <p className="text-gray-600 mb-4 leading-relaxed text-sm">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem
+                        ipsum dolor sit amet.
+                      </p>
+                      <button className="bg-[#5A73B3] hover:bg-[#4d6295] text-xs text-white px-6 py-2 rounded-full font-medium transition-colors">
+                        Learn more
+                      </button>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <img
+                        src="/assets/images/close-up-hands-holding-diplomas-caps.svg"
+                        alt="Students"
+                        className="w-36 h-40 object-cover rounded-xl"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Section */}
+                <div className="text-center text-white mx-auto">
+                  <h2 className="text-2xl font-semibold mb-2">Introducing new features</h2>
+                  <p className="text-[#CFD9E0] text-sm leading-relaxed max-w-md mx-auto mb-4">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                    incididunt ut labore et dolore magna aliqua.
+                  </p>
+
+                  {/* Navigation Dots */}
+                  <div className="flex items-center justify-center gap-4 mt-2">
+                    {/* Left Arrow */}
+                    <button className="w-6 h-6 flex items-center justify-center text-[#A6B4E2] hover:text-white transition-colors">
+                      <ChevronLeft size={16} />
+                    </button>
+
+                    {/* Dots Section */}
+                    <div className="flex items-center gap-2">
+                      {/* Left small dot */}
+                      <div className="w-2 h-2 rounded-full bg-[#A6B4E2]" />
+
+                      {/* Center active dot with arc */}
+                      <div className="relative w-5 h-5 flex items-center justify-center">
+                        {/* Main dot */}
+                        <div className="w-2 h-2 rounded-full bg-[#E8EBF9]" />
+                        {/* Arc effect */}
+                        <div className="absolute w-full h-full rounded-full border-[3px] border-[#E8EBF9] border-t-transparent rotate-[25deg]" />
+                      </div>
+
+                      {/* Right small dot */}
+                      <div className="w-2 h-2 rounded-full bg-[#A6B4E2]" />
+                    </div>
+
+                    {/* Right Arrow */}
+                    <button className="w-6 h-6 flex items-center justify-center text-[#A6B4E2] hover:text-white transition-colors">
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Optional overlay for better text contrast */}
+              <div className="absolute inset-0 bg-black/30"></div>
             </div>
-          </div>
-        </div>
-
-        {/* Bottom Section */}
-        <div className="text-center text-white">
-          <h2 className="text-4xl font-semibold mb-6">Introducing new features</h2>
-          <p className="text-[#CFD9E0] text-[18px] leading-relaxed max-w-2xl mx-24 mb-8 ">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-            incididunt ut labore et dolore magna aliqua.
-          </p>
-
-          {/* Navigation Dots */}
-          <div className="flex items-center justify-center gap-6 mt-6">
-      {/* Left Arrow */}
-      <button className="w-8 h-8 flex items-center justify-center text-[#A6B4E2] hover:text-white transition-colors">
-        <ChevronLeft size={20} />
-      </button>
-
-      {/* Dots Section */}
-      <div className="flex items-center gap-3">
-        {/* Left small dot */}
-        <div className="w-2 h-2 rounded-full bg-[#A6B4E2]" />
-
-        {/* Center active dot with arc */}
-        <div className="relative w-6 h-6 flex items-center justify-center gap-1">
-          {/* Main dot */}
-          <div className="w-2 h-2 rounded-full bg-[#E8EBF9]" />
-          {/* Arc effect */}
-          <div className="absolute w-full h-full rounded-full border-[4px] border-[#E8EBF9] border-t-transparent rotate-[25deg]" />
-        </div>
-
-        {/* Right small dot */}
-        <div className="w-2 h-2 rounded-full bg-[#A6B4E2]" />
-      </div>
-
-      {/* Right Arrow */}
-      <button className="w-8 h-8 flex items-center justify-center text-[#A6B4E2] hover:text-white transition-colors">
-        <ChevronRight size={20} />
-      </button>
-    </div>
-
-        </div>
-      </div>
-
-      {/* Optional overlay for better text contrast */}
-      <div className="absolute inset-0 bg-black/30"></div>
-    </div>
     </div>
   );
 };
