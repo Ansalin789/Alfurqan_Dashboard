@@ -1189,14 +1189,14 @@ const QuizPage = () => {
             <div className="w-full flex flex-col max-w-full bg-[#f4f5fb] dark:bg-[#343434] rounded-xl p-4 items-center mx-auto min-h-[400px] justify-center">
               <div className="flex flex-row">
                 <div className="flex flex-col items-center justify-center mr-20 p-0">
-                  <img
+                  {/* <img
                     src="/assets/images/q5.svg"
                     alt="Cartoon"
                     className="w-40 h-40 object-contain"
-                  />
+                  /> */}
                 </div>
                 {/* Right: Question and controls */}
-                <div className="flex flex-col items-center justify-center flex-1 min-w-[320px] max-w-[500px]">
+                <div className="flex flex-col  justify-start flex-1 min-w-[320px] max-w-[500px] -ml-48">
                   <h2 className="text-[18px] font-semibold text-[#223857] mb-2 text-left w-full dark:text-[#fff] dark:opacity-90">
                     Tap the icon and read the following
                   </h2>
@@ -1750,11 +1750,22 @@ const QuizPage = () => {
                   <h2 className="text-2xl font-bold text-[#223857] mb-2 text-center">Nice Work</h2>
                   {/* Level */}
                   <div className="text-lg font-semibold text-[#223857] mb-2">
-                    Level: {getLevel((backendScore ?? totalScore), quizData.length)}
+                    Level: {assignment?.level}
                   </div>
                   {/* Stars */}
                   <div className="flex gap-1 mb-2 justify-center">
-                    {calculateStarRating((backendScore ?? totalScore), quizData.length)}
+                    {(() => {
+                      const score = backendScore ?? totalScore;
+                      const maxScore = quizData.length;
+                      console.log("[Star Rating] Calculating stars:", {
+                        backendScore,
+                        totalScore,
+                        usedScore: score,
+                        maxScore,
+                        quizDataLength: quizData.length,
+                      });
+                      return calculateStarRating(score, maxScore);
+                    })()}
                   </div>
                   {/* No raw score shown */}
                   {/* Submit/Close button logic remains unchanged */}

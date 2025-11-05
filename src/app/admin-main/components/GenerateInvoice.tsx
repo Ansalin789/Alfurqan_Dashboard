@@ -212,10 +212,28 @@ export default function GenerateInvoice({ onClose }: { onClose: () => void }) {
       console.log("Sending invoice data:", JSON.stringify(invoiceData, null, 2));
 
       const firstEvaluation = selectedStudent?.evaluation?.[0];
+      const evaluationData = firstEvaluation
+        ? {
+            ...firstEvaluation,
+            student: {
+              ...firstEvaluation.student,
+              studentId: invoiceData.student.studentId,
+            },
+          }
+        : undefined;
+
       const payload = {
         ...invoiceData,
-        evaluationData: firstEvaluation ? { ...firstEvaluation } : undefined,
+        studentId: invoiceData.student.studentId,
+        evaluationData,
       };
+
+      console.log("[GenerateInvoice] Using student ids:", {
+        invoiceStudentId: invoiceData.student.studentId,
+        evalStudentIdBefore: firstEvaluation?.student?.studentId,
+        evalStudentIdAfter: evaluationData?.student?.studentId,
+        topLevelStudentId: (payload as any).studentId,
+      });
 
       const response = await axios.post(
         "https://api.blackstoneinfomaticstech.com/invoice/send",
@@ -340,7 +358,8 @@ export default function GenerateInvoice({ onClose }: { onClose: () => void }) {
                       ...prev,
                       lastUpdatedBy: new Date().toISOString(),
                       student: {
-                        studentId: selected._id,
+                        // Use business studentId (e.g., ALFST-010), not Mongo _id
+                        studentId: selected.student.studentId,
                         studentName: selected.username,
                         studentEmail: selected.student.studentEmail,
                         studentPhone: String(selected.student.studentPhone),

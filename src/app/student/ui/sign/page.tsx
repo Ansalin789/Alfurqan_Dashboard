@@ -107,7 +107,7 @@ const SignIn: React.FC = () => {
       localStorage.setItem("StudentPackage",data.student.package);
       if (role?.includes("Student")) {
         router.push("/student/ui/dashboard");
-        alert("Login successful as Student");
+        // alert("Login successful as Student");
       }
     } catch (error: any) {
       if (error.response) {
