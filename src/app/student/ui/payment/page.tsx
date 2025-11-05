@@ -616,7 +616,12 @@ const Invoice = () => {
   const getInvoiceDue = (invoice: Invoice) => {
     const paid =
       invoice.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
-    return Number(invoice.amount) - paid;
+    const calculatedDue = Number(invoice.amount) - paid;
+    const statusLower = (invoice.invoiceStatus || "").toLowerCase();
+    if (statusLower === "paid") {
+      return 0;
+    }
+    return calculatedDue < 0 ? 0 : calculatedDue;
   };
 
   const openFilterModal = () => {
@@ -990,7 +995,7 @@ const Invoice = () => {
                       </td>
                       <td className="p-2 border text-left">1</td>
                       <td className="p-2 border text-left">
-                        ${selectedInvoice?.amount ?? 0}
+                        ${selectedInvoice ? getInvoiceDue(selectedInvoice) : 0}
                       </td>
                       <td className="p-2 border text-left">0.00</td>
                       <td className="p-2 border text-left">0.00</td>
@@ -1281,12 +1286,7 @@ const Invoice = () => {
                         <React.Fragment key={invoice._id || index}>
                           <tr
                             onClick={() => {
-                              if (
-                                (invoice.invoiceStatus || "").toLowerCase() ===
-                                "pending"
-                              ) {
-                                handleInvoiceClick(invoice);
-                              }
+                              handleInvoiceClick(invoice);
                             }}
                             className={`text-[12px] ${
                               index % 2 === 0

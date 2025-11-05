@@ -280,7 +280,7 @@ const SchedulePage = () => {
     const dayEvents = getEventsForDate(currentDate);
 
     return (
-      <div className="space-y-4 h-[600px] overflow-y-scroll scrollbar-none">
+      <div className="space-y-4 h-[470px] overflow-y-scroll scrollbar-none">
         {dayEvents.map((event, idx) => (
           <div
             key={idx}
@@ -462,7 +462,7 @@ const SchedulePage = () => {
           <div className="w-full lg:w-1/3 bg-white dark:bg-[#343434] shadow-md rounded-xl flex flex-col min-h-[630px] lg:h-[630px]">
             <div className="p-4 md:p-6">
               <h2 className="text-[18px] font-semibold">List Schedule</h2>
-              <div className="space-y-3 md:space-y-4">
+              <div className="space-y-3 md:space-y-4 mt-6">
                 {eventsForSelectedDate.length > 0 ? (
                   eventsForSelectedDate.map((item, index) => {
                     const textColors = [
