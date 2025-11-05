@@ -1000,7 +1000,7 @@ const Invoice = () => {
                       <td className="p-2 border text-left">0.00</td>
                       <td className="p-2 border text-left">0.00</td>
                       <td className="p-2 border text-left">
-                        ${selectedInvoice?.amount ?? 0}
+                      ${selectedInvoice ? getInvoiceDue(selectedInvoice) : 0}
                       </td>
                     </tr>
                     {/* Show payments if any */}
@@ -1028,7 +1028,7 @@ const Invoice = () => {
                       </td>
                       <td colSpan={4} className="p-2 border"></td>
                       <td className="p-2 border text-left">
-                        ${selectedInvoice?.amount ?? 0}
+                      ${selectedInvoice ? getInvoiceDue(selectedInvoice) : 0}
                       </td>
                     </tr>
                     <tr>
