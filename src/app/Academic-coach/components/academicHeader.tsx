@@ -432,6 +432,9 @@ export default function AcademicHeader({
         <AddGroupAssignClass
           onClose={() => setAssignGroupClass(false)}
           students={students}
+          course={course}
+          packageName={packageName}
+          totalHours={totalHours}
         />
       )}
       {showUpgradeClass && (

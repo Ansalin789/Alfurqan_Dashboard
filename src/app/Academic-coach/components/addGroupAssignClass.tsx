@@ -196,15 +196,14 @@ export default function AddGroupAssignClass({
           teachersList = teachersList.filter(
             (t: any) => t.position?.toLowerCase() === expectedPosition
           );
-        }
-
-        // ✅ Format the structure for dropdown
-        const formattedTeachers = teachersList.map((t: any) => ({
+           const formattedTeachers = teachersList.map((t: any) => ({
           teacherId: t.userId,
           teacherName: t.userName,
         }));
 
         setTeachers(formattedTeachers);
+        }
+       
       } catch (err) {
         console.error("Error fetching teachers", err);
         setTeachers([]); // fallback to avoid further crashes

@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import AcademicHeader from "../../components/academicHeader";
 import Modal from "react-modal";
 import { getSocket } from "@/app/utils/socket";
+import Swal from "sweetalert2";
 
 export interface Student {
   _id: string;
@@ -140,7 +141,9 @@ const ManageStudents = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState<Student[] | null>(null);
-
+  const [totalPackages, setTotalPackages] = useState<string>("");
+  const [totalCourses, setTotalCourses] = useState<string>("");
+  const [totalHours, setTotalHours] = useState<number>(0);
   const router = useRouter();
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
@@ -180,6 +183,56 @@ const ManageStudents = () => {
 
     fetchData();
   }, []);
+  useEffect(() => {
+    if (selectedStudents.length === 0) {
+      setTotalPackages("");
+      setTotalCourses("");
+      setTotalHours(0);
+      return;
+    }
+
+    const first = selectedStudents[0];
+
+    const allSame = selectedStudents.every((s) => {
+      const firstEval = first?.evaluation?.[0];
+      const evalData = s?.evaluation?.[0];
+
+      return (
+        s?.student?.course === first?.student?.course &&
+        s?.student?.package === first?.student?.package &&
+        evalData?.accomplishmentTime === firstEval?.accomplishmentTime
+      );
+    });
+
+    if (!allSame) {
+      Swal.fire({
+        icon: "warning",
+        title: "Mismatch Detected ⚠️",
+        text: "All selected students must have the same course, package, and accomplishment time.",
+        confirmButtonColor: "#576cbc",
+      });
+
+      // Optional: reset to first one or clear total
+      setTotalPackages("");
+      setTotalCourses("");
+      setTotalHours(0);
+      // setSelectedStudents([first]); // optional auto-fix
+    } else {
+      // ✅ All matched, set totals
+      setTotalPackages(first?.student?.package || "");
+      setTotalCourses(first?.student?.course || "");
+
+      // If accomplishmentTime represents hours — parse or convert it
+      const accomplishmentHours =
+        Number(first?.evaluation?.[0]?.accomplishmentTime) || 0;
+
+      setTotalHours(accomplishmentHours);
+      console.log("✅ All matched, totals set.");
+      console.log("Package:", first?.student?.package);
+      console.log("Course:", first?.student?.course);
+      console.log("Hours:", accomplishmentHours);
+    }
+  }, [selectedStudents]);
   useEffect(() => {
     const academicId =
       typeof window !== "undefined"
@@ -571,6 +624,9 @@ const ManageStudents = () => {
         <AcademicHeader
           currentSection="Student List"
           students={selectedStudents}
+          packageName={totalPackages}
+          course={totalCourses}
+          totalHours={totalHours}
         />
 
         <div className=" mx-auto">
@@ -633,6 +689,12 @@ const ManageStudents = () => {
                       </th>
                       <th className="text-left px-3 py-2 text-[12px] font-medium border border-[#4C6993] dark:border-[#6087C0] w-[180px]">
                         Teacher Name
+                      </th>
+                      <th className="text-left px-3 py-2 text-[12px] font-medium border border-[#4C6993] dark:border-[#6087C0] w-[140px]">
+                        Course
+                      </th>
+                      <th className="text-left px-3 py-2 text-[12px] font-medium border border-[#4C6993] dark:border-[#6087C0] w-[140px]">
+                        Package
                       </th>
                       <th className="text-left px-3 py-2 text-[12px] font-medium border border-[#4C6993] dark:border-[#6087C0] w-[140px]">
                         Class Type
@@ -703,6 +765,23 @@ const ManageStudents = () => {
                             const val = item.evaluation?.[0]?.teacher?.teacherName;
                             return val
                               ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                              : "-";
+                          })()}
+                        </td>
+                        <td className="px-3 py-2">
+                          {(() => {
+                            const val = item.evaluation?.[0]?.student?.learningInterest;
+                            return val
+                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                              : "-";
+                          })()}
+                        </td>
+                         <td className="px-3 py-2">
+                          {(() => {
+                            const val = item.evaluation?.[0]?.subscription?.subscriptionName;
+                            const val1 = item.evaluation?.[0]?.accomplishmentTime;
+                            return val
+                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()} - ${val1}hrs`
                               : "-";
                           })()}
                         </td>
