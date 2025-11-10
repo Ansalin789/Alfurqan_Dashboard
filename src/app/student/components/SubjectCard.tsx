@@ -186,26 +186,27 @@ const Subjectcard: React.FC = () => {
       labelLine={false}
       label={({ cx, cy, midAngle, innerRadius, outerRadius, index }) => {
         const RADIAN = Math.PI / 180;
-        const radius = innerRadius + (outerRadius - innerRadius) * 0.65;
+        const radius = innerRadius + (outerRadius - innerRadius) * 0.5; // centered position
         const x = cx + radius * Math.cos(-midAngle * RADIAN);
         const y = cy + radius * Math.sin(-midAngle * RADIAN);
         const percent =
           totalValue > 0
             ? ((data[index].value / totalValue) * 100).toFixed(0)
             : "0";
-
+      
         return (
           <text
             x={x}
             y={y}
             textAnchor="middle"
-            dominantBaseline="middle"
+            dominantBaseline="central"
             className="text-[10px] font-semibold fill-[#010E30]"
           >
             {percent}%
           </text>
         );
       }}
+      
     >
       {data.map((entry) => (
         <Cell key={entry.name} fill={entry.color} />

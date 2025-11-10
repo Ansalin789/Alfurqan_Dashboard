@@ -1,7 +1,7 @@
 "use client";
 import { AiOutlineClockCircle } from "react-icons/ai";
 import { useEffect, useState } from "react";
-import { FaUser } from "react-icons/fa";
+import { FaRegUser, FaRegCalendarAlt  } from "react-icons/fa";
 import { MdDateRange } from "react-icons/md";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,8 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { FiVideo } from "react-icons/fi";
 import { TimerReset } from "lucide-react";
+import { CiCalendarDate } from "react-icons/ci";
+
 
 interface Student {
   studentId: string;
@@ -299,27 +301,26 @@ const NextClass = () => {
       <div className="max-w-screen-xl mx-auto bg-[#78A1DB] rounded-xl shadow-md px-1 py-4 sm:px-2 md:px-6 lg:px-8 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div className="flex flex-col gap-2 w-full sm:w-auto">
           <h3 className="text-[15px] font-semibold">
-            Your Next Scheduled Class (
-            <div className="inline-flex items-center gap-1">
-              <FaUser className="w-[10px] h-[10px]" />
-              {classData?.teacher?.teacherName}
-            </div>
-            )
+            Your Next Scheduled Class 
           </h3>
           <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm sm:text-sm md:text-sm">
+            <div className="mb-4">
+            <p className="text-xs sm:text-[8px] md:text-[9px] items-center ml-4 whitespace-nowrap">(Teacher)</p>
             <span className="flex items-center gap-1">
-              <FaUser className="text-white/90 text-base sm:text-sm" />
-              {classData?.student?.studentFirstName ?? "------"}
+              <FaRegUser  className="text-white/90 text-xs sm:text-xs -mt-[2px]" />
+              {classData?.teacher?.teacherName.charAt(0).toUpperCase() + classData?.teacher?.teacherName.slice(1).toLowerCase() || "N/A"}
             </span>
+            </div>
+            
 
             <span className="flex items-center gap-1">
-              <MdDateRange className="text-white/90 text-base sm:text-sm" />
+              <MdDateRange className="text-white/90 text-xs sm:text-xs" />
               Session–{sessionNumber.toString().padStart(2, "0")}
             </span>
 
             <span className="flex items-center gap-1">
-              <AiOutlineClockCircle className="text-white/90 text-base sm:text-sm" />
-              {classData?.startTime?.[0] ?? "00:00"}
+              <FaRegCalendarAlt   className="text-white/90 text-xs sm:text-xs" />
+              {classData?.startDate ? classData.startDate.slice(0, 10) : "00:00"}
             </span>
           </div>
         </div>
