@@ -15,6 +15,7 @@ type Props = {
 };
 type NotificationType = {
   _id: string;
+  senderId: string;
   senderName: string;
   messages: string;
   createdDate: string;
@@ -203,6 +204,25 @@ export default function StudentHeader({
         return "🔔";
     }
   };
+   const handleNotificationRedirect = (notification : NotificationType) => {
+  const { notificationType, senderId } = notification;
+
+  switch (notificationType) {
+   
+
+    case "ADMIN_NOTIFICATION":
+      router.push(`/admin/alerts/${senderId}`);
+      break;
+
+    case "REQUEST_RESCHEDULE_TEACHER":
+      router.push(`/student/ui/schedule`);
+      break;
+      
+    default:
+      console.warn("Unknown notification type:", notificationType);
+      break;
+  }
+};
 
   return (
     <div>
@@ -362,7 +382,11 @@ export default function StudentHeader({
                         <span>
                           {getNotificationIcon(notification.notificationType)}
                         </span>
-                        <span className="text-xs text-[#43424299] dark:text-[#bbb0b099] dark:hover:text-white">
+                        <span 
+                        onClick={() =>
+                            handleNotificationRedirect(notification)
+                          }
+                        className="text-xs text-[#43424299] dark:text-[#bbb0b099] dark:hover:text-white">
                           {notification.messages}
                         </span>
                       </div>
