@@ -7,6 +7,15 @@ import { useSearchParams } from "next/navigation";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
 
+// Update the AssignmentType type definition
+type AssignmentType =
+  | "quiz"
+  | "reading"
+  | "writing"
+  | "image identification"
+  | "word match"
+  | "reading comprehension";
+
 interface AssignmentFormData {
   studentId: string;
   studentName: string;
@@ -18,7 +27,7 @@ interface AssignmentFormData {
 
 interface AssignmentItem {
   assignmentName: string;
-  assignmentType: { type: string };
+  assignmentType: { type: AssignmentType };
   questionName: string;
   questionType: string;
   typeofQuestion: string;
@@ -49,7 +58,7 @@ interface AssignmentItem {
 
 interface Assignment {
   name: string;
-  type: string;
+  type: AssignmentType;
   question: string;
   questionType: "choose" | "truefalse";
   options?: {
@@ -177,7 +186,7 @@ const NewAssignment = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
   const [typedQuestion, setTypedQuestion] = useState("");
   const [assignmentName, setAssignmentName] = useState("");
-  const [assignmentType, setAssignmentType] = useState("quiz");
+  const [assignmentType, setAssignmentType] = useState<AssignmentType>("quiz");
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [questionType, setQuestionType] = useState<"choose" | "truefalse">(
     "choose"
@@ -211,9 +220,34 @@ const NewAssignment = () => {
   // Update the handleAddAssignment function
   const handleAddAssignment = () => {
     if (!assignmentName.trim() || !typedQuestion.trim()) {
-      alert("⚠️ Please fill in both Assignment Name and Question.");
+      alert("⚠️ Please fill in both Assignment Name and " + 
+            (assignmentType === "reading comprehension" ? "Instructions" : "Question"));
       return;
     }
+
+    // For reading comprehension, skip other validations
+    if (assignmentType === "reading comprehension") {
+      const newAssignment: Assignment = {
+        questionName: questionName.trim(),
+        name: assignmentName.trim(),
+        type: assignmentType,
+        question: typedQuestion.trim(), // This will contain instructions
+        questionType: "choose", // Default value
+        correctAnswer: "",
+        answerValidation: "",
+        level: level,
+        courses: course,
+      };
+
+      setAssignments((prev) => [...prev, newAssignment]);
+      alert("✅ Reading comprehension instructions added successfully!");
+      
+      // Reset only these fields
+      setTypedQuestion("");
+      setQuestionName("");
+      return;
+    }
+
     // Special validation for reading/writing
     if (
       (assignmentType === "reading" || assignmentType === "writing") &&
@@ -343,7 +377,6 @@ const NewAssignment = () => {
     alert("✅ Assignment added successfully!");
 
     // Reset form
-    setAssignmentName("");
     setTypedQuestion("");
     setQuestionName("");
     setOptions({
@@ -641,7 +674,7 @@ const NewAssignment = () => {
     }
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/assignments",
+        "http://localhost:5001/assignments",
         {
           method: "POST",
           body: formData, // ✅ Use FormData directly
@@ -673,6 +706,12 @@ const NewAssignment = () => {
       );
       setTimeout(() => setFailed(false), 3000);
     }
+  };
+
+  const handleDeleteQuestion = (indexToDelete: number) => {
+    setAssignments((prevAssignments) =>
+      prevAssignments.filter((_, index) => index !== indexToDelete)
+    );
   };
 
   useEffect(() => {
@@ -756,39 +795,34 @@ const NewAssignment = () => {
               </label>
               <select
                 className="w-full p-3 px-5 text-[11px] border border-gray-300 rounded-xl dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
-                onChange={(e) => setAssignmentType(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value as AssignmentType;
+                  setAssignmentType(value);
+                }}
                 value={assignmentType}
               >
                 <option value="quiz">quiz</option>
                 <option value="reading">reading</option>
                 <option value="writing">writing</option>
-                <option value="image identification">
-                  image identification
-                </option>
+                <option value="reading comprehension">reading comprehension</option>
+                <option value="image identification">image identification</option>
                 <option value="word match">word match</option>{" "}
                 {/* Add this line */}
               </select>
             </div>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-[#010E30] mb-2 dark:text-[#fff]">
-              Answer Type
-            </label>
-            {/* Hide for reading/writing */}
-            {!(
-              assignmentType === "writing" || assignmentType === "reading"
-            ) && (
+          {/* Answer Type Section */}
+          {!["image identification", "word match", "reading", "writing", "reading comprehension"].includes(assignmentType) && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-[#010E30] mb-2 dark:text-[#fff]">
+                Question Type
+              </label>
               <div className="flex items-center gap-6 text-sm text-[#010E30]">
-                {/* Always show Choose option */}
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={questionType === "choose"}
-                    disabled={
-                      assignmentType === "word match" ||
-                      assignmentType === "image identification"
-                    }
                     onChange={() => {
                       setQuestionType("choose");
                       if (assignmentType === "quiz") setChooseType(true);
@@ -800,7 +834,6 @@ const NewAssignment = () => {
                   </span>
                 </label>
 
-                {/* Only show True/False for quiz */}
                 {assignmentType === "quiz" && (
                   <label className="flex items-center gap-2 dark:text-[#fff]">
                     <input
@@ -818,8 +851,8 @@ const NewAssignment = () => {
                   </label>
                 )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="mb-4">
             <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff] ">
@@ -938,7 +971,7 @@ const NewAssignment = () => {
           {questionType === "choose" &&
             (assignmentType === "writing" || assignmentType === "reading") && (
               <div className="mb-4">
-                <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff] ">
+                <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
                   Type the Answer
                 </label>
                 <textarea
@@ -946,7 +979,7 @@ const NewAssignment = () => {
                   rows={3}
                   value={answerText}
                   onChange={(e) => setAnswerText(e.target.value)}
-                  className="w-full p-3 px-5 text-[11px] border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff] "
+                  className="w-full p-3 px-5 text-[11px] border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
                 />
               </div>
             )}
@@ -1031,31 +1064,25 @@ const NewAssignment = () => {
             )}
 
           {/* Answer Validation Section */}
-          {(assignmentType === "reading" || assignmentType === "writing") && (
+          {/* {(assignmentType === "reading" || assignmentType === "writing") && (
             <div className="mb-4">
               <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                {assignmentType === "reading"
-                  ? "Reading Content"
-                  : "Writing Prompt"}
+                Answer
               </label>
-              <textarea
-                placeholder={
-                  assignmentType === "reading"
-                    ? "Enter the reading passage"
-                    : "Enter the writing prompt"
-                }
-                rows={4}
-                value={answerText}
-                onChange={(e) => {
-                  setAnswerText(e.target.value);
-                  setSelectedAnswer(e.target.value); // This will be used as answerValidation
-                }}
-                className="w-full p-3 px-5 text-[11px] border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
-              />
+              <div className="p-3 bg-gray-100 dark:bg-[#343434] rounded-lg">
+                <p className="whitespace-pre-wrap dark:text-[#fff]">
+                  {answerText}
+                </p>
+                {answerText && (
+                  <div className="mt-2 text-right">
+                    <span className="text-green-600">✓ Answer Provided</span>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          )} */}
         </div>
-        {/* Right Panel */}
+        {/* Right Panel (updated UI) */}
         <div className="flex flex-col justify-between w-full md:w-1/2 bg-white rounded-2xl p-6 shadow-md dark:bg-[#3B3B3B] dark:border dark:border-[#484f5b]">
           <div>
             <h2 className="text-lg font-medium text-[#010E30] mb-6 dark:text-[#fff]">
@@ -1064,242 +1091,160 @@ const NewAssignment = () => {
             {assignments.map((item, idx) => (
               <div
                 key={idx}
-                className="mb-6 p-4 border rounded-lg dark:border-[#484f5b]"
+                className="mb-6 p-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 dark:border-[#484f5b]"
               >
-                {/* Common Question Display */}
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_120px] gap-4">
-                  <div>
-                    <div className="flex items-center mb-2">
-                      <span className="w-6 text-sm text-[#010E30] dark:text-[#fff]">
-                        {idx + 1}.
-                      </span>
-                      <label className="block text-[13px] font-light text-[#010E30] dark:text-[#fff]">
-                        Question
-                      </label>
-                    </div>
-                    <textarea
-                      value={item.question}
-                      disabled
-                      rows={2}
-                      className="w-full p-3 text-[11px] border border-gray-300 rounded-xl dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
-                    />
-                  </div>
+                {/* Add delete button */}
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-sm font-medium text-[#576CBC] dark:text-[#8a9cdb]">
+                    {item.type === "reading comprehension" ? "Instructions" : `Question ${idx + 1}`} ({item.type})
+                  </span>
+                  <button
+                    onClick={() => handleDeleteQuestion(idx)}
+                    className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    <FaTrash size={14} />
+                  </button>
+                </div>
 
-                  <div>
-                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                      Type
-                    </label>
-                    <input
-                      type="text"
-                      value={item.type}
-                      disabled
-                      className="w-full p-3 text-[11px] border border-gray-300 rounded-xl dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
-                    />
+                {/* Question/Instructions display */}
+                <div className="mb-3">
+                  <div className="text-[13px] text-gray-700 dark:text-gray-200 mb-1">
+                    {item.type === "reading comprehension" ? "Instructions" : `Question ${idx + 1}`}
+                  </div>
+                  <div className="text-sm text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#151515] rounded-md p-3 leading-relaxed break-words">
+                    {item.question || "-"}
                   </div>
                 </div>
 
-                {/* Quiz - Choose Type */}
-                {item.type === "quiz" &&
-                  item.questionType === "choose" &&
-                  item.options && (
-                    <div className="mt-4">
-                      <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                        Options
-                      </label>
-                      <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
-                        {Object.entries({
-                          a: item.options.optionOne,
-                          b: item.options.optionTwo,
-                          c: item.options.optionThree,
-                          d: item.options.optionFour,
-                        }).map(
-                          ([key, value]) =>
-                            value && (
-                              <div
-                                key={key}
-                                className="mb-2 last:mb-0 flex items-center"
-                              >
-                                <span className="font-medium dark:text-[#fff] mr-2">
-                                  {key.toUpperCase()}:
-                                </span>
-                                <span className="dark:text-[#fff] flex-grow">
-                                  {value}
-                                </span>
-                                {item.answerValidation === value && (
-                                  <span className="ml-2 text-green-600">
-                                    ✓ Correct
-                                  </span>
-                                )}
-                              </div>
-                            )
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                {/* Quiz - True/False Type */}
-                {item.type === "quiz" && item.questionType === "truefalse" && (
-                  <div className="mt-4">
-                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                      Correct Answer
-                    </label>
-                    <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
-                      <div className="flex items-center">
-                        <span className="dark:text-[#fff] flex-grow">
-                          {item.answerValidation === "true" ? "True" : "False"}
-                        </span>
-                        <span className="ml-2 text-green-600">✓ Correct</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Image Identification */}
-                {item.type === "image identification" && item.options && (
-                  <div className="mt-4">
-                    {item.imageURL && (
-                      <>
-                        <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                          Uploaded Image
-                        </label>
-                        <div className="flex items-center gap-3 bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
-                          <img
-                            src={item.imageURL}
-                            alt={item.imageName || "Question image"}
-                            className="max-h-32 object-contain"
-                          />
-                          <span className="text-xs break-all dark:text-[#fff]">
-                            {item.imageName}
-                          </span>
+                {/* Only show additional sections if not reading comprehension */}
+                {item.type !== "reading comprehension" && (
+                  <div className="mt-2 grid gap-3">
+                    {/* Options for choose / image / word match */}
+                    {item.options && Object.values(item.options).some(Boolean) && (
+                      <div>
+                        <div className="text-[13px] text-gray-700 dark:text-gray-200 mb-2">
+                          Options
                         </div>
-                      </>
+                        <ul className="space-y-2">
+                          {Object.entries({
+                            a: item.options.optionOne,
+                            b: item.options.optionTwo,
+                            c: item.options.optionThree,
+                            d: item.options.optionFour,
+                          }).map(
+                            ([key, value]) =>
+                              value && (
+                                <li
+                                  key={key}
+                                  className="flex items-center justify-between bg-gray-50 dark:bg-[#141414] border border-gray-100 dark:border-[#2b2b2b] rounded-md px-3 py-2"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <span className="w-6 text-sm font-medium text-gray-600 dark:text-gray-300">
+                                      {key.toUpperCase()}.
+                                    </span>
+                                    <span className="text-sm text-gray-800 dark:text-gray-100">
+                                      {value}
+                                    </span>
+                                  </div>
+                                  {item.answerValidation === value && (
+                                    <span className="text-green-600 text-sm font-medium">
+                                      ✓ Correct
+                                    </span>
+                                  )}
+                                </li>
+                              )
+                          )}
+                        </ul>
+                      </div>
                     )}
 
-                    <label className="block text-[13px] font-light text-[#010E30] mt-4 mb-2 dark:text-[#fff]">
-                      Options
-                    </label>
-                    <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
-                      {Object.entries({
-                        a: item.options.optionOne,
-                        b: item.options.optionTwo,
-                        c: item.options.optionThree,
-                        d: item.options.optionFour,
-                      }).map(
-                        ([key, value]) =>
-                          value && (
-                            <div
-                              key={key}
-                              className="mb-2 last:mb-0 flex items-center"
-                            >
-                              <span className="font-medium dark:text-[#fff] mr-2">
-                                {key.toUpperCase()}:
-                              </span>
-                              <span className="dark:text-[#fff] flex-grow">
-                                {value}
-                              </span>
-                              {item.answerValidation === value && (
-                                <span className="ml-2 text-green-600">
-                                  ✓ Correct
-                                </span>
-                              )}
-                            </div>
-                          )
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Word Match */}
-                {item.type === "word match" && item.options && (
-                  <div className="mt-4">
-                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                      Options
-                    </label>
-                    <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
-                      {Object.entries({
-                        a: item.options.optionOne,
-                        b: item.options.optionTwo,
-                        c: item.options.optionThree,
-                        d: item.options.optionFour,
-                      }).map(
-                        ([key, value]) =>
-                          value && (
-                            <div
-                              key={key}
-                              className="mb-2 last:mb-0 flex items-center"
-                            >
-                              <span className="font-medium dark:text-[#fff] mr-2">
-                                {key.toUpperCase()}:
-                              </span>
-                              <span className="dark:text-[#fff] flex-grow">
-                                {value}
-                              </span>
-                              {item.answerValidation === value && (
-                                <span className="ml-2 text-green-600">
-                                  ✓ Correct
-                                </span>
-                              )}
-                            </div>
-                          )
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Reading/Writing */}
-                {(item.type === "reading" || item.type === "writing") && (
-                  <div className="mt-4">
-                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                      {item.type === "reading"
-                        ? "Reading Content"
-                        : "Writing Prompt"}
-                    </label>
-                    <div className="p-3 bg-gray-100 dark:bg-[#343434] rounded-lg">
-                      <p className="whitespace-pre-wrap dark:text-[#fff]">
-                        {item.answerValidation}
-                      </p>
-                      {item.answerValidation && (
-                        <div className="mt-2 text-right">
-                          <span className="text-green-600">
-                            ✓ Answer Provided
+                    {/* True/False display */}
+                    {item.questionType === "truefalse" && (
+                      <div>
+                        <div className="text-[13px] text-gray-700 dark:text-gray-200 mb-2">
+                          Correct Answer
+                        </div>
+                        <div className="flex items-center justify-between bg-gray-50 dark:bg-[#141414] border border-gray-100 dark:border-[#2b2b2b] rounded-md px-3 py-2">
+                          <div className="text-sm text-gray-800 dark:text-gray-100">
+                            {item.answerValidation === "true" ? "True" : "False"}
+                          </div>
+                          <span className="text-green-600 text-sm font-medium">
+                            ✓ Correct
                           </span>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+                      </div>
+                    )}
 
-                {/* Audio Display (for all types that might have audio) */}
-                {item.audioURL && (
-                  <div className="mt-4">
-                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                      Audio Content
-                    </label>
-                    <div className="flex items-center gap-3 bg-gray-100 dark:bg-[#343434] rounded-lg px-4 py-2">
-                      <audio
-                        controls
-                        src={item.audioURL}
-                        className="flex-1 min-w-0"
-                      />
-                      <span className="text-xs break-all dark:text-[#fff]">
-                        {item.audioName}
-                      </span>
-                    </div>
+                    {/* Reading/Writing / Type-the-answer */}
+                    {(item.type === "reading" || item.type === "writing") && (
+                      <div>
+                        <div className="text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                          Answer
+                        </div>
+                        <div className="bg-gray-50 dark:bg-[#141414] border border-gray-100 dark:border-[#2b2b2b] rounded-md p-3">
+                          <div className="text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap">
+                            {item.answerValidation || item.answerText || "-"}
+                          </div>
+                          {item.answerValidation && (
+                            <div className="mt-2 text-right">
+                              <span className="inline-flex items-center gap-1 text-green-600 text-sm font-medium">
+                                ✓ Answer Provided
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Image preview */}
+                    {item.imageURL && (
+                      <div>
+                        <div className="text-[13px] text-gray-700 dark:text-gray-200 mb-2">
+                          Uploaded Image
+                        </div>
+                        <div className="flex items-center gap-3 bg-gray-50 dark:bg-[#141414] rounded-md p-3 border border-gray-100 dark:border-[#2b2b2b]">
+                          <img
+                            src={item.imageURL}
+                            alt={item.imageName || "uploaded image"}
+                            className="max-h-28 object-contain rounded-md"
+                          />
+                          <div className="text-xs text-gray-600 dark:text-gray-300 break-all">
+                            {item.imageName}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Audio preview */}
+                    {item.audioURL && (
+                      <div>
+                        <div className="text-[13px] text-gray-700 dark:text-gray-200 mb-2">
+                          Audio Content
+                        </div>
+                        <div className="flex items-center gap-3 bg-gray-50 dark:bg-[#141414] rounded-md p-3 border border-gray-100 dark:border-[#2b2b2b]">
+                          <audio controls src={item.audioURL} className="flex-1" />
+                          <div className="text-xs text-gray-600 dark:text-gray-300 break-all">
+                            {item.audioName}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             ))}
           </div>
 
-          <div className="flex justify-end gap-4 mt-6">
+          {/* actions */}
+          <div className="flex justify-end gap-3 mt-6">
             <button
-              className="border border-gray-300 text-[12px] px-4 py-[6px] rounded-xl text-gray-700 hover:bg-gray-100 dark:border-[#343434] dark:text-[#fff] dark:bg-[#343434]"
+              className="border border-gray-200 text-[12px] px-4 py-2 rounded-md text-gray-700 hover:bg-gray-50 dark:border-[#3b3b3b] dark:text-gray-200"
               onClick={() => setAssignments([])}
             >
               Cancel
             </button>
             <button
-              className="bg-[#576CBC] text-white text-[12px] px-4 py-[6px] rounded-xl hover:bg-[#43599e]"
+              className="bg-[#576CBC] text-white text-[12px] px-4 py-2 rounded-md hover:bg-[#43599e]"
               onClick={submitAssignment}
             >
               Assign

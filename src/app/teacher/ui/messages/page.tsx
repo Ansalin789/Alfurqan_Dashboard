@@ -10,6 +10,7 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import { Bell } from "lucide-react";
 import TeacherHeader from "../../components/TeacherHeader";
+import { getSocket } from "@/app/utils/socket";
 
 type ChatUser = IUser | IStudent;
 
@@ -99,14 +100,15 @@ const Message = () => {
   // Set a sample userId, it should be dynamic based on logged-in user
   const [students, setStudents] = useState<IStudent[]>([]);
   const [supervisor, setSupervisor] = useState<IUser[]>([]);
-  const [activeTab, setActiveTab] = useState<"students" | "supervisor">("students");
+  const [activeTab, setActiveTab] = useState<"students" | "supervisor" | "academic">("students");
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [messageCount, setMessageCount] = useState<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const socketRef = useRef<any>(null);
+ const [academicCoaches, setAcademicCoaches] = useState<IUser[]>([]);
+  const [userStatus, setUserStatus] = useState<string>("inactive");
   // const fetchUsersByRole = async (role: string): Promise<IUser[]> => {
   //   try {
   //     const response = await axios.get<{ users: IUser[] }>(
@@ -124,7 +126,7 @@ const Message = () => {
   let userId: string | null = null;
 
   if (typeof window !== "undefined") {
-    userId = localStorage.getItem('TeacherPortalId');
+    userId = localStorage.getItem('TeacherId');
   }
   // ✅ Fetch students from the student database
   const fetchStudents = async (): Promise<IStudent[]> => {
@@ -178,7 +180,11 @@ const Message = () => {
 
   // Filter users based on search query
   const filteredUsers: (IUser | IStudent)[] = (
-    activeTab === "students" ? students : supervisor
+    activeTab === "students"
+      ? students
+      : activeTab === "supervisor"
+      ? supervisor
+      : academicCoaches
   ).filter((user) => {
     const isStudent = "username" in user;
     const name = isStudent ? user.username : user.userName;
@@ -212,22 +218,24 @@ const Message = () => {
   // Fetch messages from API
   const fetchMessages = async (receiverId: string) => {
     try {
-       const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
+      if (!token) {
+        console.error("❌ TeacherAuthToken not found");
+        return;
+      }
+
       const { data } = await axios.get<IMessageResponse>(
-        `https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`,{
-          headers: {
-            Authorization: `Bearer ${token}`,
-            },
+        `https://api.blackstoneinfomaticstech.com/realtimemessage/${userId}/${receiverId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 10000,
+          // withCredentials: true, // optional, helps when cookies are required
         }
       );
 
-    const fetchedMessages = data?.data?.[0]?.messages ?? [];
+      const fetchedMessages = data?.data?.[0]?.messages ?? [];
      console.log(fetchMessages);
     // Filter by senderId and receiverId
     const filteredMessages = fetchedMessages.filter(
@@ -239,8 +247,11 @@ const Message = () => {
       // Count unread messages
       const unreadCount = fetchedMessages.filter((m) => !m.isRead).length;
       setMessageCount(unreadCount); // Update the unread message count
-    } catch (error) {
-      console.error("Error fetching messages:", error);
+    } catch (err: any) {
+      console.error("Error fetching messages:", err.message);
+      // If CORS or network issue, error.response will be undefined — log request too
+      console.error("error.response:", err.response);
+      console.error("error.request:", err.request);
     }
   };
   useEffect(() => {
@@ -251,28 +262,7 @@ const Message = () => {
 
   // Initialize socket connection
   useEffect(() => {
-    if (!socketRef.current) {
-      socketRef.current = io("https://api.blackstoneinfomaticstech.com", {
-        transports: ["websocket"],
-        withCredentials: true,
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-      });
-
-      socketRef.current.on("connect", () => {
-        console.log("Connected to Socket.IO with ID:", socketRef.current?.id);
-        socketRef.current?.emit("subscribe", userId);
-      });
-
-      socketRef.current.on("disconnect", () => {
-        console.log("Disconnected from Socket.IO");
-      });
-
-      socketRef.current.on("connect_error", (err: any) => {
-        console.error("Connection error:", err);
-      });
-    }
+    const socketRef = getSocket(userId ?? '')
 
     // Handle incoming messages
     const handleNewMessage = (newMessage: IMessage) => {
@@ -283,8 +273,17 @@ const Message = () => {
         setMessageCount((prev) => prev + 1);
       }
     };
-
-    socketRef.current.on("newmessage", handleNewMessage);
+    const handleUserStatusCheck = (statusUpdate: { success: string; message: string }) => {
+      console.log("user status response:", statusUpdate);
+       setUserStatus(statusUpdate.success);
+    }
+      console.log("selectUserId in useEffect:", selectedUser?._id);
+      const userIdToCheck = selectedUser?._id;
+      socketRef.emit("userActiveStatusCheck", { userId : userIdToCheck , senderId: userId });
+     socketRef.on("userActiveStatusResponse",handleUserStatusCheck);
+       
+  
+    socketRef.on("newmessage", handleNewMessage);
 
     const fetchAllUsers = async () => {
       const [studentsList, supervisorList] = await Promise.all([
@@ -292,16 +291,24 @@ const Message = () => {
         fetchSupervisor("SUPERVISOR"),
       ]);
 
-      setStudents(studentsList); // ✅ Correct type
-      setSupervisor(supervisorList); // ✅ Correct type
-    };
+      // Try the role value present in your DB ("ACADEMICCOACH"), fall back to "ACADEMIC_COACH"
+      let academicList = await fetchSupervisor("ACADEMICCOACH");
+      if (!academicList || academicList.length === 0) {
+        academicList = await fetchSupervisor("ACADEMIC_COACH");
+      }
 
+      setStudents(studentsList);
+      setSupervisor(supervisorList);
+      setAcademicCoaches(academicList);
+    };
+    
     fetchAllUsers();
     // Cleanup: remove only the message listener
     return () => {
-      socketRef.current?.off("newmessage", handleNewMessage);
+      socketRef.off("newmessage", handleNewMessage);
     };
-  }, [userId]);
+  }, [userId,selectedUser]);
+      
 
   // Handle sending messages
   const handleSendMessage = async () => {
@@ -311,7 +318,7 @@ const Message = () => {
     const newMessage: IMessagesend = {
       messages: messageText,
       senderId: userId ?? '',
-      senderName: "Supervisor",
+      senderName: "Teacher",
       receiverId: selectedUser._id,
       receiverName: `${selectedUser.userName}`,
       createdDate: new Date(),
@@ -330,7 +337,7 @@ const Message = () => {
     typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
 
   if (!token) {
-    console.error("❌ AdminAuthToken not found");
+    console.error("❌ TeacherAuthToken not found");
     return;
   }
       // Send the new message to the backend API
@@ -374,16 +381,11 @@ const Message = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "online":
-        return "bg-green-500";
-      case "offline":
-        return "bg-gray-400";
-      case "busy":
-        return "bg-yellow-500";
-      default:
-        return "bg-gray-400";
-    }
+    const s = (status || "").toString().toLowerCase();
+    if (s === "active" || s === "online") return "bg-green-500";
+    if (s === "busy") return "bg-yellow-500";
+    if (s === "inactive" || s === "offline") return "bg-gray-400";
+    return "bg-gray-400";
   };
 
   return (
@@ -409,7 +411,7 @@ const Message = () => {
               <div>
                 <div className="flex">
                   <h3 className="text-sm font-semibold dark:text-white text-[#374557]">
-                  Supervisor{" "}
+                  Teacher{" "}
                   </h3>
                   <button className="ml-[1px] text-gray-500">
                     <Bell size={16} className="text-white" />
@@ -463,6 +465,16 @@ const Message = () => {
                 onClick={() => setActiveTab("supervisor")}
               >
                 Supervisor
+              </button>
+              <button
+                className={`px-3 py-1.5 text-xs  font-medium ${
+                  activeTab === "academic"
+                    ? "text-[#002B4D] dark:text-[#576CBC] border-b-2 border-[#576CBC]"
+                    : "text-gray-500 "
+                }`}
+                onClick={() => setActiveTab("academic")}
+              >
+                Academic Coach
               </button>
             </div>
             <div className="h-full overflow-scroll   scrollbar-none">
@@ -546,7 +558,7 @@ const Message = () => {
                       </div>
                       <div
                         className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(
-                          selectedUser.status ?? "offline"
+                          userStatus ?? "offline"
                         )}`}
                       ></div>
                     </motion.div>
@@ -557,11 +569,11 @@ const Message = () => {
                       <div className="flex items-center">
                         <span
                           className={`inline-block w-2 h-2 rounded-full mr-1 ${getStatusColor(
-                            selectedUser.status ?? "offline"
+                            userStatus ?? "offline"
                           )}`}
                         ></span>
                         <p className="text-[10px] dark:text-[#FFFFFF99]/60 text-gray-400 capitalize">
-                          {selectedUser.status} • {selectedUser.role}
+                          {userStatus} • {selectedUser.role}
                         </p>
                       </div>
                     </div>
