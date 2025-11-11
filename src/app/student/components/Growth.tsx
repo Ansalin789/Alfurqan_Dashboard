@@ -149,7 +149,7 @@ const Growth: React.FC = () => {
     <div className="bg-white dark:bg-[#343434] rounded-xl p-5 shadow-sm">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-[16px] dark:text-white font-semibold text-[#0f172a]">
-          Growth
+        Learning Progress
         </h2>
         <div className="w-20">
           <select

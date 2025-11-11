@@ -404,7 +404,7 @@ useEffect(() => {
             (c) =>
               c.scheduleStatus === "Scheduled" ||
               c.scheduleStatus === "Rescheduled" ||
-              c.scheduleStatus === "RequestReschedule"
+              c.scheduleStatus === "Reschedulerequested"
           )
         );
 
@@ -1205,7 +1205,7 @@ useEffect(() => {
                       onClick={() => toggleDropdown(index)}
                       className={`${
                         (activeTab === "scheduled" && 
-                         ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
+                         ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
                         activeTab === "completed" ||
                         activeTab === "unscheduled"
                           ? "cursor-pointer"
@@ -1213,7 +1213,7 @@ useEffect(() => {
                       }`}
                       disabled={
                         !((activeTab === "scheduled" && 
-                         ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
+                         ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
                         activeTab === "completed" ||
                         activeTab === "unscheduled")
                       }
@@ -1221,7 +1221,7 @@ useEffect(() => {
                       <MoreVertical
                         className={`w-4 h-4 mr-12 ${
                           (activeTab === "scheduled" && 
-                           ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
+                           ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
                           activeTab === "completed" ||
                           activeTab === "unscheduled"
                             ? "text-slate-600 dark:text-[#FDFDFD]"
@@ -1233,7 +1233,7 @@ useEffect(() => {
                     {/* Show dropdown when activeDropdown is set and appropriate for the tab/status */}
                     {activeDropdown === index && 
                      ((activeTab === "scheduled" && 
-                       ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
+                       ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
                       activeTab === "completed" ||
                       activeTab === "unscheduled") && (
                       <div

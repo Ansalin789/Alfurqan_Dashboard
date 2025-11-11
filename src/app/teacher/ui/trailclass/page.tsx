@@ -67,6 +67,7 @@ interface Attendance {
 }
 interface FormData {
   _id: string;
+  trailId : string;
   student: {
     studentId: string;
     studentRegisterId:string;
@@ -433,6 +434,7 @@ function LiveClass() {
   const updateClick = async (id: string | undefined) => {
     const formDataNames = {
       _id: formData?._id ?? "",
+      trailId : formData?.trailId,
       student: {
         studentId: formData?.student.studentId,
         studentRegisterId:formData?.student.studentRegisterId,
@@ -502,7 +504,6 @@ function LiveClass() {
       expectedFinishingDate: formData?.expectedFinishingDate,
     };
 
-    alert(JSON.stringify(formDataNames));
     try {
       const token =
         typeof window !== "undefined"

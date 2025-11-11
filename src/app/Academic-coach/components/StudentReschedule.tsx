@@ -229,7 +229,7 @@ const SchedulePage = () => {
             (c) =>
               c.scheduleStatus === "Scheduled" ||
               c.scheduleStatus === "Rescheduled" ||
-              c.scheduleStatus === "RequestReschedule"
+              c.scheduleStatus === "Reschedulerequested"
           )
         );
       } catch (err) {
@@ -481,7 +481,7 @@ const SchedulePage = () => {
                 (c) =>
                   c.scheduleStatus === "Scheduled" ||
                   c.scheduleStatus === "Rescheduled" ||
-                  c.scheduleStatus === "RequestReschedule"
+                  c.scheduleStatus === "Reschedulerequested"
               )
             );
           }

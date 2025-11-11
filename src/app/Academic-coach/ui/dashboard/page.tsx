@@ -16,7 +16,63 @@ import { useRouter } from "next/navigation";
 import { getSocket } from "@/app/utils/socket";
 
 // Define the return type of the getAllUsers function
+interface Student {
+  learningInterest: string; // Replace with the exact type if known
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+  studentPhone: number;
+  studentCountry: string;
+  preferredTeacher: string;
+  preferredFromTime: string;
+  preferredToTime: string;
+  classStatus?: string;
+  status?: string;
+  trialClassStatus: string;
+  studentStatus: string;
+  createdDate: Date;
+}
+
+interface EvaluationItem {
+  paymentLink: string;
+  _id: string;
+  student: Student;
+  trialClassStatus: string;
+  assignedTeacher: string;
+  paymentStatus: string;
+}
+
+interface ApiResponse {
+  evaluation: EvaluationItem[];
+}
+
+// Define the transformed user structure
+interface TransformedUser {
+  _id: string;
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+  number: string;
+  country: string;
+  city: string;
+  course: string; // Assuming this corresponds to `learningInterest`
+  preferredTeacher: string;
+  time: string;
+  classStatus?: string;
+  status?: string;
+  trialClassStatus: string;
+  paymentStatus: string;
+  assignedTeacher: string;
+  paymentLink: string;
+  studentStatus: string; // Optional if not always present
+  createdDate: Date; // Optional if not always present
+}
+// Define the return type of the getAllUsers function
 interface User {
+  sortTimestamp: any;
+  id: string;
   studentId: string;
   fname: string;
   lname: string;
@@ -29,11 +85,10 @@ interface User {
   time: string;
   status?: string;
   evaluationStatus?: string;
-  city?: string;
+  city: string;
   students?: number;
   comment?: string;
-  // Used for sorting by most recent
-  sortTimestamp: number;
+  createdDate: Date;
 }
 
 interface GetAllUsersResponse {
@@ -41,6 +96,154 @@ interface GetAllUsersResponse {
   data: User[];
   message?: string; // Make message optional
 }
+interface ClassPayload {
+  academicCoachId: string;
+  student: {
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    studentGender: string;
+    studentPhone: number;
+    studentCity: string;
+    studentCountry: string;
+    studentCountryCode: string;
+    learningInterest?: string;
+    numberOfStudents: number;
+    preferredTeacher: string;
+    preferredFromTime?: string;
+    preferredToTime?: string;
+    timeZone: string;
+    referralSource: string;
+    preferredDate?: string;
+    evaluationStatus: string;
+    status: string;
+    createdDate: Date;
+    createdBy: string;
+  };
+  classType: string;
+  teacher: {
+    teacherName: string;
+  };
+  classDay?: string[]; // assuming it's an array of days like ['Monday', 'Wednesday']
+  startTime?: string[];
+  endTime?: string[];
+  isLanguageLevel: boolean;
+  languageLevel: string;
+  isReadingLevel: boolean;
+  readingLevel: string;
+  isGrammarLevel: boolean;
+  grammarLevel: string;
+  hours: number;
+  subscription: {
+    subscriptionName: string;
+  };
+  planTotalPrice: number;
+  classStartDate: Date | string;
+  classEndDate: Date | string;
+  classStartTime: string;
+  classEndTime: string;
+  gardianName: string;
+  gardianEmail: string;
+  gardianPhone: string;
+  gardianCity: string;
+  gardianCountry: string;
+  gardianTimeZone: string;
+  gardianLanguage: string;
+  assignedTeacher: string;
+  accomplishmentTime?: string;
+  studentRate: number;
+  studentStatus: string;
+  classStatus: string;
+  comments: string;
+  trialClassStatus: string;
+  invoiceStatus: string;
+  paymentLink: string;
+  paymentStatus: string;
+  teacherStatus: string;
+  status: string;
+  createdDate: Date;
+  createdBy: string;
+  updatedDate: Date;
+  updatedBy: string;
+}
+
+const getAllUser = async (): Promise<{
+  success: boolean;
+  data: TransformedUser[];
+  message: string;
+}> => {
+  try {
+    const academicId = localStorage.getItem("AcademicCoachPortalId");
+    console.log("academicId>>", academicId);
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AcademicCoachAuthToken")
+        : null;
+
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+    }
+    const response = await axios.get(
+      `https://api.blackstoneinfomaticstech.com/evaluationlist`,
+      {
+        params: { academicCoachId: academicId },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    // Add debug log for raw API response
+    console.log("Raw API Response:", response.data.evaluation);
+
+    // Transform API data to match TransformedUser interface
+    const transformedData: TransformedUser[] = response.data.evaluation.map(
+      (item: any) => {
+        // Debug log for each item's studentStatus
+        console.log("Item studentStatus before transform:", item.studentStatus);
+        return {
+          _id: item._id,
+          studentId: item.student.studentId,
+          studentFirstName: item.student.studentFirstName,
+          studentLastName: item.student.studentLastName,
+          number: item.student.studentPhone
+            ? item.student.studentPhone.toString()
+            : "",
+          country: item.student.studentCountry,
+          city: item.city,
+          course: item.student.learningInterest,
+          preferredTeacher: item.student.preferredTeacher,
+          time: item.student.preferredFromTime,
+          classStatus: item.student.classStatus,
+          status: item.student.status,
+          trialClassStatus: item.trialClassStatus,
+          paymentStatus: item.paymentStatus,
+          assignedTeacher: item.assignedTeacher,
+          paymentLink: item.paymentLink,
+          studentStatus: item.studentStatus,
+        };
+      }
+    );
+
+    // Debug log for transformed data
+    console.log("Transformed Data:", transformedData);
+
+    return {
+      success: true,
+      data: transformedData,
+      message: "Users fetched successfully",
+    };
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return {
+      success: false,
+      data: [],
+      message: error instanceof Error ? error.message : "Failed to fetch users",
+    };
+  }
+};
 
 // Update the getAllUsers function to fetch from your API
 const getAllUsers = async (): Promise<GetAllUsersResponse> => {
@@ -65,11 +268,17 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
         },
       }
     );
-    console.log("response>>>", response);
+    console.log("Raw API Response:", JSON.stringify(response.data, null, 2));
+    console.log(
+      "First student data:",
+      JSON.stringify(response.data.students[0], null, 2)
+    );
+    console.log("First student status:", response.data.students[0]?.status);
+    console.log(
+      "First student studentStatus:",
+      response.data.students[0]?.studentStatus
+    );
 
-    // const rawData = JSON.stringify(response.data);
-    // console.log('Raw API Response:', rawData); // Debug log
-    // Check if rawData.students exists and is an array
     if (!response.data.students || !Array.isArray(response.data.students)) {
       throw new Error("Invalid data structure received from API");
     }
@@ -78,10 +287,12 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
     const transformedData = response.data.students.map(
       (item: {
         _id: string;
+        studentId: string;
         firstName: string;
         lastName: string;
         email: string;
         phoneNumber: string;
+        city: string;
         country: string;
         learningInterest: string;
         preferredTeacher: string;
@@ -89,20 +300,34 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
         preferredFromTime: string;
         preferredToTime: string;
         evaluationStatus?: string;
-      }) => ({
-        studentId: item._id,
-        fname: item.firstName,
-        lname: item.lastName,
-        email: item.email,
-        number: item.phoneNumber.toString(),
-        country: item.country,
-        course: item.learningInterest,
-        preferredTeacher: item.preferredTeacher,
-        date: new Date(item.startDate).toLocaleDateString(),
-        time: item.preferredFromTime,
-        evaluationStatus: item.evaluationStatus,
-        sortTimestamp: new Date(item.startDate).getTime(),
-      })
+        status?: string;
+        createdDate: string;
+      }) => {
+        console.log("Processing item - Original data:", {
+          status: item.status,
+          allFields: Object.keys(item),
+        });
+        const transformed = {
+          id: item._id,
+          studentId: item.studentId,
+          fname: item.firstName,
+          lname: item.lastName,
+          email: item.email,
+          city: item.city,
+          number: item.phoneNumber.toString(),
+          country: item.country,
+          course: item.learningInterest,
+          preferredTeacher: item.preferredTeacher,
+          date: new Date(item.startDate).toLocaleDateString(),
+          time: item.preferredFromTime,
+          evaluationStatus: item.evaluationStatus,
+          createdDate: new Date(item.createdDate),
+        };
+        console.log("Transformed item - Final data:", {
+          allFields: Object.keys(transformed),
+        });
+        return transformed;
+      }
     );
 
     return {
@@ -133,6 +358,91 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   console.log(setItemsPerPage);
+
+  const [evaluationUsers, setEvaluationUsers] = useState<TransformedUser[]>([]);
+
+  useEffect(() => {
+    const fetchEvaluationUsers = async () => {
+      const result = await getAllUser();
+      if (result.success) {
+        setEvaluationUsers(result.data);
+      }
+    };
+    fetchEvaluationUsers();
+  }, []);
+  useEffect(() => {
+    const academicId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AcademicCoachPortalId")
+        : null;
+    if (!academicId) return;
+    const socket = getSocket(academicId);
+    const handleList = (data: {
+      event: string;
+      data: User | ClassPayload;
+      sender: string;
+    }) => {
+      console.log("📩 Received WebSocket Data:", data);
+      if ("studentId" in data.data) {
+        const user = data.data as User;
+        const formatted: User = {
+          sortTimestamp: user.sortTimestamp,
+          id: user.id,
+          studentId: user.studentId,
+          fname: user.fname,
+          lname: user.lname,
+          email: user.email,
+          number: user.number,
+          country: user.country,
+          city: user.city,
+          course: user.course,
+          preferredTeacher: user.preferredTeacher,
+          date: new Date(user.date).toLocaleDateString(),
+          time: user.time,
+          evaluationStatus: user.evaluationStatus ?? "PENDING",
+          status: "PENDING",
+          createdDate: new Date(user.createdDate),
+        };
+
+        console.log("➡️ Action: create", formatted.studentId);
+        setFilteredUsers((prev) => [...prev, formatted]);
+        setUsers((pre) => [...pre, formatted]);
+      } else {
+        const classPayload = data.data as ClassPayload;
+        const student = classPayload.student;
+
+        console.log("➡️ Action: update", student.studentId);
+
+        setFilteredUsers((prev) =>
+          prev.map((user) =>
+            user.studentId === student.studentId
+              ? {
+                  ...user,
+                  evaluationStatus: student.evaluationStatus ?? "PENDING",
+                  status: classPayload.studentStatus ?? "NOT JOINED",
+                }
+              : user
+          )
+        );
+        setUsers((prev) =>
+          prev.map((user) =>
+            user.studentId === student.studentId
+              ? {
+                  ...user,
+                  evaluationStatus: student.evaluationStatus ?? "PENDING",
+                  status: classPayload.studentStatus ?? "NOT JOINED",
+                }
+              : user
+          )
+        );
+      }
+    };
+
+    socket.on("academicStudentList", handleList);
+    return () => {
+      socket.off("academicStudentList", handleList);
+    };
+  }, []);
 
   const router = useRouter();
   const handleSyncClick = () => {
@@ -328,15 +638,14 @@ export default function Dashboard() {
                   <thead className=" text-[12px] bg-[#4C6993] text-white dark:bg-[#44699d]">
                     <tr>
                       {[
-                        { label: "Trial ID" },
-                        { label: "Name" },
+                        { label: "Student ID" },
+                        { label: "Student Name" },
+                        { label: "Date" },
                         { label: "Mobile" },
                         { label: "Country" },
                         { label: "Course" },
                         { label: "Preferred Teacher" },
-                        { label: "Date" },
-                        { label: "Time" },
-                        { label: "Status" },
+                        { label: "EvaluationStatus" },
                       ].map((header) => (
                         <th
                           key={header.label}
@@ -356,14 +665,13 @@ export default function Dashboard() {
                       >
                         <td className="py-4 px-2 text-left">{item.studentId}</td>
                         <td className="py-4 px-2 text-left">{item.fname} {item.lname}</td>
+                        <td className="py-4 px-2 text-left">{new Date(item.createdDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</td>
                         <td className="py-4 px-2 text-left">{item.number}</td>
                         <td className="py-4 px-2 text-left">{item.country}</td>
                         <td className="py-4 px-2 text-left">{item.course}</td>
                         <td className="py-4 px-2 text-left">
                           {item.preferredTeacher}
                         </td>
-                        <td className="py-4 px-2 text-left">{new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</td>
-                        <td className="py-4 px-2 text-left">{item.time}</td>
                         <td className="py-4 px-2 text-left"><span
                                 className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
                                   item.evaluationStatus === "COMPLETED"

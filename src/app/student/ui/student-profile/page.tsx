@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Pagination from "@/components/Pagination";
 import Modal from "react-modal";
 import StudentHeader from "../../components/StudentHeader";
+import { FcEditImage } from "react-icons/fc";
 
 import Image from "next/image";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
@@ -21,6 +22,7 @@ interface Student {
   studentPhone: number;
   gender: string;
   package: string;
+  photoUrl?: string;
 }
 
 interface StudentRecord {
@@ -97,8 +99,55 @@ const StudentProfile = () => {
       gender: string;
       package: string;
       course: string;
+      photoUrl?: string;
     };
   }
+
+  const handleProfileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const token = localStorage.getItem("StudentAuthToken");
+    const studentId = localStorage.getItem("StudentPortalId");
+
+    // Preview the selected image instantly
+    const previewUrl = URL.createObjectURL(file);
+    setStudentData((prev) =>
+      prev
+        ? {
+            ...prev,
+            student: {
+              ...prev.student,
+              photoUrl: previewUrl,
+            },
+          }
+        : prev
+    );
+
+    // Optional: Upload to backend
+    const formData = new FormData();
+    formData.append("profilePhoto", file);
+    formData.append("studentId", studentId || "");
+
+    try {
+      await axios.post(
+        "https://api.blackstoneinfomaticstech.com/student/upload-photo",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log("✅ Profile photo updated successfully");
+    } catch (error) {
+      console.error("❌ Failed to upload profile photo:", error);
+    }
+  };
+
   useEffect(() => {
     const studentId = localStorage.getItem("StudentPortalId");
 
@@ -220,17 +269,37 @@ const StudentProfile = () => {
           <div className="w-[560px] h-[246px] bg-[#54638C] rounded-lg text-white p-4 sm:p-6 flex flex-col sm:flex-row items-center sm:items-start">
             {/* Profile Image + Name */}
             <div className="flex flex-col items-center px-5 py-6">
-              <img
-                src="/assets/images/stportfolio.svg"
-                alt="profile"
-                className="w-[112px] h-[112px] rounded-full object-cover bg-center"
-              />
-              <h2 className="text-center text-[18px] font-semibold mt-2">
-                {studentData?.username ?? ""}
-              </h2>
-              <p className="text-[12px] text-[#C9C9C9] mt-0">
-                {studentData?.student?.studentEmail}
-              </p>
+              <div className="relative">
+                <img
+                  src={
+                    studentData?.student?.photoUrl ||
+                    "/assets/images/stportfolio.svg"
+                  }
+                  alt="profile"
+                  className="w-[112px] h-[112px] rounded-full object-cover bg-center"
+                />
+                  {/* Edit Icon */}
+                  <label
+                    htmlFor="profileUpload"
+                    className="absolute bottom-40 -right-4  ml-8 hover:bg-[#ffffff13] bg-[#ffffff10] p-1 rounded-sm cursor-pointer"
+                  >
+                    <FcEditImage/>
+                  </label>
+                  <input
+                    id="profileUpload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleProfileChange}
+                  />
+                
+                <h2 className="text-center text-[18px] font-semibold mt-2">
+                  {studentData?.username ?? ""}
+                </h2>
+                <p className="text-[12px] text-[#C9C9C9] mt-0">
+                  {studentData?.student?.studentEmail}
+                </p>
+              </div>
             </div>
 
             {/* Personal Info */}

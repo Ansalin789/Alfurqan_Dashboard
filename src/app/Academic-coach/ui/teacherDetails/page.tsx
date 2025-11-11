@@ -546,7 +546,7 @@ const TeacherDetails = () => {
       setScheduledClasses(
         schedule.filter((c) =>  c.scheduleStatus === "Scheduled" ||
               c.scheduleStatus === "Rescheduled" ||
-              c.scheduleStatus === "RequestReschedule")
+              c.scheduleStatus === "Reschedulerequested")
       );
       setCompletedClasses(
         schedule.filter((c) => c.scheduleStatus === "Completed" || c.scheduleStatus === "BothAbsent" || c.scheduleStatus === "TeacherAbsent" || c.scheduleStatus === "StudentAbsent")
@@ -1315,7 +1315,7 @@ const handleViewDetails = (_id: string) => {
                       className={`font-semibold px-3 py-1 rounded-md text-[10px] inline-block text-center min-w-[120px] ${
                           status === "Scheduled"
                           ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
-                            : status === "Rescheduled" || status === "RequestReschedule"
+                            : status === "Rescheduled" || status === "Reschedulerequested"
                           ? "bg-[#E4E4E4] text-[#000] dark:bg-[#555] dark:text-[#fff]"
                             : status === "Completed"
                             ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
@@ -1333,19 +1333,19 @@ const handleViewDetails = (_id: string) => {
                  <button
                    onClick={() => toggleDropdown(index)}
                    className={`$${
-                     (activeTab === "scheduled" && ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
+                     (activeTab === "scheduled" && ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
                      activeTab === "completed"
                        ? "cursor-pointer"
                        : "cursor-default"
                    }`}
                    disabled={
-                     !((activeTab === "scheduled" && ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
+                     !((activeTab === "scheduled" && ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
                        activeTab === "completed")
                    }
                  >
                    <MoreVertical
                      className={`w-4 h-4 ${
-                       (activeTab === "scheduled" && ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
+                       (activeTab === "scheduled" && ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
                        activeTab === "completed"
                          ? "text-slate-600 dark:text-[#FDFDFD]"
                          : "text-gray-400 dark:text-gray-600 opacity-50"
@@ -1369,7 +1369,7 @@ const handleViewDetails = (_id: string) => {
                          View Details
                        </button>
                      ) : (
-                       ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus) && (
+                       ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus) && (
                          <button
                            className={`w-full text-left px-4 py-2 text-[12px] ${
                              teacherRescheduleWrite

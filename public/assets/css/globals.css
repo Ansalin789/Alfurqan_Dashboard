@@ -647,3 +647,8 @@ body {
   max-width: 500px;
   margin: 0 auto;
 }
+
+
+.relative:hover label {
+  opacity: 1;
+}

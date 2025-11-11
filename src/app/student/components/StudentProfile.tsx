@@ -4,6 +4,7 @@ import axios from "axios";
 import { BsPersonPlus } from "react-icons/bs";
 import { IoDiamondSharp } from "react-icons/io5";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export interface IStudentInvoice {
   _id: string;
@@ -160,28 +161,29 @@ const StudentProfile = () => {
         <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">
           Student Profile
         </h3>
+        <div className="mt-6">
+          <img
+            src={studentImage || "/assets/images/stpr.svg"}
+            alt="profile"
+            className="w-20 h-20 rounded-full mx-auto mb-2"
+          />
 
-        <img
-          src={studentImage || "https://randomuser.me/api/portraits/men/32.jpg"}
-          alt="profile"
-          className="w-20 h-20 rounded-full mx-auto mb-2"
-        />
+          <h3 className="text-[#010E30] font-bold text-[16px] dark:text-white text-center">
+            {studentName ?? "Loading..."}
+          </h3>
+          <p className="text-[#4b5563] text-[13px] text-center mt-1">
+            {studentEmail ?? "Loading..."}
+          </p>
+          <p className="text-[#4b5563] text-[13px] mb-2 text-center mt-2">Level {dashboardCounts.totalLevel}</p>
 
-        <h3 className="text-[#010E30] font-bold text-[16px] dark:text-white text-center">
-          {studentName ?? "Loading..."}
-        </h3>
-        <p className="text-gray-500 text-[12px] text-center">
-          {studentEmail ?? "Loading..."}
-        </p>
-        <p className="text-gray-500 text-[12px] mb-2 text-center">Level {dashboardCounts.totalLevel}</p>
-
-        <div className="flex justify-center space-x-1 mb-2">
-          {[...Array(4)].map((_, i) => (
-            <span key={i} className="text-yellow-400 text-lg">
-              ★
-            </span>
-          ))}
-          <span className="text-gray-300 text-lg">★</span>
+          <div className="flex justify-center space-x-1 mb-2">
+            {[...Array(4)].map((_, i) => (
+              <span key={i} className="text-yellow-400 text-xl">
+                ★
+              </span>
+            ))}
+            <span className="text-gray-300 text-lg">★</span>
+          </div>
         </div>
       </div>
 
@@ -204,7 +206,7 @@ const StudentProfile = () => {
               >
                 <div className="flex items-center gap-2">
                   <img
-                    src="https://randomuser.me/api/portraits/men/32.jpg"
+                    src="/assets/images/uppayment.svg"
                     alt="user"
                     className="w-8 h-8 rounded-full object-cover"
                   />
@@ -251,7 +253,7 @@ const StudentProfile = () => {
               >
                 <div className="flex items-center gap-2">
                   <img
-                    src="https://randomuser.me/api/portraits/men/32.jpg"
+                    src="/assets/images/uppayment.svg"
                     alt="user"
                     className="w-8 h-8 rounded-full object-cover"
                   />
@@ -316,7 +318,12 @@ const StudentProfile = () => {
       </div>
 
       {/* Gradient Action Cards - Example 2 */}
-      <div className="flex items-center justify-between p-4 mt-1 rounded-xl bg-gradient-to-r from-[#ef5350] via-[#ec407a] to-[#ab47bc] text-white mb-3">
+      <Link 
+        href="https://alfweb.vercel.app/pricing" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="flex items-center justify-between p-4 mt-[3px] rounded-xl bg-gradient-to-r from-[#ef5350] via-[#ec407a] to-[#ab47bc] text-white mb-3 cursor-pointer no-underline"
+      >
         <div className="flex items-center gap-4">
           {/* Image icon in circle */}
           <div className="bg-white bg-opacity-20 p-3 rounded-full w-10 h-10 flex items-center justify-center">
@@ -349,7 +356,7 @@ const StudentProfile = () => {
             />
           </svg>
         </div>
-      </div>
+      </Link>
     </div>
   );
 };

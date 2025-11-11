@@ -1559,9 +1559,12 @@ const TrailSection = () => {
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[12%]">
                               {(() => {
                                  const meeting = getMeetingForUser(item);
-                                 return meeting && meeting.teacher && meeting.teacher.name
+                                 const name = meeting && meeting.teacher && meeting.teacher.name
                                     ? meeting.teacher.name
                                     : item.assignedTeacher;
+                                 return name && name.length > 0
+                                    ? name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()
+                                    : name;
                               })()}
                             </td>
                             
