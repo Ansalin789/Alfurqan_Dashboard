@@ -90,7 +90,7 @@ const UpcomingTable = () => {
             return (
               now < classDate &&
               (cls.scheduleStatus === "Scheduled" ||
-                cls.scheduleStatus === "Rescheduled" || cls.scheduleStatus === "RequestReschedule")
+                cls.scheduleStatus === "Rescheduled" || cls.scheduleStatus === "Reschedulerequested")
             );
           })
           .sort(

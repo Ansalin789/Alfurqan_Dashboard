@@ -54,7 +54,7 @@ const Subjectcard: React.FC = () => {
           if (cls.scheduleStatus === "Completed") {
             completedHours += cls.totalHourse;
           } else if (
-            ["Scheduled", "Rescheduled", "RequestReschedule"].includes(
+            ["Scheduled", "Rescheduled", "Reschedulerequested"].includes(
               cls.scheduleStatus
             )
           ) {

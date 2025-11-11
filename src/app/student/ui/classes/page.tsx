@@ -119,7 +119,7 @@ const Classes = () => {
             return (
               now < classDate &&
               (cls.scheduleStatus === "Scheduled" ||
-                cls.scheduleStatus === "Rescheduled" || cls.scheduleStatus === "RequestReschedule")
+                cls.scheduleStatus === "Rescheduled" || cls.scheduleStatus === "Reschedulerequested")
             );
           })
           .sort(
@@ -288,7 +288,7 @@ const Classes = () => {
   const currentItems = filteredClass.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredClass.length / itemsPerPage);
   const scheduledCount = filteredClass.filter(cls =>
-  ["Scheduled", "Rescheduled", "RequestReschedule"].includes(cls.scheduleStatus)
+  ["Scheduled", "Rescheduled", "Reschedulerequested"].includes(cls.scheduleStatus)
 ).length;
 
 const completedCount = filteredClass.filter(cls =>
