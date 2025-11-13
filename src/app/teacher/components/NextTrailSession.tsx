@@ -139,9 +139,38 @@ const NextTrailSession = () => {
   };
 
   if (loading) return <p className="text-center">Loading upcoming class...</p>;
-  if (error) return <p className="text-red-500 text-center">Error: {error}</p>;
-  if (!selectedTrial)
-    return <p className="text-center">No upcoming trial session.</p>;
+  if (!selectedTrial) {
+    return (
+      <div className="relative overflow-hidden bg-[#78A1DB] rounded-xl shadow flex items-center justify-center text-white p-2 min-h-[102px]">
+        {/* Floating, soft background shapes */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-8 -left-8 w-24 h-24 bg-white/15 rounded-full blur-2xl animate-float-slow" />
+          <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-float-rev" />
+          <div className="absolute top-1/2 -translate-y-1/2 left-4 w-12 h-12 bg-white/10 rounded-full blur-xl animate-float-slower" />
+        </div>
+
+        {/* Message */}
+          <p className="float-text text-sm sm:text-base font-medium">Trail class for now 📚 No classes ahead</p>
+
+        {/* Scoped animations */}
+        <style jsx>{`
+          @keyframes floatY {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+          }
+          @keyframes floatYSmall {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+          }
+          .animate-float-slow { animation: floatY 7s ease-in-out infinite; }
+          .animate-float-slower { animation: floatY 9s ease-in-out infinite; }
+          .animate-float-rev { animation: floatY 8s ease-in-out infinite reverse; }
+          .float-text { animation: floatYSmall 5s ease-in-out infinite; }
+        `}</style>
+      </div>
+    );
+  }
+
 
   return (
     <div className="bg-[#71a1db] rounded-xl shadow flex justify-between items-center text-white px-6 py-4">
