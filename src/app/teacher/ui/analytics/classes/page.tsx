@@ -4,8 +4,8 @@ import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import BaseLayout from "@/components/BaseLayout";
 import Pagination from "@/components/Pagination";
 import axios from "axios";
-import { Search } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { Search, X } from "lucide-react";
+import React, { useEffect, useState, useMemo } from "react";
 import { MdTune } from "react-icons/md";
 
 interface ClassScheduleResponse {
@@ -36,7 +36,7 @@ interface Schedule {
   totalHourse: number;
   startDate: string;
   endDate: string;
-  startTime: string[]; // ["09:30"]
+  startTime: string[];
   endTime: string[];
   scheduleStatus: string;
   classLink: string;
@@ -53,20 +53,26 @@ interface Schedule {
 }
 
 const Classes = () => {
-  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<
-    Schedule[]
-  >([]);
+  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<Schedule[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filterCriteria, setFilterCriteria] = useState({
+    studentId: "",
+    studentName: "",
+    courseName: "",
+    classType: "",
+    scheduleStatus: "",
+    fromDate: "",
+    toDate: "",
+  });
 
   useEffect(() => {
     const fetchSchedulesByTeacher = async () => {
       try {
         const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("TeacherAuthToken")
-            : null;
+          typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
         const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
 
         if (!token || !teacherIdToFilter) {
@@ -83,72 +89,135 @@ const Classes = () => {
           }
         );
 
+        console.log("✅ API Response:", response.data.classSchedule);
         setUniqueStudentSchedules(response.data.classSchedule);
       } catch (error) {
-        console.error("Error fetching class schedules:", error);
+        console.error("❌ Error fetching class schedules:", error);
       }
     };
 
     fetchSchedulesByTeacher();
   }, []);
 
-  const filteredData = uniqueStudentSchedules.filter((row) =>
-    row.student.studentFirstName
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
+  // ✅ Extract unique dropdown values dynamically
+  const uniqueCourses = useMemo(() => {
+    const setCourses = new Set(uniqueStudentSchedules.map((s) => s.course.courseName));
+    return Array.from(setCourses);
+  }, [uniqueStudentSchedules]);
+
+  const uniqueClassTypes = useMemo(() => {
+    const setTypes = new Set(uniqueStudentSchedules.map((s) => s.sessionClassType));
+    return Array.from(setTypes);
+  }, [uniqueStudentSchedules]);
+
+  const uniqueStatuses = useMemo(() => {
+    const setStatuses = new Set(uniqueStudentSchedules.map((s) => s.scheduleStatus));
+    return Array.from(setStatuses);
+  }, [uniqueStudentSchedules]);
+
+  console.log("🎓 Unique Courses:", uniqueCourses);
+  console.log("📘 Unique Class Types:", uniqueClassTypes);
+  console.log("🕒 Unique Statuses:", uniqueStatuses);
+
+ const filteredData = uniqueStudentSchedules.filter((row) => {
+  const studentFullName = `${row.student.studentFirstName} ${row.student.studentLastName}`.toLowerCase();
+
+  const matchesSearchTerm = studentFullName.includes(searchTerm.toLowerCase());
+
+  const matchesStudentId = filterCriteria.studentId
+    ? row.student.studentId.toLowerCase().includes(filterCriteria.studentId.toLowerCase())
+    : true;
+
+  const matchesStudentName = filterCriteria.studentName
+    ? studentFullName.includes(filterCriteria.studentName.toLowerCase())
+    : true;
+
+  const matchesCourseName = filterCriteria.courseName
+    ? row.course.courseName.trim().toLowerCase() === filterCriteria.courseName.trim().toLowerCase()
+    : true;
+
+  const matchesClassType = filterCriteria.classType
+    ? row.sessionClassType.trim().toLowerCase() === filterCriteria.classType.trim().toLowerCase()
+    : true;
+
+  const matchesScheduleStatus = filterCriteria.scheduleStatus
+    ? row.scheduleStatus.trim().toLowerCase() === filterCriteria.scheduleStatus.trim().toLowerCase()
+    : true;
+
+  const matchesFromDate = filterCriteria.fromDate
+    ? new Date(row.startDate) >= new Date(filterCriteria.fromDate)
+    : true;
+
+  const matchesToDate = filterCriteria.toDate
+    ? new Date(row.endDate) <= new Date(filterCriteria.toDate)
+    : true;
+
+  return (
+    matchesSearchTerm &&
+    matchesStudentId &&
+    matchesStudentName &&
+    matchesCourseName &&
+    matchesClassType &&
+    matchesScheduleStatus &&
+    matchesFromDate &&
+    matchesToDate
   );
+});
+
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const currentData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-  console.log(currentData);
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFilterCriteria((prev) => ({ ...prev, [name]: value }));
+  };
 
   return (
     <BaseLayout>
-      <TeacherHeader currentSection="My Classes" />
+      <TeacherHeader currentSection="My Classes" showBackButton ={true} showBackPath="/teacher/ui/analytics"/>
       <div className="md:p-0 mx-auto">
-        <div className="h-full w-full  flex flex-col justify-between">
+        <div className="h-full w-full flex flex-col justify-between">
           <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-6">
+            {/* Header bar */}
             <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search by keyword"
-                  className="bg-transparent outline-none text-[15px] w-52 py-3 "
-                  // value={searchText}
-                  // onChange={(e) => handleSearch(e.target.value)}
+                  className="bg-transparent outline-none text-[15px] w-52 py-3"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
 
               <div
                 className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                // onClick={() => setIsFilterModalOpen(true)}
+                onClick={() => setIsFilterModalOpen(true)}
               >
-                {/* <BsFilterLeft /> */}
                 <MdTune className="w-4 h-4" />
                 <span>Filter</span>
               </div>
 
               <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                 <span className="text-left -ml-60 ">
-                  {/* Showing {currentItems.length} of {paginatedData.length} */}
+                  Showing {currentData.length} of {filteredData.length}
                 </span>
               </div>
             </div>
 
+            {/* Table */}
             <div className="overflow-x-auto">
-              <table
-                className="table-auto w-full"
-                style={{ tableLayout: "fixed" }}
-              >
-                <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+              <table className="table-auto w-full" style={{ tableLayout: "fixed" }}>
+                <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0] text-left">
                   <tr className="font-medium">
                     {[
                       "Student ID",
-                      "StudentName",
+                      "Student Name",
                       "Courses",
                       "Class Type",
                       "Course Duration",
@@ -166,54 +235,44 @@ const Classes = () => {
                   </tr>
                 </thead>
                 <tbody className="text-[11px]">
-                  {filteredData.map((schedule, index) => {
-                    const { student, scheduleStatus, startTime, endTime } =
-                      schedule;
+                  {currentData.map((schedule, index) => {
+                    const { student, scheduleStatus, startTime, endTime } = schedule;
 
                     return (
                       <tr
                         key={`row-${index}`}
                         className="text-[12px] h-[50px] bg-[#fff] dark:bg-[#2C2C2C]"
                       >
-                        <td className="px-4 py-2 text-left">
-                          {student.studentId}
-                        </td>
-                        <td className="px-4 py-2 text-left font-medium text-[#3D8FDE] pl-10">
+                        <td className="px-4 py-2 text-left">{student.studentId}</td>
+                        <td className="px-4 py-2 text-left font-medium text-[#3D8FDE] ">
                           {student.studentFirstName}
                         </td>
-                        <td className="px-4 py-2 text-left">
-                          {schedule.course.courseName}
-                        </td>
-                        <td className="px-4 py-2 text-left">
-                          {schedule.package}
-                        </td>
+                        <td className="px-4 py-2 text-left">{schedule.course.courseName}</td>
+                        <td className="px-4 py-2 text-left">{schedule.sessionClassType}</td>
                         <td className="px-4 py-2 text-left">
                           {schedule.totalHourse} hours
                         </td>
                         <td className="px-4 py-2 text-left">
-                          {new Date(schedule.startDate).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "2-digit",
-                              year: "numeric",
-                            }
-                          )}
+                          {new Date(schedule.startDate).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "2-digit",
+                            year: "numeric",
+                          })}
                         </td>
                         <td className="px-4 py-2 text-left">
                           {startTime[0]} - {endTime[0]}
                         </td>
-                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                        <td className="px-3 py-2 text-left">
                           <span
                             className={`font-semibold px-3 py-1 rounded-md text-[10px] ${
-                              schedule.scheduleStatus === "Scheduled"
-                                ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36] px-[18px]"
-                                : schedule.scheduleStatus === "Rescheduled"
-                                ? "bg-[#E4E4E4] text-[#000] dark:bg-[#555] dark:text-[#fff]"
-                                : "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
+                              scheduleStatus === "Scheduled"
+                                ? "bg-[#ECFDF3] text-[#377E36]"
+                                : scheduleStatus === "Rescheduled"
+                                ? "bg-[#E4E4E4] text-[#000]"
+                                : "bg-[#FEE2E2] text-[#B91C1C]"
                             }`}
                           >
-                            {schedule.scheduleStatus}
+                            {scheduleStatus}
                           </span>
                         </td>
                       </tr>
@@ -223,6 +282,7 @@ const Classes = () => {
               </table>
             </div>
           </div>
+
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -230,6 +290,163 @@ const Classes = () => {
           />
         </div>
       </div>
+
+      {/* ✅ Filter Modal */}
+      {isFilterModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white dark:bg-[#252525] rounded-lg p-6 w-full max-w-lg relative">
+            <button
+              aria-label="Close filter"
+              onClick={() => setIsFilterModalOpen(false)}
+              className="absolute top-4 right-4 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            </button>
+
+            <h3 className="text-lg font-semibold mb-4">Filter by</h3>
+
+            <div className="grid grid-cols-1 gap-4">
+              {/* Student ID */}
+              <div>
+                <label className="text-sm block mb-1">Student ID</label>
+                <input
+                  type="text"
+                  name="studentId"
+                  className="w-full p-2 border rounded bg-transparent dark:bg-[#343434]"
+                  placeholder="Enter student ID"
+                  value={filterCriteria.studentId}
+                  onChange={handleFilterChange}
+                />
+              </div>
+
+              {/* Student Name */}
+              <div>
+                <label className="text-sm block mb-1">Student Name</label>
+                <input
+                  type="text"
+                  name="studentName"
+                  className="w-full p-2 border rounded bg-transparent dark:bg-[#343434]"
+                  placeholder="Enter student name"
+                  value={filterCriteria.studentName}
+                  onChange={handleFilterChange}
+                />
+              </div>
+
+              {/* Course Dropdown */}
+              <div>
+                <label className="text-sm block mb-1">Course Name</label>
+                <select
+                  name="courseName"
+                  className="w-full p-2 border rounded bg-transparent dark:bg-[#343434]"
+                  value={filterCriteria.courseName}
+                  onChange={handleFilterChange}
+                >
+                  <option value="">Select Course</option>
+                  {uniqueCourses.map((course, i) => (
+                    <option key={i} value={course}>
+                      {course}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Class Type Dropdown */}
+              <div>
+                <label className="text-sm block mb-1">Class Type</label>
+                <select
+                  name="classType"
+                  className="w-full p-2 border rounded bg-transparent dark:bg-[#343434]"
+                  value={filterCriteria.classType}
+                  onChange={handleFilterChange}
+                >
+                  <option value="">Select Class Type</option>
+                  {uniqueClassTypes.map((type, i) => (
+                    <option key={i} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Date range */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm block mb-1">From Date</label>
+                  <input
+                    type="date"
+                    name="fromDate"
+                    className="w-full dark:bg-[#343434] p-2 border rounded bg-transparent [&::-webkit-calendar-picker-indicator]:dark:invert"
+                    value={filterCriteria.fromDate}
+                    onChange={handleFilterChange}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm block mb-1">To Date</label>
+                  <input
+                    type="date"
+                    name="toDate"
+                    className="w-full dark:bg-[#343434] p-2 border rounded bg-transparent [&::-webkit-calendar-picker-indicator]:dark:invert"
+                    value={filterCriteria.toDate}
+                    onChange={handleFilterChange}
+                  />
+                </div>
+              </div>
+
+              {/* Status Dropdown */}
+              <div>
+                <label className="text-sm block mb-1">Status</label>
+                <select
+                  name="scheduleStatus"
+                  className="w-full dark:bg-[#343434] p-2 border rounded bg-transparent"
+                  value={filterCriteria.scheduleStatus}
+                  onChange={handleFilterChange}
+                >
+                  <option value="">Select Status</option>
+                  {uniqueStatuses.map((status, i) => (
+                    <option key={i} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between mt-6">
+              <div className="text-sm text-gray-600 dark:text-gray-300 text-left">
+                Showing {filteredData.length} results
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  className="px-4 py-2 border rounded text-gray-700 bg-white hover:bg-gray-50"
+                  onClick={() =>
+                    setFilterCriteria({
+                      studentId: "",
+                      studentName: "",
+                      courseName: "",
+                      classType: "",
+                      scheduleStatus: "",
+                      fromDate: "",
+                      toDate: "",
+                    })
+                  }
+                >
+                  Reset
+                </button>
+                <button
+                  className="px-4 py-2 bg-indigo-600 text-white rounded"
+                  onClick={() => {
+                    setIsFilterModalOpen(false);
+                    setCurrentPage(1);
+                  }}
+                >
+                  Show results
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </BaseLayout>
   );
 };

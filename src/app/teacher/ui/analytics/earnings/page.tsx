@@ -4,9 +4,10 @@ import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import BaseLayout from "@/components/BaseLayout";
 import Pagination from "@/components/Pagination";
 import axios from "axios";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { MdTune } from "react-icons/md";
+import { useRouter } from "next/navigation";
 
 interface ClassScheduleResponse {
   totalCount: number;
@@ -53,12 +54,23 @@ interface Schedule {
 }
 
 const Earnings = () => {
+  const router = useRouter();
   const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<
     Schedule[]
   >([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filterCriteria, setFilterCriteria] = useState({
+    studentId: "",
+    studentName: "",
+    courseName: "",
+    classType: "",
+    scheduleStatus: "",
+    fromDate: "",
+    toDate: "",
+  });
 
   useEffect(() => {
     const fetchSchedulesByTeacher = async () => {
@@ -92,24 +104,75 @@ const Earnings = () => {
     fetchSchedulesByTeacher();
   }, []);
 
-  const filteredData = uniqueStudentSchedules.filter((row) =>
-    row.student.studentFirstName
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
+  const uniqueCourses = Array.from(new Set(uniqueStudentSchedules.map(s => s.course.courseName)));
+const uniqueClassTypes = Array.from(new Set(uniqueStudentSchedules.map(s => s.sessionClassType)));
+const uniqueStatuses = Array.from(new Set(uniqueStudentSchedules.map(s => s.scheduleStatus)));
+
+
+const filteredData = uniqueStudentSchedules.filter((row) => {
+  const studentFullName = `${row.student.studentFirstName} ${row.student.studentLastName}`.toLowerCase();
+
+  const matchesSearchTerm = studentFullName.includes(searchTerm.toLowerCase());
+
+  const matchesStudentId = filterCriteria.studentId
+    ? row.student.studentId.toLowerCase().includes(filterCriteria.studentId.toLowerCase())
+    : true;
+
+  const matchesStudentName = filterCriteria.studentName
+    ? studentFullName.includes(filterCriteria.studentName.toLowerCase())
+    : true;
+
+  const matchesCourseName = filterCriteria.courseName
+    ? row.course.courseName === filterCriteria.courseName
+    : true;
+
+  const matchesClassType = filterCriteria.classType
+    ? row.sessionClassType === filterCriteria.classType
+    : true;
+
+  const matchesScheduleStatus = filterCriteria.scheduleStatus
+    ? row.scheduleStatus === filterCriteria.scheduleStatus
+    : true;
+
+  const matchesFromDate = filterCriteria.fromDate
+    ? new Date(row.startDate) >= new Date(filterCriteria.fromDate)
+    : true;
+
+  const matchesToDate = filterCriteria.toDate
+    ? new Date(row.endDate) <= new Date(filterCriteria.toDate)
+    : true;
+
+  return (
+    matchesSearchTerm &&
+    matchesStudentId &&
+    matchesStudentName &&
+    matchesCourseName &&
+    matchesClassType &&
+    matchesScheduleStatus &&
+    matchesFromDate &&
+    matchesToDate
   );
+});
+
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const currentData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-  console.log(currentData);
+
+  const handleFilterChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFilterCriteria((prev) => ({ ...prev, [name]: value }));
+  };
 
   return (
     <BaseLayout>
-      <TeacherHeader currentSection="Earnings" />
+      <TeacherHeader currentSection="Earnings" showBackButton ={true} showBackPath="/teacher/ui/analytics"/>
       <div className="md:p-0 mx-auto">
-        <div className="h-full w-full  flex flex-col justify-between">
+        <div className="h-full w-full flex flex-col justify-between">
           <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-6">
             <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
               <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -117,24 +180,23 @@ const Earnings = () => {
                 <input
                   type="text"
                   placeholder="Search by keyword"
-                  className="bg-transparent outline-none text-[15px] w-52 py-3 "
-                  // value={searchText}
-                  // onChange={(e) => handleSearch(e.target.value)}
+                  className="bg-transparent outline-none text-[15px] w-52 py-3"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
 
               <div
                 className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                // onClick={() => setIsFilterModalOpen(true)}
+                onClick={() => setIsFilterModalOpen(true)}
               >
-                {/* <BsFilterLeft /> */}
                 <MdTune className="w-4 h-4" />
                 <span>Filter</span>
               </div>
 
               <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                 <span className="text-left -ml-60 ">
-                  {/* Showing {currentItems.length} of {paginatedData.length} */}
+                  Showing {currentData.length} of {filteredData.length}
                 </span>
               </div>
             </div>
@@ -146,21 +208,23 @@ const Earnings = () => {
               >
                 <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                   <tr className="font-medium">
-                    {[
-                      "Student ID",
-                      "Name",
-                      "Courses",
-                      "Course Type",
-                      "Course Duration",
-                      "date",
-                      "Time",
-                      "Amount",
-                      "Status",
-                    ].map((header) => (
+                    {(
+                      [
+                        "Student ID",
+                        "Name",
+                        "Courses",
+                        "Course Type",
+                        "Course Duration",
+                        "Date",
+                        "Time",
+                        "Amount",
+                        "Status",
+                      ] as const
+                    ).map((header) => (
                       <th
                         key={header}
                         className={`text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0] ${
-                          header === "Name" ? "pl-20" : ""
+                          header === "Name" ? "" : ""
                         }`}
                       >
                         {header}
@@ -170,8 +234,8 @@ const Earnings = () => {
                 </thead>
 
                 <tbody className="text-[11px]">
-                  {currentData.map((row, index) => {
-                    const { student, startTime, endTime } = row; // Destructure from `row`
+                  {currentData.map((row) => {
+                    const { student, startTime, endTime } = row;
 
                     return (
                       <tr
@@ -181,7 +245,7 @@ const Earnings = () => {
                         <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
                           {student.studentId}
                         </td>
-                        <td className="px-4 py-2 text-left font-medium text-[#3D8FDE] pl-20">
+                        <td className="px-4 py-2 text-left font-medium text-[#3D8FDE]">
                           {student.studentFirstName}
                         </td>
                         <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
@@ -233,6 +297,155 @@ const Earnings = () => {
           />
         </div>
       </div>
+
+      {/* Filter Modal */}
+      {isFilterModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white dark:bg-[#252525] rounded-lg p-6 w-full max-w-lg relative">
+            <button
+              aria-label="Close filter"
+              onClick={() => setIsFilterModalOpen(false)}
+              className="absolute top-4 right-4 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            </button>
+
+            <h3 className="text-lg font-semibold mb-4">Filter by</h3>
+
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="text-sm block mb-1">Student ID</label>
+                <input
+                  type="text"
+                  name="studentId"
+                  className="w-full p-2 border rounded bg-transparent dark:bg-[#343434]"
+                  placeholder="Enter student ID"
+                  value={filterCriteria.studentId}
+                  onChange={handleFilterChange}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm block mb-1">Student Name</label>
+                <input
+                  type="text"
+                  name="studentName"
+                  className="w-full p-2 border rounded bg-transparent dark:bg-[#343434]"
+                  placeholder="Enter student name"
+                  value={filterCriteria.studentName}
+                  onChange={handleFilterChange}
+                />
+              </div>
+
+            {/* Course Dropdown */}
+<div>
+  <label className="text-sm block mb-1">Course Name</label>
+  <select
+    name="courseName"
+    className="w-full p-2 border rounded bg-transparent dark:bg-[#343434]"
+    value={filterCriteria.courseName}
+    onChange={handleFilterChange}
+  >
+    <option value="">Select Course</option>
+    {uniqueCourses.map((course, i) => (
+      <option key={i} value={course}>{course}</option>
+    ))}
+  </select>
+</div>
+
+{/* Class Type Dropdown */}
+<div>
+  <label className="text-sm block mb-1">Class Type</label>
+  <select
+    name="classType"
+    className="w-full p-2 border rounded bg-transparent dark:bg-[#343434]"
+    value={filterCriteria.classType}
+    onChange={handleFilterChange}
+  >
+    <option value="">Select Class Type</option>
+    {uniqueClassTypes.map((type, i) => (
+      <option key={i} value={type}>{type}</option>
+    ))}
+  </select>
+</div>
+
+
+
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm block mb-1">From Date</label>
+                  <input
+                    type="date"
+                    name="fromDate"
+                    className="w-full dark:bg-[#343434] p-2 border rounded bg-transparent [&::-webkit-calendar-picker-indicator]:dark:invert"
+                    value={filterCriteria.fromDate}
+                    onChange={handleFilterChange}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm block mb-1">To Date</label>
+                  <input
+                    type="date"
+                    name="toDate"
+                    className="w-full dark:bg-[#343434] p-2 border rounded bg-transparent [&::-webkit-calendar-picker-indicator]:dark:invert"
+                    value={filterCriteria.toDate}
+                    onChange={handleFilterChange}
+                  />
+                </div>
+              </div>
+
+             <div>
+  <label className="text-sm block mb-1">Status</label>
+  <select
+    name="scheduleStatus"
+    className="w-full dark:bg-[#343434] p-2 border rounded bg-transparent"
+    value={filterCriteria.scheduleStatus}
+    onChange={handleFilterChange}
+  >
+    <option value="">Select Status</option>
+    {uniqueStatuses.map((status, i) => (
+      <option key={i} value={status}>{status}</option>
+    ))}
+  </select>
+</div>
+            </div>
+
+            <div className="flex items-center justify-between mt-6">
+              <div className="text-sm text-gray-600 dark:text-gray-300 text-left">
+                Showing {filteredData.length} results
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  className="px-4 py-2 border rounded text-gray-700 bg-white hover:bg-gray-50"
+                  onClick={() =>
+                    setFilterCriteria({
+                      studentId: "",
+                      studentName: "",
+                      courseName: "",
+                      classType: "",
+                      scheduleStatus: "",
+                      fromDate: "",
+                      toDate: "",
+                    })
+                  }
+                >
+                  Reset
+                </button>
+                <button
+                  className="px-4 py-2 bg-indigo-600 text-white rounded"
+                  onClick={() => {
+                    setIsFilterModalOpen(false);
+                    setCurrentPage(1);
+                  }}
+                >
+                  Show results
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </BaseLayout>
   );
 };
