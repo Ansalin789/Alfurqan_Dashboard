@@ -33,7 +33,7 @@ export interface Student {
   };
 }
 export interface StudentInfo {
-  studentId: string;
+  id: string;
   studentName: string;
   studentEmail: string;
 }
@@ -155,7 +155,7 @@ export default function AddGroupAssignClass({
   };
   useEffect(() => {
     const mapped = students.map((stu) => ({
-      studentId: stu._id,
+      id: stu._id,
       studentName: stu.username,
       studentEmail: stu.student.studentEmail,
     }));
@@ -466,7 +466,7 @@ export default function AddGroupAssignClass({
                 {studentInfos.length > 0 ? (
                   studentInfos.map((student) => (
                     <span
-                      key={student.studentId}
+                      key={student.id}
                       className="px-3 py-1 bg-[#F4F4F5] dark:bg-[#3A3A3A] text-[#3F3F46] dark:text-[#E4E4E7] text-sm rounded-full"
                     >
                       {student.studentName}
@@ -497,12 +497,12 @@ export default function AddGroupAssignClass({
                 {studentInfos.length > 0 ? (
                   studentInfos.map((student) => {
                     const isSelected = studentInfos.some(
-                      (s) => s.studentId === student.studentId
+                      (s) => s.id === student.id
                     );
 
                     return (
                       <div
-                        key={student.studentId}
+                        key={student.id}
                         className={`flex justify-between items-center px-4 py-2 border-b last:border-none cursor-pointer transition-colors ${
                           isSelected
                             ? "bg-[#EEF2FF] dark:bg-[#3F3F46]"
