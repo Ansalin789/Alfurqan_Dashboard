@@ -5,8 +5,23 @@ import { Paperclip } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
-import { Country, State, City, ICountry, ICity } from "country-state-city";
-
+import {
+  Country,
+  State,
+  City,
+  ICountry,
+  ICity,
+  IState,
+} from "country-state-city";
+import {
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
+} from "@headlessui/react";
+import PhoneInput from "react-phone-number-input";
+import { isValidPhoneNumber } from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 type Props = {
   readonly onClose: () => void;
 };
@@ -27,13 +42,14 @@ interface AddApplicantFormData {
   email: string;
   phone: string;
   country: string;
+  state: string;
   gender: string;
   city: string;
   skills: string;
   position: string;
   expectedSalary: string;
   workingHours: string;
-  professionalExperience:Experience[];
+  professionalExperience: Experience[];
   skillList: string[];
   resume: File | null | undefined;
   comment: string;
@@ -44,7 +60,9 @@ export default function AddApplicants({ onClose }: Props) {
   const [failed, setFailed] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
   const [countries, setCountries] = useState<ICountry[]>([]);
+  const [states, setStates] = useState<IState[]>([]);
   const [cities, setCities] = useState<ICity[]>([]);
+  const [phoneError, setPhoneError] = useState("");
   const [addApplicantForm, setAddApplicantForm] =
     useState<AddApplicantFormData>({
       applicationDate: new Date().toISOString().split("T")[0],
@@ -53,13 +71,14 @@ export default function AddApplicants({ onClose }: Props) {
       email: "",
       phone: "",
       gender: "",
-      country: "USA",
+      country: "",
+      state: "",
       city: "",
       position: "Arabic Teacher",
       expectedSalary: "",
       workingHours: "",
       skills: "",
-      professionalExperience:[],
+      professionalExperience: [],
       skillList: [],
       resume: null,
       comment: "",
@@ -78,15 +97,15 @@ export default function AddApplicants({ onClose }: Props) {
   const [endTime, setEndTime] = useState("");
 
   const updateWorkingHours = (start: string, end: string) => {
-  const value = start && end ? `${start} - ${end}` : "";
+    const value = start && end ? `${start} - ${end}` : "";
 
-  handleChange({
-    target: {
-      name: "workingHours",
-      value,
-    },
-  } as React.ChangeEvent<HTMLInputElement>);
-};
+    handleChange({
+      target: {
+        name: "workingHours",
+        value,
+      },
+    } as React.ChangeEvent<HTMLInputElement>);
+  };
 
   const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -128,11 +147,14 @@ export default function AddApplicants({ onClose }: Props) {
     setExperiences((prev) => prev.filter((_, i) => i !== index));
   };
 
-
   // You might want to validate here or on submit
   const canAddNewForm = experiences.every(
     (exp) =>
-      exp.jobRole && exp.organizationName && exp.jobLocation && exp.fromDate && exp.toDate
+      exp.jobRole &&
+      exp.organizationName &&
+      exp.jobLocation &&
+      exp.fromDate &&
+      exp.toDate
   );
 
   function handleChange(
@@ -147,29 +169,28 @@ export default function AddApplicants({ onClose }: Props) {
     const allCountries = Country.getAllCountries();
     setCountries(allCountries);
   }, []);
- useEffect(() => {
-  if (addApplicantForm.country) {
-    const selectedCountry = countries.find(
-      (c) => c.name === addApplicantForm.country
-    );
-    if (selectedCountry) {
-      const allStates = State.getStatesOfCountry(selectedCountry.isoCode);
-      const allCities = allStates.flatMap((state) =>
-        City.getCitiesOfState(selectedCountry.isoCode, state.isoCode)
+  useEffect(() => {
+    if (addApplicantForm.country) {
+      const selectedCountry = countries.find(
+        (c) => c.name === addApplicantForm.country
       );
+      if (selectedCountry) {
+        const allStates = State.getStatesOfCountry(selectedCountry.isoCode);
+        const allCities = allStates.flatMap((state) =>
+          City.getCitiesOfState(selectedCountry.isoCode, state.isoCode)
+        );
 
-      // 🔥 Deduplicate by city name
-      const uniqueCities = Array.from(
-        new Map(allCities.map(city => [city.name, city])).values()
-      );
+        // 🔥 Deduplicate by city name
+        const uniqueCities = Array.from(
+          new Map(allCities.map((city) => [city.name, city])).values()
+        );
 
-      setCities(uniqueCities);
-    } else {
-      setCities([]);
+        setCities(uniqueCities);
+      } else {
+        setCities([]);
+      }
     }
-  }
-}, [addApplicantForm.country, countries]);
-
+  }, [addApplicantForm.country, countries]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,12 +243,16 @@ export default function AddApplicants({ onClose }: Props) {
       );
 
       if ([200, 201].includes(response.status)) {
+        setTimeout(() => {
+          onClose();
+        }, 3000);
         setSucces(true);
         setAddApplicantForm({
           applicationDate: new Date().toISOString().split("T")[0],
           firstName: "",
           lastName: "",
           email: "",
+          state: "",
           phone: "",
           country: "USA",
           city: "",
@@ -237,14 +262,16 @@ export default function AddApplicants({ onClose }: Props) {
           workingHours: "",
           skills: " ",
           skillList: [],
-          professionalExperience:[],
+          professionalExperience: [],
           resume: null,
           comment: "",
         });
       }
     } catch (err) {
       const error = err as AxiosError;
-
+      setTimeout(() => {
+        onClose();
+      }, 3000);
       const status = error.response?.status;
       if (Number(status === 400)) {
         console.log("please >");
@@ -265,20 +292,66 @@ export default function AddApplicants({ onClose }: Props) {
       }
     }
   };
+  useEffect(() => {
+    if (addApplicantForm.country) {
+      const selectedCountry = countries.find(
+        (c) => c.name === addApplicantForm.country
+      );
+
+      if (selectedCountry) {
+        const allStates = State.getStatesOfCountry(selectedCountry.isoCode);
+        setStates(allStates);
+        setCities([]); // clear cities when country changes
+        console.log("📍 States:", allStates);
+      }
+    } else {
+      setStates([]);
+      setCities([]);
+    }
+  }, [addApplicantForm.country, countries]);
+
+  // 🔹 Load cities when state changes
+  useEffect(() => {
+    if (addApplicantForm.country && addApplicantForm.state) {
+      const selectedCountry = countries.find(
+        (c) => c.name === addApplicantForm.country
+      );
+      const selectedState = states.find(
+        (s) => s.name === addApplicantForm.state
+      );
+
+      if (selectedCountry && selectedState) {
+        const allCities = City.getCitiesOfState(
+          selectedCountry.isoCode,
+          selectedState.isoCode
+        );
+
+        // 🔥 Deduplicate cities by name
+        const uniqueCities = Array.from(
+          new Map(allCities.map((city) => [city.name, city])).values()
+        );
+
+        setCities(uniqueCities);
+        console.log("🏙️ Cities:", uniqueCities);
+      }
+    } else {
+      setCities([]);
+    }
+  }, [addApplicantForm.state, addApplicantForm.country, states]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       // Check file type
-      const allowedTypes = ['.pdf', '.doc', '.docx'];
-      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-      
+      const allowedTypes = [".pdf", ".doc", ".docx"];
+      const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
+
       if (!allowedTypes.includes(fileExtension)) {
         setFailedMessage("Please upload only PDF, DOC, or DOCX files");
         setFailed(true);
         return;
       }
-      
+
       // Check file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         setFailedMessage("File size should be less than 5MB");
@@ -286,9 +359,9 @@ export default function AddApplicants({ onClose }: Props) {
         return;
       }
 
-      setAddApplicantForm(prev => ({
+      setAddApplicantForm((prev) => ({
         ...prev,
-        resume: file
+        resume: file,
       }));
     }
   };
@@ -347,7 +420,7 @@ export default function AddApplicants({ onClose }: Props) {
                 value={addApplicantForm.applicationDate}
                 onChange={handleChange}
                 type="date"
-                className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
+                className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
             <div>
@@ -362,7 +435,7 @@ export default function AddApplicants({ onClose }: Props) {
                 value={addApplicantForm.firstName}
                 onChange={handleChange}
                 type="text"
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
             <div>
@@ -377,7 +450,7 @@ export default function AddApplicants({ onClose }: Props) {
                 value={addApplicantForm.lastName}
                 onChange={handleChange}
                 type="text"
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
             <div>
@@ -392,30 +465,43 @@ export default function AddApplicants({ onClose }: Props) {
                 value={addApplicantForm.email}
                 onChange={handleChange}
                 type="email"
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
             <div>
               <label
-                htmlFor="vhvihvuih"
-                className="block mb-1 text-black dark:text-white"
+                htmlFor="Phone"
+                className="block mb-1 text-black dark:text-white text-sm"
               >
-                Country
+                Phone Number
               </label>
-              <select
-                name="country"
-                value={addApplicantForm.country}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              >
-                <option value="">Select Country</option>
-                {countries.map((country) => (
-                  <option key={country.isoCode} value={country.name}>
-                    {country.name}
-                  </option>
-                ))}
-              </select>
+
+              <div className="flex items-center w-full   text-xs dark:text-white dark:bg-[#343434] ">
+                <PhoneInput
+                  country="IN"
+                  value={addApplicantForm.phone}
+                  onChange={(value) => {
+                    setAddApplicantForm((prev) => ({
+                      ...prev,
+                      phoneNumber: value,
+                    }));
+
+                    if (!value || !isValidPhoneNumber(value)) {
+                      setPhoneError("Invalid phone number");
+                    } else {
+                      setPhoneError("");
+                    }
+                  }}
+                  className="w-full"
+                  inputClassName="!border-0 !outline-none !shadow-none !w-full  dark:!bg-transparent text-xs"
+                />
+              </div>
+
+              {phoneError && (
+                <p className="text-red-500 text-xs mt-1">{phoneError}</p>
+              )}
             </div>
+
             <div>
               <label
                 htmlFor="position"
@@ -427,7 +513,7 @@ export default function AddApplicants({ onClose }: Props) {
                 name="position"
                 value={addApplicantForm.position}
                 onChange={handleChange}
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               >
                 <option value="">Select Position</option>
                 <option value="Quran Teacher">Quran Teacher</option>
@@ -435,112 +521,6 @@ export default function AddApplicants({ onClose }: Props) {
                 <option value="Islamic Teacher">Islamic Teacher</option>
               </select>
             </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-3">
-            <div>
-              <label
-                htmlFor="inonoin"
-                className="block mb-1 text-black dark:text-white"
-              >
-                Phone Number
-              </label>
-              <input
-                name="phone"
-                value={addApplicantForm.phone}
-                onChange={handleChange}
-                type="text"
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="ibivi"
-                className="block mb-1 text-black dark:text-white"
-              >
-                City
-              </label>
-              <select
-                name="city"
-                value={addApplicantForm.city}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              >
-                <option value="">Select City</option>
-                {cities.map((city) => (
-                  <option key={city.name} value={city.name}>
-                    {city.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label
-                htmlFor="gender"
-                className="block mb-1 text-black dark:text-white"
-              >
-                Gender
-              </label>
-              <select
-                name="gender"
-                value={addApplicantForm.gender}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              </select>
-            </div>
-            <div>
-              <label
-                htmlFor="inonoin"
-                className="block mb-1 text-black dark:text-white"
-              >
-                Expected Salary / Hour
-              </label>
-              <div className="relative ">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-900 dark:text-white">
-                  $
-                </span>
-                <input
-                  name="expectedSalary"
-                  value={addApplicantForm.expectedSalary}
-                  onChange={handleChange}
-                  type="number"
-                  className="w-full border pl-6 rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="workingHours" className="block mb-1 text-black dark:text-white">
-        Preferred Working Hours
-      </label>
-      <div className="flex gap-2">
-        <input
-          type="time"
-          value={startTime}
-          onChange={handleStartTimeChange}
-          className="w-1/2 border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-        />
-        <input
-          type="time"
-          value={endTime}
-          onChange={handleEndTimeChange}
-          className="w-1/2 border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-        />
-      </div>
-      {/* Hidden input that stores final value like "09:00 - 13:00" */}
-      <input
-        type="hidden"
-        name="workingHours"
-        value={addApplicantForm.workingHours}
-      />
-      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-        Selected: {addApplicantForm.workingHours || "None"}
-      </p>
-    </div>
             <div>
               <label
                 htmlFor="jbjb"
@@ -557,7 +537,9 @@ export default function AddApplicants({ onClose }: Props) {
                   Upload Resume
                 </label>
                 <span className="text-xs text-gray-500 dark:text-gray-300">
-                  {addApplicantForm.resume ? addApplicantForm.resume.name : "No file chosen"}
+                  {addApplicantForm.resume
+                    ? addApplicantForm.resume.name
+                    : "No file chosen"}
                 </span>
                 <input
                   id="resumeUpload"
@@ -568,6 +550,186 @@ export default function AddApplicants({ onClose }: Props) {
                   className="hidden"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-3">
+            {/* Country */}
+            <div>
+              <label className="block text-black dark:text-white">
+                Country
+              </label>
+              <Listbox
+                value={addApplicantForm.country}
+                onChange={(val) =>
+                  setAddApplicantForm({ ...addApplicantForm, country: val })
+                }
+              >
+                <div className="relative mt-1">
+                  <ListboxButton className="w-full h-9 border rounded px-3 py-2 text-left text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]">
+                    {addApplicantForm.country || "Select Country"}
+                  </ListboxButton>
+
+                  <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#343434] shadow-lg">
+                    {countries.map((c) => (
+                      <ListboxOption
+                        key={c.isoCode}
+                        value={c.name}
+                        className="cursor-pointer px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-600"
+                      >
+                        {c.name}
+                      </ListboxOption>
+                    ))}
+                  </ListboxOptions>
+                </div>
+              </Listbox>
+            </div>
+
+            {/* State */}
+            <div>
+              <label className="text-sm text-[#010E30] dark:text-white">
+                State
+              </label>
+              <Listbox
+                value={addApplicantForm.state}
+                onChange={(val) =>
+                  setAddApplicantForm({
+                    ...addApplicantForm,
+                    state: val,
+                    city: "",
+                  })
+                }
+                disabled={!addApplicantForm.country}
+              >
+                <div className="relative mt-1">
+                  <ListboxButton
+                    className={`w-full h-8 border rounded px-3 py-2 text-left text-xs
+            ${!addApplicantForm.country ? "opacity-50 cursor-not-allowed" : ""}
+           border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]`}
+                  >
+                    {addApplicantForm.country
+                      ? addApplicantForm.state || "Select State"
+                      : "Select Country First"}
+                  </ListboxButton>
+
+                  {addApplicantForm.country && (
+                    <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#343434] shadow-lg">
+                      {states.length > 0 ? (
+                        states.map((state) => (
+                          <ListboxOption
+                            key={state.isoCode}
+                            value={state.name}
+                            className="cursor-pointer px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-600"
+                          >
+                            {state.name}
+                          </ListboxOption>
+                        ))
+                      ) : (
+                        <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                          No states available
+                        </div>
+                      )}
+                    </ListboxOptions>
+                  )}
+                </div>
+              </Listbox>
+            </div>
+
+            {/* City */}
+            <div>
+              <label className="block text-black dark:text-white">City</label>
+              <Listbox
+                value={addApplicantForm.city}
+                onChange={(val) =>
+                  setAddApplicantForm({ ...addApplicantForm, city: val })
+                }
+                disabled={!addApplicantForm.state}
+              >
+                <div className="relative mt-1">
+                  <ListboxButton className="w-full h-8 border rounded px-3 py-2 text-left text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]">
+                    {addApplicantForm.city || "Select City"}
+                  </ListboxButton>
+
+                  <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#343434] shadow-lg">
+                    {cities.map((city) => (
+                      <ListboxOption
+                        key={city.name}
+                        value={city.name}
+                        className="cursor-pointer px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-600"
+                      >
+                        {city.name}
+                      </ListboxOption>
+                    ))}
+                  </ListboxOptions>
+                </div>
+              </Listbox>
+            </div>
+
+            {/* Gender */}
+            <div>
+              <label className="block text-black dark:text-white">Gender</label>
+              <select
+                name="gender"
+                value={addApplicantForm.gender}
+                onChange={handleChange}
+                className="w-full border mt-1 rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+
+            {/* Salary */}
+            <div>
+              <label className="block text-black dark:text-white">
+                Expected Salary / Hour
+              </label>
+              <div className="relative mt-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs  text-gray-900 dark:text-white">
+                  $
+                </span>
+                <input
+                  name="expectedSalary"
+                  value={addApplicantForm.expectedSalary}
+                  onChange={handleChange}
+                  type="number"
+                  className="w-full border pl-6 rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+            </div>
+
+            {/* Working Hours */}
+            <div>
+              <label className="block text-black dark:text-white">
+                Preferred Working Hours
+              </label>
+
+              <div className="flex gap-2 mt-1">
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={handleStartTimeChange}
+                  className="w-1/2 border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={handleEndTimeChange}
+                  className="w-1/2 border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />
+              </div>
+
+              <input
+                type="hidden"
+                name="workingHours"
+                value={addApplicantForm.workingHours}
+              />
+
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Selected: {addApplicantForm.workingHours || "None"}
+              </p>
             </div>
           </div>
         </div>
@@ -587,7 +749,7 @@ export default function AddApplicants({ onClose }: Props) {
             onKeyDown={handleSkillKeyDown}
             type="text"
             placeholder="Type a skill and press Enter"
-            className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+            className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
           />
 
           {/* Show added skills below */}
@@ -618,25 +780,27 @@ export default function AddApplicants({ onClose }: Props) {
             {experiences.map((exp, index) => (
               <div
                 key={index}
-                className="mb-4 p-3 border rounded  dark:border-[#5C5C5C] dark:text-white relative"
+                className="mb-4 p-5 border rounded border-[#5C5C5C] dark:border-[#5C5C5C] dark:text-white relative"
               >
                 <button
                   type="button"
                   onClick={() => removeExperienceForm(index)}
-                  className="absolute top-2 right-2 text-red-500 font-bold hover:text-red-700"
+                  className="absolute top-1  text-2xl  right-1 text-red-500 font-semibold hover:text-red-700"
                 >
                   ×
                 </button>
 
                 <input
                   placeholder="Role"
-                  className="w-full mb-2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  className="w-full mb-2 px-3 py-2 border rounded text-xs border-[#5C5C5C] text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                   value={exp.jobRole}
-                  onChange={(e) => handleChange1(index, "jobRole", e.target.value)}
+                  onChange={(e) =>
+                    handleChange1(index, "jobRole", e.target.value)
+                  }
                 />
                 <input
                   placeholder="Organization"
-                  className="w-full mb-2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  className="w-full mb-2 px-3 py-2 border rounded text-xs border-[#5C5C5C] text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                   value={exp.organizationName}
                   onChange={(e) =>
                     handleChange1(index, "organizationName", e.target.value)
@@ -644,7 +808,7 @@ export default function AddApplicants({ onClose }: Props) {
                 />
                 <input
                   placeholder="Place"
-                  className="w-full mb-2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  className="w-full mb-2 px-3 py-2 border rounded text-xs border-[#5C5C5C] text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                   value={exp.jobLocation}
                   onChange={(e) =>
                     handleChange1(index, "jobLocation", e.target.value)
@@ -653,7 +817,7 @@ export default function AddApplicants({ onClose }: Props) {
                 <div className="flex gap-2 mb-2">
                   <input
                     type="date"
-                    className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                    className="w-1/2 px-3 py-2 border rounded text-xs border-[#5C5C5C] text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                     value={exp.fromDate}
                     onChange={(e) =>
                       handleChange1(index, "fromDate", e.target.value)
@@ -661,7 +825,7 @@ export default function AddApplicants({ onClose }: Props) {
                   />
                   <input
                     type="date"
-                    className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                    className="w-1/2 px-3 py-2 border rounded text-xs border-[#5C5C5C] text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                     value={exp.toDate}
                     onChange={(e) =>
                       handleChange1(index, "toDate", e.target.value)
@@ -671,7 +835,7 @@ export default function AddApplicants({ onClose }: Props) {
                 <textarea
                   placeholder="Description"
                   rows={3}
-                  className="w-full px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  className="w-full px-3 py-2 border rounded text-xs border-[#5C5C5C] text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                   value={exp.jobDescription}
                   onChange={(e) =>
                     handleChange1(index, "jobDescription", e.target.value)
@@ -707,7 +871,7 @@ export default function AddApplicants({ onClose }: Props) {
             value={addApplicantForm.comment}
             onChange={handleChange}
             rows={3}
-            className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+            className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
           />
         </div>
 

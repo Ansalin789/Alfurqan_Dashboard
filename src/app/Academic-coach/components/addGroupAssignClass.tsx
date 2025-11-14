@@ -155,7 +155,7 @@ export default function AddGroupAssignClass({
   };
   useEffect(() => {
     const mapped = students.map((stu) => ({
-      studentId: stu.student.studentId,
+      studentId: stu._id,
       studentName: stu.username,
       studentEmail: stu.student.studentEmail,
     }));

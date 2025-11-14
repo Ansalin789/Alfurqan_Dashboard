@@ -419,7 +419,7 @@ function LiveClass() {
         setPaymentStatus(data.paymentStatus);
         setPaymentLink(
           `https://blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(
-            data._id
+            data.trailId
           )}`
         );
         setFormData(data);
@@ -1031,7 +1031,7 @@ function LiveClass() {
           </button>
           <button
             type="submit"
-            onClick={() => updateClick(selectedTrial?.trialId)}
+            onClick={() => updateClick(selectedTrial?._id)}
             className="px-6 py-2 rounded-md bg-[#576CBC] text-white text-sm hover:bg-blue-700 transition"
           >
             Save
