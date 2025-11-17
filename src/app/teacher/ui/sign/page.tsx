@@ -147,7 +147,7 @@ const searchParams = useSearchParams();
   }, [error]);
   const signIn = async (username: string, password: string) => {
     try {
-      const response = await axios.post("https://api.blackstoneinfomaticstech.com/signin", {
+      const response = await axios.post("http://localhost:5001/signin", {
         username,
         password,
       });
@@ -176,7 +176,7 @@ const searchParams = useSearchParams();
   ) => {
     try {
       const response = await axios.get<AccessApiResponse>(
-        `https://api.blackstoneinfomaticstech.com/update-access/${id}`,
+        `http://localhost:5001/update-access/${id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -278,7 +278,7 @@ const searchParams = useSearchParams();
       try {
         // Send a POST request to the backend to check if the email exists
         const response = await axios.post(
-          `https://api.blackstoneinfomaticstech.com/allcheck-email`,
+          `http://localhost:5001/allcheck-email`,
           { email }
         );
 

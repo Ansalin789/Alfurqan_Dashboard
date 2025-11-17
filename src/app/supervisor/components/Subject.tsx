@@ -64,22 +64,21 @@ const GenderPieChart: React.FC = () => {
           return;
         }
 
-        const transformed: PieChartData[] = data.genderBreakdownBySubject.map(
-          (item: GenderDataItem, index: number) => {
-            const total = item.male + item.female;
-            const malePercent = total > 0 ? (item.male / total) * 100 : 0;
-            const femalePercent = total > 0 ? (item.female / total) * 100 : 0;
+const transformed: PieChartData[] = data.genderBreakdownBySubject.map(
+  (item: GenderDataItem, index: number) => {
+    const total = item.male + item.female;
 
-            return {
-              name: item.subject.replace(" Teacher", ""), // Ex: Quran Teacher => Quran
-              male: malePercent,
-              female: femalePercent,
-              totalCount: total,
-              value: total, // Pie size will depend on total count of that subject
-              color: COLORS[index % COLORS.length],
-            };
-          }
-        );
+    return {
+      name: item.subject.replace(" Teacher", ""),
+      male: item.male,        // <-- use raw count
+      female: item.female,    // <-- use raw count
+      totalCount: total,
+      value: total,           
+      color: COLORS[index % COLORS.length],
+    };
+  }
+);
+
 
         setGenderData(transformed);
       } catch (error) {
@@ -184,13 +183,13 @@ const GenderPieChart: React.FC = () => {
               <div className="flex flex-col items-center gap-[1px]">
                 <div className="w-[3px] h-[8px] bg-pink-400 rounded-[2px]"></div>
                 <span className="text-[8px] font-medium">
-                  {item.female.toFixed(1)}%
+                  {item.female}
                 </span>
               </div>
               <div className="flex flex-col items-center gap-[1px]">
                 <div className="w-[3px] h-[8px] bg-blue-400 rounded-sm"></div>
                 <span className="text-[8px] font-medium">
-                  {item.male.toFixed(1)}%
+                  {item.male}
                 </span>
               </div>
             </div>
