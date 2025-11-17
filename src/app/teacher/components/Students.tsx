@@ -98,7 +98,7 @@ const StudentsCard: React.FC = () => {
   const maleY = center - labelRadius * Math.sin((maleMidAngle * Math.PI) / 180);
 
   return (
-    <div className="bg-white dark:bg-[#343434] rounded-xl shadow-md w-full max-w-sm p-4">
+    <div className="bg-white dark:bg-[#343434] rounded-xl shadow-md w-full p-4">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-sm font-semibold text-[#010E30] dark:text-white">Students</h2>

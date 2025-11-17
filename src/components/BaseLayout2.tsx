@@ -64,9 +64,9 @@ function StudentSidebar() {
           className='w-10 h-10 object-contain'
           alt='logo'
         />
-        <div className="text-white leading-tight">
+        <div className="text-white leading-4">
           <h3 className="font-bold text-[18px] sm:text-[20px] xl:text-[22px]">AL FURQAN</h3>
-          <h4 className="font-light text-[14px] sm:text-[15px] xl:text-[16px] font-sans">academy</h4>
+          <h4 className="font-[200] ml-12 text-[16px] sm:text-[16px] xl:text-[17px] font-sans tracking-wide">academy</h4>
         </div>
       </div>
 

@@ -14,6 +14,7 @@ import { IoArrowBackCircleSharp } from "react-icons/io5";
 import BaseLayout2 from "@/components/BaseLayout2";
 import { FaUsers } from "react-icons/fa6";
 import axios from "axios";
+import { X } from "lucide-react";
 
 interface Student {
   course: string;
@@ -83,6 +84,13 @@ const StudentProfile = () => {
 
   const [studentRecord, setStudentRecord] = useState<StudentRecord>();
   const [studentData, setStudentData] = useState<StudentData>();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [formEmail, setFormEmail] = useState("");
+  const [formPhone, setFormPhone] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  
   interface StudentData {
     _id: string;
     username: string;
@@ -99,53 +107,187 @@ const StudentProfile = () => {
       gender: string;
       package: string;
       course: string;
+      city?: string;
+      country?: string;
       photoUrl?: string;
     };
   }
 
-  const handleProfileChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  // Open modal and initialize form data
+  const handleEditClick = () => {
+    if (studentData) {
+      setFormEmail(studentData.student.studentEmail || "");
+      setFormPhone(studentData.student.studentPhone?.toString() || "");
+      setImagePreview(studentData.student.photoUrl || null);
+      setSelectedImage(null);
+      setIsEditModalOpen(true);
+    }
+  };
+
+  // Handle image selection in modal
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const token = localStorage.getItem("StudentAuthToken");
-    const studentId = localStorage.getItem("StudentPortalId");
-
-    // Preview the selected image instantly
+    setSelectedImage(file);
     const previewUrl = URL.createObjectURL(file);
-    setStudentData((prev) =>
-      prev
-        ? {
-            ...prev,
-            student: {
-              ...prev.student,
-              photoUrl: previewUrl,
-            },
-          }
-        : prev
-    );
+    setImagePreview(previewUrl);
+  };
 
-    // Optional: Upload to backend
-    const formData = new FormData();
-    formData.append("profilePhoto", file);
-    formData.append("studentId", studentId || "");
+
+  // Handle save all changes
+  const handleSaveAll = async () => {
+    if (!studentData) return;
+
+    setIsUpdating(true);
+    let hasErrors = false;
 
     try {
-      await axios.post(
-        "https://api.blackstoneinfomaticstech.com/student/upload-photo",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
+      const token = localStorage.getItem("StudentAuthToken");
+      const studentId = studentData._id;
+
+      // Check if there are any changes
+      const emailChanged = formEmail !== studentData.student.studentEmail;
+      const phoneChanged = formPhone !== studentData.student.studentPhone?.toString();
+      const hasChanges = emailChanged || phoneChanged || selectedImage;
+
+      if (!hasChanges) {
+        // No changes made, just close the modal
+        setIsEditModalOpen(false);
+        setIsUpdating(false);
+        return;
+      }
+
+      // If image is selected, use FormData to send both image and contact info
+      if (selectedImage) {
+        try {
+          const formData = new FormData();
+          formData.append("profilePhoto", selectedImage);
+          
+          // Append student data fields
+          formData.append("student[studentId]", studentData.student.studentId);
+          formData.append("student[studentEmail]", formEmail);
+          formData.append("student[studentPhone]", String(Number(formPhone)));
+          formData.append("student[course]", studentData.student.course || "");
+          formData.append("student[package]", studentData.student.package || "");
+          formData.append("student[gender]", studentData.student.gender || "");
+          
+          // Add city and country if they exist
+          if (studentData.student.city) {
+            formData.append("student[city]", studentData.student.city);
+          }
+          if (studentData.student.country) {
+            formData.append("student[country]", studentData.student.country);
+          }
+
+          await axios.put(
+            `http://localhost:5001/studentProfile/${studentId}`,
+            formData,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+
+          // Update local state
+          setStudentData((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  student: {
+                    ...prev.student,
+                    studentEmail: formEmail,
+                    studentPhone: Number(formPhone),
+                    photoUrl: imagePreview || prev.student.photoUrl,
+                  },
+                }
+              : prev
+          );
+
+          console.log("✅ Profile updated successfully");
+        } catch (error) {
+          console.error("❌ Failed to update profile:", error);
+          alert("Failed to update profile. Please try again.");
+          hasErrors = true;
         }
-      );
-      console.log("✅ Profile photo updated successfully");
+      } else {
+        // If no image, send JSON with contact updates only
+        try {
+          const updateData: any = {
+            student: {
+              studentId: studentData.student.studentId,
+              studentEmail: formEmail,
+              studentPhone: Number(formPhone),
+              course: studentData.student.course,
+              package: studentData.student.package,
+              gender: studentData.student.gender,
+            },
+          };
+          
+          // Add city and country if they exist
+          if (studentData.student.city) {
+            updateData.student.city = studentData.student.city;
+          }
+          if (studentData.student.country) {
+            updateData.student.country = studentData.student.country;
+          }
+
+          await axios.put(
+            `http://localhost:5001/studentProfile/${studentId}`,
+            updateData,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          // Update local state
+          setStudentData((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  student: {
+                    ...prev.student,
+                    studentEmail: formEmail,
+                    studentPhone: Number(formPhone),
+                  },
+                }
+              : prev
+          );
+
+          console.log("✅ Contact information updated successfully");
+        } catch (error) {
+          console.error("❌ Failed to update contact information:", error);
+          alert("Failed to update contact information. Please try again.");
+          hasErrors = true;
+        }
+      }
+
+      // Close modal only if no errors and changes were made
+      if (!hasErrors) {
+        alert("Profile updated successfully!");
+        setIsEditModalOpen(false);
+        setSelectedImage(null);
+        setImagePreview(null);
+      }
     } catch (error) {
-      console.error("❌ Failed to upload profile photo:", error);
+      console.error("❌ Error updating profile:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setIsUpdating(false);
     }
+  };
+
+  // Legacy handler for direct file input (kept for backward compatibility)
+  const handleProfileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    // Open modal instead of directly uploading
+    handleEditClick();
   };
 
   useEffect(() => {
@@ -197,6 +339,9 @@ const StudentProfile = () => {
                 gender: filteredStudent.student.gender,
                 package: filteredStudent.student.package,
                 course: filteredStudent.student.course ?? "", // fallback if course is missing
+                city: (filteredStudent.student as any).city,
+                country: (filteredStudent.student as any).country,
+                photoUrl: filteredStudent.student.photoUrl,
               },
             });
             console.log("Filtered Student Data:", filteredStudent);
@@ -279,19 +424,12 @@ const StudentProfile = () => {
                   className="w-[112px] h-[112px] rounded-full object-cover bg-center"
                 />
                   {/* Edit Icon */}
-                  <label
-                    htmlFor="profileUpload"
-                    className="absolute bottom-40 -right-4  ml-8 hover:bg-[#ffffff13] bg-[#ffffff10] p-1 rounded-sm cursor-pointer"
+                  <button
+                    onClick={handleEditClick}
+                    className="absolute bottom-32 -right-4 ml-8 hover:bg-[#ffffff13] bg-[#ffffff10] p-1 rounded-sm cursor-pointer"
                   >
                     <FcEditImage/>
-                  </label>
-                  <input
-                    id="profileUpload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleProfileChange}
-                  />
+                  </button>
                 
                 <h2 className="text-center text-[18px] font-semibold mt-2">
                   {studentData?.username ?? ""}
@@ -431,6 +569,154 @@ const StudentProfile = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onRequestClose={() => setIsEditModalOpen(false)}
+        style={{
+          overlay: {
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          },
+          content: {
+            position: "relative",
+            inset: "auto",
+            border: "none",
+            background: "transparent",
+            padding: 0,
+            maxWidth: "42rem",
+            width: "90%",
+            maxHeight: "90vh",
+          },
+        }}
+        contentLabel="Edit Profile"
+        ariaHideApp={false}
+      >
+        <div className="bg-white dark:bg-[#252525] rounded-xl shadow-2xl w-full max-h-[90vh] overflow-y-auto">
+          {/* Modal Header */}
+          <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-2xl font-semibold text-gray-800 dark:text-white">
+              Update Profile
+            </h2>
+            <button
+              onClick={() => setIsEditModalOpen(false)}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          {/* Modal Body */}
+          <div className="p-6 space-y-6">
+            {/* Update Image Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                Update Image
+              </h3>
+              <div className="flex flex-col items-center space-y-4">
+                <div className="relative">
+                  <img
+                    src={
+                      imagePreview ||
+                      studentData?.student?.photoUrl ||
+                      "/assets/images/stportfolio.svg"
+                    }
+                    alt="Profile Preview"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-gray-200 dark:border-gray-700"
+                  />
+                </div>
+                <label
+                  htmlFor="imageUpload"
+                  className="cursor-pointer bg-[#54638C] text-white px-6 py-2 rounded-lg hover:bg-[#445275] transition-colors"
+                >
+                  Choose Image
+                </label>
+                <input
+                  id="imageUpload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+                {selectedImage && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Selected: {selectedImage.name}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200 dark:border-gray-700"></div>
+
+            {/* Update Contact Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                Update Contact
+              </h3>
+              <div className="space-y-4">
+                {/* Email Field */}
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Email Address
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={formEmail}
+                    onChange={(e) => setFormEmail(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#54638C] focus:border-transparent outline-none bg-white dark:bg-[#343434] text-gray-800 dark:text-white"
+                    placeholder="Enter your email"
+                  />
+                </div>
+
+                {/* Phone Field */}
+                <div>
+                  <label
+                    htmlFor="phone"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Phone Number
+                  </label>
+                  <input
+                    id="phone"
+                    type="tel"
+                    value={formPhone}
+                    onChange={(e) => setFormPhone(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#54638C] focus:border-transparent outline-none bg-white dark:bg-[#343434] text-gray-800 dark:text-white"
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Modal Footer */}
+          <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => setIsEditModalOpen(false)}
+              className="px-6 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              disabled={isUpdating}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSaveAll}
+              disabled={isUpdating}
+              className="px-6 py-2 bg-[#54638C] text-white rounded-lg hover:bg-[#445275] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isUpdating ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </BaseLayout2>
   );
 };

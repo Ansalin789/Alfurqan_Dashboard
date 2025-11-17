@@ -35,9 +35,10 @@ const SidebarItems = [
     ),
   },
   { name: 'Assignment', href: '/teacher/ui/assignment', icon: FaBookOpenReader },
+  { name: 'Analytics', href: '/teacher/ui/analytics', icon: BsFileBarGraphFill },
+
   { name: 'Messages', href: '/teacher/ui/messages', icon: LuMessagesSquare },
 
-  { name: 'Analytics', href: '/teacher/ui/analytics', icon: BsFileBarGraphFill },
   
   { name: 'Support', href: '/teacher/ui/support', icon: CircleHelp }
 ];
