@@ -105,13 +105,33 @@ const ScheduledClasses = () => {
   const [timing, setTiming] = useState("");
   const [status, setStatus] = useState("");
 
-  // Type guard functions
+  // Enhanced type guard functions
   const isGroupedMeeting = (item: AnyMeeting): item is GroupedMeeting => {
-    return item.type === 'grouped';
+    return item.type === 'grouped' && 'participants' in item;
   };
 
   const isRegularMeeting = (item: AnyMeeting): item is Meeting => {
-    return item.type === 'regular';
+    return item.type === 'regular' && 'teacher' in item;
+  };
+
+  // Safe teacher access helper functions
+  const getTeacherName = (teacher: any): string => {
+    if (!teacher || typeof teacher !== 'object') return "No teacher";
+    
+    // Handle array case
+    if (Array.isArray(teacher)) {
+      return teacher[0]?.teacherName || "No teacher";
+    }
+    
+    // Handle single object case
+    return teacher.teacherName || "No teacher";
+  };
+
+  const getTeacherArray = (teacher: any): Teacher[] => {
+    if (!teacher) return [];
+    if (Array.isArray(teacher)) return teacher;
+    if (typeof teacher === 'object' && teacher.teacherName) return [teacher];
+    return [];
   };
 
   // Group meetings function
@@ -258,8 +278,12 @@ const ScheduledClasses = () => {
         const allMeetings: Meeting[] = response.data.meetings.map((meeting: any) => ({
           ...meeting,
           type: "regular" as const,
-          // Ensure teacher is always an array
-          teacher: Array.isArray(meeting.teacher) ? meeting.teacher : meeting.teacher ? [meeting.teacher] : []
+          // Ensure teacher is always a properly formatted array
+          teacher: Array.isArray(meeting.teacher) 
+            ? meeting.teacher.filter((t: any) => t && typeof t === 'object')
+            : meeting.teacher && typeof meeting.teacher === 'object' 
+              ? [meeting.teacher] 
+              : []
         }));
 
         // Group auto-scheduled meetings
@@ -389,15 +413,40 @@ const ScheduledClasses = () => {
     }
   };
 
-  const handleViewDetails = (meetingId: string) => {
-    const meeting = completedData.find((m) => m._id === meetingId);
-    if (meeting) {
-      setSelectedMeetingDetails(meeting);
-      setIsMeetingDetailsModalOpen(true);
-    } else {
-      console.error("Meeting not found for ID:", meetingId);
+const handleViewDetails = (meetingId: string) => {
+  // Only allow viewing details in completed tab
+  if (activeTab !== "completed") {
+    return; // Don't do anything if not in completed tab
+  }
+  
+  // Search in the combined data that's currently being displayed
+  const meeting = dataToShow.find((m) => {
+    if (isRegularMeeting(m)) {
+      return m._id === meetingId;
+    } else if (isGroupedMeeting(m)) {
+      return m._id === meetingId;
     }
-  };
+    return false;
+  });
+  
+  if (meeting) {
+    // For grouped meetings, we need to convert them to the Meeting type for the modal
+    if (isGroupedMeeting(meeting)) {
+      // Convert GroupedMeeting to Meeting format for the modal
+      const meetingForModal: Meeting = {
+        ...meeting,
+        type: "regular",
+        teacher: meeting.participants
+      };
+      setSelectedMeetingDetails(meetingForModal);
+    } else {
+      setSelectedMeetingDetails(meeting);
+    }
+    setIsMeetingDetailsModalOpen(true);
+  } else {
+    console.error("Meeting not found for ID:", meetingId);
+  }
+};
 
   const isStartMeetingNow = (
     selectedDate: string,
@@ -601,7 +650,7 @@ const ScheduledClasses = () => {
 
                                   {openTeacherDropdownId === item.meetingId && (
                                     <div className="absolute z-10 mt-2 w-72 bg-white rounded shadow-lg p-3 dark:bg-[#343434] border border-gray-200 dark:border-gray-600">
-                                      <div className="max-h-60 overflow-y-auto">
+                                      <div className="max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                                         <h4 className="font-semibold text-sm mb-2 text-[#17243E] dark:text-[#FDFDFD]">
                                           Attendees:
                                         </h4>
@@ -613,9 +662,11 @@ const ScheduledClasses = () => {
                                             <div className="flex items-center gap-2">
                                               <IoPersonOutline className="flex-shrink-0" />
                                               <div>
-                                                <div className="font-medium">{participant.teacherName}</div>
+                                                <div className="font-medium">
+                                                  {participant.teacherName || "Unknown Teacher"}
+                                                </div>
                                                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                  {participant.teacherEmail}
+                                                  {participant.teacherEmail || "No email"}
                                                 </div>
                                               </div>
                                             </div>
@@ -647,11 +698,19 @@ const ScheduledClasses = () => {
                                   {item.meetingStatus}
                                 </span>
                               </td>
-                              <td className="px-3 py-2 text-left w-[80px] break-words whitespace-normal">
-                                <button className="p-2 rounded-md">
-                                  <FaEye className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
-                                </button>
-                              </td>
+                              <td className="px-3 py-2 text-left w-[80px] break-words whitespace-normal ">
+  {activeTab === "completed" ? (
+    <button
+      onClick={() => handleViewDetails(item._id)}
+      className="p-2 rounded-md"
+    >
+      <FaEye className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD] cursor-pointer" />
+    </button>
+  ) : (
+    <div className="p-2">
+<FaEye className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD] cursor-not-allowed" />    </div>
+  )}
+</td>
                             </tr>
                           );
                         } else if (isRegularMeeting(item)) {
@@ -673,26 +732,26 @@ const ScheduledClasses = () => {
                               </td>
                               <td className="px-3 py-2 text-left text-[#17243E] dark:text-[#FDFDFD]">
                                 <div className="relative">
-                                  {item.teacher.length > 1 ? (
+                                  {getTeacherArray(item.teacher).length > 1 ? (
                                     <>
                                       <button
                                         onClick={() => toggleTeacherDropdown(item._id)}
                                         className="flex items-center gap-2 font-medium hover:text-[#5c5c5c] dark:hover:text-[#5c5c5c]"
                                       >
                                         <AiOutlineMenuUnfold />
-                                        View List ({item.teacher.length})
+                                        View List ({getTeacherArray(item.teacher).length})
                                       </button>
 
                                       {openTeacherDropdownId === item._id && (
                                         <div className="absolute z-10 mt-2 w-48 bg-white rounded shadow-lg p-2 dark:bg-[#343434]">
-                                          {item.teacher.map((teacher, idx) => (
+                                          {getTeacherArray(item.teacher).map((teacher, idx) => (
                                             <div
                                               key={idx}
                                               className="py-1 text-[#17243E] dark:text-[#FDFDFD]"
                                             >
                                               <span className="flex items-center gap-2">
                                                 <IoPersonOutline />
-                                                {teacher.teacherName}
+                                                {teacher.teacherName || "Unknown Teacher"}
                                               </span>
                                             </div>
                                           ))}
@@ -702,7 +761,7 @@ const ScheduledClasses = () => {
                                   ) : (
                                     <span className="flex items-center gap-2 font-medium">
                                       <IoPersonOutline />
-                                      {item.teacher[0]?.teacherName || "No teacher"}
+                                      {getTeacherName(item.teacher)}
                                     </span>
                                   )}
                                 </div>
@@ -720,7 +779,6 @@ const ScheduledClasses = () => {
                                 {item.startTime}
                               </td>
                               <td className="px-3 py-2 text-left">
-                                {/* Your existing status logic for regular meetings */}
                                 {(() => {
                                   let content;
                                   if (activeTab === "upcoming") {
@@ -759,30 +817,29 @@ const ScheduledClasses = () => {
                                 })()}
                               </td>
                               <td className="px-3 py-2 text-left w-[80px] break-words whitespace-normal">
-                                {/* Your existing action buttons for regular meetings */}
-                                <div className="relative">
-                                  <button
-                                    onClick={() => {
-                                      if (item.meetingStatus === "Scheduled") {
-                                        setIsDetailsModalOpen(true);
-                                        setSelectedItemId((prev) =>
-                                          prev === item._id ? null : item._id
-                                        );
-                                      } else if (item.meetingStatus === "Completed") {
-                                        handleViewDetails(item._id);
-                                      }
-                                    }}
-                                    className="p-2 rounded-md"
-                                  >
-                                    {item.meetingStatus === "Scheduled" || item.meetingStatus === "Rescheduled" ? (
-                                      <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
-                                    ) : (
-                                      <FaEye className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
-                                    )}
-                                  </button>
-                                  {/* Your existing dropdown menu */}
-                                </div>
-                              </td>
+  <div className="relative">
+    {activeTab === "upcoming" ? (
+      // Upcoming tab - show MoreVertical for actions (but NOT eye button)
+      <button
+        onClick={() => {
+          setIsDetailsModalOpen(true);
+          setSelectedItemId((prev) => prev === item._id ? null : item._id);
+        }}
+        className="p-2 rounded-md"
+      >
+        <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD] cursor-pointer" />
+      </button>
+    ) : (
+      // Completed tab - show Eye for viewing details
+      <button
+        onClick={() => handleViewDetails(item._id)}
+        className="p-2 rounded-md"
+      >
+        <FaEye className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD] cursor-pointer" />
+      </button>
+    )}
+  </div>
+</td>
                             </tr>
                           );
                         }
@@ -904,7 +961,96 @@ const ScheduledClasses = () => {
             <h2 className="text-md font-semibold text-[#0D0E25] mb-6 dark:text-[#fff]">
               Meeting Details
             </h2>
-            {/* ... rest of meeting details modal content ... */}
+            {/* Grid Fields */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="block text-[12px] text-[#0D0E25] mb-1 dark:text-[#fff]">
+                  Meeting ID
+                </label>
+                <input
+                  value={selectedMeetingDetails.meetingId}
+                  disabled
+                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                />
+              </div>
+              <div>
+                <label className="block text-[12px] text-[#0D0E25] mb-1 dark:text-[#fff]">
+                  Meeting Name
+                </label>
+                <input
+                  value={selectedMeetingDetails.meetingName}
+                  disabled
+                  className="w-full px-3 py-2 text-[12px] border  border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                />
+              </div>
+              <div>
+                <label className="block text-[12px] text-[#0D0E25] mb-1 dark:text-[#fff]">
+                  Date
+                </label>
+                <input
+                  value={selectedMeetingDetails.selectedDate}
+                  disabled
+                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                />
+              </div>
+              <div>
+                <label className="block text-[12px] text-[#0D0E25] mb-1 dark:text-[#fff]">
+                  Duration
+                </label>
+                <input
+                  value={selectedMeetingDetails.duration}
+                  disabled
+                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                />
+              </div>
+              <div>
+                <label className="block text-[12px] text-[#0D0E25] mb-1 dark:text-[#fff]">
+                  Meeting Time
+                </label>
+                <input
+                  value={`${selectedMeetingDetails.startTime} - ${selectedMeetingDetails.endTime}`}
+                  disabled
+                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                />
+              </div>
+            </div>
+
+            {/* Attendance */}
+            <div className="mb-6 rounded-xl overflow-hidden dark:bg-[#343434] text-white border ">
+              <div className="flex justify-between items-center bg-[#576CBC] text-white px-6 py-3 text-sm font-semibold">
+                <span>Name</span>
+                <span>Attendance</span>
+              </div>
+              <div className="divide-y max-h-40 overflow-y-auto text-sm">
+                {getTeacherArray(selectedMeetingDetails.teacher).map((teacher, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center px-4 py-2"
+                  >
+                    <span className="text-[#4F46E5]">
+                      {teacher.teacherName || "Unknown Teacher"}
+                    </span>
+                    <span
+                      className={`text-lg ${
+                        teacher.attendee === "present" ? "text-green-600" : "text-red-500"
+                      }`}
+                    >
+                      {teacher.attendee === "present" ? "✔" : "✘"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mb-6">
+              <label className="block text-[12px] text-[#0D0E25] mb-1 dark:text-[#fff]">
+                Meeting Description
+              </label>
+              <textarea
+                value={selectedMeetingDetails.meetingminutes}
+                disabled
+                className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
+              />
+            </div>
           </div>
         </div>
       )}
