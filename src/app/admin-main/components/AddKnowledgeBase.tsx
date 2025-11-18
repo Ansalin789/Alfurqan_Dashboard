@@ -149,7 +149,7 @@ export default function KnowledgeBaseForm({ onClose }: LeaveFormProps) {
         console.error("❌ AdminAuthToken not found");
         return;
       }
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/knowledgebase", {
+      const response = await fetch("http://localhost:5001/knowledgebase", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

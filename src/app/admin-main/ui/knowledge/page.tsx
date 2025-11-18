@@ -18,11 +18,7 @@ interface KnowledgeBaseItem {
   base64File: string;
   subjectTitle: string;
   uploadedFormat: string;
-  uploadedFile: {
-    type: string;
-    data: number[];
-    base64?: string;
-  };
+  uploadedFile: string;
   status: string;
   createdDate: string;
   createdBy: string;
@@ -138,10 +134,27 @@ export default function KnowledgeBase() {
       console.error("❌ Error in fetchCourses:", err);
     }
   };
+
+   const fetchAndOpenFile = async (fileId: string) => {
+  try {
+    console.log("file ",fileId)
+    const res = await fetch(`http://localhost:5001/files/view/${fileId}`, {
+      method: "GET",
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch file");
+   const blob = await res.blob();     // ✅ ONLY READ ONCE
+console.log("res", blob.type);
+       const newBlobUrl = URL.createObjectURL(blob);
+    window.open(newBlobUrl, "_blank");
+  } catch (err) {
+    console.error("Error fetching file:", err);
+  }
+};
   const fetchKnowledgeBaseList = async (token: string) => {
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/knowledgebase/list",
+        "http://localhost:5001/knowledgebase/list",
         {
           method: "GET",
           headers: {
@@ -152,32 +165,18 @@ export default function KnowledgeBase() {
       );
 
       const result = await response.json();
-
+     console.log('result',result);
       if (result.status === "success") {
         const pdfs: KnowledgeBaseItem[] = [];
         const videos: KnowledgeBaseItem[] = [];
 
         result.data.forEach((item: KnowledgeBaseItem) => {
-          const fileBuffer = item.uploadedFile?.data;
-
-          if (
-            !fileBuffer ||
-            !Array.isArray(fileBuffer) ||
-            fileBuffer.length === 0
-          ) {
-            console.warn("Skipping item with invalid file buffer", item);
-            return;
-          }
-
-          const base64File = `data:application/pdf;base64,${arrayBufferToBase64(
-            fileBuffer
-          )}`;
-          const enrichedItem = { ...item, base64File };
+          
 
           if (item.uploadedFormat.toLowerCase() === "pdf") {
-            pdfs.push(enrichedItem);
+            pdfs.push(item);
           } else if (item.uploadedFormat.toLowerCase() === "video") {
-            videos.push(enrichedItem);
+            videos.push(item);
           }
         });
 
@@ -373,7 +372,7 @@ export default function KnowledgeBase() {
                       <td className="px-4 py-3 text-center">
                         <button
                           onClick={() =>
-                            openPdfBlob(pdf.base64File?.split(",")[1] ?? "")
+                            fetchAndOpenFile(pdf.uploadedFile)
                           }
                           className="text-xs px-4 py-1 rounded-md transition bg-[#4459A9] text-white hover:bg-[#3a4c90]"
                         >
@@ -578,12 +577,12 @@ export default function KnowledgeBase() {
                         </td>
                         <td className="px-4 py-3 text-center">
                           <button
-                            onClick={() =>
-                              setSelectedVideo({
-                                title: video.courseName,
-                                uploadedFile: video.uploadedFile,
-                              })
-                            }
+                            // onClick={() =>
+                            //   setSelectedVideo({
+                            //     title: video.courseName,
+                            //     uploadedFile: video.uploadedFile,
+                            //   })
+                            // }
                             className="text-xs px-4 py-1 rounded-md transition bg-[#4459A9] text-white hover:bg-[#3a4c90]"
                           >
                             View file
