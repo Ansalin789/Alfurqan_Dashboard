@@ -44,7 +44,7 @@ const SignIn: React.FC = () => {
   }, [error]);
   const signIn = async (username: string, password: string) => {
     try {
-      const url = "http://localhost:5001/studentsignin";
+      const url = "https://api.blackstoneinfomaticstech.com/studentsignin";
       const payload = {
         username,
         // mask password in logs, but send real value in request body

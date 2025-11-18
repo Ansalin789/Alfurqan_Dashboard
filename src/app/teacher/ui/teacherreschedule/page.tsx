@@ -665,7 +665,7 @@ const TeachersSchedule = () => {
          </div>
  
          {/* Calendar Grid */}
-         <div className="grid grid-cols-7 gap-1 text-[10px] sm:text-xs md:text-sm overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-[#555] h-[320px] sm:h-[380px] md:h-[440px] lg:h-[500px]">
+         <div className="w-full p-1 grid grid-cols-7 gap-1 text-[10px] sm:text-xs md:text-sm overflow-y-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-[#555] h-[320px] sm:h-[380px] md:h-[440px] lg:h-[500px]">
            {totalDays.map((day, i) => {
              if (day === null) {
                return (

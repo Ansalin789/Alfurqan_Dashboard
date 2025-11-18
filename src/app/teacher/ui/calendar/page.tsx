@@ -404,7 +404,7 @@ const TeacherSchedulePage = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-2 text-sm h-[470px] overflow-scroll scrollbar-none">
+        <div className="p-1 grid grid-cols-7 gap-2 text-sm h-[470px] overflow-scroll scrollbar-none">
           {totalDays.map((day, i) => {
             const isPrevMonth = i < firstDayOfMonth;
             const isCurrentMonth = i >= firstDayOfMonth;

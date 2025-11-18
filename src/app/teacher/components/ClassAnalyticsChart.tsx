@@ -86,7 +86,7 @@ const ClassAnalyticsChart = () => {
 
   return (
     <div className="w-full h-full bg-white dark:bg-[#343434] rounded-2xl shadow p-4 sm:p-6 flex flex-col">
-      <h2 className="text-[clamp(14px,2vw,18px)] font-bold text-gray-900 dark:text-white mb-6">
+      <h2 className=" font-semibold text-gray-900 dark:text-white mb-6 text-[16px]">
         Class Analytics
       </h2>
 
@@ -120,10 +120,10 @@ const ClassAnalyticsChart = () => {
 
           {/* Center value */}
           <div className="absolute -mt-7 inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <div className="text-[24px] font-extrabold text-gray-900 dark:text-white">
+            <div className="text-[18px] font-extrabold text-gray-900 dark:text-white">
               {data.scheduled + data.completed + data.absent}
             </div>
-            <div className="text-[8px] text-gray-500 dark:text-gray-300 uppercase text-center -mt-1 leading-tight">
+            <div className="text-[7px] text-gray-500 dark:text-gray-300 uppercase text-center -mt-1 leading-tight">
               TOTAL CLASS <br /> ASSIGNED
             </div>
           </div>
@@ -134,18 +134,18 @@ const ClassAnalyticsChart = () => {
           {segments.map((item, i) => (
             <div
               key={i}
-              className="flex items-center justify-between w-full -mt-6 gap-1"
+              className="flex items-center justify-between w-full -mt-6 gap-6"
             >
               <div className="flex items-center gap-2">
                 <span
-                  className="w-[clamp(10px,1.2vw,14px)] h-[clamp(10px,1.2vw,14px)] rounded-md"
+                  className="w-3 h-3 rounded-sm"
                   style={{ backgroundColor: item.color }}
                 />
-                <span className="text-gray-700 dark:text-white text-[clamp(10px,1.5vw,14px)] font-medium">
+                <span className="text-gray-700 dark:text-white text-[12px] font-medium">
                   {item.label}
                 </span>
               </div>
-              <span className="text-gray-900 dark:text-white text-[clamp(10px,1.5vw,14px)] font-bold text-right">
+              <span className="text-gray-900 dark:text-white text-[13px] font-semibold text-right">
                 {item.value}
               </span>
             </div>

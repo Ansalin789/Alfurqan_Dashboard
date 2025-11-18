@@ -38,7 +38,7 @@ interface Applicant {
   currency: string;
   expectedSalary: number;
   preferedWorkingHours: string;
-  uploadResume: { type: string; data: number[] };
+  uploadResume: string;
   comments: string;
   applicationStatus: string;
   status: string;
@@ -523,28 +523,40 @@ export default function Dashboard() {
     const byteArray = new Uint8Array(byteNumbers);
     return new Blob([byteArray], { type: contentType });
   }
-
-  function getResumeBlobUrl(
-    uploadResume?: string | { type: string; data: number[] }
-  ): string | undefined {
+  
+  function getResumeBlobUrl(uploadResume: string): string | undefined {
     if (!uploadResume) return undefined;
-
-    if (typeof uploadResume === "string") {
-      // Assume base64 string, strip possible data URI prefix
-      const base64Data = uploadResume.includes("base64,")
-        ? uploadResume.split("base64,")[1]
-        : uploadResume;
-      const blob = base64ToBlob(base64Data);
+  
+    try {
+      const blob = base64ToBlob(uploadResume);
       return URL.createObjectURL(blob);
-    } else if (uploadResume.data && uploadResume.type) {
-      // Object with type and data array
-      const byteArray = new Uint8Array(uploadResume.data);
-      const blob = new Blob([byteArray], { type: uploadResume.type });
-      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error("Error creating resume blob URL:", error);
+      return undefined;
     }
-
-    return undefined;
   }
+
+  // function getResumeBlobUrl(
+  //   uploadResume?: string | { type: string; data: number[] }
+  // ): string | undefined {
+  //   if (!uploadResume) return undefined;
+
+  //   if (typeof uploadResume === "string") {
+  //     // Assume base64 string, strip possible data URI prefix
+  //     const base64Data = uploadResume.includes("base64,")
+  //       ? uploadResume.split("base64,")[1]
+  //       : uploadResume;
+  //     const blob = base64ToBlob(base64Data);
+  //     return URL.createObjectURL(blob);
+  //   } else if (uploadResume.data && uploadResume.type) {
+  //     // Object with type and data array
+  //     const byteArray = new Uint8Array(uploadResume.data);
+  //     const blob = new Blob([byteArray], { type: uploadResume.type });
+  //     return URL.createObjectURL(blob);
+  //   }
+
+  //   return undefined;
+  // }
 
   return (
     <BaseLayout3>
@@ -693,67 +705,75 @@ export default function Dashboard() {
 
                   {/* Table Body */}
                   <tbody>
-                    {applicants.map((applicant, index) => {
-                      const resumeUrl = getResumeBlobUrl(
-                        applicant.uploadResume
-                      );
+  {applicants.map((applicant, index) => {
+    let resumeUrl;
+    let resumeError = false;
+    
+    // Safe resume URL generation with error handling
+    try {
+      resumeUrl = getResumeBlobUrl(applicant.uploadResume);
+    } catch (error) {
+      console.warn('Invalid resume data for applicant:', applicant._id, error);
+      resumeError = true;
+      resumeUrl = undefined;
+    }
 
-                      return (
-                        <tr
-                          key={applicant._id}
-                          className={`text-[10px] px-2 py-4 border-none outline-none ${
-                            index % 2 === 0
-                              ? "bg-[#fff] dark:bg-[#2c2c2c]"
-                              : "bg-[#F8F8F8] dark:bg-[#303030]"
-                          }`}
-                        >
-                          <td className="py-4 px-2 text-left">
-                            {applicant.candidateFirstName}
-                          </td>
-                          <td className="py-2 px-2 text-left">
-                            {applicant.candidatePhoneNumber}
-                          </td>
-                          <td className="py-2 px-2 text-left">
-                            {applicant.candidateCountry}
-                          </td>
-                          <td className="py-2 px-2 text-left">
-                            {applicant.positionApplied}
-                          </td>
-                          <td className="py-2 px-2 text-left">
-                            {applicant.gender}
-                          </td>
-                          <td className="py-2 px-2 text-left">
-                            {formatDate(applicant.applicationDate)}
-                          </td>
-                          <td className="py-2 px-2 text-left">
-                            {applicant.preferedWorkingHours}
-                          </td>
-                          <td className="py-2 px-2 text-left">
-                            {resumeUrl ? (
-                              <a
-                                href={resumeUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-[#38619A] hover:underline flex items-center gap-1"
-                              >
-                                <ImAttachment className="w-3 h-3" />
-                                Resume
-                              </a>
-                            ) : (
-                              <span className="text-gray-400 italic">
-                                No Resume
-                              </span>
-                            )}
-                          </td>
-                          <td className="py-2 px-2 text-left">
-                            <span className="text-gray-800 rounded-full dark:text-[#fff]">
-                              {applicant.applicationStatus}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
+    return (
+      <tr
+        key={applicant._id}
+        className={`text-[10px] px-2 py-4 border-none outline-none ${
+          index % 2 === 0
+            ? "bg-[#fff] dark:bg-[#2c2c2c]"
+            : "bg-[#F8F8F8] dark:bg-[#303030]"
+        }`}
+      >
+        <td className="py-4 px-2 text-left">
+          {applicant.candidateFirstName}
+        </td>
+        <td className="py-2 px-2 text-left">
+          {applicant.candidatePhoneNumber}
+        </td>
+        <td className="py-2 px-2 text-left">
+          {applicant.candidateCountry}
+        </td>
+        <td className="py-2 px-2 text-left">
+          {applicant.positionApplied}
+        </td>
+        <td className="py-2 px-2 text-left">
+          {applicant.gender}
+        </td>
+        <td className="py-2 px-2 text-left">
+          {formatDate(applicant.applicationDate)}
+        </td>
+        <td className="py-2 px-2 text-left">
+          {applicant.preferedWorkingHours}
+        </td>
+        <td className="py-2 px-2 text-left">
+          {resumeUrl && !resumeError ? (
+            <a
+              href={resumeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#38619A] hover:underline flex items-center gap-1"
+            >
+              <ImAttachment className="w-3 h-3" />
+              Resume
+            </a>
+          ) : (
+            <span className="text-gray-400 italic">
+              {resumeError ? "Invalid Resume" : "No Resume"}
+            </span>
+          )}
+        </td>
+        <td className="py-2 px-2 text-left">
+          <span className="text-gray-800 rounded-full dark:text-[#fff]">
+            {applicant.applicationStatus}
+          </span>
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
                 </table>
               </div>
             </div>
