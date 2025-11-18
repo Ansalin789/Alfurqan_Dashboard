@@ -131,7 +131,7 @@ export default function StudentList() {
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Student" />
+      <AdminHeader currentSection="Student" showBackPath="/admin-main/ui/student" showBackButton/>
       {student && (
         <div className="p-4 w-full overflow-hidden">
           <div

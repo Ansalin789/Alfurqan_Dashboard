@@ -1054,14 +1054,27 @@ useEffect(() => {
                 </div>
                 
                 <div className="mb-4">
-                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Course</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                    value={meetingFilters.course}
-                    onChange={(e) => setMeetingFilters({ ...meetingFilters, course: e.target.value })}
-                  />
-                </div>
+  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+    Course
+  </label>
+
+  <select
+    className="w-full px-3 py-2 border rounded text-xs dark:text-white dark:border-[#5C5C5C] dark:bg-[#343434]"
+    value={meetingFilters.course}
+    onChange={(e) =>
+      setMeetingFilters({ ...meetingFilters, course: e.target.value })
+    }
+  >
+    <option value="">Select Course</option>
+    <option value="Quran">Quran</option>
+    <option value="Arabic">Arabic</option>
+    <option value="Islamic Studies	">Islamic Studies	</option>
+   
+  
+   
+  </select>
+</div>
+
                 
                 <div className="mb-4">
                   <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Date</label>
