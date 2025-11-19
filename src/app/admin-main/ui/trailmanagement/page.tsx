@@ -178,7 +178,7 @@ const TrailManagement = () => {
 
   return (
     <BaseLayout4>
-    <AdminHeader currentSection="Scheduled Trail Classes" />
+    <AdminHeader currentSection="Scheduled Trial Classes"/>
       <div className="py-2 md:mr-10 w-full scrollbar-none mx-auto h-full">
         <div className="p-2">
           <Dashboard />
@@ -197,7 +197,7 @@ const TrailManagement = () => {
                       onClick={() => setIsFilterModalOpen(true)}
               >
                 <MdTune className="w-4 h-4" />
-                <span>Filter</span>
+                {/* <span>Filter</span> */}
               </div>
               <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
               Showing {filteredUsers.length === 0 ? 0 : 1} to{" "}
@@ -206,7 +206,7 @@ const TrailManagement = () => {
             </div>
 
             <table className="w-full table-auto" style={{ width: "100%", tableLayout: "fixed" }}>
-              <thead className="text-[11px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+              <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                 <tr className="font-medium">
                   {[
                     { label: "Trial ID", width: "w-[10%]" },
@@ -236,33 +236,33 @@ const TrailManagement = () => {
                   filteredItems.slice(-5).reverse().map((item, index) => (
                     <tr
                       key={item._id}
-                      className={`text-[12px] ${
+                      className={`text-[11px] ${
                         index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"
                       }`}
                     >
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[9px] break-words w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] break-words w-[10%]">
                         {item._id}
                       </td>
-                      <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[9px] break-words w-[12%]">
+                      <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left break-words w-[12%]">
                         {item.student.studentFirstName}{" "}
                         {item.student.studentLastName}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[9px] break-words w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] break-words w-[10%]">
                         {item.student.studentPhone}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[9px] w-[8%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] w-[8%]">
                         {item.student.studentCountry}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[9px] w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] w-[10%]">
                         {item.student.learningInterest}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[9px] break-words w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] break-words w-[10%]">
                         {item.student.preferredTeacher}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[9px] w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] w-[10%]">
                         {item.assignedTeacher}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[9px] w-[8%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] w-[8%]">
                         {item.classStartDate
                           ? new Date(item.classStartDate).toLocaleDateString(
                               "en-US",
@@ -274,13 +274,13 @@ const TrailManagement = () => {
                             )
                           : ""}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[9px] w-[8%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] w-[8%]">
                         {item.classStartTime}
                       </td>
                       {/* Class Status */}
-                      <td className="px-3 py-2 text-[9px] w-[20%]">
+                      <td className="px-3 py-2 text-[12px] w-[20%]">
                         <span
-                          className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
+                          className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
                             item.trialClassStatus === "COMPLETED"
                               ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-2"
                               : item.trialClassStatus === "INPROGRESS"
@@ -292,9 +292,9 @@ const TrailManagement = () => {
                         </span>
                       </td>
                       {/* Student Status */}
-                      <td className="px-3 py-2 text-[9px]">
+                      <td className="px-3 py-2 text-[12px]">
                         <span
-                          className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
+                          className={`px-1 text-[11px] text-center py-[3px] rounded-md ${
                             item.status === "Active"
                               ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-3"
                               : item.status === "PENDING"
@@ -306,9 +306,9 @@ const TrailManagement = () => {
                         </span>
                       </td>
                       {/* Payment Status */}
-                      <td className="px-3 py-2 text-[8px]">
+                      <td className="px-3 py-2 text-[11px]">
                         <span
-                          className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
+                          className={`px-1 text-[11px] text-center py-[3px] rounded-md ${
                             item.paymentStatus === "PAID"
                               ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-4"
                               : item.paymentStatus === "PENDING"

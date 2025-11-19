@@ -14,10 +14,92 @@ import error from "next/error";
 import { MdTune } from "react-icons/md";
 import AcademicHeader from "@/app/Academic-coach/components/academicHeader";
 import axios from "axios";
+import { getSocket } from "@/app/utils/socket";
 
-export interface TransformedUser {
+// Define the return type of the getAllUsers function
+interface Student {
+  learningInterest: string; // Replace with the exact type if known
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+  studentPhone: number;
+  studentCountry: string;
+  preferredTeacher: string;
+  preferredFromTime: string;
+  preferredToTime: string;
+  classStatus?: string;
+  status?: string;
+  trialClassStatus: string;
+  studentStatus: string;
+  createdDate: Date;
+}
+
+interface EvaluationItem {
+  paymentLink: string;
   _id: string;
-  academicCoachId: string;
+  student: Student;
+  trialClassStatus: string;
+  assignedTeacher: string;
+  paymentStatus: string;
+}
+
+interface ApiResponse {
+  evaluation: EvaluationItem[];
+}
+
+// Define the transformed user structure
+interface TransformedUser {
+  _id: string;
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+  number: string;
+  country: string;
+  city: string;
+  course: string; // Assuming this corresponds to `learningInterest`
+  preferredTeacher: string;
+  time: string;
+  classStatus?: string;
+  status?: string;
+  trialClassStatus: string;
+  paymentStatus: string;
+  assignedTeacher: string;
+  paymentLink: string;
+  studentStatus: string; // Optional if not always present
+  createdDate: Date; // Optional if not always present
+}
+
+// Define the return type of the getAllUsers function
+interface User {
+  sortTimestamp: any;
+  id: string;
+  studentId: string;
+  fname: string;
+  lname: string;
+  email: string;
+  number: string;
+  country: string;
+  course: string;
+  preferredTeacher: string;
+  date: string;
+  time: string;
+  status?: string;
+  evaluationStatus?: string;
+  city: string;
+  students?: number;
+  comment?: string;
+  createdDate: Date;
+}
+
+interface GetAllUsersResponse {
+  success: boolean;
+  data: User[];
+  message?: string; // Make message optional
+}
+interface ClassPayload {
+  adminId: string;
   student: {
     studentId: string;
     studentFirstName: string;
@@ -28,28 +110,26 @@ export interface TransformedUser {
     studentCity: string;
     studentCountry: string;
     studentCountryCode: string;
-    learningInterest: string;
+    learningInterest?: string;
     numberOfStudents: number;
     preferredTeacher: string;
-    preferredFromTime: string;
-    preferredToTime: string;
+    preferredFromTime?: string;
+    preferredToTime?: string;
     timeZone: string;
     referralSource: string;
-    preferredDate: string; // ISO Date string
+    preferredDate?: string;
     evaluationStatus: string;
     status: string;
-    createdDate: string; // ISO Date string
+    createdDate: Date;
     createdBy: string;
   };
+  classType: string;
   teacher: {
     teacherName: string;
   };
-  subscription: {
-    subscriptionName: string;
-  };
-  classDay: string[]; // e.g., ["Monday", "Tuesday"]
-  startTime: string[]; // e.g., ["09:00", "09:00"]
-  endTime: string[]; // e.g., ["09:30", "09:30"]
+  classDay?: string[]; // assuming it's an array of days like ['Monday', 'Wednesday']
+  startTime?: string[];
+  endTime?: string[];
   isLanguageLevel: boolean;
   languageLevel: string;
   isReadingLevel: boolean;
@@ -57,13 +137,14 @@ export interface TransformedUser {
   isGrammarLevel: boolean;
   grammarLevel: string;
   hours: number;
+  subscription: {
+    subscriptionName: string;
+  };
   planTotalPrice: number;
-  classStartDate: string; // ISO Date string
-  classEndDate: string; // ISO Date string
+  classStartDate: Date | string;
+  classEndDate: Date | string;
   classStartTime: string;
   classEndTime: string;
-  accomplishmentTime: string;
-  studentRate: number;
   gardianName: string;
   gardianEmail: string;
   gardianPhone: string;
@@ -72,8 +153,8 @@ export interface TransformedUser {
   gardianTimeZone: string;
   gardianLanguage: string;
   assignedTeacher: string;
-  assignedTeacherId: string;
-  assignedTeacherEmail: string;
+  accomplishmentTime?: string;
+  studentRate: number;
   studentStatus: string;
   classStatus: string;
   comments: string;
@@ -81,27 +162,22 @@ export interface TransformedUser {
   invoiceStatus: string;
   paymentLink: string;
   paymentStatus: string;
-  status: string;
-  createdDate: string; // ISO Date string
-  createdBy: string;
-  updatedDate: string; // ISO Date string
-  updatedBy: string;
-  expectedFinishingDate: number;
   teacherStatus: string;
-  __v: number;
+  status: string;
+  createdDate: Date;
+  createdBy: string;
+  updatedDate: Date;
+  updatedBy: string;
 }
 
-const TrailSection = () => {
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [filteredUsers, setFilteredUsers] = useState<TransformedUser[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const router = useRouter();
-  useEffect(() => {
-    Modal.setAppElement("body");
+const getAllUser = async (): Promise<{
+  success: boolean;
+  data: TransformedUser[];
+  message: string;
+}> => {
+  try {
+    const academicId = localStorage.getItem("AdminPortalId");
+    console.log("academicId>>", academicId);
     const token =
       typeof window !== "undefined"
         ? localStorage.getItem("AdminAuthToken")
@@ -109,78 +185,428 @@ const TrailSection = () => {
 
     if (!token) {
       console.error("❌ AdminAuthToken not found");
-      return;
     }
-    if (token) {
-      getAllUsers(token); // call your function with token
-    } else {
-      console.log("No auth token found.");
+    const response = await axios.get(
+      `https://api.blackstoneinfomaticstech.com/evaluationlist`,
+      {
+        params: { adminId: academicId },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    // Add debug log for raw API response
+    console.log("Raw API Response:", response.data.evaluation);
+
+    // Transform API data to match TransformedUser interface
+    const transformedData: TransformedUser[] = response.data.evaluation.map(
+      (item: any) => {
+        // Debug log for each item's studentStatus
+        console.log("Item studentStatus before transform:", item.studentStatus);
+        return {
+          _id: item._id,
+          studentId: item.student.studentId,
+          studentFirstName: item.student.studentFirstName,
+          studentLastName: item.student.studentLastName,
+          number: item.student.studentPhone
+            ? item.student.studentPhone.toString()
+            : "",
+          country: item.student.studentCountry,
+          city: item.city,
+          course: item.student.learningInterest,
+          preferredTeacher: item.student.preferredTeacher,
+          time: item.student.preferredFromTime,
+          classStatus: item.student.classStatus,
+          status: item.student.status,
+          trialClassStatus: item.trialClassStatus,
+          paymentStatus: item.paymentStatus,
+          assignedTeacher: item.assignedTeacher,
+          paymentLink: item.paymentLink,
+          studentStatus: item.studentStatus,
+        };
+      }
+    );
+
+    // Debug log for transformed data
+    console.log("Transformed Data:", transformedData);
+
+    return {
+      success: true,
+      data: transformedData,
+      message: "Users fetched successfully",
+    };
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return {
+      success: false,
+      data: [],
+      message: error instanceof Error ? error.message : "Failed to fetch users",
+    };
+  }
+};
+
+// Update the getAllUsers function to fetch from your API
+const getAllUsers = async (): Promise<GetAllUsersResponse> => {
+  try {
+    const academicId = localStorage.getItem("AdminPortalId");
+    console.log("academicId>>", academicId);
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AdminAuthToken")
+        : null;
+
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
     }
+    const response = await axios.get(
+      `https://api.blackstoneinfomaticstech.com/studentlist`,
+      {
+        params: { adminId: academicId },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log("Raw API Response:", JSON.stringify(response.data, null, 2));
+    console.log(
+      "First student data:",
+      JSON.stringify(response.data.students[0], null, 2)
+    );
+    console.log("First student status:", response.data.students[0]?.status);
+    console.log(
+      "First student studentStatus:",
+      response.data.students[0]?.studentStatus
+    );
+
+    if (!response.data.students || !Array.isArray(response.data.students)) {
+      throw new Error("Invalid data structure received from API");
+    }
+
+    // Transform API data to match User interface
+    const transformedData = response.data.students.map(
+      (item: {
+        _id: string;
+        studentId: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        phoneNumber: string;
+        city: string;
+        country: string;
+        learningInterest: string;
+        preferredTeacher: string;
+        startDate: string;
+        preferredFromTime: string;
+        preferredToTime: string;
+        evaluationStatus?: string;
+        status?: string;
+        createdDate: string;
+      }) => {
+        console.log("Processing item - Original data:", {
+          status: item.status,
+          allFields: Object.keys(item),
+        });
+        const transformed = {
+          id: item._id,
+          studentId: item.studentId,
+          fname: item.firstName,
+          lname: item.lastName,
+          email: item.email,
+          city: item.city,
+          number: item.phoneNumber.toString(),
+          country: item.country,
+          course: item.learningInterest,
+          preferredTeacher: item.preferredTeacher,
+          date: new Date(item.startDate).toLocaleDateString(),
+          time: item.preferredFromTime,
+          evaluationStatus: item.evaluationStatus,
+          createdDate: new Date(item.createdDate),
+        };
+        console.log("Transformed item - Final data:", {
+          allFields: Object.keys(transformed),
+        });
+        return transformed;
+      }
+    );
+
+    return {
+      success: true,
+      data: transformedData,
+      message: "Users fetched successfully",
+    };
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return {
+      success: false,
+      data: [],
+      message: error instanceof Error ? error.message : "Failed to fetch users",
+    };
+  }
+};
+
+const TrailSection = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedUserData, setSelectedUserData] = useState<User | null>(null);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  console.log(setItemsPerPage);
+
+  const [evaluationUsers, setEvaluationUsers] = useState<TransformedUser[]>([]);
+
+  useEffect(() => {
+    const fetchEvaluationUsers = async () => {
+      const result = await getAllUser();
+      if (result.success) {
+        setEvaluationUsers(result.data);
+      }
+    };
+    fetchEvaluationUsers();
   }, []);
-  // Fetch API Data
-  const getAllUsers = async (token: string) => {
-    try {
-      if (!token) {
-        setErrorMessage("Authentication token missing. Please log in again.");
-        setIsLoading(false);
-        return;
+  useEffect(() => {
+    const academicId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AdminPortalId")
+        : null;
+    if (!academicId) return;
+    const socket = getSocket(academicId);
+    const handleList = (data: {
+      event: string;
+      data: User | ClassPayload;
+      sender: string;
+    }) => {
+      console.log("📩 Received WebSocket Data:", data);
+      if ("studentId" in data.data) {
+        const user = data.data as User;
+        const formatted: User = {
+          sortTimestamp: user.sortTimestamp,
+          id: user.id,
+          studentId: user.studentId,
+          fname: user.fname,
+          lname: user.lname,
+          email: user.email,
+          number: user.number,
+          country: user.country,
+          city: user.city,
+          course: user.course,
+          preferredTeacher: user.preferredTeacher,
+          date: new Date(user.date).toLocaleDateString(),
+          time: user.time,
+          evaluationStatus: user.evaluationStatus ?? "PENDING",
+          status: "PENDING",
+          createdDate: new Date(user.createdDate),
+        };
+
+        console.log("➡️ Action: create", formatted.studentId);
+        setFilteredUsers((prev) => [...prev, formatted]);
+        setUsers((pre) => [...pre, formatted]);
+      } else {
+        const classPayload = data.data as ClassPayload;
+        const student = classPayload.student;
+
+        console.log("➡️ Action: update", student.studentId);
+
+        setFilteredUsers((prev) =>
+          prev.map((user) =>
+            user.studentId === student.studentId
+              ? {
+                  ...user,
+                  evaluationStatus: student.evaluationStatus ?? "PENDING",
+                  status: classPayload.studentStatus ?? "NOT JOINED",
+                }
+              : user
+          )
+        );
+        setUsers((prev) =>
+          prev.map((user) =>
+            user.studentId === student.studentId
+              ? {
+                  ...user,
+                  evaluationStatus: student.evaluationStatus ?? "PENDING",
+                  status: classPayload.studentStatus ?? "NOT JOINED",
+                }
+              : user
+          )
+        );
       }
-      const adminId = localStorage.getItem("AdminPortalId");
-      // setIsLoading(true);
-      const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/alltrialclass`,
-        {
-          params: { adminId: adminId },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      console.log("Raw API Response:", JSON.stringify(response.data, null, 2));
-      if (!response) {
-        throw new Error("Failed to fetch users");
-      }
-      const data = await response.data;
-      setFilteredUsers(data.evaluation); // Show all data
-      setErrorMessage(null);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      setErrorMessage("Something went wrong. Please try again later.");
-    } finally {
-      setIsLoading(false);
+    };
+
+    socket.on("academicStudentList", handleList);
+    return () => {
+      socket.off("academicStudentList", handleList);
+    };
+  }, []);
+
+  const router = useRouter();
+  const handleSyncClick = () => {
+    if (router) {
+      router.push("TrailSection");
+    } else {
+      console.error("Router is not available");
     }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const allData = await getAllUsers();
+        if (allData.success && allData.data) {
+          setUsers(allData.data);
+          setFilteredUsers(allData.data);
+        } else {
+          setErrorMessage(allData.message ?? "Failed to fetch users");
+        }
+      } catch (error) {
+        setErrorMessage("An unexpected error occurred");
+        console.error("An unexpected error occurred", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    // Modal.setAppElement("body");
+  }, []);
+
+  const openModal = (user: User | null = null) => {
+    setIsEditMode(!!user);
+    setIsModalOpen(true);
+    setModalIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalIsOpen(false);
+  };
+
+  useEffect(() => {
+    console.log("Current users data:", users);
+  }, [users]);
+
+  const fetchStudents = async () => {
+    try {
+      const allData = await getAllUsers();
+      if (allData.success && allData.data) {
+        setUsers(allData.data);
+      } else {
+        setErrorMessage(allData.message ?? "Failed to fetch users");
+      }
+    } catch (error) {
+      setErrorMessage("An unexpected error occurred");
+      console.error("An unexpected error occurred", error);
+    }
+  };
+
+  const handleEditClick = (studentId: User) => {
+    setSelectedUserData(studentId);
+    setModalIsOpen(true);
+  };
+
+  // Add filter handling function
+  const handleApplyFilters = (filters: {
+    country: string;
+    course: string;
+    teacher: string;
+    status: string;
+    trailId: string;
+    studentName: string;
+    email: string;
+    mobile: string;
+    time: string;
+    evaluationStatus: string;
+  }) => {
+    let filtered = [...users];
+
+    if (filters.country) {
+      filtered = filtered.filter((user) => user.country === filters.country);
+    }
+    if (filters.course) {
+      filtered = filtered.filter((user) => user.course === filters.course);
+    }
+    if (filters.teacher) {
+      filtered = filtered.filter(
+        (user) => user.preferredTeacher === filters.teacher
+      );
+    }
+    if (filters.status) {
+      filtered = filtered.filter(
+        (user) => user.evaluationStatus === filters.status
+      );
+    }
+    if (filters.trailId) {
+      filtered = filtered.filter((user) =>
+        user.studentId.includes(filters.trailId)
+      );
+    }
+    if (filters.studentName) {
+      filtered = filtered.filter((user) =>
+        `${user.fname} ${user.lname}`
+          .toLowerCase()
+          .includes(filters.studentName.toLowerCase())
+      );
+    }
+    if (filters.email) {
+      filtered = filtered.filter((user) =>
+        user.email.toLowerCase().includes(filters.email.toLowerCase())
+      );
+    }
+    if (filters.mobile) {
+      filtered = filtered.filter((user) =>
+        user.number.includes(filters.mobile)
+      );
+    }
+    if (filters.time) {
+      filtered = filtered.filter((user) => user.time.includes(filters.time));
+    }
+
+    setFilteredUsers(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
   };
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    setSearchTerm(query);
+    const filtered = users.filter((user) => {
+      const fullName = `${user.fname} ${user.lname}`.toLowerCase();
+      return (
+        user.studentId.toLowerCase().includes(query.toLowerCase()) ||
+        fullName.includes(query.toLowerCase()) ||
+        user.email.toLowerCase().includes(query.toLowerCase()) ||
+        user.number.includes(query) ||
+        user.country.toLowerCase().includes(query.toLowerCase()) ||
+        user.course.toLowerCase().includes(query.toLowerCase()) ||
+        user.preferredTeacher.toLowerCase().includes(query.toLowerCase()) ||
+        user.time.toLowerCase().includes(query.toLowerCase()) ||
+        user.evaluationStatus?.toLowerCase().includes(query.toLowerCase())
+      );
+    });
+    setFilteredUsers(filtered);
+    setCurrentPage(1); // Reset to first page when search changes
   };
 
-  const filteredItems = filteredUsers.filter((item) => {
-    const searchFields = [
-      item._id,
-      `${item.student.studentFirstName} ${item.student.studentLastName}`,
-      item.student.studentPhone,
-      item.student.studentCountry,
-      item.student.learningInterest,
-      item.student.preferredTeacher,
-      item.assignedTeacher,
-      item.classStartTime,
-      item.classStatus,
-      item.paymentStatus,
-      item.status,
-    ];
-    return searchFields.some((field) =>
-      field
-        ? field.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        : false
-    );
-  });
+  // if (error) return <div>Error: {error}</div>;
+
+  // Pagination logic: calculate currentItems based on filteredUsers, currentPage, and itemsPerPage
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const recentItems = [...filteredUsers]
+    .sort((a, b) => b.sortTimestamp - a.sortTimestamp)
+    .slice(0, 5);
 
   return (
     <BaseLayout4>
-      <AcademicHeader currentSection="Trail Class Request" />
+      <AcademicHeader currentSection="Trial Class Request" />
       <div className="h-full w-full md:mr-10 scrollbar-none">
         <div>
           <Dashboard />
@@ -196,39 +622,34 @@ const TrailSection = () => {
               onChange={(e) => handleSearch(e.target.value)}
             />
             <div
-                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
-                      onClick={() => setIsFilterModalOpen(true)}
+              className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+              onClick={() => setIsFilterModalOpen(true)}
             >
               <MdTune className="w-4 h-4" />
-              <span>Filter</span>
+              {/* <span>Filter</span>  */}
             </div>
             <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-            Showing {filteredUsers.length === 0 ? 0 : 1} to{" "}
-                {Math.min(5, filteredUsers.length)} of {filteredUsers.length}
-              </span>
+              Showing {filteredUsers.length === 0 ? 0 : 1} to{" "}
+              {Math.min(5, filteredUsers.length)} of {filteredUsers.length}
+            </span>
           </div>
 
-          {/* Table Section */}
-          <table
-            className="w-full table-auto"
-            style={{ width: "100%", tableLayout: "fixed" }}
-          >
-            <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
-              <tr className="font-medium">
+          <table className="min-w-full text-xs border-collapse table-fixed px-4">
+            <thead className=" text-[12px] bg-[#4C6993] text-white dark:bg-[#44699d]">
+              <tr>
                 {[
-                  { label: "Trial ID", width: "w-[10%]" },
-                  { label: "Student Name", width: "w-[12%]" },
-                  { label: "Contact", width: "w-[10%]" },
-                  { label: "Country", width: "w-[8%]" },
-                  { label: "Course", width: "w-[10%]" },
-                  { label: "Preferred Teacher", width: "w-[10%]" },
-                  { label: "Assigned Teacher", width: "w-[10%]" },
-                  { label: "Date", width: "w-[10%]" },
-                  { label: "Time", width: "w-[10%]" },
-                ].map((header, i) => (
+                  { label: "Student ID" },
+                  { label: "Student Name" },
+                  { label: "Date" },
+                  { label: "Mobile" },
+                  { label: "Country" },
+                  { label: "Course" },
+                  { label: "Preferred Teacher" },
+                  { label: "EvaluationStatus" },
+                ].map((header) => (
                   <th
                     key={header.label}
-                    className={`text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] ${header.width}`}
+                    className="py-4 px-2 font-semibold text-left border border-[#466993] dark:border-[#466993]"
                   >
                     {header.label}
                   </th>
@@ -236,61 +657,51 @@ const TrailSection = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredItems.length > 0 ? (
-                filteredItems
-                  .slice(-5)
-                  .reverse()
-                  .map((item, index) => (
-                    <tr
-                      key={item._id}
-                      className={`text-[11px] ${
-                        index % 2 === 0
-                          ? "bg-[#fff] dark:bg-[#2C2C2C] "
-                          : "bg-[#F8F8F8] dark:bg-[#303030]"
-                      }`}
-                    >
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[9px] break-words w-[10%]">
-                        {item._id}
-                      </td>
-                      <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[9px] break-words w-[12%]">
-                        {item.student.studentFirstName}{" "}
-                        {item.student.studentLastName}
-                      </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[9px] break-words w-[10%]">
-                        {item.student.studentPhone}
-                      </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[9px] w-[8%]">
-                        {item.student.studentCountry}
-                      </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[9px] w-[10%]">
-                        {item.student.learningInterest}
-                      </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[9px] w-[10%]">
-                        {item.student.preferredTeacher}
-                      </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[9px] w-[10%]">
-                        {item.assignedTeacher}
-                      </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[9px] w-[8%]">
-                        {item.classStartDate
-                          ? new Date(item.classStartDate).toLocaleDateString(
-                              "en-US",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              }
-                            )
-                          : ""}
-                      </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[9px] w-[8%]">
-                        {item.classStartTime}
-                      </td>
-                    </tr>
-                  ))
+              {recentItems.length > 0 ? (
+                recentItems.map((item, index) => (
+                  <tr
+                    key={item.studentId}
+                    className="text-[11px] px-2 py-4 border-none outline-none odd:bg-[#f8f8f8] even:bg-[#ffffff] dark:odd:bg-[#2c2c2c] dark:even:bg-[#303030]"
+                  >
+                    <td className="py-4 px-2 text-left">{item.studentId}</td>
+                    <td className="py-4 px-2 text-left">
+                      {item.fname} {item.lname}
+                    </td>
+                    <td className="py-4 px-2 text-left">
+                      {new Date(item.createdDate).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="py-4 px-2 text-left">{item.number}</td>
+                    <td className="py-4 px-2 text-left">{item.country}</td>
+                    <td className="py-4 px-2 text-left">{item.course}</td>
+                    <td className="py-4 px-2 text-left">
+                      {item.preferredTeacher}
+                    </td>
+                    <td className="py-4 px-2 text-left">
+                      <span
+                        className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                          item.evaluationStatus === "COMPLETED"
+                            ? "bg-[#ECFDF3] text-[#377E36] px-2 dark:bg-[#377E3633]"
+                            : item.evaluationStatus === "INPROGRESS"
+                            ? " bg-[#FDECEC] text-[#D34645]  px-3 dark:bg-[#D3464533]"
+                            : "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
+                        }`}
+                      >
+                        {item.evaluationStatus === "COMPLETED"
+                          ? "COMPLETED"
+                          : item.evaluationStatus === "INPROGRESS"
+                          ? "IN PROGRESS"
+                          : "PENDING"}
+                      </span>
+                    </td>
+                  </tr>
+                ))
               ) : (
                 <tr>
-                  <td colSpan={12} className="p-4 text-center">
+                  <td colSpan={10} className="p-4 text-center">
                     No data available
                   </td>
                 </tr>

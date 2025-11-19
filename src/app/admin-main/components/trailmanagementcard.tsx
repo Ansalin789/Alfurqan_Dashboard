@@ -37,16 +37,19 @@ interface TotalTrailclassData {
 }
 
 interface TrialClassData {
-  _id: string | null;
-  totalCount: number;
-  maleCount: number;
-  femaleCount: number;
-  completedCount: number;
-  pendingCount: number;
-  inprogressCount: number;
-  studentJointCount: number;
-  studentNotJointCount: number;
+  evaluation: {
+    _id: string | null;
+    totalCount: number;
+    maleCount: number;
+    femaleCount: number;
+    completedCount: number;
+    pendingCount: number;
+    inprogressCount: number;
+    studentNotJointCount: number;
+  };
+  students: number;
 }
+
 
 //Total trail class
 
@@ -76,7 +79,7 @@ const TotalScheduledChart = () => {
   const fetchChartData = async (token: string) => {
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/totaltrialclass",
+        "http://localhost:5001/totaltrialclass",
         {
           method: "GET",
           headers: {
@@ -85,42 +88,52 @@ const TotalScheduledChart = () => {
           },
         }
       );
-      const result: TrialClassData[] = await response.json();
-      const apiData = result[0];
-      // Map API data to the correct order and color
-      const chartArray: TotalTrailclassData[] = [
-        {
-          name: "Completed",
-          value: apiData.completedCount,
-          color: STATUS_COLORS[0].color,
-        },
-        {
-          name: "Scheduled",
-          value: apiData.pendingCount,
-          color: STATUS_COLORS[1].color,
-        },
-        {
-          name: "No Response",
-          value: apiData.studentNotJointCount,
-          color: STATUS_COLORS[2].color,
-        },
-        {
-          name: "Cancelled",
-          value: apiData.studentNotJointCount,
-          color: STATUS_COLORS[3].color,
-        },
-      ];
-      setTotalTrailclass(chartArray);
+      const apiData = await response.json();
+      console.log('apida', apiData);
+  
+      // Defensive: Only proceed if apiData exists
+      const evalData = apiData.evaluation;
+
+      if (evalData) {
+        const chartArray: TotalTrailclassData[] = [
+          {
+            name: "Completed",
+            value: evalData.completedCount || 0,
+            color: STATUS_COLORS[0].color,
+          },
+          {
+            name: "Scheduled",
+            value: evalData.pendingCount || 0,
+            color: STATUS_COLORS[1].color,
+          },
+          {
+            name: "No Response",
+            value: evalData.studentNotJointCount || 0,
+            color: STATUS_COLORS[2].color,
+          },
+          {
+            name: "Cancelled",
+            value: evalData.studentNotJointCount || 0,
+            color: STATUS_COLORS[3].color,
+          },
+        ];
+      
+        setTotalTrailclass(chartArray);
+      } else {
+        setTotalTrailclass([]);      
+        console.warn("No valid trial class data received.");
+      }
     } catch (error) {
       console.error("Error fetching course data:", error);
     }
   };
+  
 
   return (
     <div className="flex flex-col w-full h-full dark:bg-[#343434]">
       {/* Title */}
       <div className="text-[#010E30] text-[13px] font-semibold dark:text-white mb-6">
-        Total Requests
+      Trial Class Status
       </div>
       <div className="flex flex-row items-center justify-between">
         {/* Legend */}
@@ -210,38 +223,38 @@ const CoursesChart = () => {
   }, []);
 
   const fetchData = async (token: string) => {
-    const response = await fetch(
-      "https://api.blackstoneinfomaticstech.com/totaltrialclass",
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    const data: TrialClassData[] = await response.json();
-
+    const response = await fetch("http://localhost:5001/totaltrialclass", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  
+    const apiData = await response.json();
+    console.log("joined,notjoined", apiData);
+  
     const transformedData: CourseBar[] = [
       {
         name: "Joined",
-        value: data[0]?.studentJointCount || 0,
+        value: apiData.students || 0,
         color: "#9FD0FF",
       },
       {
         name: "Not Joined",
-        value: data[0]?.studentNotJointCount || 0,
+        value: apiData.evaluation?.studentNotJointCount || 0,
         color: "#AFC0FF",
       },
       {
         name: "No Response",
-        value: data[0]?.studentNotJointCount || 0,
+        value: apiData.evaluation?.studentNotJointCount || 0,
         color: "#78A1DB",
       },
     ];
-
+  
     setChartData(transformedData);
   };
+  
 
   return (
     <div>
@@ -310,6 +323,8 @@ const getPieLabelPosition = (
 const PreferredTeachersCard = () => {
   const [teacherData, setTeacherData] = useState({
     total: 0,
+    assignedTeacherCount: 0,
+    notAssinedCount: 0,
     assignedTeacherPercentage: "0",
     notAssignedTeacherPercentage: "0",
   });
@@ -318,16 +333,17 @@ const PreferredTeachersCard = () => {
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("AdminAuthToken");
       if (token) {
-        fetchData(token); // pass token into the function
+        fetchData(token);
       } else {
         console.log("No auth token found.");
       }
     }
   }, []);
+
   const fetchData = async (token: string) => {
     try {
       const res = await fetch(
-        "https://api.blackstoneinfomaticstech.com/teacherstatus",
+        "http://localhost:5001/teacherstatus",
         {
           method: "GET",
           headers: {
@@ -343,42 +359,32 @@ const PreferredTeachersCard = () => {
     }
   };
 
-  const assigned = Number(
-    (
-      (parseFloat(teacherData.assignedTeacherPercentage) / 100) *
-      teacherData.total
-    ).toFixed(0)
-  );
-  const notassigned = teacherData.total - assigned;
-  const total = assigned + notassigned;
-  const assignedPercent = total > 0 ? Math.round((assigned / total) * 100) : 0;
-  const notAssignedPercent =
-    total > 0 ? Math.round((notassigned / total) * 100) : 0;
+  // Direct counts from backend
+  const assigned = teacherData.assignedTeacherCount;
+  const notassigned = teacherData.notAssinedCount;
+  const total = teacherData.total;
 
-  // Pie label positions
+  // Percentages also come from backend
+  const assignedPercent = Math.round(parseFloat(teacherData.assignedTeacherPercentage));
+  const notAssignedPercent = Math.round(parseFloat(teacherData.notAssignedTeacherPercentage));
+
+  // Pie angles
   const assignedAngles = {
     start: -90,
     end: -90 + (assigned / (total || 1)) * 360,
   };
+
   const notAssignedAngles = {
     start: assignedAngles.end,
     end: 270,
   };
+
   const assignedLabelPos = getPieLabelPosition(
-    75,
-    75,
-    0,
-    55,
-    assignedAngles.start,
-    assignedAngles.end
+    75, 75, 0, 55, assignedAngles.start, assignedAngles.end
   );
+
   const notAssignedLabelPos = getPieLabelPosition(
-    75,
-    75,
-    0,
-    50,
-    notAssignedAngles.start,
-    notAssignedAngles.end
+    75, 75, 0, 50, notAssignedAngles.start, notAssignedAngles.end
   );
 
   return (
@@ -387,8 +393,10 @@ const PreferredTeachersCard = () => {
         <h2 className="text-[13px] font-semibold text-[#010E30] dark:text-[#fff]">
           Teacher Assigned - Not Assigned
         </h2>
+
         <div className="relative flex items-center justify-center -ml-2 mt-2">
           <PieChart width={150} height={150}>
+
             {/* Assigned Segment */}
             <Pie
               data={[{ name: "Assigned", value: assigned }]}
@@ -401,8 +409,6 @@ const PreferredTeachersCard = () => {
               dataKey="value"
               strokeWidth={0}
               fill={TEACHER_COLORS[0]}
-              label={false}
-              labelLine={false}
             />
             {assigned > 0 && (
               <text
@@ -417,6 +423,7 @@ const PreferredTeachersCard = () => {
                 {assignedPercent}%
               </text>
             )}
+
             {/* Not Assigned Segment */}
             <Pie
               data={[{ name: "Not Assigned", value: notassigned }]}
@@ -429,8 +436,6 @@ const PreferredTeachersCard = () => {
               dataKey="value"
               strokeWidth={0}
               fill={TEACHER_COLORS[1]}
-              label={false}
-              labelLine={false}
             />
             {notassigned > 0 && (
               <text
@@ -445,6 +450,7 @@ const PreferredTeachersCard = () => {
                 {notAssignedPercent}%
               </text>
             )}
+
             {/* Outline */}
             <Pie
               data={[{ name: "Assigned", value: assigned }]}
@@ -458,10 +464,12 @@ const PreferredTeachersCard = () => {
               strokeWidth={0}
               fill={TEACHER_COLORS[2]}
             />
+
           </PieChart>
         </div>
+
+        {/* Legend */}
         <div className="grid grid-cols-2 gap-1 w-full mt-10">
-          {/* Legend for Assigned and Not Assigned */}
           <div className="flex flex-col items-center text-start">
             <div className="flex items-center gap-[5px]">
               <div
@@ -476,6 +484,7 @@ const PreferredTeachersCard = () => {
               {assigned}
             </div>
           </div>
+
           <div className="flex flex-col items-center text-start">
             <div className="flex items-center gap-[5px]">
               <div
@@ -491,16 +500,18 @@ const PreferredTeachersCard = () => {
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
 };
 
+
 //Trail by Teachers
 
 const TrialByTeachers = () => {
   const [teachers, setTeachers] = useState<
-    { teacherName: string; trials: number; joined: number; _id: string }[]
+    { teacherName: string; studentCount: number; joined: number; _id: string }[]
   >([]);
 
   useEffect(() => {
@@ -561,10 +572,10 @@ const TrialByTeachers = () => {
                   {teacher.teacherName}
                 </td>
                 <td className="px-4 py-2 text-[#010E30] dark:text-[#fff] text-[10px]">
-                  {teacher.trials ?? 0}
+                  {teacher.studentCount ?? 0}
                 </td>
                 <td className="px-4 py-2 text-[#010E30] dark:text-[#fff] text-[10px]">
-                  {teacher.joined ?? 0}
+                  {teacher.studentCount ?? 0}
                 </td>
               </tr>
             ))}
