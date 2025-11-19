@@ -230,7 +230,7 @@ router.push(`/admin-main/ui/livemeeting?meetingId=${classData?.meetingId}`);
   // }
 
   return (
-    <div className="bg-[#71a1db] rounded-xl shadow flex items-center justify-between text-white">
+    <div className="bg-[#71a1db] rounded-xl w-full shadow flex items-center justify-between text-white">
       <div className="items-center p-2 px-8">
         <h3 className="text-[13px] font-medium pt-3">
           Your Next Meeting is Scheduled In
