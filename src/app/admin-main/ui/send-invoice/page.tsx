@@ -165,7 +165,7 @@ export default function InvoicePage() {
   }, []);
   const fetchStudents = async (token: string) => {
     try {
-      const response = await axios.get("http://localhost:5001/alstudents", {
+      const response = await axios.get("https://api.blackstoneinfomaticstech.com/alstudents", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

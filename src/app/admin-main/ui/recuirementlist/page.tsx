@@ -13,33 +13,9 @@ import BaseLayout4 from "@/components/BaseLayout4";
 import { TiAttachment } from "react-icons/ti";
 import ReactDOM from "react-dom";
 import DatePicker from "react-datepicker";
+import { ImAttachment } from "react-icons/im";
 
-function getResumeBlobUrl(
-  uploadResume?: string | { type: string; data: any[] }
-): string | undefined {
-  if (!uploadResume) return undefined;
 
-  if (typeof uploadResume === "string") {
-    // Assume base64 string, strip possible data URI prefix
-    const base64Data = uploadResume.includes("base64,")
-      ? uploadResume.split("base64,")[1]
-      : uploadResume;
-    const byteCharacters = atob(base64Data);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], { type: "application/pdf" });
-    return URL.createObjectURL(blob);
-  } else if (uploadResume.data && uploadResume.type) {
-    const byteArray = new Uint8Array(uploadResume.data);
-    const blob = new Blob([byteArray], { type: uploadResume.type });
-    return URL.createObjectURL(blob);
-  }
-
-  return undefined;
-}
 
 interface Supervisor {
   supervisorId: string;
@@ -64,10 +40,7 @@ interface Applicant {
   currency?: string;
   expectedSalary?: number;
   preferedWorkingHours?: string;
-  uploadResume?: {
-    type: string;
-    data: any[];
-  };
+  uploadResume?: string;
   comments?: string;
   overallRating?: number;
   professionalExperience?: string;
@@ -78,6 +51,103 @@ interface Applicant {
   __v?: number;
   supervisor?: Supervisor;
 }
+const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const createBlobUrl = async(resumeData: any) => {
+    if (!resumeData) {
+      console.error("No resume data provided");
+      return null;
+    }
+
+    try {
+
+     
+    console.log("file " , resumeData)
+    const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${resumeData}`, {
+      method: "GET",
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch file");
+    const blob = await res.blob();
+ 
+      // // Convert base64 to binary
+      // const binaryString = atob(resumeData);
+      // const bytes = new Uint8Array(binaryString.length);
+      // for (let i = 0; i < binaryString.length; i++) {
+      //   bytes[i] = binaryString.charCodeAt(i);
+      // }
+
+      // const blob = new Blob([bytes], { type: "application/pdf" });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error("Error creating blob URL:", error);
+      return null;
+    }
+  };
+
+  const handleClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const resumeData = applicant.uploadResume;
+      if (!resumeData) {
+        setError("Resume not available");
+        return;
+      }
+
+      // Create new blob URL on each click
+      const newBlobUrl =  await createBlobUrl(resumeData);
+      if (!newBlobUrl) {
+        setError("Failed to load resume");
+        return;
+      }
+
+      // Clean up old blob URL if it exists
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
+
+      setBlobUrl(newBlobUrl);
+
+      // Open in new tab
+      window.open(newBlobUrl, "_blank");
+    } catch (error) {
+      console.error("Error handling resume click:", error);
+      setError("Failed to open resume");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
+    };
+  }, [blobUrl]);
+
+  return (
+    <div className="flex flex-col">
+      <button
+        onClick={handleClick}
+        disabled={isLoading}
+        className="text-[#38619A] hover:underline flex items-center gap-1 disabled:opacity-50"
+      >
+        <ImAttachment className="w-4 h-4" />
+        {isLoading ? "Loading..." : "Resume"}
+      </button>
+      {error && <span className="text-red-500 text-xs mt-1">{error}</span>}
+    </div>
+  );
+};
+
 
 export default function ApplicantsPage() {
   const router = useRouter();
@@ -101,10 +171,17 @@ export default function ApplicantsPage() {
   const tabs = ["All", "NewCandidates", "Shortlisted", "Rejected", "Waiting"];
   const itemsPerPage = 10;
 
+ const tabStatusMap: Record<string, string | null> = {
+    All: null,
+    NewCandidates: "NEW APPLICATION",
+    Shortlisted: "SHORTLISTED",
+    Rejected: "REJECTED",
+    Waiting: "WAITING",
+  };
   // Filtering logic
   const filteredApplicants = applicants.filter(applicant => {
-    // Tab filter
-    if (activeTab !== "All" && applicant.applicationStatus !== activeTab.toUpperCase()) return false;
+    const tabStatus = tabStatusMap[activeTab];
+    if (tabStatus && applicant.applicationStatus !== tabStatus) return false;
     // Position filter
     if (filterPosition && applicant.positionApplied !== filterPosition) return false;
     // Name filter (first or last name, case-insensitive)
@@ -133,6 +210,30 @@ export default function ApplicantsPage() {
       fetchApplicants(token);
     }
   }, []);
+   const createBlobUrl = async(resumeData: any) => {
+    if (!resumeData) {
+      console.error("No resume data provided");
+      return null;
+    }
+
+    try {
+
+     
+    console.log("file " , resumeData)
+    const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${resumeData}`, {
+      method: "GET",
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch file");
+    const blob = await res.blob();
+ 
+    
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error("Error creating blob URL:", error);
+      return null;
+    }
+  };
 
   const fetchApplicants = async (token: string) => {
     try {
@@ -398,7 +499,7 @@ export default function ApplicantsPage() {
                     <tbody className="text-[10px] text-[#1D2939]">
                       {currentApplicants.length > 0 ? (
                         currentApplicants.map((applicant, index) => {
-                          const resumeUrl = getResumeBlobUrl(applicant.uploadResume);
+                          const resumeUrl = createBlobUrl(applicant.uploadResume);
                           return (
                             <tr
                               key={applicant._id}
@@ -427,19 +528,8 @@ export default function ApplicantsPage() {
                                 {applicant.positionApplied}
                               </td>
                               <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                                {resumeUrl ? (
-                                  <a
-                                    href={resumeUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-1 text-xs  text-[#17243E] dark:text-[#669ee2] ml-8"
-                                  >
-                                    <TiAttachment className="w-4 h-4" />
-                                    <span className="text-[11px] text-center ">View Resume</span>
-                                  </a>
-                                ) : (
-                                  <span className="text-gray-400 italic ml-8">No Resume</span>
-                                )}
+                                                             <ResumeLink applicant={applicant} />
+
                               </td>
 
                               <td className="px-4 py-3 whitespace-nowrap align-middle">

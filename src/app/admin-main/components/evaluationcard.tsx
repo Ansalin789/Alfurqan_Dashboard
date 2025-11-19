@@ -69,7 +69,7 @@ const TotalRequestChart = () => {
   const fetchData = async (token: string) => {
     try {
       const res = await fetch(
-        "http://localhost:5001/totaltrialclass",
+        "https://api.blackstoneinfomaticstech.com/totaltrialclass",
         {
           method: "GET",
           headers: {

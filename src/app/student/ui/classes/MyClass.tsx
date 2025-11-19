@@ -189,7 +189,7 @@ const NextClass = () => {
         if (!studentId || !token) return;
 
         const response = await axios.get<ApiResponse>(
-          `http://localhost:5001/classShedule/students`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/students`,
           {
             params: { studentId },
             headers: {

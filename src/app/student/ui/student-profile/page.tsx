@@ -181,7 +181,7 @@ const StudentProfile = () => {
           }
 
           await axios.put(
-            `http://localhost:5001/studentProfile/${studentId}`,
+            `https://api.blackstoneinfomaticstech.com/studentProfile/${studentId}`,
             formData,
             {
               headers: {
@@ -235,7 +235,7 @@ const StudentProfile = () => {
           }
 
           await axios.put(
-            `http://localhost:5001/studentProfile/${studentId}`,
+            `https://api.blackstoneinfomaticstech.com/studentProfile/${studentId}`,
             updateData,
             {
               headers: {

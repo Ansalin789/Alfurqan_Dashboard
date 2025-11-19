@@ -161,7 +161,7 @@ formData.append("createdBy", knowledgeBaseData.createdBy);
 formData.append("updatedBy", knowledgeBaseData.updatedBy || "");
 formData.append("updatedDate", knowledgeBaseData.updatedDate || "");
 
-const response = await fetch("http://localhost:5001/knowledgebase", {
+const response = await fetch("https://api.blackstoneinfomaticstech.com/knowledgebase", {
   method: "POST",
   headers: {
     Authorization: `Bearer ${token}`, 

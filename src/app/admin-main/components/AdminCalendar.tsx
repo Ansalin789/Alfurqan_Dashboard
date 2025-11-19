@@ -53,7 +53,7 @@ const fetchMeetings = async () => {
 
   try {
     const response = await fetch(
-      "http://localhost:5001/allAdminMeeting",
+      "https://api.blackstoneinfomaticstech.com/allAdminMeeting",
       {
         headers: {
           Authorization: `Bearer ${token}`,

@@ -126,7 +126,7 @@ const SignIn: React.FC = () => {
   const checkEmail = async (email: string) => {
     try {
       // Send a POST request to the backend to check if the email exists
-      const response = await axios.post(`http://localhost:5001/check-email`, {
+      const response = await axios.post(`https://api.blackstoneinfomaticstech.com/check-email`, {
         email,
       });
 

@@ -144,7 +144,7 @@ export default function KnowledgeBase() {
 
      
     console.log("file " , resumeData)
-    const res = await fetch(`http://localhost:5001/files/view/${resumeData}`, {
+    const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${resumeData}`, {
       method: "GET",
     });
 
@@ -168,7 +168,7 @@ export default function KnowledgeBase() {
    const fetchAndOpenFile = async (fileId: string) => {
   try {
     console.log("file ",fileId)
-    const res = await fetch(`http://localhost:5001/files/view/${fileId}`, {
+    const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${fileId}`, {
       method: "GET",
     });
 
@@ -190,7 +190,7 @@ console.log("res", blob.type);
   const fetchKnowledgeBaseList = async (token: string) => {
     try {
       const response = await fetch(
-        "http://localhost:5001/knowledgebase/list",
+        "https://api.blackstoneinfomaticstech.com/knowledgebase/list",
         {
           method: "GET",
           headers: {

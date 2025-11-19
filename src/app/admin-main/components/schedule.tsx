@@ -80,7 +80,7 @@ const DashboardClasses = () => {
   const fetchClassData = async (token: string) => {
     try {
       const response = await fetch(
-        `http://localhost:5001/classShedule/totalclasses?dateRange=${duration}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/totalclasses?dateRange=${duration}`,
         {
           method: "GET",
           headers: {
@@ -127,7 +127,7 @@ const DashboardClasses = () => {
           return;
         }
         const response = await fetch(
-          "http://localhost:5001/classShedule/classstatuscount",
+          "https://api.blackstoneinfomaticstech.com/classShedule/classstatuscount",
           {
             headers: {
               "Content-Type": "application/json",

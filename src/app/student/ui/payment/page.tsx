@@ -410,7 +410,7 @@ const Invoice = () => {
 
         // ✅ API call with query param
         const response = await axios.get(
-          `http://localhost:5001/studentinvoiceById`,
+          `https://api.blackstoneinfomaticstech.com/studentinvoiceById`,
           {
             params: { studentId: studentIdQuery },
             headers: {

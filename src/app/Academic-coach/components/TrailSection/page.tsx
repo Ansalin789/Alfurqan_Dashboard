@@ -461,7 +461,7 @@ const TrailSection = () => {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const response = await fetch("http://localhost:5001/meetinglist");
+        const response = await fetch("https://api.blackstoneinfomaticstech.com/meetinglist");
         if (!response.ok) throw new Error("Failed to fetch meetings");
         const data = await response.json();
         setMeetings(data);
