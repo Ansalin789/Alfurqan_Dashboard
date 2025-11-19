@@ -28,9 +28,9 @@ const SidebarItems = [
   },
   { name: 'Manage Students', href: '/admin-main/ui/student', icon: '/assets/images/local-library.png' },
   { name: 'Manage Employees', href: '/admin-main/ui/employees', icon: '/assets/images/business-center.png' },
-  { name: 'Courses', href: '/admin-main/ui/courses', icon: PiBookOpenFill },
+  { name: 'Learning management', href: '/admin-main/ui/courses', icon: PiBookOpenFill },
   {
-    name: 'Schedule',
+    name: 'Schedules',
     href: '#',
     icon: '/assets/images/ChalkboardTeacher.png',
     subItems: [

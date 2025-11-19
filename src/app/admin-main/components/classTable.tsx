@@ -75,9 +75,27 @@ const SalaryCard = () => {
     router.push("/admin-main/ui/schedulelistviewall");
   };
   const router = useRouter();
+  const now = new Date();
+const completedData = classData
+  .filter(cls  => {
+    const endDate = new Date(cls.endDate);
+    return (
+      ["Completed", "BothAbsent", "StudentAbsent", "TeacherAbsent"].includes(cls.scheduleStatus) &&
+      endDate < now
+    );
+  })
+  .sort((a , b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()); // descending
+  
 
-  const upcomingData = classData.filter((item) => item.status !== "Completed");
-  const completedData = classData.filter((item) => item.status === "Completed");
+const upcomingData = classData
+  .filter(cls => {
+    const endDate = new Date(cls.endDate);
+    return (
+      ["Scheduled", "Rescheduled", "Reschedulerequested"].includes(cls.scheduleStatus) &&
+      endDate >= now
+    );
+  })
+  .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()); // descending
 
   const baseTabData = activeTab === "Upcoming" ? upcomingData : completedData;
 
@@ -284,7 +302,7 @@ const SalaryCard = () => {
                     <th className="text-left px-4 py-3 w-[150px]">Courses</th>
                     <th className="text-left px-4 py-3 w-[150px]">Class</th>
                     <th className="text-left px-4 py-3 w-[150px]">Date</th>
-                    <th className="text-left px-4 py-3 w-[150px]">Scheduled</th>
+                    <th className="text-left px-4 py-3 w-[150px]">Scheduled status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -337,7 +355,7 @@ const SalaryCard = () => {
             {/* Pagination */}
             <div className="flex justify-end">
               <button
-                className="text-[#576CBC] mt-3 text-[11px] bg-[#576CBC]/10 cursor-pointer rounded-md border-[#576CBC] px-2 py-1 "
+                className="text-[#576CBC] mt-3 text-[12px] bg-[#576CBC]/10 cursor-pointer rounded-md border-[#576CBC] px-3 py-2 "
                 onClick={handleView}
               >
                 View all

@@ -52,7 +52,7 @@ interface PieData {
 }
 
 const DashboardClasses = () => {
-  const [duration, setDuration] = useState("Last 8 Months");
+  const [duration, setDuration] = useState("last6months");
   const [pieRange, setPieRange] = useState("Today");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [lineData, setLineData] = useState<{ month: string; value: number }[]>(
@@ -80,7 +80,7 @@ const DashboardClasses = () => {
   const fetchClassData = async (token: string) => {
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/classShedule/totalclasses?dateRange=last8months",
+        `http://localhost:5001/classShedule/totalclasses?dateRange=${duration}`,
         {
           method: "GET",
           headers: {
@@ -90,7 +90,7 @@ const DashboardClasses = () => {
         }
       );
       const data: ClassScheduleData[] = await response.json();
-
+     console.log("value on year" , data);
       const transformedData = data.map((item) => ({
         month: item.date,
         value: item.totalClass,
@@ -102,6 +102,17 @@ const DashboardClasses = () => {
       console.error(err);
     }
   };
+
+  useEffect(()=>{
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("AdminAuthToken");
+      if (token) {
+        fetchClassData(token);
+      } else {
+        console.log("No auth token found.");
+      }
+    }
+  },[duration]);
 
   useEffect(() => {
     const fetchClassStatus = async () => {
@@ -116,7 +127,7 @@ const DashboardClasses = () => {
           return;
         }
         const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/classShedule/classstatuscount",
+          "http://localhost:5001/classShedule/classstatuscount",
           {
             headers: {
               "Content-Type": "application/json",
@@ -209,100 +220,129 @@ const DashboardClasses = () => {
     <div className="w-full max-w-[1365px] mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Line Chart Panel — Updated to match design */}
-        <Card className="rounded-2xl p-4 shadow-md h-[250px] flex flex-col justify-between min-w-0 bg-[#FAFAFB] dark:bg-[#343434]">
-          <div className="flex justify-between items-center mb-2">
-            <h4 className="font-semibold text-sm text-[#010E30] dark:text-[#FFFFFF]">
-              Total Classes
-            </h4>
-            <select
-              className="text-xs bg-white dark:bg-[#2D2D2D] text-[#010E30] dark:text-[#FFFFFF] px-2 py-[2px] rounded border border-gray-200 dark:border-gray-600"
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-            >
-              <option>Last 8 Months</option>
-              <option>Last 6 Months</option>
-            </select>
-          </div>
+       <Card className="rounded-xl p-4 shadow-md h-auto flex flex-col gap-3 min-w-0 bg-[#FAFAFB] dark:bg-[#343434]">
+  {/* Header */}
+  <div className="flex justify-between items-center">
+    <h4 className="font-semibold text-sm text-[#010E30] dark:text-white">
+      Total Classes
+    </h4>
 
-          {error ? (
-            <div className="text-center text-red-400 text-sm">{error}</div>
-          ) : (
-            <ResponsiveContainer width="100%" height={180}>
-              <AreaChart data={lineData}>
-                <defs>
-                  <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#87AFFF" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#87AFFF" stopOpacity={0.1} />
-                  </linearGradient>
-                </defs>
-                <XAxis
-                  dataKey="month"
-                  stroke="currentColor"
-                  strokeOpacity={0.5}
-                  fontSize={10}
-                  tickLine={false}
-                  axisLine={false}
-                  className="text-[#010E30] dark:text-[#FFFFFF]"
-                />
-                <YAxis
-                  stroke="currentColor"
-                  strokeOpacity={0.5}
-                  fontSize={10}
-                  tickLine={false}
-                  axisLine={false}
-                  className="text-[#010E30] dark:text-[#FFFFFF]"
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#FAFAFB",
-                    border: "1px solid #E5E7EB",
-                    borderRadius: "6px",
-                    color: "#010E30",
-                    fontSize: "12px",
-                    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-                  }}
-                />
-                <Area
-                  type="basis"
-                  dataKey="value"
-                  stroke="#87AFFF"
-                  fillOpacity={1}
-                  fill="url(#blueGradient)"
-                  strokeWidth={1.5}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          )}
-        </Card>
+    <select
+      className="text-xs bg-white dark:bg-[#2D2D2D] text-[#010E30] dark:text-white px-2 py-1 rounded border border-gray-200 dark:border-gray-600"
+      value={duration}
+      onChange={(e) => setDuration(e.target.value)}
+    >
+      <option value="lastyear">Last Year</option>
+      <option value="last6months">Last 6 Months</option>
+      <option value="last3months">Last 3 Months</option>
+      <option value="lastmonth">Last Month</option>
+    </select>
+  </div>
+
+  {/* Chart */}
+  {error ? (
+    <div className="text-center text-red-400 text-sm">{error}</div>
+  ) : (
+    <div className="w-full h-[180px] sm:h-[140px] md:h-[180px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={lineData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+          <defs>
+            <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#87AFFF" stopOpacity={0.7} />
+              <stop offset="95%" stopColor="#87AFFF" stopOpacity={0.1} />
+            </linearGradient>
+          </defs>
+
+          <XAxis
+            dataKey="month"
+            tickFormatter={(value) => {
+              if (!value) return "";
+              const [month, year] = value.split("-");
+              return `${month}-${year.slice(-2)}`;
+            }}
+            stroke="currentColor"
+            strokeOpacity={0.5}
+            fontSize={10}
+            tickLine={false}
+            axisLine={false}
+            interval="preserveStartEnd"
+            minTickGap={5}
+            className="text-[#010E30] dark:text-white"
+          />
+
+          <YAxis
+            stroke="currentColor"
+            strokeOpacity={0.5}
+            fontSize={10}
+            tickLine={false}
+            axisLine={false}
+            className="text-[#010E30] dark:text-white"
+          />
+
+          <Tooltip
+            formatter={(value) => [`${value} classes`, ""]}
+            labelStyle={{ fontWeight: "bold" }}
+            contentStyle={{
+              backgroundColor: "#FAFAFB",
+              border: "1px solid #E5E7EB",
+              borderRadius: "6px",
+              color: "#010E30",
+              fontSize: "12px",
+            }}
+          />
+
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke="#87AFFF"
+            fill="url(#blueGradient)"
+            fillOpacity={1}
+            strokeWidth={2}
+            dot={{ r: 0 }}
+            activeDot={{ r: 4 }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  )}
+</Card>
+
 
         {/* Bar Chart Panel (unchanged) */}
         <Card className="p-3 rounded-lg shadow-md bg-[#FAFAFB] dark:bg-[#343434] h-[250px] flex flex-col justify-between min-w-0">
           <h2 className="font-semibold text-sm text-[#010E30] dark:text-[#FFFFFF]">
             Total Classes Overview
           </h2>
-          <div className="space-y-2">
-            {barData.map((item, index) => (
-              <button
-                key={index}
-                className="relative w-full focus:outline-none"
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
-              >
-                <div className="relative bg-gray-200 dark:bg-[#444] h-4 rounded-full w-full">
-                  <div
-                    className={`h-4 rounded-full ${item.color} relative transition-all duration-300`}
-                    style={{ width: `${(item.value / maxValue) * 100}%` }}
-                  >
-                    {hoveredIndex === index && (
-                      <div className="absolute -top-6 right-0 bg-gray-900 dark:bg-gray-700 text-white text-[10px] font-semibold px-2 py-[1px] rounded shadow">
-                        {item.value}%
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
+         <div className="space-y-2">
+  {barData.map((item, index) => (
+    <button
+      key={index}
+      className="relative w-full focus:outline-none"
+      onMouseEnter={() => setHoveredIndex(index)}
+      onMouseLeave={() => setHoveredIndex(null)}
+    >
+      <div className="relative bg-gray-200 dark:bg-[#444] h-4 rounded-full w-full">
+        <div
+          className={`h-4 rounded-full ${item.color} relative transition-all duration-300 flex items-center`}
+          style={{ width: `${(item.value / maxValue) * 100}%` }}
+        >
+          {/* Value inside bar */}
+          <span className="absolute left-5 text-[10px] font-semibold text-black dark:text-white">
+            {item.value}
+          </span>
+
+          {/* Hover tooltip */}
+          {/* {hoveredIndex === index && (
+            <div className="absolute -top-6 right-0 bg-gray-900 dark:bg-gray-700 text-white text-[10px] font-semibold px-2 py-[1px] rounded shadow">
+              {item.value}%
+            </div>
+          )} */}
+        </div>
+      </div>
+    </button>
+  ))}
+</div>
+
           <div className="flex flex-wrap mt-3 gap-x-3 gap-y-1 text-[10px]">
             {barData.map((item) => (
               <div key={item.label} className="flex items-center gap-1">
@@ -349,8 +389,7 @@ const DashboardClasses = () => {
             </div>
             <div className="flex flex-col gap-2 ml-6">
               {pieData.map((item) => {
-                const percentage =
-                  total > 0 ? ((item.value / total) * 100).toFixed(0) : 0;
+              
                 return (
                   <div
                     key={item.name}
@@ -363,7 +402,7 @@ const DashboardClasses = () => {
                       ></span>
                       <span>{item.name} Class</span>
                     </div>
-                    <span className="font-semibold ml-4">{percentage}%</span>
+                    <span className="font-semibold ml-4">{item.value}</span>
                   </div>
                 );
               })}
