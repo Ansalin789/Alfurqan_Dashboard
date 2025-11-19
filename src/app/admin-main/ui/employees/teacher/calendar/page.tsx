@@ -333,7 +333,7 @@ const SchedulePage = () => {
 
   return (
     <BaseLayout4>
-    <AdminHeader currentSection="Calendar" />
+    <AdminHeader currentSection="Calendar" showBackButton={true} showBackPath={`/admin-main/ui/employees/teacher?teacherId=${employeeId}`} />
       <div className="p-2">
         <div className="mx-auto gap-4 flex flex-col lg:flex-row overflow-hidden min-h-[630px]">
           {/* Calendar Component */}

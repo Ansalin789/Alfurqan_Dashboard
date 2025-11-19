@@ -7,7 +7,7 @@ import SupervisorHeader from "../../components/supervisorHeader";
 const Support = () => {
   return (
     <BaseLayout3>
-    <SupervisorHeader currentSection="Support"/>
+      <SupervisorHeader currentSection="Support" />
       <div className="p-4">
         <div className="flex gap-x-5 w-auto">
           <div className="bg-[#7689BD] shadow-lg rounded-xl p-4 h-[616px] w-[580px]">
@@ -25,16 +25,15 @@ const Support = () => {
                   Visit Us :
                 </strong>
                 <div className="ml-6">
-                <span className="text-[13px] font-normal text-white">
-                  Come say Hello at Our Office HQ
-                </span>
-                <br />
-                <span className="text-white text-[13px] font-normal">
-                  {" "}
-                  128, City Road, London, EC1V 2NX, United Kingdom
-                </span>
+                  <span className="text-[13px] font-normal text-white">
+                    Come say Hello at Our Office HQ
+                  </span>
+                  <br />
+                  <span className="text-white text-[13px] font-normal">
+                    {" "}
+                    128, City Road, London, EC1V 2NX, United Kingdom
+                  </span>
                 </div>
-                
               </p>
               <p>
                 <strong className="text-white text-[16px] font-medium flex items-center gap-2">
@@ -46,15 +45,15 @@ const Support = () => {
                   Call Us :
                 </strong>
                 <div className="ml-6">
-                <span className="text-[13px] font-normal text-white">
-                  Monday – Sunday/ 24×7
-                </span>
-                <br />
-                <span className="text-white text-[13px] font-normal">
-                  UK +44 20 4577 1227
+                  <span className="text-[13px] font-normal text-white">
+                    Monday – Sunday/ 24×7
+                  </span>
                   <br />
-                  USA +1 85 5442 3380
-                </span>
+                  <span className="text-white text-[13px] font-normal">
+                    UK +44 20 4577 1227
+                    <br />
+                    USA +1 85 5442 3380
+                  </span>
                 </div>
               </p>
               <p>
@@ -67,13 +66,13 @@ const Support = () => {
                   Email to Us :
                 </strong>
                 <div className="ml-6">
-                <span className="text-[13px] font-normal text-white">
-                  Our Friendly team is here to Help
-                </span>
-                <br />
-                <span className="text-white text-[13px] font-normal">
-                  contact@alfurqan.academy
-                </span>
+                  <span className="text-[13px] font-normal text-white">
+                    Our Friendly team is here to Help
+                  </span>
+                  <br />
+                  <span className="text-white text-[13px] font-normal">
+                    contact@alfurqan.academy
+                  </span>
                 </div>
               </p>
             </div>
@@ -86,57 +85,58 @@ const Support = () => {
             <div className="px-6">
               <details className="group mb-6 py-2 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  What if I encounter technical issues?
+                  How can I monitor live classes or review class recordings?{" "}
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Visit the Help Center or Support section of the site. You can
-                  often find troubleshooting guides or contact the support team
-                  via email, chat, or phone.
+                  Go to the “Teachers” menu and click “Scheduled Classes” at the
+                  top right to view ongoing or recorded sessions.
                 </div>
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  Can I use the Teacher Module to communicate with students?
+                  Can I provide feedback or evaluations for teachers?{" "}
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Yes, the Teacher Module provides features to communicate
-                  directly with students.
+                  Yes. Use the “Teacher → Feedback” option at the top right to
+                  submit ratings and performance notes.
                 </div>
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  Can I track my students' progress?
+                  What actions can I take if a teacher or student reports an
+                  issue?{" "}
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Yes, the Teacher Module allows tracking student progress
-                  effectively.
+                  You can review, investigate, and either resolve or escalate
+                  the issue to the Admin Team. effectively.
                 </div>
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  Does the platform support mobile access?
+                  How do I communicate with teachers or academic coaches?{" "}
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Yes, the platform is fully responsive and can be accessed from
-                  any mobile device.
+                  Use the “Messages” feature from your menu for direct and
+                  smooth communication.
                 </div>
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  Can I provide personalized feedback to students?
+                  How can I view new teacher applications?{" "}
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Yes, you can provide personalized feedback to students through
-                  the platform.
+                  Go to the “Recruitment” menu to view applications with
+                  profiles, qualifications, and demo videos. You can shortlist
+                  or reject applicants directly from there.
                 </div>
               </details>
             </div>

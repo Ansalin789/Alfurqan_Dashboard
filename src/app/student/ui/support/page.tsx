@@ -86,57 +86,58 @@ const Support = () => {
             <div className="px-6">
               <details className="group mb-6 py-2 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  What if I encounter technical issues?
+                How can I join my live class from the dashboard?
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Visit the Help Center or Support section of the site. You can
-                  often find troubleshooting guides or contact the support team
-                  via email, chat, or phone.
+                You can join your live class directly from your Student Dashboard by clicking the “Join”
+button next to your scheduled class.
+Alternatively, go to the Classes menu and click Join from there.
+Note: The Join button will only become active at the scheduled class time.
                 </div>
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  Can I use the Teacher Module to communicate with students?
+                How can I check my upcoming class schedule or past sessions?
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Yes, the Teacher Module provides features to communicate
-                  directly with students.
+                Go to “Classes” in your dashboard. You’ll find both upcoming and completed classes listed
+                there.
                 </div>
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  Can I track my students' progress?
+                How can I upgrade or change my current package?
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Yes, the Teacher Module allows tracking student progress
-                  effectively.
+                Click “Upgrade Package” in your dashboard. You can choose from the available plans or
+                contact the Admin Support Team for assistance.
                 </div>
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  Does the platform support mobile access?
-                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
+                Is it possible to reschedule a class if I miss one?                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Yes, the platform is fully responsive and can be accessed from
-                  any mobile device.
+                If a scheduled class is missed, make-up or reschedule is not available.
                 </div>
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  Can I provide personalized feedback to students?
+                How to reschedule a scheduled class?
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Yes, you can provide personalized feedback to students through
-                  the platform.
+                You can request to reschedule a class based on your package. Go to your Scheduled Classes list,
+click the “Request Reschedule” button next to the class, and choose your preferred date (subject
+to teacher availability).
+Note: Rescheduling is only allowed up to 4 hours before the class start time.
                 </div>
               </details>
             </div>

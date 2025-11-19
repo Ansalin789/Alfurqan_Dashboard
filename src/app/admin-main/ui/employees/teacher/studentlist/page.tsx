@@ -226,12 +226,12 @@ const page = () => {
     "agenda"
   );
   const tabs = [
-    "Studentslist",
-    "ScheduledClass",
+    "Students List",
+    "Scheduled Class",
     "Earnings",
     "Payments",
     "Wages",
-    "WorkingHours",
+    "Working Hours",
   ];
   const searchParams = useSearchParams();
   const employeeId = searchParams.get("teacherId");
@@ -412,7 +412,7 @@ const page = () => {
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Student List" />
+      <AdminHeader currentSection="Student List" showBackButton showBackPath={`/admin-main/ui/employees/teacher?teacherId=${employeeId}`} />
       <div>
         <div className="rounded-lg overflow-hidden">
         <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
@@ -508,19 +508,19 @@ const page = () => {
             >
               <thead className="text-[12px] bg-[#576CBC] text-white dark:bg-[#6087C0]">
                 <tr className="font-medium">
-                  <th className="p-3 font-semibold text-[12px] text-center">
+                  <th className="p-3 font-semibold text-[12px] text-left">
                     Student ID
                   </th>
-                  <th className="p-3 font-semibold text-[12px] text-center">
+                  <th className="p-3 font-semibold text-[12px] text-left">
                     Student's name
                   </th>
-                  <th className="p-3 font-semibold text-[12px] text-center">
+                  <th className="p-3 font-semibold text-[12px] text-left">
                     Country
                   </th>
-                  <th className="p-3 font-semibold text-[12px] text-center">
+                  <th className="p-3 font-semibold text-[12px] text-left">
                     Subject
                   </th>
-                  <th className="p-3 font-semibold text-[12px] text-center">
+                  <th className="p-3 font-semibold text-[12px] text-left">
                     Duration
                   </th>
                 </tr>
@@ -532,13 +532,13 @@ const page = () => {
                     return (
                       <tr
                         key={item.studentId || index}
-                        className={`text-center dark:text-white ${
+                        className={`text-left dark:text-white ${
                           index % 2 === 0
                             ? "bg-[#fff] dark:bg-[#2C2C2C]"
                             : "bg-[#F8F8F8] dark:bg-[#303030]"
                         }`}
                       >
-                        <td className="p-3">{item.studentId}</td>
+                        <td className="p-3">{student?.studentId}</td>
                         <td className="p-3">{student?.studentFirstName}</td>
                         <td className="p-3">{student?.studentCountry}</td>
                         <td className="p-3">{student?.learningInterest}</td>

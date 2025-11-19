@@ -239,12 +239,12 @@ const page = () => {
     "agenda"
   );
   const tabs = [
-    "Studentslist",
-    "ScheduledClass",
+    "Students List",
+    "Scheduled Class",
     "Earnings",
     "Payments",
     "Wages",
-    "WorkingHours",
+    "Working Hours",
   ];
   const searchParams = useSearchParams();
   const employeeId = searchParams.get("teacherId");
@@ -374,7 +374,7 @@ const page = () => {
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Payments" />
+      <AdminHeader currentSection="Payments" showBackButton={true} showBackPath={`/admin-main/ui/employees/teacher?teacherId=${employeeId}`} />
       <div>
         <div className="rounded-xl overflow-hidden">
         <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
@@ -458,22 +458,22 @@ const page = () => {
             >
               <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                 <tr className="font-medium">
-                  <th className="p-4 font-semibold text-[12px] text-center">
+                  <th className="p-4 font-semibold text-[12px] text-left">
                     Payment Date
                   </th>
-                  <th className="p-4 font-semibold text-[12px] text-center">
+                  <th className="p-4 font-semibold text-[12px] text-left">
                     Amount
                   </th>
-                  <th className="p-4 font-semibold text-[12px] text-center">
+                  <th className="p-4 font-semibold text-[12px] text-left">
                     DeductionAmount
                   </th>
-                  <th className="p-4 font-semibold text-[12px] text-center">
+                  <th className="p-4 font-semibold text-[12px] text-left">
                     Payment Method
                   </th>
-                  <th className="p-4 font-semibold text-[12px] text-center">
+                  <th className="p-4 font-semibold text-[12px] text-left">
                     Status
                   </th>
-                  <th className="p-4 font-semibold text-[12px] text-center">
+                  <th className="p-4 font-semibold text-[12px] text-left">
                     Action
                   </th>
                 </tr>
@@ -483,7 +483,7 @@ const page = () => {
                   currentItems.map((item, index) => (
                     <tr
                       key={item._id}
-                      className={`text-center dark:text-white ${
+                      className={`text-left dark:text-white ${
                         index % 2 === 0
                           ? "bg-[#fff] dark:bg-[#2C2C2C]"
                           : "bg-[#F8F8F8] dark:bg-[#303030]"
@@ -514,7 +514,7 @@ const page = () => {
                           {item.paymentStatus}
                         </span>
                       </td>
-                      <td className="p-3 text-center">
+                      <td className="p-3 text-left">
                         <button className="text-blue-500 text-[11px]">
                           Download
                         </button>
