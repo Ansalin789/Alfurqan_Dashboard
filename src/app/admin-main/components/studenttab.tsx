@@ -188,7 +188,7 @@ interface AssignmentType {
     _id: string;
     status: string;
   }[];
-  
+ 
 }
 
 // Define the PaymentResponse interface
@@ -290,23 +290,23 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
   useEffect(() => {
     const fetchData = async () => {
       try {
-        
+       
         const token = localStorage.getItem("AdminAuthToken");
        
         if (!token || !studentId || !courseName) {
           console.error("❌ studentId or courseName missing in localStorage or props"); // Modified message
           return;
         }
-  
+ 
         const response = await axios.get(`${API_BASE_URL}/dashboard/student/counts`, {
           params: { studentId, courseName },
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
-            
+           
           },
         });
-  
+ 
         setDashboardCounts({
           totalLevel: Number(response.data.totalLevel) || 0,
           totalAttendance: Number(response.data.totalAttendance) || 0,
@@ -323,10 +323,10 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
         console.error("❌ Error fetching dashboard counts:", error);
       }
     };
-  
+ 
     fetchData();
   }, [studentId, courseName]); // Add studentId as a dependency
-  
+ 
 
   const data = [
     {
@@ -371,7 +371,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
       }
     }
   }, [studentId]);
-  
+ 
 
   const fetchStudentDetails = async (token: string, studentId: string) => {
     try {
@@ -384,7 +384,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
           },
         }
       );
-      // Removed console.log("Student Details API response (alstudents):", response.data); 
+      // Removed console.log("Student Details API response (alstudents):", response.data);
 
       // Fetch class schedule to get courseId
       const classScheduleRes = await fetch(
@@ -566,7 +566,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
     const values = assignments.map(assignment => assignment.course).filter(Boolean) as string[];
     return Array.from(new Set(values));
   };
-  
+ 
   const getUniqueLevels = () => {
     const values = assignments.map(assignment => assignment.level).filter(Boolean) as string[];
     return Array.from(new Set(values));
@@ -753,6 +753,7 @@ useEffect(() => {
           console.error("Missing token or applicationStudentId");
           return;
         }
+
         const response = await axios.get(`http://localhost:5001/student/paymenthistory?userId=${applicationStudentId}`, { // Use applicationStudentId
           headers: {
             Authorization: `Bearer ${token}`,
@@ -1018,7 +1019,7 @@ useEffect(() => {
                   &times;
                 </button>
                 <h2 className="text-lg font-semibold mb-6 dark:text-white">Filter by</h2>
-                
+               
                 <div className="mb-4">
                   <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Teacher Name</label>
                   <input
@@ -1028,7 +1029,7 @@ useEffect(() => {
                     onChange={(e) => setMeetingFilters({ ...meetingFilters, teacher: e.target.value })}
                   />
                 </div>
-                
+               
                 <div className="mb-4">
   <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
     Course
@@ -1044,14 +1045,14 @@ useEffect(() => {
     <option value="">Select Course</option>
     <option value="Quran">Quran</option>
     <option value="Arabic">Arabic</option>
-    <option value="Islamic Studies	">Islamic Studies	</option>
+    <option value="Islamic Studies ">Islamic Studies </option>
    
-  
+ 
    
   </select>
 </div>
 
-                
+               
                 <div className="mb-4">
                   <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Date</label>
                   <div className="flex gap-2">
@@ -1079,7 +1080,7 @@ useEffect(() => {
                     value={meetingFilters.startTime}
                     onChange={(e) => setMeetingFilters({ ...meetingFilters, startTime: e.target.value })}
                   />
-                
+               
                   <input
                     type="time"
                     className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
@@ -1144,7 +1145,7 @@ useEffect(() => {
                   &times;
                 </button>
                 <h2 className="text-lg font-semibold mb-6 dark:text-white">Filter by</h2>
-                
+               
                 <div className="mb-4">
                   <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Course Name</label>
                   <input
@@ -1575,7 +1576,7 @@ useEffect(() => {
                   </button>
                 </div>
             </div>
-            
+           
           )}
         </div>
       )}
@@ -1595,7 +1596,7 @@ useEffect(() => {
                   // Reset pagination if needed
                 }}
               />
-              
+             
               <div
                 className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
                 onClick={() => setIsAssignmentFilterModalOpen(true)} // Open filter modal on click
@@ -1681,7 +1682,7 @@ useEffect(() => {
                   &times;
                 </button>
                 <h2 className="text-lg font-semibold mb-6 dark:text-white">Filter by</h2>
-                
+               
                 <div className="mb-4">
                   <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Assignment Name</label>
                   <input
