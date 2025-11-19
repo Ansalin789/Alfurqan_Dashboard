@@ -213,7 +213,6 @@ const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
     });
 
     if (!res.ok) throw new Error("Failed to fetch file");
-  console.log('res',(await res.blob()).type);
     const blob = await res.blob();
  
       // // Convert base64 to binary

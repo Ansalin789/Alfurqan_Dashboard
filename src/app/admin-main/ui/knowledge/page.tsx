@@ -134,7 +134,37 @@ export default function KnowledgeBase() {
       console.error("❌ Error in fetchCourses:", err);
     }
   };
+  const createBlobUrl = async(resumeData: any) => {
+    if (!resumeData) {
+      console.error("No resume data provided");
+      return null;
+    }
 
+    try {
+
+     
+    console.log("file " , resumeData)
+    const res = await fetch(`http://localhost:5001/files/view/${resumeData}`, {
+      method: "GET",
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch file");
+    const blob = await res.blob();
+ 
+      // // Convert base64 to binary
+      // const binaryString = atob(resumeData);
+      // const bytes = new Uint8Array(binaryString.length);
+      // for (let i = 0; i < binaryString.length; i++) {
+      //   bytes[i] = binaryString.charCodeAt(i);
+      // }
+
+      // const blob = new Blob([bytes], { type: "application/pdf" });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error("Error creating blob URL:", error);
+      return null;
+    }
+  };
    const fetchAndOpenFile = async (fileId: string) => {
   try {
     console.log("file ",fileId)
@@ -145,8 +175,14 @@ export default function KnowledgeBase() {
     if (!res.ok) throw new Error("Failed to fetch file");
    const blob = await res.blob();     // ✅ ONLY READ ONCE
 console.log("res", blob.type);
-       const newBlobUrl = URL.createObjectURL(blob);
-    window.open(newBlobUrl, "_blank");
+      const newBlobUrl =  await createBlobUrl(fileId);
+      if (!newBlobUrl) {
+        console.log("Failed to load resume");
+        return;
+      }
+
+      // Open in new tab
+      window.open(newBlobUrl, "_blank");
   } catch (err) {
     console.error("Error fetching file:", err);
   }

@@ -149,14 +149,26 @@ export default function KnowledgeBaseForm({ onClose }: LeaveFormProps) {
         console.error("❌ AdminAuthToken not found");
         return;
       }
-      const response = await fetch("http://localhost:5001/knowledgebase", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(knowledgeBaseData),
-      });
+     const formData = new FormData();
+
+formData.append("courseName", knowledgeBaseData.courseName);
+formData.append("subjectTitle", knowledgeBaseData.subjectTitle);
+formData.append("uploadedFormat", knowledgeBaseData.uploadedFormat);
+formData.append("uploadedFile", knowledgeBaseData.uploadedFile); // <- File object
+formData.append("status", knowledgeBaseData.status);
+formData.append("createdDate", knowledgeBaseData.createdDate);
+formData.append("createdBy", knowledgeBaseData.createdBy);
+formData.append("updatedBy", knowledgeBaseData.updatedBy || "");
+formData.append("updatedDate", knowledgeBaseData.updatedDate || "");
+
+const response = await fetch("http://localhost:5001/knowledgebase", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${token}`, 
+  },
+  body: formData,
+});
+
 
       console.log("Response Status:", response.status);
       if ([200, 201].includes(response.status)) {
