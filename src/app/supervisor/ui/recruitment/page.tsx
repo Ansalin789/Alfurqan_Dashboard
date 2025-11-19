@@ -483,7 +483,7 @@ export default function ApplicantsPage() {
 
     if (!res.ok) throw new Error("Failed to fetch file");
   console.log('res',res)
-    const blob = await res.blob(); 
+    const blob = await res.blob();
        const blobUrl = URL.createObjectURL(blob);
     window.open(blobUrl, "_blank");
   } catch (err) {
@@ -664,7 +664,7 @@ export default function ApplicantsPage() {
       // ✅ Initialize ALL editable fields with actual data from API
       setPreferredWorkingHours(response.data.preferedWorkingHours || "");
       setExpectedSalary(response.data.expectedSalary?.toString() || "");
-      
+     
       // Parse working days from backend data
       if (response.data.preferedWorkingDays) {
         parseWorkingDays(response.data.preferedWorkingDays);
@@ -712,7 +712,7 @@ export default function ApplicantsPage() {
   // Helper function to parse working days
   const parseWorkingDays = (daysString: string) => {
   console.log("🔄 Parsing working days:", daysString);
-  
+ 
   if (!daysString || daysString.trim() === "") {
     setSelectedDays([]);
     setWorkingDays("");
@@ -725,11 +725,11 @@ export default function ApplicantsPage() {
     const [startDay, endDay] = daysString.split("-");
     const fullDaysList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
     const shortDaysList = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    
+   
     // Try full day names first
     let startIndex = fullDaysList.indexOf(startDay);
     let endIndex = fullDaysList.indexOf(endDay);
-    
+   
     // If not found, try short day names
     if (startIndex === -1) {
       startIndex = shortDaysList.indexOf(startDay);
@@ -754,20 +754,20 @@ export default function ApplicantsPage() {
   } else {
     // Single day
     const dayMap: { [key: string]: string } = {
-      "Monday": "Mon", "Tuesday": "Tue", "Wednesday": "Wed", 
+      "Monday": "Mon", "Tuesday": "Tue", "Wednesday": "Wed",
       "Thursday": "Thu", "Friday": "Fri", "Saturday": "Sat", "Sunday": "Sun",
-      "Mon": "Mon", "Tue": "Tue", "Wed": "Wed", "Thu": "Thu", 
+      "Mon": "Mon", "Tue": "Tue", "Wed": "Wed", "Thu": "Thu",
       "Fri": "Fri", "Sat": "Sat", "Sun": "Sun"
     };
-    
+   
     const fullDayMap: { [key: string]: string } = {
       "Mon": "Monday", "Tue": "Tuesday", "Wed": "Wednesday",
       "Thu": "Thursday", "Fri": "Friday", "Sat": "Saturday", "Sun": "Sunday"
     };
-    
+   
     const shortDay = dayMap[daysString] || daysString;
     const fullDay = fullDayMap[shortDay] || daysString;
-    
+   
     setSelectedDays([shortDay]);
     setWorkingDays(fullDay);
     console.log("✅ Parsed single day:", shortDay, "->", fullDay);
@@ -879,12 +879,12 @@ const handlesendupdate = async (id: string, status: string) => {
       sent: updateData,
       received: response.data
     });
-    
+   
     setSuccess(true);
     setSuccessMessage(`Successfully ${status.toLowerCase()} the application`);
     fetchApplicants();
     handleviewclose();
-    
+   
   } catch (error: any) {
     console.error("❌ Update failed:", error.response?.data);
     setFailed(true);
@@ -1462,7 +1462,7 @@ const handlesendupdate = async (id: string, status: string) => {
                               checked={state === level}
                               onChange={() => setState(level)}
                               disabled={mode === "view"}
-                              className="appearance-none w-[10px] h-[10px] rounded-full border border-[#333D58] checked:bg-[#1E2A41] checked:ring-1 checked:ring-offset-1 transition-all 
+                              className="appearance-none w-[10px] h-[10px] rounded-full border border-[#333D58] checked:bg-[#1E2A41] checked:ring-1 checked:ring-offset-1 transition-all
                                        dark:border-[#A9A9A9] dark:checked:bg-[#E5E5E5] dark:checked:ring-[#E5E5E5] dark:ring-offset-[#333D58] disabled:opacity-50"
                             />
                             {level}

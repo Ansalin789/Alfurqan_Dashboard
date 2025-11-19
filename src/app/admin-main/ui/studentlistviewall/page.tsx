@@ -68,7 +68,7 @@ const filteredStudentsByFilters = filteredStudents.filter((student) => {
     : true;
 
   const matchesCourse = meetingFilters.course
-    ? student.student.course.toLowerCase().trim().includes(meetingFilters.course.toLowerCase().trim())
+    ? student.student.course.toLowerCase().includes(meetingFilters.course.toLowerCase())
     : true;
 
   const matchesFromDate = meetingFilters.fromDate
@@ -84,59 +84,69 @@ const filteredStudentsByFilters = filteredStudents.filter((student) => {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    const allStudents = students;
-    let currentFilteredStudents = allStudents;
-
-    // Apply search query
     const search = searchQuery.toLowerCase();
-    if (search) {
-      currentFilteredStudents = currentFilteredStudents.filter((student) => {
-        const joiningDate = student.evaluation?.[0]?.joiningDate;
-        const formattedJoiningDate = joiningDate
-          ? new Date(joiningDate)
-              .toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })
-              .toLowerCase()
-          : "";
 
-        return (
-          student._id?.toLowerCase().includes(search) ||
-          student.username?.toLowerCase().includes(search) ||
-          student.teacherName?.toLowerCase().includes(search) ||
-          student.student.course?.toLowerCase().includes(search) ||
-          student.student.studentPhone?.toString().includes(search) ||
-          student.classScheduleCount?.toString().includes(search) ||
-          formattedJoiningDate.includes(search) ||
-          (student.level !== null &&
-            student.level !== undefined &&
-            student.level.toString().includes(search))
-        );
-      });
-    }
+    const filtered = students.filter((student) => {
+      const joiningDate = student.evaluation?.[0]?.joiningDate;
+      const formattedJoiningDate = joiningDate
+        ? new Date(joiningDate)
+            .toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+            .toLowerCase()
+        : "";
 
-    // Apply meeting filters
-    currentFilteredStudents = currentFilteredStudents.filter((student) => {
-      const matchesTeacher = meetingFilters.teacher
-        ? student.teacherName.toLowerCase().includes(meetingFilters.teacher.toLowerCase())
-        : true;
-
-      const matchesCourse = meetingFilters.course
-        ? student.student.course.toLowerCase().trim().includes(meetingFilters.course.toLowerCase().trim())
-        : true;
-
-      const matchesFromDate = meetingFilters.fromDate
-        ? new Date(student.evaluation?.[0]?.joiningDate) >= new Date(meetingFilters.fromDate)
-        : true;
-
-      return matchesTeacher && matchesCourse && matchesFromDate;
+      return (
+        student._id?.toLowerCase().includes(search) ||
+        student.username?.toLowerCase().includes(search) ||
+        student.teacherName?.toLowerCase().includes(search) ||
+        student.student.course?.toLowerCase().includes(search) ||
+        student.student.studentPhone?.toString().includes(search) ||
+        student.classScheduleCount?.toString().includes(search) ||
+        formattedJoiningDate.includes(search) ||
+        (student.level !== null &&
+          student.level !== undefined &&
+          student.level.toString().includes(search))
+      );
     });
 
-    setFilteredStudents(currentFilteredStudents);
-    setCurrentPage(1);
-  }, [searchQuery, students, meetingFilters]);
+    setFilteredStudents(filtered);
+    setCurrentPage(1); // Reset to page 1 when search changes
+  }, [searchQuery, students]);
+  useEffect(() => {
+    const search = searchQuery.toLowerCase();
+
+    const filtered = students.filter((student) => {
+      const joiningDate = student.evaluation?.[0]?.joiningDate;
+      const formattedJoiningDate = joiningDate
+        ? new Date(joiningDate)
+            .toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+            .toLowerCase()
+        : "";
+
+      return (
+        student._id?.toLowerCase().includes(search) ||
+        student.username?.toLowerCase().includes(search) ||
+        student.teacherName?.toLowerCase().includes(search) ||
+        student.student.course?.toLowerCase().includes(search) ||
+        student.student.studentPhone?.toString().includes(search) ||
+        student.classScheduleCount?.toString().includes(search) ||
+        formattedJoiningDate.includes(search) ||
+        (student.level !== null &&
+          student.level !== undefined &&
+          student.level.toString().includes(search))
+      );
+    });
+
+    setFilteredStudents(filtered);
+    setCurrentPage(1); // Reset to page 1 when search changes
+  }, [searchQuery, students]);
 
   useEffect(() => {
     const token =
@@ -157,7 +167,7 @@ const filteredStudentsByFilters = filteredStudents.filter((student) => {
   const fetchStudents = async (token: string) => {
     try {
       const response = await axios.get(
-        'https://api.blackstoneinfomaticstech.com/alstudents',
+        "https://api.blackstoneinfomaticstech.com/alstudents",
         {
           headers: {
             "Content-Type": "application/json",
@@ -211,13 +221,29 @@ const filteredStudentsByFilters = filteredStudents.filter((student) => {
   };
 
   function handleApplyMeetingFilters(meetingFilters: { teacher: string; course: string; fromDate: string; }): void {
-    setIsFilterModalOpen(false);
+    const filtered = students.filter((student) => {
+      const matchesTeacher = meetingFilters.teacher
+        ? student.teacherName.toLowerCase().includes(meetingFilters.teacher.toLowerCase())
+        : true;
+
+      const matchesCourse = meetingFilters.course
+        ? student.student.course.toLowerCase().includes(meetingFilters.course.toLowerCase())
+        : true;
+
+      const matchesFromDate = meetingFilters.fromDate
+        ? new Date(student.evaluation[0].joiningDate) >= new Date(meetingFilters.fromDate)
+        : true;
+
+      return matchesTeacher && matchesCourse && matchesFromDate;
+    });
+
+    setFilteredStudents(filtered);
     setCurrentPage(1); // Reset to page 1 when filters are applied
   }
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Student Lists" showBackButton showBackPath="/admin-main/ui/student"/>
+      <AdminHeader currentSection="Student Lists" />
 
       <div className="rounded-xl overflow-hidden">
         {/* Top Bar: Search / Filter / Showing Info */}
@@ -329,7 +355,7 @@ const filteredStudentsByFilters = filteredStudents.filter((student) => {
                           >
                             <button
                               className="w-full text-left px-4 py-2 hover:bg-[]"
-                              onClick={() => handleViewDetails(student.student.studentId)}
+                              onClick={() => handleViewDetails(student._id)}
                             >
                               View Details
                             </button>
@@ -379,19 +405,12 @@ const filteredStudentsByFilters = filteredStudents.filter((student) => {
       </div>
       <div className="mb-4">
         <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Course Name</label>
-        <select
-  className="w-full px-3 py-2 border rounded text-xs dark:text-white dark:border-[#5C5C5C] dark:bg-[#343434]"
-  value={meetingFilters.course}
-  onChange={(e) =>
-    setMeetingFilters({ ...meetingFilters, course: e.target.value })
-  }
->
-  <option value="">Select Course</option>
-  <option value="Arabic">Arabic</option>
-  <option value="Quran">Quran</option>
-  <option value="Islamic Studies">Islamic Studies</option>
-</select>
-
+        <input
+          type="text"
+          className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+          value={meetingFilters.course}
+          onChange={(e) => setMeetingFilters({ ...meetingFilters, course: e.target.value })}
+        />
       </div>
       <div className="mb-4">
         <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">From Date</label>
@@ -403,18 +422,12 @@ const filteredStudentsByFilters = filteredStudents.filter((student) => {
         />
       </div>
       <div className="flex justify-end gap-3">
-       <button
-  onClick={() => {
-    setMeetingFilters({ teacher: "", course: "", fromDate: "" });
-    // setFilteredStudents(students); // Removed: useEffect will handle re-filtering
-    setCurrentPage(1);              
-    setIsFilterModalOpen(false);     
-  }}
-  className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
->
-  Reset
-</button>
-
+        <button
+          onClick={() => setMeetingFilters({ teacher: '', course: '', fromDate: '' })}
+          className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+        >
+          Reset
+        </button>
         <button
           className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
           onClick={() => handleApplyMeetingFilters(meetingFilters)}

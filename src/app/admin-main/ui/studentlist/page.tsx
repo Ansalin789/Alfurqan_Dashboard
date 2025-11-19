@@ -87,14 +87,14 @@ export default function StudentList() {
 
       const allStudents: StudentItem[] = response.data.students;
 
-      const filteredStudent = allStudents.find((s) => s._id === studentId || s.student.studentId === studentId);
+      const filteredStudent = allStudents.find((s) => s._id === studentId);
 
       setStudent(filteredStudent || null);
       console.log("Filtered student:", filteredStudent);
 
       // Fetch payment history if userId exists
-      if (filteredStudent && filteredStudent.student.studentId) {
-        fetchPaymentHistory(filteredStudent.student.studentId, token);
+      if (filteredStudent && filteredStudent.userId) {
+        fetchPaymentHistory(filteredStudent.userId, token);
       } else {
         setPaymentHistory([]);
       }
@@ -136,7 +136,7 @@ export default function StudentList() {
         <div className="p-4 w-full overflow-hidden">
           <div
             key={student._id}
-            className="col-span-3 bg-[#54638C] text-white px-4 py-3 rounded-lg shadow-sm flex flex-row"
+            className="col-span-3 bg-[#5E6578] text-white px-4 py-3 rounded-lg shadow-sm flex flex-row"
           >
               <div className="flex flex-col items-center w-[20%] pr-4 py-6 border-r border-[#BCBCBC] gap-y-2">
                 <div className="rounded-full overflow-hidden p-2 border-white">
@@ -178,7 +178,7 @@ export default function StudentList() {
                   <div className="py-2 flex flex-row justify-between">
                     <span className="text-gray-200">Student ID</span>{" "}
                     <span className="text-gray-200 px-2 text-[10px]">
-                      {student.student.studentId}
+                      {student._id}
                     </span>
                   </div>
                   <div className="py-2 flex flex-row justify-between">
@@ -238,9 +238,9 @@ export default function StudentList() {
           {/* Tabbed Table Section */}
           <div className="w-full overflow-hidden">
             <TabbedTable
-              studentId={student._id || student.student.studentId}
+              studentId={student._id||student.student.studentId}
               courseName={student.student.course}
-              userId={paymentHistory[0]?.userId || ""} 
+              userId={paymentHistory[0]?.userId || ""}
             />
           </div>
         </div>

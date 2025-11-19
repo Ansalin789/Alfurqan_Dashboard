@@ -207,7 +207,7 @@ console.log("res", blob.type);
         const videos: KnowledgeBaseItem[] = [];
 
         result.data.forEach((item: KnowledgeBaseItem) => {
-          
+         
 
           if (item.uploadedFormat.toLowerCase() === "pdf") {
             pdfs.push(item);
