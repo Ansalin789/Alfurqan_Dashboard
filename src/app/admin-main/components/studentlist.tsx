@@ -85,7 +85,7 @@ const TrailManagement = () => {
       const uniqueStudents = Array.from(uniqueStudentsMap.values());
       const sorted = uniqueStudents.sort(
         (a, b) =>
-          new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
+          new Date(b.joiningDate).getTime() - new Date(a.joiningDate).getTime()
       );
 
       setAllStudents(sorted);

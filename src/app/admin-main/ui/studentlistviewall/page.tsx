@@ -185,7 +185,7 @@ const filteredStudentsByFilters = filteredStudents.filter((student) => {
       // Sort in a separate step
       const sortedStudents = uniqueStudents.sort(
         (a, b) =>
-          new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
+          new Date(b.joiningDate).getTime() - new Date(a.joiningDate).getTime()
       );
 
       setStudents(sortedStudents);
@@ -243,7 +243,7 @@ const filteredStudentsByFilters = filteredStudents.filter((student) => {
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Student Lists" />
+      <AdminHeader currentSection="Student Lists" showBackButton={true} showBackPath="/admin-main/ui/student"/>
 
       <div className="rounded-xl overflow-hidden">
         {/* Top Bar: Search / Filter / Showing Info */}
@@ -312,7 +312,7 @@ const filteredStudentsByFilters = filteredStudents.filter((student) => {
                         : "bg-[#F8F8F8] dark:bg-[#303030]"
                     }`}
                   >
-                    <td className="p-3">{student._id}</td>
+                    <td className="p-3">{student.student.studentId}</td>
                     <td className="p-3 text-blue-600 cursor-pointer">
                       {student.username}
                     </td>

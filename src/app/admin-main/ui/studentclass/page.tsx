@@ -82,7 +82,10 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
           setLoading(false);
           return;
         }
-        setClassData(data.classSchedule || []);
+        const sortedData = (data.classSchedule || []).sort((a: ClassSchedule, b: ClassSchedule) => {
+          return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+        });
+        setClassData(sortedData);
       } catch (err: any) {
         setError("Failed to fetch class schedule");
       } finally {

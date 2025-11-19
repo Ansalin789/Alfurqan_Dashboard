@@ -178,7 +178,7 @@ export default function StudentList() {
                   <div className="py-2 flex flex-row justify-between">
                     <span className="text-gray-200">Student ID</span>{" "}
                     <span className="text-gray-200 px-2 text-[10px]">
-                      {student._id}
+                      {student.student.studentId}
                     </span>
                   </div>
                   <div className="py-2 flex flex-row justify-between">
