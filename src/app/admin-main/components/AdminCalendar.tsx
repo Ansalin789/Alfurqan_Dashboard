@@ -7,23 +7,29 @@ import AdminHeader from "./AdminHeader";
 import { FaClock } from "react-icons/fa";
 import { BsFillCalendar2WeekFill } from "react-icons/bs";
 import BaseLayout4 from "@/components/BaseLayout4";
-import axios from "axios";
+
+type Teacher = {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+  _id?: string;
+};
 
 interface Event {
   id: string;
+  meetingId?: string;
   title: string;
   start: string;
   end: string;
   description: string;
   date: string;
   meetingStatus?: string;
-  teachers?: Array<{
-    teacherId: string;
-    teacherName: string;
-    teacherEmail: string;
-    _id: string;
-  }>;
+  teachers?: Teacher[];
 }
+
+type FlattenedMeeting = Omit<Event, "teachers"> & {
+  teachers: Teacher[];
+};
 
 const AdminCalendar = () => {
   const [activeView, setActiveView] = useState<"monthly" | "weekly" | "daily">("monthly");
@@ -32,55 +38,53 @@ const AdminCalendar = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
+  const [expandedMeetingId, setExpandedMeetingId] = useState<string | null>(null);
 
   const tabs = ["monthly", "weekly", "daily"] as const;
 
-  // Fetch meetings
- useEffect(() => {
-  const fetchMeetings = async () => {
-    try {
-      const token = localStorage.getItem("AdminAuthToken"); if (!token) { console.error("❌ AdminAuthToken not found"); setIsLoading(false); return; }
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/allAdminMeeting", {
-        params: {
-          limit: 100,
-          offset: 0,
-        },
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+  useEffect(() => {
+    const fetchMeetings = async () => {
+      const token = localStorage.getItem("AdminAuthToken");
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        setIsLoading(false);
+        return;
+      }
 
-      const data = response.data.data;
+      try {
+        const response = await fetch(
+          "https://api.blackstoneinfomaticstech.com/allAdminMeeting",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-      // 🔥 FORMAT API → FULLCALENDAR EVENTS
-      const formattedEvents =
-        data?.meetings?.flatMap((group: any) =>
-          group.records.map((record: any) => {
-            const dateObj = new Date(record.selectedDate);
-            const formattedDate = dateObj.toISOString().split("T")[0];
+        if (!response.ok) {
+          throw new Error("Failed to fetch meetings");
+        }
 
-            return {
-              id: record._id,
-              title: record.meetingName + " - " + record.teacher[0]?.teacherName,
-              start: formattedDate + "T" + record.startTime,
-              end: formattedDate + "T" + record.endTime,
-              meetingId: record.meetingId,
-              teacherName: record.teacher[0]?.teacherName,
-              teacherId: record.teacher[0]?.teacherId,
-              meetingStatus: record.meetingStatus,
-              extendedProps: {
-                raw: record,
-              },
-            };
-          })
-        ) ?? [];
+        const data = await response.json();
+        
+        const mappedEvents = data.data.meetings.map((meeting: any) => ({
+          id: meeting._id,
+          title: meeting.meetingName,
+          start: meeting.startTime,
+          end: meeting.endTime,
+          description: meeting.description,
+          date: moment(meeting.selectedDate).format("YYYY-MM-DD"),
+          meetingStatus: meeting.meetingStatus,
+          teachers: meeting.teachers
+        }));
 
-      setEvents(formattedEvents);
-    } catch (error) {
-      console.error("Error fetching meetings:", error);
-    }
-  };
+        setEvents(mappedEvents);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching meetings:", error);
+        setIsLoading(false);
+      }
+    };
 
   fetchMeetings();
 }, []);
@@ -118,6 +122,10 @@ const AdminCalendar = () => {
     const filtered = events.filter((event) => event.date === dateStr);
     console.log(`📌 Events for ${dateStr}:`, filtered);
     return filtered;
+  };
+
+  const toggleMeetingDetails = (meetingId: string) => {
+    setExpandedMeetingId((prev) => (prev === meetingId ? null : meetingId));
   };
 
   const WeeklyView = () => {
@@ -200,7 +208,10 @@ const AdminCalendar = () => {
                 {isSelected && dayEvents.length > 0 && (
                   <div className="w-full mt-2 space-y-2 pl-4">
                     {dayEvents.map((event, idx) => (
-                      <div key={idx} className="p-3 rounded-lg bg-[#576cbc]/10 dark:bg-[#414141] bg-[#f7f7f7] relative">
+                      <div
+                        key={idx}
+                        className="p-3 rounded-lg bg-[#576cbc]/10 dark:bg-[#414141] bg-[#f7f7f7] relative"
+                      >
                         <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 w-1 h-8 rounded-lg dark:bg-[#555555] bg-[#f7f7f7]"></div>
                         <div className="flex justify-between items-start">
                           <div>
@@ -235,7 +246,10 @@ const AdminCalendar = () => {
     return (
       <div className="space-y-4 h-[600px] overflow-y-scroll scrollbar-none">
         {dayEvents.map((event, idx) => (
-          <div key={idx} className="p-4 text-gray-500 mb-2 dark:bg-[#414141] bg-gray-100 rounded-xl dark:text-[#fff]">
+          <div
+            key={idx}
+            className="p-4 text-gray-500 mb-2 dark:bg-[#414141] bg-gray-100 rounded-xl dark:text-[#fff]"
+          >
             <div className="flex justify-between items-start">
               <div className="text-sm font-semibold text-[#576cbc]">{event.title}</div>
               <div className="flex items-center gap-1 text-[10px] text-gray-600 dark:text-gray-300">
@@ -277,15 +291,18 @@ const AdminCalendar = () => {
 
         <div className="grid grid-cols-7 gap-2 text-sm h-[470px] overflow-scroll scrollbar-none">
           {totalDays.map((day, i) => {
-            if (day === null) return <div key={i} className="min-h-[80px] bg-transparent" />;
+            if (day === null) {
+              return <div key={i} className="min-h-[80px] bg-transparent" />;
+            }
 
             const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
             const dayEvents = getEventsForDate(date);
             const hasEvents = dayEvents.length > 0;
+            const dateKey = moment(date).format("YYYY-MM-DD");
 
             return (
               <button
-                key={i}
+                key={`day-${dateKey}`}
                 onClick={() => handleDateClick(date)}
                 className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${
                   hasEvents
@@ -389,12 +406,18 @@ const AdminCalendar = () => {
 
                         <div className="mt-2">
                           <p className="text-[10px] font-semibold">Attendees:</p>
-                          {Array.isArray(item.teachers) && item.teachers.length > 0 ? (
-                            <ul className="text-[9px] space-y-1 mt-1">
-                              {item.teachers.map((teacher) => (
-                                <li key={teacher.teacherId}>{teacher.teacherName} ({teacher.teacherEmail})</li>
-                              ))}
-                            </ul>
+                          {Array.isArray(item.teachers) ? (
+                            item.teachers.length > 0 ? (
+                              <ul className="text-[9px] space-y-1 mt-1">
+                                {item.teachers.map((teacher) => (
+                                  <li key={teacher.teacherId}>
+                                    {teacher.teacherName} ({teacher.teacherEmail})
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-[9px] text-gray-500 italic mt-1">No attendees</p>
+                            )
                           ) : (
                             <p className="text-[9px] text-gray-500 italic mt-1">No attendees</p>
                           )}
