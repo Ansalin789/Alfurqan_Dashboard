@@ -43,48 +43,51 @@ const AdminCalendar = () => {
   const tabs = ["monthly", "weekly", "daily"] as const;
 
   useEffect(() => {
-    const fetchMeetings = async () => {
-      const token = localStorage.getItem("AdminAuthToken");
-      if (!token) {
-        console.error("❌ AdminAuthToken not found");
-        setIsLoading(false);
-        return;
+const fetchMeetings = async () => {
+  const token = localStorage.getItem("AdminAuthToken");
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    setIsLoading(false);
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      "http://localhost:5001/allAdminMeeting",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
+    );
 
-      try {
-        const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/allAdminMeeting",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+    if (!response.ok) {
+      throw new Error("Failed to fetch meetings");
+    }
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch meetings");
-        }
+    const data = await response.json();
 
-        const data = await response.json();
-        
-        const mappedEvents = data.data.meetings.map((meeting: any) => ({
-          id: meeting._id,
-          title: meeting.meetingName,
-          start: meeting.startTime,
-          end: meeting.endTime,
-          description: meeting.description,
-          date: moment(meeting.selectedDate).format("YYYY-MM-DD"),
-          meetingStatus: meeting.meetingStatus,
-          teachers: meeting.teachers
-        }));
+    // Correct mapping
+    const mappedEvents = data.data.meetings.flatMap((meetingGroup: any) =>
+      meetingGroup.records.map((meeting: any) => ({
+        id: meeting._id,
+        title: meeting.meetingName,
+        start: meeting.startTime,
+        end: meeting.endTime,
+        description: meeting.description,
+        date: moment(meeting.selectedDate).format("YYYY-MM-DD"),
+        meetingStatus: meeting.meetingStatus,
+        teachers: meeting.teacher,
+      }))
+    );
 
-        setEvents(mappedEvents);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching meetings:", error);
-        setIsLoading(false);
-      }
-    };
+    setEvents(mappedEvents);
+    setIsLoading(false);
+  } catch (error) {
+    console.error("Error fetching meetings:", error);
+    setIsLoading(false);
+  }
+};
 
   fetchMeetings();
 }, []);
@@ -404,24 +407,33 @@ const AdminCalendar = () => {
 
                         <p className="text-[10px] font-light text-[#333] dark:text-[#fff] mt-2">{item.description || ""}</p>
 
-                        <div className="mt-2">
-                          <p className="text-[10px] font-semibold">Attendees:</p>
-                          {Array.isArray(item.teachers) ? (
-                            item.teachers.length > 0 ? (
-                              <ul className="text-[9px] space-y-1 mt-1">
-                                {item.teachers.map((teacher) => (
-                                  <li key={teacher.teacherId}>
-                                    {teacher.teacherName} ({teacher.teacherEmail})
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : (
-                              <p className="text-[9px] text-gray-500 italic mt-1">No attendees</p>
-                            )
-                          ) : (
-                            <p className="text-[9px] text-gray-500 italic mt-1">No attendees</p>
-                          )}
-                        </div>
+{/* View List Toggle Button */}
+<button
+  onClick={() => toggleMeetingDetails(item.id)}
+  className="mt-2 text-[10px] text-blue-600 dark:text-blue-300 underline"
+>
+  {expandedMeetingId === item.id ? "Hide List ▲" : "View List ▼"}
+</button>
+
+{/* Teacher List */}
+{expandedMeetingId === item.id && (
+  <div className="mt-2">
+    <p className="text-[10px] font-semibold mb-1">Teachers:</p>
+
+    {Array.isArray(item.teachers) && item.teachers.length > 0 ? (
+      <ul className="text-[10px] space-y-1 mt-1 list-disc list-inside">
+        {item.teachers.map((t) => (
+          <li key={t.teacherId}>
+            {t.teacherName} ({t.teacherEmail})
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p className="text-[9px] text-gray-500 italic mt-1">No Teachers</p>
+    )}
+  </div>
+)}
+
 
                         {item.meetingStatus && (
                           <div className="mt-2">
