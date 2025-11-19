@@ -149,6 +149,55 @@ interface ClassSchedule {
   currency: string;
   classDay: string[];
   package: string;
+  isTrial?: boolean;
+  trialclass?: TrialClass;
+}
+
+interface TrialClass {
+  academicCoach: {
+    academicCoachId: string | null;
+    name: string | null;
+    email: string | null;
+  };
+  teacher: {
+    teacherId: string;
+    name: string;
+    email: string;
+  };
+  student: {
+    studentId: string;
+    name: string;
+    email: string;
+    city: string;
+    country: string;
+    phonenumber: string;
+  };
+  course: {
+    courseId: string;
+    courseName: string;
+  };
+  _id: string;
+  trialId: string;
+  subject: string;
+  meetingLocation: string;
+  classType: string;
+  meetingType: string;
+  meetingLink: string;
+  isScheduledMeeting: boolean;
+  scheduledStartDate: string;
+  scheduledEndDate: string;
+  scheduledFrom: string;
+  scheduledTo: string;
+  timeZone: string;
+  description: string;
+  meetingStatus: string;
+  studentResponse: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  lastUpdatedDate: string;
+  lastUpdatedBy: string;
+  __v: number;
 }
 const TeacherDetails = () => {
   interface IProfessionalExperience {
@@ -386,11 +435,78 @@ const TeacherDetails = () => {
       }
 
       const data = await res.json();
-   const classSchedules = data.classSchedule || [];
+      console.log("API Response:", data);
+
+      // Process regular classes
+      const regularClasses = (data.classSchedule || []).map((cls: ClassSchedule) => ({
+        ...cls,
+        isTrial: false
+      }));
+
+      console.log("Processed Regular Classes:", regularClasses);
+
+      // Process trial classes
+      let trialClasses: ClassSchedule[] = [];
+
+      if (Array.isArray(data.trialclasses)) {
+        console.log("Raw Trial Classes Data:", data.trialclasses);
+
+        trialClasses = data.trialclasses.map((trialClass: TrialClass) => ({
+          _id: trialClass._id || trialClass.trialId || "",
+          classLink: trialClass.meetingLink || "",
+          classDay: trialClass.scheduledStartDate ? [trialClass.scheduledStartDate] : [],
+          package: "", // Trial classes may not have package
+          startDate: trialClass.scheduledStartDate || "",
+          endDate: trialClass.scheduledEndDate || "",
+          startTime: [trialClass.scheduledFrom || ""],
+          endTime: [trialClass.scheduledTo || ""],
+          scheduleStatus: trialClass.meetingStatus || "Scheduled",
+          status: "Active",
+          createdDate: trialClass.createdDate || "",
+          createdBy: trialClass.createdBy || "System",
+          lastUpdatedDate: trialClass.lastUpdatedDate || "",
+          amount: "0",
+          currency: "$",
+          classType: trialClass.classType || "OneToOne",
+          sessionClassType: "TRIALCLASS",
+
+          student: {
+            studentId: trialClass.student?.studentId || "N/A",
+            studentFirstName: trialClass.student?.name?.split(" ")[0] || "Trial",
+            studentLastName: trialClass.student?.name?.split(" ").slice(1).join(" ") || "Student",
+            studentEmail: trialClass.student?.email || "",
+            gender: "", // No gender in trial
+          },
+
+          teacher: {
+            teacherId: trialClass.teacher?.teacherId || "",
+            teacherName: trialClass.teacher?.name || "",
+            teacherEmail: trialClass.teacher?.email || "",
+          },
+
+          course: {
+            courseId: trialClass.course?.courseId || "",
+            courseName: trialClass.course?.courseName || "",
+          },
+
+          isTrial: true,
+          trialclass: trialClass,
+        }));
+
+        console.log("Processed Trial Classes:", trialClasses);
+      } else {
+        console.log("No trial classes found or incorrect format.");
+      }
+
+      // Combine both types
+      const allClasses = [...regularClasses, ...trialClasses];
+      console.log("All Classes Combined:", allClasses);
     
     // Sort by date in ascending order (oldest first)
-    return classSchedules.sort((a: ClassSchedule, b: ClassSchedule) => {
-      return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+      return allClasses.sort((a: ClassSchedule, b: ClassSchedule) => {
+        const dateA = a.isTrial ? a.trialclass?.scheduledStartDate || a.startDate : a.startDate;
+        const dateB = b.isTrial ? b.trialclass?.scheduledStartDate || b.startDate : b.startDate;
+        return new Date(dateA).getTime() - new Date(dateB).getTime();
     });
   } catch (err) {
     console.error("Failed to fetch class schedule", err);
@@ -407,9 +523,7 @@ const TeacherDetails = () => {
 
   schedule.forEach((item: ClassSchedule) => {
     if (item.student && item.student.studentId) { // Add check for studentId
-      const fullName = `${item.student.studentFirstName} ${
-        item.student.studentLastName || ""
-      }`.trim();
+      const fullName = item.student.studentFirstName || "";
       const courseName = item.course?.courseName || "";
       const studentId = item.student.studentId;
 
@@ -432,7 +546,7 @@ const TeacherDetails = () => {
       setScheduledClasses(
         schedule.filter((c) =>  c.scheduleStatus === "Scheduled" ||
               c.scheduleStatus === "Rescheduled" ||
-              c.scheduleStatus === "RequestReschedule")
+              c.scheduleStatus === "Reschedulerequested")
       );
       setCompletedClasses(
         schedule.filter((c) => c.scheduleStatus === "Completed" || c.scheduleStatus === "BothAbsent" || c.scheduleStatus === "TeacherAbsent" || c.scheduleStatus === "StudentAbsent")
@@ -518,18 +632,61 @@ const TeacherDetails = () => {
     const lowerQuery = query.toLowerCase();
 
     const filtered = currentUsers.filter((user) => {
-      const fullName =
-        `${user.student.studentFirstName} ${user.student.studentLastName}`.toLowerCase();
+      const isTrial = user.isTrial;
+      
+      // Get student name - handle trial classes
+      const studentName = isTrial
+        ? user.trialclass?.student?.name?.toLowerCase() || 
+          `${user.student?.studentFirstName || ""} ${user.student?.studentLastName || ""}`.toLowerCase()
+        : `${user.student?.studentFirstName || ""} ${user.student?.studentLastName || ""}`.toLowerCase();
+
+      // Get course name
+      const courseName = isTrial
+        ? user.trialclass?.course?.courseName?.toLowerCase() || user.course?.courseName?.toLowerCase()
+        : user.course?.courseName?.toLowerCase();
+
+      // Get class type
+      const classType = (user.sessionClassType || user.classType || "").toLowerCase();
+
+      // Get status
+      const status = isTrial
+        ? user.trialclass?.meetingStatus?.toLowerCase() || user.scheduleStatus?.toLowerCase()
+        : user.scheduleStatus?.toLowerCase();
+
+      // Get date for search
+      const classDate = isTrial ? 
+        (user.trialclass?.scheduledStartDate || user.startDate) : 
+        user.startDate;
+      const dateObj = classDate ? new Date(classDate) : null;
+      const dateReadable = dateObj
+        ? dateObj.toLocaleDateString("en-US", {
+            month: "short",
+            day: "2-digit",
+            year: "numeric",
+          }).toLowerCase()
+        : "";
+
+      // Get time for search
+      const startTime = isTrial ? 
+        (user.trialclass?.scheduledFrom || user.startTime?.[0]) : 
+        user.startTime?.[0];
+      const endTime = isTrial ? 
+        (user.trialclass?.scheduledTo || user.endTime?.[0]) : 
+        user.endTime?.[0];
+      const timing = `${startTime || ""} - ${endTime || ""}`.toLowerCase();
 
       return (
         (user._id?.toLowerCase() || "").includes(lowerQuery) ||
-        (user.student.studentId?.toLowerCase() || "").includes(lowerQuery) ||
-        fullName.includes(lowerQuery) ||
-        (user.student.gender?.toLowerCase() || "").includes(lowerQuery) ||
-        (user.teacher.teacherName?.toLowerCase() || "").includes(lowerQuery) ||
-        (user.course.courseName?.toLowerCase() || "").includes(lowerQuery) ||
-        (user.scheduleStatus?.toLowerCase() || "").includes(lowerQuery) ||
-        (user.status?.toLowerCase() || "").includes(lowerQuery)
+        (user.student?.studentId?.toLowerCase() || "").includes(lowerQuery) ||
+        studentName.includes(lowerQuery) ||
+        (user.student?.gender?.toLowerCase() || "").includes(lowerQuery) ||
+        (user.teacher?.teacherName?.toLowerCase() || "").includes(lowerQuery) ||
+        (courseName || "").includes(lowerQuery) ||
+        (status || "").includes(lowerQuery) ||
+        (user.status?.toLowerCase() || "").includes(lowerQuery) ||
+        (classType || "").includes(lowerQuery) ||
+        (timing || "").includes(lowerQuery) ||
+        (dateReadable || "").includes(lowerQuery)
       );
     });
 
@@ -588,11 +745,11 @@ const TeacherDetails = () => {
         overlayClassName="fixed inset-0 bg-black bg-opacity-50"
       >
         <div className="fixed inset-0 bg-opacity-40 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg w-[320px] relative dark:bg-[#252525]">
+          <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-sm font-semibold text-gray-800 dark:text-white">
+              <h1 className="text-lg font-semibold text-gray-800 dark:text-white">
                 Filter by
-              </h2>
+              </h1>
               <button
                 onClick={onClose}
                 className="text-gray-400 text-xl absolute top-4 right-4"
@@ -638,7 +795,7 @@ const TeacherDetails = () => {
 
               {/* Date */}
               <div>
-                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6] ">
                   Date
                 </label>
                 <input
@@ -647,7 +804,7 @@ const TeacherDetails = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, Date: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  className="w-full px-3 py-2 border rounded text-sm dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] dark:[color-scheme:dark]"
                 />
               </div>
 
@@ -662,7 +819,7 @@ const TeacherDetails = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, Time: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  className="w-full px-3 py-2 border rounded text-sm dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] dark:[color-scheme:dark]"
                 />
               </div>
 
@@ -774,47 +931,62 @@ const TeacherDetails = () => {
       activeTab === "scheduled" ? [...scheduledClasses] : [...completedClasses];
 
     if (filters.studentName) {
-      filtered = filtered.filter((user) =>
-        `${user.student?.studentFirstName ?? ""} ${
-          user.student?.studentLastName ?? ""
-        }`
-          .toLowerCase()
-          .includes(filters.studentName.toLowerCase())
-      );
+      filtered = filtered.filter((user) => {
+        const isTrial = user.isTrial;
+        const studentName = isTrial
+          ? user.trialclass?.student?.name?.toLowerCase() || 
+            `${user.student?.studentFirstName || ""} ${user.student?.studentLastName || ""}`.toLowerCase()
+          : `${user.student?.studentFirstName ?? ""} ${user.student?.studentLastName ?? ""}`.toLowerCase();
+        
+        return studentName.includes(filters.studentName.toLowerCase());
+      });
     }
 
     if (filters.Date) {
-      filtered = filtered.filter(
-        (user) => formatDate(user.startDate) === filters.Date
-      );
+      filtered = filtered.filter((user) => {
+        const isTrial = user.isTrial;
+        const classDate = isTrial ? 
+          (user.trialclass?.scheduledStartDate || user.startDate) : 
+          user.startDate;
+        return formatDate(classDate) === filters.Date;
+      });
     }
 
     if (filters.status) {
-      filtered = filtered.filter(
-        (user) =>
-          user.scheduleStatus?.toLowerCase() === filters.status.toLowerCase()
-      );
+      filtered = filtered.filter((user) => {
+        const isTrial = user.isTrial;
+        const status = isTrial
+          ? user.trialclass?.meetingStatus || user.scheduleStatus
+          : user.scheduleStatus;
+        return status?.toLowerCase() === filters.status.toLowerCase();
+      });
     }
 
     if (filters.Time) {
-      filtered = filtered.filter((user) =>
-        user.startTime.includes(filters.Time)
-      );
+      filtered = filtered.filter((user) => {
+        const isTrial = user.isTrial;
+        const startTime = isTrial ? 
+          (user.trialclass?.scheduledFrom || user.startTime?.[0]) : 
+          user.startTime?.[0];
+        return startTime?.includes(filters.Time);
+      });
     }
 
     if (filters.course) {
-      filtered = filtered.filter(
-        (user) =>
-          user.course.courseName?.toLowerCase() === filters.course.toLowerCase()
-      );
+      filtered = filtered.filter((user) => {
+        const isTrial = user.isTrial;
+        const courseName = isTrial
+          ? user.trialclass?.course?.courseName || user.course?.courseName
+          : user.course?.courseName;
+        return courseName?.toLowerCase() === filters.course.toLowerCase();
+      });
     }
 
     if (filters.classType) {
-      filtered = filtered.filter(
-        (user) =>
-          user.sessionClassType?.toLowerCase() ===
-          filters.classType.toLowerCase()
-      );
+      filtered = filtered.filter((user) => {
+        const classType = user.sessionClassType || user.classType;
+        return classType?.toLowerCase() === filters.classType.toLowerCase();
+      });
     }
 
     setFilteredUsers(filtered);
@@ -845,15 +1017,15 @@ const handleViewDetails = (_id: string) => {
           <div className="rounded-xl flex items-center p-6 w-[633px] h-[247px] border bg-[#5e6578] text-white ">
               {/* Profile Section */}
   <div className="flex flex-col items-center w-1/3 px-4 text-center">
-    <div className="relative mb-4">
-      <Image
-        src="/assets/images/proff.jpg"
-        width={100}
-        height={100}
-        alt="Profile"
-        className="rounded-full border-4 border-white object-cover"
-      />
-    </div>
+  <div className="relative mb-1 w-[160px] h-[160px]">
+  <Image
+    src="/assets/images/student-portfolio.svg"
+    alt="Profile"
+    fill
+    className="rounded-full object-cover"
+  />
+</div>
+
     <h2 className="text-lg font-semibold text-white break-words mb-1">
       {teachers?.candidateFirstName}
     </h2>
@@ -1069,7 +1241,52 @@ const handleViewDetails = (_id: string) => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-[#343434] dark:divide-gray-600">
-              {paginatedData.map((item, index) => (
+              {paginatedData.map((item, index) => {
+                const isTrial = item.isTrial;
+                
+                // Get the appropriate date
+                const classDate = isTrial ? 
+                  (item.trialclass?.scheduledStartDate || item.startDate) : 
+                  item.startDate;
+                
+                // Format the date
+                const dateObj = classDate ? new Date(classDate) : null;
+                const formattedDate = dateObj
+                  ? dateObj.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "2-digit",
+                      year: "numeric",
+                    })
+                  : "N/A";
+
+                // Get time - prioritize trial class time if available
+                const startTime = isTrial ? 
+                  (item.trialclass?.scheduledFrom || item.startTime?.[0]) : 
+                  item.startTime?.[0];
+                const endTime = isTrial ? 
+                  (item.trialclass?.scheduledTo || item.endTime?.[0]) : 
+                  item.endTime?.[0];
+                const timeDisplay = startTime && endTime ? `${startTime} - ${endTime}` : "N/A";
+
+                // Get student name - handle trial classes
+                const studentName = isTrial
+                  ? item.trialclass?.student?.name?.split(" ")[0] || item.student?.studentFirstName || "Trial Student"
+                  : item.student?.studentFirstName || "N/A";
+
+                // Get course name
+                const courseName = isTrial
+                  ? item.trialclass?.course?.courseName || item.course?.courseName
+                  : item.course?.courseName;
+
+                // Get class type
+                const classType = item.sessionClassType || item.classType || "N/A";
+
+                // Get status
+                const status = isTrial
+                  ? item.trialclass?.meetingStatus || item.scheduleStatus
+                  : item.scheduleStatus;
+
+                return (
                 <tr
                   key={item._id}
                   className={`text-[12px] ${
@@ -1079,36 +1296,33 @@ const handleViewDetails = (_id: string) => {
                   }`}
                 >
                   <td className="px-3 py-3 text-[#3D8FDE] font-medium text-left">
-                    {item.student.studentFirstName}{" "}
-                    {item.student.studentLastName}
+                      {studentName}
                   </td>
                   <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                    {item.course?.courseName || "N/A"}
+                      {courseName || "N/A"}
                   </td>
                   <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                    {new Date(item.startDate).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "2-digit",
-                      year: "numeric",
-                    })}
+                      {formattedDate}
                   </td>
                   <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                    {item.startTime[0]} - {item.endTime[0]}
+                      {timeDisplay}
                   </td>
                   <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                    {item.sessionClassType}
+                      {classType}
                   </td>
                   <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                     <span
                       className={`font-semibold px-3 py-1 rounded-md text-[10px] inline-block text-center min-w-[120px] ${
-                        item.scheduleStatus === "Scheduled"
+                          status === "Scheduled"
                           ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
-                          : item.scheduleStatus === "Rescheduled"
+                            : status === "Rescheduled" || status === "Reschedulerequested"
                           ? "bg-[#E4E4E4] text-[#000] dark:bg-[#555] dark:text-[#fff]"
-                          : "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
+                            : status === "Completed"
+                            ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
+                            : "bg-[#FDECEC] dark:bg-[#D3464533] text-[#D34645]"
                       }`}
                     >
-                      {item.scheduleStatus}
+                        {status}
                     </span>
                   </td>
              {(
@@ -1119,19 +1333,19 @@ const handleViewDetails = (_id: string) => {
                  <button
                    onClick={() => toggleDropdown(index)}
                    className={`$${
-                     (activeTab === "scheduled" && ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
+                     (activeTab === "scheduled" && ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
                      activeTab === "completed"
                        ? "cursor-pointer"
                        : "cursor-default"
                    }`}
                    disabled={
-                     !((activeTab === "scheduled" && ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
+                     !((activeTab === "scheduled" && ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
                        activeTab === "completed")
                    }
                  >
                    <MoreVertical
                      className={`w-4 h-4 ${
-                       (activeTab === "scheduled" && ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
+                       (activeTab === "scheduled" && ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
                        activeTab === "completed"
                          ? "text-slate-600 dark:text-[#FDFDFD]"
                          : "text-gray-400 dark:text-gray-600 opacity-50"
@@ -1155,7 +1369,7 @@ const handleViewDetails = (_id: string) => {
                          View Details
                        </button>
                      ) : (
-                       ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus) && (
+                       ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus) && (
                          <button
                            className={`w-full text-left px-4 py-2 text-[12px] ${
                              teacherRescheduleWrite
@@ -1182,7 +1396,8 @@ const handleViewDetails = (_id: string) => {
                </td>
              )}
       </tr>
-    ))}
+                );
+              })}
   </tbody>
 </table>
         </div>

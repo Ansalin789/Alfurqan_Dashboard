@@ -69,7 +69,7 @@ export default function Academic() {
 
   return (
     <Link
-      href="/Academic/manageStudents"
+      href="/Academic-coach/ui/manageteacher"
     >
       <div className="col-span-12 p-2 text-[#000] dark:text-[#fff]">
         <h3 className="text-[16px] font-semibold text-[#000] dark:text-[#fff] mb-1 px-3 py-2 justify-between flex items-center">
@@ -96,7 +96,12 @@ export default function Academic() {
                   
                   <td className=" py-1 text-center text-[12px] font-normal flex text-[#010e30] opacity-90 dark:text-[#fff]">
                     {/* <FaUserCircle className="text-[#000] mr-2 mt-1" /> */}
-                    {teacher.teacherName}
+                    {(() => {
+                      const val = teacher.teacherName ?? "";
+                      return val
+                        ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                        : "";
+                    })()}
                   </td>
                   <td className=" py-1 text-[13px] whitespace-nowrap text-center text-[#010e30] dark:text-[#fff] font-medium">
                     {teacher.studentCount}

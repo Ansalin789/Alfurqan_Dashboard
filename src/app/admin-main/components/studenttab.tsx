@@ -8,6 +8,7 @@ import { PieChart, Pie, Cell } from "recharts";
 import { useRouter } from "next/navigation";
 import { BsThreeDotsVertical } from "react-icons/bs";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.blackstoneinfomaticstech.com";
 
 type TabbedTableProps = {
   studentId: string;
@@ -187,7 +188,7 @@ interface AssignmentType {
     _id: string;
     status: string;
   }[];
-  
+ 
 }
 
 // Define the PaymentResponse interface
@@ -197,6 +198,10 @@ interface PaymentResponse {
   amount: number;
   currency: string;
   status: string;
+  automatic_payment_methods?: {
+    allow_redirects: string;
+    enabled: boolean;
+  };
   // Add other fields from the paymentResponse object as needed
 }
 
@@ -217,9 +222,7 @@ interface PaymentDetail {
   __v: number;
 }
 
-const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
-  console.log('TabbedTable studentId:', studentId);
-  // console.log('TabbedTable userId:', userId);
+const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId }) => {
   const [activeTab, setActiveTab] = useState("Class");
   const tabs = [
     "Class",
@@ -271,6 +274,8 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
   const [searchPayment, setSearchPayment] = useState(""); // For payment search
   const [searchAssignment, setSearchAssignment] = useState(""); // For assignment search
 
+  const [applicationStudentId, setApplicationStudentId] = useState<string | null>(null); // New state for ALFST-XXX ID
+
   const [courseFilters, setCourseFilters] = useState({
     courseName: "",
     startDate: "",
@@ -285,30 +290,23 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        
+       
         const token = localStorage.getItem("AdminAuthToken");
        
-        console.log("✅ tokenss:", token);
-        console.log("✅ studentIdsss:", studentId);
-        console.log("✅ courseNamesss:", courseName);
-  
         if (!token || !studentId || !courseName) {
-          console.error("❌ studentId or courseName missing in localStorage");
+          console.error("❌ studentId or courseName missing in localStorage or props"); // Modified message
           return;
         }
-  
-        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/dashboard/student/counts`, {
+ 
+        const response = await axios.get(`${API_BASE_URL}/dashboard/student/counts`, {
           params: { studentId, courseName },
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
-            
+           
           },
         });
-  
-        console.log("✅ FULL API response:", response);
-        console.log("✅ Final Data:", JSON.stringify(response.data, null, 2));
-  
+ 
         setDashboardCounts({
           totalLevel: Number(response.data.totalLevel) || 0,
           totalAttendance: Number(response.data.totalAttendance) || 0,
@@ -325,10 +323,10 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
         console.error("❌ Error fetching dashboard counts:", error);
       }
     };
-  
+ 
     fetchData();
   }, [studentId, courseName]); // Add studentId as a dependency
-  
+ 
 
   const data = [
     {
@@ -369,16 +367,16 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
       if (token) {
         fetchStudentDetails(token, studentId);
       } else {
-        console.log("No auth token found.");
+        console.log("No auth token found for fetchStudentDetails."); // Modified message
       }
     }
   }, [studentId]);
-  
+ 
 
   const fetchStudentDetails = async (token: string, studentId: string) => {
     try {
       const response = await axios.get<StudentResponse>(
-        `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
+        `${API_BASE_URL}/alstudents/${studentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -386,10 +384,11 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
           },
         }
       );
+      // Removed console.log("Student Details API response (alstudents):", response.data);
 
       // Fetch class schedule to get courseId
       const classScheduleRes = await fetch(
-        `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
+        `${API_BASE_URL}/classShedule/students?studentId=${studentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -398,77 +397,30 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
         }
       );
       const classScheduleData = await classScheduleRes.json();
-      const firstClass = classScheduleData.classSchedule?.[0];
+      // Removed console.log("Class Schedule API response (classShedule):", classScheduleData);
+      // const firstClass = classScheduleData.classSchedule?.[0]; // No longer needed
 
-      const student = response.data.studentDetails;
+      const studentDetailsFromAlstudents = response.data.studentDetails; // Renamed for clarity
+      setApplicationStudentId(studentDetailsFromAlstudents.student.studentId); // Set the application-specific studentId
 
-      const formatted: CourseRow = {
-        id: firstClass?.course?.courseId || "", // Use actual courseId if available
-        name: student.student.course,
-        package: student.student.package,
-        status: student.status,
-        date: new Date(student.createdDate).toLocaleDateString(),
-      };
+      const allCourses: CourseRow[] = (classScheduleData.classSchedule || []).map((classItem: ClassSchedule) => {
+        return {
+          id: classItem.course?.courseId || '',
+          name: classItem.course?.courseName || '',
+          package: classItem.package || '',
+          status: classItem.status || '',
+          date: classItem.startDate ? new Date(classItem.startDate).toLocaleDateString() : new Date().toLocaleDateString(),
+        };
+      });
 
-      setCoursesData([formatted]);
+      setCoursesData(allCourses.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     } catch (err) {
       console.error("Failed to fetch student data", err);
     }
   };
 
-  /////////////////transaction//////////////
-  useEffect(() => {
-    if (typeof window !== "undefined" && studentId) {
-      const token = localStorage.getItem("AdminAuthToken");
-      if (token) {
-        fetchStudentInvoice(token, studentId);
-      } else {
-        console.log("No auth token found.");
-      }
-    }
-  }, [studentId]);
 
-  const fetchStudentInvoice = async (token: string, studentId: string) => {
-    try {
-      const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/studentinvoice/${studentId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
 
-      console.log("Raw API response:", response.data);
-
-      // Make sure it's an array even if one object is returned
-      const data = Array.isArray(response.data)
-        ? response.data
-        : [response.data];
-
-      const formatted = data.map((item) => {
-        const created = new Date(item.createdDate);
-        const today = new Date();
-        const diff = Math.floor(
-          (today.getTime() - created.getTime()) / (1000 * 3600 * 24)
-        ); // duebydays
-
-        return {
-          invoiceid: item._id,
-          date: created.toLocaleDateString(),
-          course: item.courseName,
-          duebydays: diff,
-          paiddate: new Date(item.lastUpdatedDate).toLocaleDateString(),
-          status: item.invoiceStatus,
-        };
-      });
-
-      setTransactions(formatted);
-    } catch (err) {
-      console.error("Failed to fetch transactions", err);
-    }
-  };
 
   ////////////////classdata////////////////////
   useEffect(() => {
@@ -477,15 +429,15 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
       if (token) {
         fetchClassSchedule(token, studentId);
       } else {
-        console.log("No auth token found.");
+        console.log("No auth token found for fetchClassSchedule."); // Modified message
       }
     }
-  }, []);
+  }, [studentId]); // Changed dependency from [] to [studentId]
 
   const fetchClassSchedule = async (token: string, studentId: string) => {
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
+        `${API_BASE_URL}/classShedule/students?studentId=${studentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -495,10 +447,11 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
       );
 
       const data = await res.json();
-      console.log("API Response Data:", data);
-
-      setClassData(data.classSchedule);
-      console.log("State after setting classData:", data.classSchedule);
+      // Removed console.log("Raw Class Schedule API response:", data); // Removed log
+      const sortedClassData = data.classSchedule.sort((a: ClassSchedule, b: ClassSchedule) => {
+        return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+      });
+      setClassData(sortedClassData);
     } catch (error) {
       console.error("Error fetching schedules:", error);
     }
@@ -519,7 +472,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
       grade: "A",
       status: "Re-Scheduled",
     },
-  ];
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   // Filtered class data based on search
   const filteredClassData = classData.filter((row) => {
     const search = searchClass.toLowerCase();
@@ -580,7 +533,12 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
   const handleViewDetails = (studentId : string) => {
     router.push(`/admin-main/ui/studentclass?studentId=${studentId}`);
   };
-
+  const handleViewDetailsAssignments = (studentId : string) => {
+    router.push(`/admin-main/ui/studentclassAssignments?studentId=${studentId}`);
+  };
+  const handleViewDetailsAssessments = (studentId : string) => {
+    router.push(`/admin-main/ui/studentclassAssessments?studentId=${studentId}`);
+  };
   const [assignments, setAssignments] = useState<AssignmentType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -608,7 +566,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
     const values = assignments.map(assignment => assignment.course).filter(Boolean) as string[];
     return Array.from(new Set(values));
   };
-  
+ 
   const getUniqueLevels = () => {
     const values = assignments.map(assignment => assignment.level).filter(Boolean) as string[];
     return Array.from(new Set(values));
@@ -635,20 +593,12 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
       setError(null);
       try {
         const token = localStorage.getItem("AdminAuthToken");
-
-
-  // Pagination logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const displayedItemsCount = filteredClassData.length;
-
-  // Calculate the display range
         if (!token || !studentId) {
-          console.error("Missing token or student ID");
+          console.error("Missing token or student ID for Assignments fetch"); // Modified message
           return;
         }
 
-        const res = await fetch(`https://api.blackstoneinfomaticstech.com/assignments/student?studentId=${studentId}`, {
+        const res = await fetch(`${API_BASE_URL}/assignments/student?studentId=${studentId}`, {
           headers: {
             "Authorization": `Bearer ${token}`,
           },
@@ -656,10 +606,11 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName }) => {
 
         if (!res.ok) throw new Error("Failed to fetch assignments");
         const data = await res.json();
-        console.log("Fetched Assignments Data:", data); // Log the fetched data
-
-        // Ensure that the data is being set correctly
-        setAssignments(data.data || []); // Set the assignments data
+        setAssignments(data.data.sort((a: AssignmentType, b: AssignmentType) => {
+          const dateA = a.assignedDate ? new Date(a.assignedDate).getTime() : 0;
+          const dateB = b.assignedDate ? new Date(b.assignedDate).getTime() : 0;
+          return dateB - dateA;
+        }) || []); // Set the assignments data
       } catch (err: any) {
         setError(err.message || "Error fetching assignments");
       } finally {
@@ -798,23 +749,42 @@ useEffect(() => {
     const fetchPaymentHistory = async () => {
       try {
         const token = localStorage.getItem("AdminAuthToken");
-        if (!token || !studentId) {
-          console.error("Missing token or student ID");
+        if (!token || !applicationStudentId) { // Use applicationStudentId
+          console.error("Missing token or applicationStudentId");
           return;
         }
 
-        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/student/paymenthistory?userId=${studentId}`, {
+        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/student/paymenthistory?userId=${applicationStudentId}`, { // Use applicationStudentId
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
 
-        console.log("Payment history API response:", response.data);
-
         // Backend returns { totalCount, paymentDetails }
         if (response.data.paymentDetails) {
-          setPaymentHistory(response.data.paymentDetails);
+          const mappedPaymentDetails = response.data.paymentDetails
+            .filter((payment: any) => {
+              // console.log("Comparing: ", { paymentUserId: payment._doc.userId, studentIdProp: applicationStudentId, paymentUserIdType: typeof payment._doc.userId, studentIdPropType: typeof applicationStudentId }); // Removed debugging log
+              return payment._doc.userId === applicationStudentId; // Filter to match applicationStudentId
+            }) // Filter to match studentId
+            .map((payment: any) => ({
+              _id: payment._doc._id,
+              userId: payment._doc.userId,
+              userName: payment._doc.userName,
+              course: payment.course, // This is at the top level
+              paymentStatus: payment._doc.paymentStatus,
+              paymentAmount: payment._doc.paymentAmount,
+              paymentResponse: payment._doc.paymentResponse,
+              paymentDate: payment._doc.paymentDate,
+              status: payment._doc.status,
+              createdBy: payment._doc.createdBy,
+              createdDate: payment._doc.createdDate,
+              lastUpdatedDate: payment._doc.lastUpdatedDate,
+              __v: payment._doc.__v,
+            }));
+          setPaymentHistory(mappedPaymentDetails);
+          console.log("Filtered and mapped payment details:", mappedPaymentDetails);
         }
       } catch (error: any) {
         console.error("Failed to fetch payment history:", error);
@@ -825,7 +795,7 @@ useEffect(() => {
     };
 
     fetchPaymentHistory();
-  }, [studentId]); 
+  }, [applicationStudentId]); // Changed dependency to applicationStudentId
 
   // Function to apply filters
   const handleApplyFilters = () => {
@@ -866,8 +836,15 @@ useEffect(() => {
 
   // Filtered data for Payment History
   const filteredPaymentData = paymentHistory.filter((payment) => {
-    return payment.userName.toLowerCase().includes(searchPayment.toLowerCase());
-    // Add more filtering logic based on paymentFilters if needed
+    // Ensure payment.userName exists before calling toLowerCase()
+    const userName = payment.userName || ""; // Default to empty string if undefined
+    const courseName = payment.course || ""; // Default to empty string if undefined
+    const searchTerm = searchPayment.toLowerCase().trim();
+
+    return (
+      userName.toLowerCase().includes(searchTerm) ||
+      courseName.toLowerCase().includes(searchTerm) // Include course name in search
+    );
   });
 
   // Fetch assignments data
@@ -876,11 +853,11 @@ useEffect(() => {
       try {
         const token = localStorage.getItem("AdminAuthToken");
         if (!token || !studentId) {
-          console.error("Missing token or student ID");
+          console.error("Missing token or student ID for Assignments re-fetch"); // Modified message
           return;
         }
 
-        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/assignments/student?studentId=${studentId}`, {
+        const response = await axios.get(`${API_BASE_URL}/assignments/student?studentId=${studentId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -893,7 +870,7 @@ useEffect(() => {
     };
 
     fetchAssignments();
-  }, [studentId]);
+  }, [studentId]); // Changed dependency from [] to [studentId]
 
   // Filtered data for Assignments
   const filteredAssignmentData = assignments.filter((assignment) => {
@@ -1042,7 +1019,7 @@ useEffect(() => {
                   &times;
                 </button>
                 <h2 className="text-lg font-semibold mb-6 dark:text-white">Filter by</h2>
-                
+               
                 <div className="mb-4">
                   <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Teacher Name</label>
                   <input
@@ -1052,17 +1029,30 @@ useEffect(() => {
                     onChange={(e) => setMeetingFilters({ ...meetingFilters, teacher: e.target.value })}
                   />
                 </div>
-                
+               
                 <div className="mb-4">
-                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Course</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                    value={meetingFilters.course}
-                    onChange={(e) => setMeetingFilters({ ...meetingFilters, course: e.target.value })}
-                  />
-                </div>
-                
+  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+    Course
+  </label>
+
+  <select
+    className="w-full px-3 py-2 border rounded text-xs dark:text-white dark:border-[#5C5C5C] dark:bg-[#343434]"
+    value={meetingFilters.course}
+    onChange={(e) =>
+      setMeetingFilters({ ...meetingFilters, course: e.target.value })
+    }
+  >
+    <option value="">Select Course</option>
+    <option value="Quran">Quran</option>
+    <option value="Arabic">Arabic</option>
+    <option value="Islamic Studies ">Islamic Studies </option>
+   
+ 
+   
+  </select>
+</div>
+
+               
                 <div className="mb-4">
                   <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Date</label>
                   <div className="flex gap-2">
@@ -1090,7 +1080,7 @@ useEffect(() => {
                     value={meetingFilters.startTime}
                     onChange={(e) => setMeetingFilters({ ...meetingFilters, startTime: e.target.value })}
                   />
-                
+               
                   <input
                     type="time"
                     className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
@@ -1155,7 +1145,7 @@ useEffect(() => {
                   &times;
                 </button>
                 <h2 className="text-lg font-semibold mb-6 dark:text-white">Filter by</h2>
-                
+               
                 <div className="mb-4">
                   <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Course Name</label>
                   <input
@@ -1413,7 +1403,7 @@ useEffect(() => {
                 <span>Filter</span>
               </div>
               <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-                Showing {filteredPaymentData.length} of {paymentHistory.length}
+                Showing {filteredPaymentData.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredPaymentData.length)} of {filteredPaymentData.length}
               </span>
             </div>
             <div className="overflow-x-auto max-h-none">
@@ -1577,7 +1567,16 @@ useEffect(() => {
                   )
                 )}
               </div>
+              <div className="flex justify-end mt-4">
+                  <button
+                    className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
+                    onClick={()=>handleViewDetailsAssessments(studentId)}
+                  >
+                    View All
+                  </button>
+                </div>
             </div>
+           
           )}
         </div>
       )}
@@ -1597,7 +1596,7 @@ useEffect(() => {
                   // Reset pagination if needed
                 }}
               />
-              
+             
               <div
                 className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
                 onClick={() => setIsAssignmentFilterModalOpen(true)} // Open filter modal on click
@@ -1661,6 +1660,14 @@ useEffect(() => {
                   )}
                 </tbody>
               </table>
+              <div className="flex justify-end mt-4">
+                  <button
+                    className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
+                    onClick={()=>handleViewDetailsAssignments(studentId)}
+                  >
+                    View All
+                  </button>
+                </div>
             </div>
           </div>
 
@@ -1675,7 +1682,7 @@ useEffect(() => {
                   &times;
                 </button>
                 <h2 className="text-lg font-semibold mb-6 dark:text-white">Filter by</h2>
-                
+               
                 <div className="mb-4">
                   <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Assignment Name</label>
                   <input

@@ -48,14 +48,20 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
 
     // Fetch leave data from API
     if (Id) {
-      const token = typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorAuthToken")
+          : null;
       axios
-        .get(`https://api.blackstoneinfomaticstech.com/leaverequest?employeeId=${Id}`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        .get(
+          `https://api.blackstoneinfomaticstech.com/leaverequest?employeeId=${Id}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
         .then((res) => {
           const data = res.data;
           setLeaveSummary({
@@ -358,9 +364,16 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
         </div>
       </form>
       {success && (
-        <SuccessPopup onClose={() => setSucces(false)} title="Leave Request" />
+        <SuccessPopup
+          onClose={() => {
+            setSucces(false);
+            onClose();
+          }}
+          title="Leave Request"
+        />
       )}
-      {failed &&  (
+
+      {failed && (
         <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
       )}
     </div>

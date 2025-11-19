@@ -41,6 +41,15 @@ interface CourseData {
 const Page = () => {
   const [courses, setCourses] = useState<CourseData[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [selectLevel, setselectlevel] = useState<CourseData>({
+    courseId: "",
+    description: "",
+    duration: "",
+    level: "",
+    createdBy: "Admin",
+    createdDate: "",
+  });
   const searchParams = useSearchParams();
   const courseTitle = searchParams.get("title");
   const courseId = searchParams.get("courseId");
@@ -224,6 +233,103 @@ const Page = () => {
     }
   };
 
+  const handleUpdateSubmit = async () => {
+    if (currentLevelCount >= maxLevels) {
+      toast.error(
+        `Cannot add more levels. Maximum ${maxLevels} levels allowed for this course.`
+      );
+      return;
+    }
+    const newLevelDuration = parseInt(selectLevel.duration || "0");
+    const existingDurationSum = courses.reduce(
+      (acc, level) => acc + parseInt(level.duration),
+      0
+    );
+    const totalWithNew = existingDurationSum + newLevelDuration;
+
+    if (totalWithNew > parseInt(courseTotalHours || "0")) {
+      toast.error(
+        `Total duration exceeded. Course limit: ${courseTotalHours} hrs, current used: ${existingDurationSum} hrs`
+      );
+      return;
+    }
+
+    const payload: CoursePayload = {
+      courseId: courseId || "",
+      duration: selectLevel.duration,
+      description: selectLevel.description,
+      level: selectLevel.level,
+      createdDate: "",
+      createdBy: "Admin",
+    };
+
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AdminAuthToken")
+          : null;
+
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
+      const res = await fetch(
+        `https://api.blackstoneinfomaticstech.com/update-levels`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+
+      if ([200, 201].includes(res.status)) {
+        setSuccess(true);
+        setCourses((prev) =>
+          prev.map((item) =>
+            item.level === payload.level ? { ...item, ...payload } : item
+          )
+        );
+
+        setselectlevel({
+          courseId: "",
+          description: "",
+          duration: "",
+          level: "",
+          createdBy: "Admin",
+          createdDate: "",
+        });
+        setShowUpdateForm(false);
+      }
+    } catch (err) {
+      const error = err as AxiosError;
+      const status = error.response?.status;
+      setShowForm(false);
+      if (Number(status === 400)) {
+        const message =
+          (error.response?.data as any)?.message ??
+          "Please check the form inputs.";
+        setFailedMessage(message);
+        setFailed(true);
+      } else if (status === 401) {
+        setFailedMessage("Please login again.");
+        setFailed(true);
+      } else if (status === 403) {
+        setFailedMessage("You don't have permission to perform this action.");
+        setFailed(true);
+      } else if (status === 500) {
+        setFailedMessage("Server error");
+        setFailed(true);
+      } else {
+        setFailed(true);
+        console.error(`Unexpected error: ${status}`);
+      }
+    }
+  };
+
   const itemsPerPage = 4;
 
   const offset = currentPage === 1 ? 0 : 3 + (currentPage - 2) * itemsPerPage;
@@ -234,9 +340,87 @@ const Page = () => {
   const totalItems = courses.length;
   const totalPages = Math.ceil(Math.max(0, totalItems - 3) / itemsPerPage + 1);
 
+  const CourseCard = ({
+    courseId,
+    level,
+    description,
+    duration,
+    createdDate,
+    createdBy,
+  }: Course) => {
+    const selectUpadteLevel = (course: CourseData) => {
+      setShowUpdateForm(true);
+      setselectlevel(course);
+    };
+
+    return (
+      <button
+        onClick={() =>
+          selectUpadteLevel({
+            courseId,
+            level,
+            description,
+            duration,
+            createdDate,
+            createdBy,
+          })
+        }
+        className="w-full bg-white dark:bg-[#343434] rounded-xl hover:border-[#576CBC] hover:border-[2px] border border-gray-300 dark:border-[#444] shadow hover:shadow-md transition flex flex-col justify-between p-4 aspect-[4.8/5]"
+      >
+        {/* Title */}
+        <h2 className="text-sm sm:text-base font-bold text-[#fff] bg-[#576CBC] rounded-sm dark:text-white mb-4 text-center">
+          Level {level}
+        </h2>
+
+        {/* Image + Description */}
+        <div className="flex flex-col items-center gap-2 flex-grow mb-2 ">
+          <p className="text-[11px] text-gray-600 dark:text-gray-300 text-center truncate w-full px-2">
+            {description
+              ? description.length > 200
+                ? `${description.slice(0, 200)}...`
+                : description
+              : "No description"}
+          </p>
+        </div>
+
+        {/* Info */}
+        <div className="text-[11px] sm:text-xs  font-normal space-y-1 ">
+          <div className="flex justify-between">
+            <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
+              Duration
+            </span>
+            <span className="text-[#322121cc] dark:text-[#DADADACC]">
+              {duration} hrs
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
+              Date
+            </span>
+            <span className="text-[#322121cc] dark:text-[#DADADACC]">
+              {new Date(createdDate).toLocaleDateString()}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
+              Created By
+            </span>
+            <span className="text-[#322121cc] dark:text-[#DADADACC]">
+              {createdBy}
+            </span>
+          </div>
+        </div>
+      </button>
+    );
+  };
+
   return (
     <BaseLayout4>
-      <AdminHeader currentSection={courseTitle || ""} showBackButton={true} showBackPath="/admin-main/ui/courses/coursedetails"/>
+      <AdminHeader
+        currentSection={courseTitle || ""}
+        showBackButton={true}
+        showBackPath="/admin-main/ui/courses/coursedetails"
+      />
       <div className=" sm:px-1 lg:px-2 bg-[#f5f5f5] dark:bg-[#3B3B3B] py-2 rounded-xl">
         {/* Grid of Cards */}
 
@@ -339,7 +523,7 @@ const Page = () => {
             />
 
             <CourseFormInput
-              label="Course Duration"
+              label="Course Duration in hrs"
               value={form.duration}
               onChange={(e) => setForm({ ...form, duration: e.target.value })}
             />
@@ -387,6 +571,66 @@ const Page = () => {
           </div>
         </div>
       )}
+      {showUpdateForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 dark:bg-opacity-60 flex justify-center items-center z-50">
+          <div className="bg-white dark:bg-[#1e1e1e] text-black dark:text-white rounded-xl p-6 w-[400px] max-h-[90vh] overflow-y-auto shadow-xl">
+            <h3 className="text-lg font-semibold text-[#002b4d] dark:text-[#FFFFFF] mb-6">
+              Update Level
+            </h3>
+            <CourseFormInput
+              label="Course ID"
+              value={selectLevel?.courseId || ""}
+              onChange={() => {}}
+            />
+
+            <CourseFormInput
+              label="Course Duration in hrs"
+              value={selectLevel?.duration}
+              onChange={() => {}}
+            />
+            <CourseFormInput
+              label="Level"
+              value={selectLevel?.level}
+              onChange={() => {}}
+            />
+            <CourseFormInput
+              label="Course Description"
+              value={selectLevel?.description}
+              onChange={(e) =>
+                setselectlevel({ ...selectLevel, description: e.target.value })
+              }
+              textarea
+            />
+            <CourseFormInput
+              label="Creation Date"
+              type="date"
+              value={selectLevel.createdDate}
+             onChange={() => {}}
+            />
+            <CourseFormInput
+              label="Created By"
+              value={selectLevel.createdBy}
+              onChange={() => {}}
+            />
+
+            <div className="border-t pt-4 mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setShowUpdateForm(false)}
+                className="px-3 py-1 border border-[#576CBC] text-[#576CBC] hover:border-[#4459A9] rounded hover:bg-[#E6E9F5] dark:hover:bg-[#333]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleUpdateSubmit()}
+                className="px-3 py-1 bg-[#576CBC] text-white rounded hover:bg-[#4459A9]"
+              >
+                Update
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -404,72 +648,6 @@ const Page = () => {
         <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
       )}
     </BaseLayout4>
-  );
-};
-
-const CourseCard = ({
-  courseId,
-  level,
-  description,
-  duration,
-  createdDate,
-  createdBy,
-}: Course) => {
-  return (
-    <div className="w-full bg-white dark:bg-[#343434] rounded-xl hover:border-[#576CBC] hover:border-[2px] border border-gray-300 dark:border-[#444] shadow hover:shadow-md transition flex flex-col justify-between p-4 aspect-[4.8/5]">
-      {/* Title */}
-      <h2 className="text-sm sm:text-base font-bold text-[#0b2447] dark:text-white mb-2 text-center">
-        Level {level}
-      </h2>
-
-      {/* Image + Description */}
-      <div className="flex flex-col items-center gap-2 flex-grow mb-2 ">
-        <div className="w-20 h-20 bg-gray-200 dark:bg-[#C4C4C4] rounded-md" />
-        <p className="text-[11px] text-gray-600 dark:text-gray-300 text-center truncate w-full px-2">
-          {description
-            ? description.length > 100
-              ? `${description.slice(0, 100)}...`
-              : description
-            : "No description"}
-        </p>
-      </div>
-
-      {/* Info */}
-      <div className="text-[11px] sm:text-xs  font-normal space-y-1 ">
-        <div className="flex justify-between">
-          <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
-            Course ID
-          </span>
-          <span className="text-right text-[#322121cc] dark:text-[#DADADACC]">
-            {courseId}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
-            Duration
-          </span>
-          <span className="text-[#322121cc] dark:text-[#DADADACC]">
-            {duration}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
-            Date
-          </span>
-          <span className="text-[#322121cc] dark:text-[#DADADACC]">
-            {new Date(createdDate).toLocaleDateString()}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
-            Created By
-          </span>
-          <span className="text-[#322121cc] dark:text-[#DADADACC]">
-            {createdBy}
-          </span>
-        </div>
-      </div>
-    </div>
   );
 };
 

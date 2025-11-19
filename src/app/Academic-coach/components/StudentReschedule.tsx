@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import moment from "moment";
 import { useSearchParams } from "next/navigation";
 
-import { MdOutlineKeyboardArrowRight } from "react-icons/md";
+import { MdOutlineKeyboardArrowRight, MdExpandMore, MdAccessTime } from "react-icons/md";
 
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
@@ -152,12 +152,39 @@ const SchedulePage = () => {
   const [failed, setFailed] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [selectedSlotByTeacher, setSelectedSlotByTeacher] = useState<Record<string, { fromTime: string; toTime: string } | null>>({});
+  const [openDropdownFor, setOpenDropdownFor] = useState<string | null>(null);
+  const [currentTeacherId, setCurrentTeacherId] = useState<string | null>(null);
+  const [currentTeacherName, setCurrentTeacherName] = useState<string | null>(null);
 
   useEffect(() => {
     const queryStudentId = searchParams?.get("studentId");
     const localStudentId = localStorage.getItem("studentManageID");
     setStudentId(queryStudentId || localStudentId);
   }, [searchParams]);
+
+  useEffect(() => {
+    // Fetch current class to identify student's assigned teacher for labeling and ordering
+    const fetchCurrentClass = async () => {
+      const token = typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+      if (!token || !selectedClassId) return;
+      try {
+        const res = await fetch(
+          `https://api.blackstoneinfomaticstech.com/classShedule/${selectedClassId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        const tId = data?.teacher?.teacherId || data?.teacherId || null;
+        const tName = data?.teacher?.teacherName || data?.teacherName || null;
+        setCurrentTeacherId(tId);
+        setCurrentTeacherName(tName);
+      } catch (e) {
+        console.warn("Unable to fetch current class for teacher identification", e);
+      }
+    };
+    fetchCurrentClass();
+  }, [selectedClassId]);
 
   useEffect(() => {
     const fetchClassSchedule = async () => {
@@ -198,7 +225,12 @@ const SchedulePage = () => {
         const allSchedules: ClassSchedule[] = data.classSchedule;
 
         setScheduledClasses(
-          allSchedules.filter((c) => c.scheduleStatus === "Scheduled")
+          allSchedules.filter(
+            (c) =>
+              c.scheduleStatus === "Scheduled" ||
+              c.scheduleStatus === "Rescheduled" ||
+              c.scheduleStatus === "Reschedulerequested"
+          )
         );
       } catch (err) {
         console.error("Failed to fetch class schedule", err);
@@ -431,6 +463,31 @@ const SchedulePage = () => {
         console.error("❌ Failed to update. Status:", res.status);
       } else {
         console.log("✅ Class rescheduled successfully.");
+        try {
+          // Refresh scheduled classes so the calendar reflects the change
+          const refreshRes = await fetch(
+            `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          if (refreshRes.ok) {
+            const refreshed = await refreshRes.json();
+            const allSchedules: ClassSchedule[] = refreshed.classSchedule;
+            setScheduledClasses(
+              allSchedules.filter(
+                (c) =>
+                  c.scheduleStatus === "Scheduled" ||
+                  c.scheduleStatus === "Rescheduled" ||
+                  c.scheduleStatus === "Reschedulerequested"
+              )
+            );
+          }
+        } catch (e) {
+          console.warn("⚠️ Unable to refresh schedule after reschedule", e);
+        }
       }
     } catch (error) {
       console.error("❌ Error during reschedule:", error);
@@ -469,12 +526,40 @@ const SchedulePage = () => {
     }
   };
 
+  const groupedByTeacher = React.useMemo(() => {
+    const map: Record<string, { teacherId: string; name: string; slots: { fromTime: string; toTime: string }[] }> = {};
+    availableTeachers.forEach((t) => {
+      if (!map[t.teacherId]) {
+        map[t.teacherId] = { teacherId: t.teacherId, name: t.name, slots: [] };
+      }
+      map[t.teacherId].slots.push({ fromTime: t.fromTime, toTime: t.toTime });
+    });
+    const groups = Object.values(map);
+    // Move the student's current teacher to the top if present
+    if (currentTeacherId) {
+      groups.sort((a, b) => {
+        if (a.teacherId === currentTeacherId) return -1;
+        if (b.teacherId === currentTeacherId) return 1;
+        return 0;
+      });
+    }
+    return groups;
+  }, [availableTeachers, currentTeacherId]);
+
+  const toTitleCase = (value: string) => {
+    if (!value) return value;
+    return value
+      .split(" ")
+      .map((part) => (part.length > 0 ? part[0].toUpperCase() + part.slice(1).toLowerCase() : part))
+      .join(" ");
+  };
+
   const WeeklyView = ({
     selectedDate,
     scheduledClasses,
   }: {
     selectedDate: Date;
-    scheduledClasses: ClassData[];
+    scheduledClasses: ClassSchedule[];
   }) => {
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
     const startOfWeek = moment(selectedDate).startOf("week");
@@ -489,7 +574,7 @@ const SchedulePage = () => {
       if (!acc[day]) acc[day] = [];
       acc[day].push(cls);
       return acc;
-    }, {} as Record<string, ClassData[]>);
+    }, {} as Record<string, ClassSchedule[]>);
 
     const handleDayClick = (day: string) => {
       setSelectedDay((prev) => (prev === day ? null : day));
@@ -564,6 +649,11 @@ const SchedulePage = () => {
                             {cls.startTime[0]} – {cls.endTime[0]}
                           </div>
                         </div>
+                        {cls.scheduleStatus === "Rescheduled" && (
+                          <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-300">
+                            Rescheduled from {moment(cls.lastUpdatedDate).format("MMM D, YYYY")}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -581,7 +671,7 @@ const SchedulePage = () => {
     scheduledClasses,
   }: {
     selectedDate: Date;
-    scheduledClasses: ClassData[];
+    scheduledClasses: ClassSchedule[];
   }) => {
     const currentDay = moment(selectedDate);
     const dayClasses = scheduledClasses.filter((cls) =>
@@ -603,11 +693,16 @@ const SchedulePage = () => {
             return (
               <div key={idx} className={`p-4 rounded-xl ${courseColorClass}`}>
                 <div className="flex justify-between items-start">
-                  <div className="text-sm font-semibold">{cls.package}</div>
+                  <div className="text-sm font-semibold">{cls.course.courseName}</div>
                   <div className="text-xs">
                     {cls.startTime[0]} – {cls.endTime[0]}
                   </div>
                 </div>
+                {cls.scheduleStatus === "Rescheduled" && (
+                  <div className="mt-1 text-[11px] text-gray-600 dark:text-gray-300">
+                    Rescheduled from  {moment(cls.lastUpdatedDate).format("MMM D, YYYY")}
+                  </div>
+                )}
               </div>
             );
           })
@@ -631,6 +726,7 @@ const SchedulePage = () => {
     getDaysInMonth,
     getFirstDayOfMonth,
   }: any) => {
+    const [openDayDropdown, setOpenDayDropdown] = useState<string | null>(null);
     const daysInMonth = getDaysInMonth(currentDate);
     const firstDayOfMonth = getFirstDayOfMonth(currentDate);
 
@@ -639,7 +735,7 @@ const SchedulePage = () => {
     const totalDays = [...emptyCells, ...days];
 
     const getClassesForDate = (date: Date) =>
-      scheduledClasses.filter((cls: ClassData) =>
+      scheduledClasses.filter((cls: ClassSchedule) =>
         moment(cls.startDate).isSame(date, "day")
       );
 
@@ -699,9 +795,10 @@ const SchedulePage = () => {
 
             const courseName = dayClasses[0]?.course?.courseName || "";
             const courseColorClass = getCourseColorClass(courseName);
+            const dayKey = moment(date).format("YYYY-MM-DD");
 
             return (
-              <button
+              <div
                 key={i}
                 onClick={() => handleDateClick(date, courseName)}
                 className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer duration-200
@@ -715,21 +812,73 @@ const SchedulePage = () => {
       ${isSelected ? "ring-2 ring-[#576cbc]" : ""}
     `}
               >
+                <button onClick={() => handleDateClick(date, courseName)} className="w-full">
                 <div className="font-semibold text-sm text-inherit">{day}</div>
 
                 {hasClasses && (
-                  <div className="w-full mt-2 text-center">
+                  <div className="w-full mt-0 text-center">
                     <div
-                      className={`text-[10px] font-medium truncate ${courseColorClass}`}
+                      className={`text-[10px] font-medium truncate -mb-1 ${courseColorClass}`}
                     >
                       {dayClasses[0].course?.courseName}
                     </div>
-                    <div className={`text-[9px] truncate ${courseColorClass}`}>
+                    <div className={`text-[9px] truncate -mb-2 ${courseColorClass}`}>
                       {dayClasses[0].startTime[0]} - {dayClasses[0].endTime[0]}
                     </div>
+                    {dayClasses[0].scheduleStatus === "Rescheduled" && (
+                      <div className={`text-[7px] truncate ${courseColorClass}`}>
+                        Rescheduled from  {moment(dayClasses[0].lastUpdatedDate).format("MMM D")}
+                      </div>
+                    )}
                   </div>
                 )}
-              </button>
+                </button>
+
+                {hasClasses && dayClasses.length > 1 && (
+                  <div className="w-full flex justify-center mt-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenDayDropdown((prev) => (prev === dayKey ? null : dayKey));
+                      }}
+                      className="text-[10px] px-2 py-[2px] rounded-full bg-white dark:bg-[#3a3a3a] border border-gray-200 dark:border-[#5c5c5c] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-[#444]"
+                    >
+                      +{dayClasses.length - 1} more
+                    </button>
+                  </div>
+                )}
+
+                <AnimatePresence>
+                  {openDayDropdown === dayKey && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 bg-white dark:bg-[#3a3a3a] border border-gray-200 dark:border-[#5c5c5c] rounded-xl shadow-lg z-10 overflow-hidden"
+                    >
+                      <div className="max-h-56 overflow-y-auto py-1">
+                        {dayClasses.map((cls: ClassSchedule, idx: number) => (
+                          <button
+                            key={`${dayKey}-${idx}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenDayDropdown(null);
+                              handleDateClick(date, cls.course?.courseName || "");
+                            }}
+                            className="w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-gray-100 dark:hover:bg-[#4a4a4a]"
+                          >
+                            <span className="truncate pr-2">{cls.course?.courseName}</span>
+                            <span className="text-[10px] text-gray-600 dark:text-gray-300">
+                              {cls.startTime[0]} - {cls.endTime[0]}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             );
           })}
         </div>
@@ -807,43 +956,134 @@ const SchedulePage = () => {
                 </p>
               ) : (
                 <AnimatePresence>
-                  {availableTeachers.map((teacher, index) => (
-                    <motion.div
-                      key={`${teacher.teacherId}-${teacher.fromTime}-${teacher.toTime}`}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      transition={{ duration: 0.25 }}
-                      className="flex items-center justify-between py-4 px-2 border-b-2 dark:border-[#5c5c5c]"
-                    >
-                      {/* Left Side */}
-                      <div className="flex items-center gap-4">
-                        <img
-                          src={`https://api.dicebear.com/7.x/initials/svg?seed=${teacher.name}`}
-                          alt={teacher.name}
-                          className="w-10 h-10 rounded-full"
-                        />
-                        <div>
-                          <p className="text-sm font-medium text-gray-800 dark:text-white">
-                            {teacher.name}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Right Side */}
-                      <div className="flex items-center gap-2">
-                        <div className="text-sm text-gray-700 dark:text-gray-300 text-right">
-                          {teacher.fromTime} - {teacher.toTime}
-                        </div>
-                        <button
-                          onClick={() => handleTeacherClick(teacher)}
-                          className="p-1 hover:bg-gray-200 dark:hover:bg-[#5c5c5c] rounded-full transition"
+                  <div className="h-[550px] bg-gray-50 dark:bg-[#414141] p-4 rounded-xl">
+                    {(() => {
+                      const yourTeacher = groupedByTeacher.filter((g) => g.teacherId === currentTeacherId);
+                      const otherTeachers = groupedByTeacher.filter((g) => g.teacherId !== currentTeacherId);
+                      const renderGroup = (group: { teacherId: string; name: string; slots: { fromTime: string; toTime: string }[] }) => {
+                      const selected = selectedSlotByTeacher[group.teacherId] || group.slots[0] || null;
+                      return (
+                        <motion.div
+                          key={group.teacherId}
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.25 }}
+                          className="flex items-center justify-between py-4 px-2 border-b-2 dark:border-[#5c5c5c]"
                         >
-                          <MdOutlineKeyboardArrowRight className="text-xl text-gray-500 dark:text-[#5c5c5c]" />
-                        </button>
-                      </div>
-                    </motion.div>
-                  ))}
+                          {/* Left Side */}
+                          <div className="flex items-center gap-4">
+                            <img
+                              src={`https://api.dicebear.com/7.x/initials/svg?seed=${group.name}`}
+                              alt={group.name}
+                              className="w-10 h-10 rounded-full"
+                            />
+                            <div>
+                              <p className="text-sm font-medium text-gray-800 dark:text-white">
+                                {toTitleCase(group.name)}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Right Side */}
+                          <div className="flex items-center gap-2 relative">
+                            <button
+                              onClick={() => setOpenDropdownFor((prev) => (prev === group.teacherId ? null : group.teacherId))}
+                              className="flex items-center gap-2 border border-gray-200 dark:border-[#5c5c5c] bg-gray-100 dark:bg-[#4a4a4a] hover:bg-gray-200 dark:hover:bg-[#5a5a5a] rounded-full pl-2 pr-3 py-1 transition"
+                            >
+                              <span className="inline-flex items-center gap-1 text-[12px] font-medium text-gray-700 dark:text-gray-100 bg-white dark:bg-[#3f3f3f] border border-gray-200 dark:border-[#5c5c5c] rounded-full px-2 py-[2px]">
+                                <MdAccessTime className="text-gray-500" />
+                                {selected ? `${selected.fromTime} - ${selected.toTime}` : "Select slot"}
+                              </span>
+                              <MdExpandMore className={`text-gray-600 dark:text-gray-200 transition-transform ${openDropdownFor === group.teacherId ? "rotate-180" : "rotate-0"}`} />
+                            </button>
+
+                            <AnimatePresence>
+                              {openDropdownFor === group.teacherId && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: -6 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -6 }}
+                                  transition={{ duration: 0.15 }}
+                                  className="absolute right-10 top-full mt-2 w-56 bg-white dark:bg-[#3a3a3a] border border-gray-200 dark:border-[#5c5c5c] rounded-xl shadow-lg z-10 overflow-hidden"
+                                >
+                                  <div className="max-h-64 overflow-y-scroll scrollbar-none py-1">
+                                    {group.slots.map((slot, idx) => {
+                                      const isActive = selected && selected.fromTime === slot.fromTime && selected.toTime === slot.toTime;
+                                      return (
+                                        <div className="rounded-lg mx-1" key={`${group.teacherId}-${idx}`}>
+                                          <button
+                                            onClick={() => {
+                                              setSelectedSlotByTeacher((prev) => ({
+                                                ...prev,
+                                                [group.teacherId]: { fromTime: slot.fromTime, toTime: slot.toTime },
+                                              }));
+                                              setOpenDropdownFor(null);
+                                            }}
+                                            className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between rounded-lg hover:bg-gray-100 dark:hover:bg-[#4a4a4a] ${isActive ? "bg-gray-100 dark:bg-[#4a4a4a]" : ""}`}
+                                          >
+                                            <span className="flex items-center gap-2">
+                                              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-700 dark:text-gray-100 bg-gray-50 dark:bg-[#2f2f2f] border border-gray-200 dark:border-[#5c5c5c] rounded-full px-2 py-[1px]">
+                                                <MdAccessTime className="text-gray-500" />
+                                                {slot.fromTime} - {slot.toTime}
+                                              </span>
+                                            </span>
+                                            {isActive && (
+                                              <span className="text-[10px] text-[#576CBC] font-semibold">Selected</span>
+                                            )}
+                                          </button>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+
+                            <button
+                              onClick={() => {
+                                const chosen = selected || group.slots[0];
+                                if (!chosen) return;
+                                handleTeacherClick({
+                                  teacherId: group.teacherId,
+                                  name: group.name,
+                                  fromTime: chosen.fromTime,
+                                  toTime: chosen.toTime,
+                                  isStatus: true,
+                                } as TeacherSlot);
+                              }}
+                              className="p-1 hover:bg-gray-200 dark:hover:bg-[#5c5c5c] rounded-full transition"
+                            >
+                              <MdOutlineKeyboardArrowRight className="text-xl text-gray-500 dark:text-[#5c5c5c]" />
+                            </button>
+                          </div>
+                        </motion.div>
+                      );
+                      };
+
+                      return (
+                        <>
+                          {yourTeacher.length > 0 && (
+                            <div className="mb-2">
+                              <h4 className="text-xs font-semibold text-gray-600 dark:text-gray-300 px-2">Your Teacher</h4>
+                              <div className="mt-1">
+                                {yourTeacher.map(renderGroup)}
+                              </div>
+                            </div>
+                          )}
+
+                          {otherTeachers.length > 0 && (
+                            <div className="mt-3">
+                              <h4 className="text-xs font-semibold text-gray-600 dark:text-gray-300 px-2">Other Teachers</h4>
+                              <div className="mt-1">
+                                {otherTeachers.map(renderGroup)}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
                 </AnimatePresence>
               )}
             </div>

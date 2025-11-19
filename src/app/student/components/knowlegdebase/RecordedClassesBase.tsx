@@ -1,152 +1,81 @@
 'use client';
-import { useEffect, useState, useMemo } from 'react';
-import { BsThreeDotsVertical } from 'react-icons/bs';
-import { FaPlay } from 'react-icons/fa';
-import axios from 'axios';
+import { useState } from 'react';
 
-interface VideoItem {
+interface RecordedClass {
   id: string;
+  courseName?: string;
+  subjectTitle?: string;
   videoUrl: string;
-  thumbnailUrl: string;
-  title: string;
-  time: string;
+  time?: string;
 }
 
 interface Props {
-  searchValue?: string;
+  displayedClassesRC: RecordedClass[];
 }
 
-const RecordedClassesBase: React.FC<Props> = ({ searchValue = '' }) => {
-  const [selectedVideo, setSelectedVideo] = useState<{
-    url: string;
-    isYouTube: boolean;
-  } | null>(null);
-
-  const [videoData, setVideoData] = useState<VideoItem[]>([]);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchRecordedClasses = async () => {
-      try {
-        const token = localStorage.getItem('StudentAuthToken');
-        if (!token) {
-          setError('StudentAuthToken not found');
-          return;
-        }
-
-        const response = await axios.get(
-          'https://api.blackstoneinfomaticstech.com/knowledgebase/list',
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        const filteredVideos = (response.data.data || []).filter(
-          (item: any) =>
-            item.uploadedFormat?.toLowerCase() === 'video' && item.uploadedFile?.data
-        );
-
-        const transformed = filteredVideos.map((item: any, index: number) => ({
-          id: item._id || `video-${index}`,
-          videoUrl: `data:video/mp4;base64,${arrayBufferToBase64(item.uploadedFile.data)}`,
-          thumbnailUrl: '/assets/images/teaching.jpg',
-          title: item.subjectTitle || 'Class Title',
-          time: item.createdDate
-            ? new Date(item.createdDate).toLocaleString()
-            : 'Time not specified',
-        }));
-
-        setVideoData(transformed);
-      } catch (err) {
-        console.error('Failed to fetch recorded classes:', err);
-        setError('Failed to load recorded classes');
-      }
-    };
-
-    fetchRecordedClasses();
-  }, []);
-
-  const arrayBufferToBase64 = (buffer: number[]) => {
-    let binary = '';
-    const bytes = new Uint8Array(buffer);
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return window.btoa(binary);
-  };
-
-  const handleVideoClick = (videoUrl: string) => {
-    const isYouTube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
-    setSelectedVideo({ url: videoUrl, isYouTube });
-  };
-
-  const filteredVideos = useMemo(() => {
-    return videoData.filter((video) =>
-      video.title.toLowerCase().includes(searchValue.toLowerCase())
-    );
-  }, [searchValue, videoData]);
+const RecordedClassesTable: React.FC<Props> = ({ displayedClassesRC }) => {
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
 
   return (
-    <section className="max-w-full h-full dark:bg-[#3b3b3b] p-2 rounded-xl mt-2">
-      {error && <p className="text-red-500 text-center">{error}</p>}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-2">
-        {filteredVideos.map((video) => (
-          <div
-            key={video.id}
-            onClick={() => handleVideoClick(video.videoUrl)}
-            className="bg-[#FAFAFB] px-4 dark:bg-[#343434] rounded-xl shadow hover:shadow-md transition cursor-pointer overflow-hidden relative flex flex-col items-center text-center"
-          >
-            <div className="relative w-full">
-              <img
-                src={video.thumbnailUrl}
-                alt="Thumbnail"
-                className="w-full h-36 object-cover rounded-t-md"
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-white bg-opacity-90 dark:bg-[#ffffffc7] px-3 py-2 rounded-lg shadow">
-                  <FaPlay className="text-gray-600 w-3 h-3" />
-                </div>
-              </div>
-              <div className="absolute top-2 right-2 text-gray-200 dark:text-white z-10">
-                <BsThreeDotsVertical className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="px-2 py-3">
-              <h3 className="text-[13px] font-semibold dark:text-white text-[#223857] leading-snug">
-                {video.title}
-              </h3>
-              <p className="text-[11px] text-[#8E8E8E] dark:text-[#AAAAAA] mt-1">
-                {video.time}
-              </p>
-              <p className="text-[11px] text-[#4F4F4F] dark:text-[#AAAAAA] mt-2 leading-tight">
-                <strong className="text-[#4F4F4F] dark:text-[#AAAAAA]">Note-</strong> Recorded
-                classes will remain available for a maximum of three months
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="overflow-x-auto  shadow-sm border dark:border-[#3a3a3a]">
+      <table className="min-w-full border-collapse">
+        <thead>
+          <tr className="bg-[#3B568E] text-white text-sm text-left">
+            <th className="px-4 py-3 font-medium">Course Name</th>
+            <th className="px-4 py-3 font-medium">Subject</th>
+            <th className="px-4 py-3 font-medium">Date</th>
+            <th className="px-4 py-3 font-medium text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {displayedClassesRC.length > 0 ? (
+            displayedClassesRC.map((video, index) => (
+              <tr
+                key={video.id || index}
+                className={`text-sm ${
+                  index % 2 === 0
+                    ? 'bg-white dark:bg-[#3b3b3b]'
+                    : 'bg-gray-50 dark:bg-[#2f2f2f]'
+                }`}
+              >
+                <td className="px-4 py-3 text-gray-800 dark:text-gray-100">
+                  {video.courseName}
+                </td>
+                <td className="px-4 py-3 text-gray-800 dark:text-gray-100">
+                  {video.subjectTitle}
+                </td>
+                <td className="px-4 py-3 text-gray-800 dark:text-gray-100">
+                  {video.time}
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <button
+                    onClick={() => setSelectedVideo(video.videoUrl)}
+                    className="text-xs px-4 py-1 rounded-md transition bg-[#4459A9] text-white hover:bg-[#3a4c90]"
+                  >
+                    View file
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td
+                colSpan={4}
+                className="text-center py-6 text-gray-500 dark:text-gray-400"
+              >
+                No recorded classes found
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
 
       {/* Video Modal */}
       {selectedVideo && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg overflow-hidden max-w-2xl w-full">
-            {selectedVideo.isYouTube ? (
-              <iframe
-                width="100%"
-                height="250"
-                src={`${selectedVideo.url.replace('watch?v=', 'embed/')}`}
-                title="YouTube video player"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            ) : (
-              <video src={selectedVideo.url} controls className="w-full h-[250px]" />
-            )}
-
-            <div className="flex justify-end p-2">
+            <video src={selectedVideo} controls className="w-full h-[300px]" />
+            <div className="flex justify-end p-3">
               <button
                 onClick={() => setSelectedVideo(null)}
                 className="px-4 py-2 text-white bg-gray-800 rounded-lg"
@@ -157,8 +86,8 @@ const RecordedClassesBase: React.FC<Props> = ({ searchValue = '' }) => {
           </div>
         </div>
       )}
-    </section>
+    </div>
   );
 };
 
-export default RecordedClassesBase;
+export default RecordedClassesTable;

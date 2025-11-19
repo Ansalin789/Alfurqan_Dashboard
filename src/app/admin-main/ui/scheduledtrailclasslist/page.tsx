@@ -257,7 +257,7 @@ const Trailclasslist = () => {
 
   return (
     <BaseLayout4>
-    <AdminHeader currentSection="Scheduled Trail Class" />
+    <AdminHeader currentSection="Scheduled Trail Class" showBackButton showBackPath="trailmanagement"/>
       <div className="py-2 px-4 mx-auto w-full ">
         <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
           <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
@@ -286,10 +286,10 @@ const Trailclasslist = () => {
           </div>
             <table className="table-auto w-full"
                     style={{ width: "100%", tableLayout: "fixed" }}>
-              <thead className="text-[11px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+              <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                 <tr className="font-medium">
                   {[
-                    { label: "Trial ID", width: "w-[10%]" },
+                    { label: "Trial ID", width: "w-[11%]" },
                     { label: "Student Name", width: "w-[12%]" },
                     { label: "Mobile", width: "w-[10%]" },
                     { label: "Country", width: "w-[8%]" },
@@ -317,12 +317,12 @@ const Trailclasslist = () => {
                   filteredItems.map((item, index) => (
                     <tr
                       key={item._id}
-                      className={`text-[10px] text-[#010E30E5]  ${
+                      className={`text-[11px] text-[#010E30E5]  ${
                         index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C] "
                                 : "bg-[#F8F8F8] dark:bg-[#303030]"
                       }`}
                     >
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white break-words w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white break-words w-[11%]">
                         {item._id}
                       </td>
                       <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left break-words w-[12%]">
@@ -358,7 +358,7 @@ const Trailclasslist = () => {
                       {/* Class Status */}
                       <td className="px-3 py-2">
                         <span
-                          className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
+                          className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
                             item.trialClassStatus === "COMPLETED"
                               ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-2"
                               : item.trialClassStatus === "INPROGRESS"
@@ -373,7 +373,7 @@ const Trailclasslist = () => {
                       {/* Student Status */}
                       <td className="px-3 py-2">
                         <span
-                          className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
+                          className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
                             item.status === "Active"
                               ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-3"
                               : item.status === "PENDING"
@@ -387,7 +387,7 @@ const Trailclasslist = () => {
                       {/* Payment Status */}
                       <td className="px-3 py-2">
                         <span
-                          className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
+                          className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
                             item.paymentStatus === "PAID"
                               ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-4"
                               : item.paymentStatus === "PENDING"

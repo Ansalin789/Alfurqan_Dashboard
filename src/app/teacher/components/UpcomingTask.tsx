@@ -104,7 +104,7 @@ const UpcomingTasks: React.FC = () => {
 
       <div className="relative">
         {/* Vertical Dotted Line (Dark mode → white) */}
-        <div className="absolute left-[57px] top-0 bottom-0 border-l-2 border-dotted border-black dark:border-white" />
+        <div className="absolute left-[58px] top-0 bottom-0 border-l-2 border-dotted border-black dark:border-white" />
 
         <div className="space-y-4 pl-[8px]">
           {classes.length === 0 ? (

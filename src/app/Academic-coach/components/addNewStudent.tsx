@@ -4,11 +4,16 @@ import React, { useEffect, useMemo, useState } from "react";
 import axios, { AxiosError } from "axios";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
-import PhoneInput, {
-  isValidPhoneNumber
-} from "react-phone-number-input";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import { Country, State, City, ICountry, ICity } from "country-state-city";
+import {
+  Country,
+  State,
+  City,
+  ICountry,
+  IState,
+  ICity,
+} from "country-state-city";
 import type { E164Number } from "libphonenumber-js";
 import {
   Listbox,
@@ -51,7 +56,8 @@ export interface StudentForm {
   email: string;
   phoneNumber: E164Number | undefined;
   country: string;
-  countryCode:string;
+  countryCode: string;
+  state: string;
   city: string;
   language: string;
   preferredTeacher: string;
@@ -135,11 +141,12 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
     phoneNumber: undefined,
     country: "",
     city: "",
+    state: "",
     language: "",
     preferredTeacher: "",
     preferredDate: "",
     preferredHours: "",
-    countryCode:"+91",
+    countryCode: "+91",
     classType: "",
     selectTeacher: "",
     guardianName: "",
@@ -154,6 +161,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
     preferredTime: [],
   });
   const [countries, setCountries] = useState<ICountry[]>([]);
+  const [states, setStates] = useState<IState[]>([]);
   const [cities, setCities] = useState<ICity[]>([]);
   const [success, setSucces] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -217,23 +225,43 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
   useEffect(() => {
     if (form.country) {
       const selectedCountry = countries.find((c) => c.name === form.country);
+
       if (selectedCountry) {
         const allStates = State.getStatesOfCountry(selectedCountry.isoCode);
-        const allCities = allStates.flatMap((state) =>
-          City.getCitiesOfState(selectedCountry.isoCode, state.isoCode)
+        setStates(allStates);
+        setCities([]); // clear cities when country changes
+        console.log("📍 States:", allStates);
+      }
+    } else {
+      setStates([]);
+      setCities([]);
+    }
+  }, [form.country, countries]);
+
+  // 🔹 Load cities when state changes
+  useEffect(() => {
+    if (form.country && form.state) {
+      const selectedCountry = countries.find((c) => c.name === form.country);
+      const selectedState = states.find((s) => s.name === form.state);
+
+      if (selectedCountry && selectedState) {
+        const allCities = City.getCitiesOfState(
+          selectedCountry.isoCode,
+          selectedState.isoCode
         );
 
-        // 🔥 Deduplicate by city name
+        // 🔥 Deduplicate cities by name
         const uniqueCities = Array.from(
           new Map(allCities.map((city) => [city.name, city])).values()
         );
-        console.log(uniqueCities);
+
         setCities(uniqueCities);
-      } else {
-        setCities([]);
+        console.log("🏙️ Cities:", uniqueCities);
       }
+    } else {
+      setCities([]);
     }
-  }, [form.country, countries]);
+  }, [form.state, form.country, states]);
 
   const [selectedTeacher, setSelectedTeacher] = useState<TeacherList | null>(
     null
@@ -326,22 +354,22 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
     if (!academicId || !trailStartDate) return;
     const socket = getSocket(academicId);
     const position =
-  form.course === "Islamic Studies"
-    ? "Islamic Teacher"
-    : `${form.course} Teacher`;
+      form.course === "Islamic Studies"
+        ? "Islamic Teacher"
+        : `${form.course} Teacher`;
     console.log("📤 Sending academicTrailClassTeacherListRequest");
     console.log("📤 Sending with payload:", {
       startDate: trailStartDate,
       from: fromTime,
       to: calculatedToTime,
-      position :position,
+      position: position,
     });
     socket.emit("academicTrailClassTeacherListRequest", {
       requestId: academicId,
       startDate: trailStartDate,
       from: fromTime,
       to: calculatedToTime,
-      position :position,
+      position: position,
     });
 
     const handleResponse = (data: Record<string, string>) => {
@@ -593,9 +621,9 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
       );
 
       if ([200, 201].includes(response.status)) {
-        setTimeout(()=>{
+        setTimeout(() => {
           onClose();
-        },3000);
+        }, 3000);
         setSucces(true);
         setForm({
           firstName: "",
@@ -603,8 +631,9 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
           email: "",
           phoneNumber: undefined,
           country: "",
-          countryCode:"IN",
+          countryCode: "IN",
           city: "",
+          state: "",
           language: "",
           preferredTeacher: "",
           preferredDate: "",
@@ -710,12 +739,37 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                   </div>
                 </Listbox>
 
-                <Input
-                  label="Language"
-                  name="language"
-                  value={form.language}
-                  onChange={handleChange}
-                />
+                <label
+                  htmlFor="country"
+                  className="text-sm text-[#010E30] dark:text-white mb-1"
+                >
+                  City
+                </label>
+                <Listbox
+                  value={form.city}
+                  onChange={(val) => setForm({ ...form, city: val })}
+                >
+                  <div className="relative mt-1 mb-2">
+                    {/* Button */}
+                    <ListboxButton className="w-full h-10 border rounded px-3 py-2 text-left border-[#5C5C5C] text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]">
+                      {form.city || "Select City"}
+                    </ListboxButton>
+
+                    {/* Options */}
+                    <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#343434] shadow-lg">
+                      {cities.map((city) => (
+                        <ListboxOption
+                          key={city.name}
+                          value={city.name}
+                          className="cursor-pointer px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        >
+                          {city.name}
+                        </ListboxOption>
+                      ))}
+                    </ListboxOptions>
+                  </div>
+                </Listbox>
+
                 <div className="mb-4">
                   <label
                     htmlFor="preferredTeacher"
@@ -776,8 +830,8 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                     className="w-full border rounded px-3 py-2 border-[#5C5C5C] text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                   >
                     <option value="">Select Class Type</option>
-                    <option value="REGULARCLASS">REGULARCLASS</option>
-                    <option value="GROUPCLASS">GROUPCLASS</option>
+                    <option value="REGULARCLASS">Regular Class</option>
+                    <option value="GROUPCLASS">Group Class</option>
                   </select>
                 </div>
 
@@ -825,8 +879,8 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                     className="w-full border rounded px-3 py-2 border-[#5C5C5C] text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                   >
                     <option value="">Select Status</option>
-                    <option value="JOINED">JOINED</option>
-                    <option value="NOT JOINED">NOT JOINED</option>
+                    <option value="JOINED">Joined</option>
+                    <option value="NOT JOINED">Not Joined</option>
                   </select>
                 </div>
               </div>
@@ -868,33 +922,49 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                 )}
 
                 <label
-                  htmlFor="country"
+                  htmlFor="state"
                   className="text-sm text-[#010E30] dark:text-white mb-1"
                 >
-                  City
+                  State
                 </label>
+
                 <Listbox
-                  value={form.city}
-                  onChange={(val) => setForm({ ...form, city: val })}
+                  value={form.state}
+                  onChange={(val) => setForm({ ...form, state: val, city: "" })}
+                  disabled={!form.country} // disable if no country selected
                 >
                   <div className="relative mt-1 mb-2">
                     {/* Button */}
-                    <ListboxButton className="w-full h-10 border rounded px-3 py-2 text-left border-[#5C5C5C] text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]">
-                      {form.city || "Select City"}
+                    <ListboxButton
+                      className={`w-full h-10 border rounded px-3 py-2 text-left text-xs
+        ${!form.country ? "opacity-50 cursor-not-allowed" : ""}
+        border-[#5C5C5C] dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]`}
+                    >
+                      {form.country
+                        ? form.state || "Select State"
+                        : "Select Country First"}
                     </ListboxButton>
 
                     {/* Options */}
-                    <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#343434] shadow-lg">
-                      {cities.map((city) => (
-                        <ListboxOption
-                          key={city.name}
-                          value={city.name}
-                          className="cursor-pointer px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-600"
-                        >
-                          {city.name}
-                        </ListboxOption>
-                      ))}
-                    </ListboxOptions>
+                    {form.country && (
+                      <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#343434] shadow-lg">
+                        {states.length > 0 ? (
+                          states.map((state) => (
+                            <ListboxOption
+                              key={state.isoCode}
+                              value={state.name}
+                              className="cursor-pointer px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-600"
+                            >
+                              {state.name}
+                            </ListboxOption>
+                          ))
+                        ) : (
+                          <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                            No states available
+                          </div>
+                        )}
+                      </ListboxOptions>
+                    )}
                   </div>
                 </Listbox>
 
@@ -961,9 +1031,9 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                 </div>
 
                 <Input
-                  label="Level"
-                  name="level"
-                  value={form.level}
+                  label="Language"
+                  name="language"
+                  value={form.language}
                   onChange={handleChange}
                 />
 
@@ -994,6 +1064,12 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                   label="Guardian Email"
                   name="guardianEmail"
                   value={form.guardianEmail}
+                  onChange={handleChange}
+                />
+                <Input
+                  label="Level"
+                  name="level"
+                  value={form.level}
                   onChange={handleChange}
                 />
                 <div className="mb-4">
@@ -1061,31 +1137,33 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                       From:
                     </label>
 
-                    <Listbox value={fromHour} onChange={(val) => handleTimeChange1(val, fromMinute)}>
-  <div className="relative mt-1 mb-1">
-    {/* Button */}
-    <ListboxButton className="h-8 w-16 border rounded px-2 text-left text-sm border-[#555] dark:border-[#666] text-[#010E30] dark:text-white bg-white dark:bg-[#343434]">
-      {fromHour || "HH"}
-    </ListboxButton>
+                    <Listbox
+                      value={fromHour}
+                      onChange={(val) => handleTimeChange1(val, fromMinute)}
+                    >
+                      <div className="relative mt-1 mb-1">
+                        {/* Button */}
+                        <ListboxButton className="h-8 w-16 border rounded px-2 text-left text-sm border-[#555] dark:border-[#666] text-[#010E30] dark:text-white bg-white dark:bg-[#343434]">
+                          {fromHour || "HH"}
+                        </ListboxButton>
 
-    {/* Options */}
-    <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#343434] shadow-lg scrollbar-none">
-      {Array.from({ length: 24 }, (_, i) => {
-        const hour = i.toString().padStart(2, "0");
-        return (
-          <ListboxOption
-            key={hour}
-            value={hour}
-            className="cursor-pointer px-3 py-2 text-xs text-[#010E30] dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600"
-          >
-            {hour}
-          </ListboxOption>
-        );
-      })}
-    </ListboxOptions>
-  </div>
-</Listbox>
-
+                        {/* Options */}
+                        <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#343434] shadow-lg scrollbar-none">
+                          {Array.from({ length: 24 }, (_, i) => {
+                            const hour = i.toString().padStart(2, "0");
+                            return (
+                              <ListboxOption
+                                key={hour}
+                                value={hour}
+                                className="cursor-pointer px-3 py-2 text-xs text-[#010E30] dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600"
+                              >
+                                {hour}
+                              </ListboxOption>
+                            );
+                          })}
+                        </ListboxOptions>
+                      </div>
+                    </Listbox>
 
                     {/* Minutes Dropdown */}
                     <select
@@ -1109,57 +1187,64 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                     >
                       Teacher:
                     </label>
-                    <Listbox value={selectedTeacher} onChange={setSelectedTeacher}>
-        <div className="relative">
-          {/* Button */}
-          <ListboxButton className="relative w-full cursor-default rounded-lg border border-[#555] dark:border-gray-600 bg-white dark:bg-gray-800 py-1 pl-3 pr-10 text-left text-xs text-gray-900 dark:text-gray-200">
-            <span className="block truncate">
-              {selectedTeacher ? selectedTeacher.teacherName : "Select a Teacher"}
-            </span>
-            <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
-              <ChevronsUpDown className="h-4 w-4 text-gray-500" />
-            </span>
-          </ListboxButton>
+                    <Listbox
+                      value={selectedTeacher}
+                      onChange={setSelectedTeacher}
+                    >
+                      <div className="relative">
+                        {/* Button */}
+                        <ListboxButton className="relative w-full cursor-default rounded-lg border border-[#555] dark:border-gray-600 bg-white dark:bg-gray-800 py-1 pl-3 pr-10 text-left text-xs text-gray-900 dark:text-gray-200">
+                          <span className="block truncate">
+                            {selectedTeacher
+                              ? selectedTeacher.teacherName
+                              : "Select a Teacher"}
+                          </span>
+                          <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                            <ChevronsUpDown className="h-4 w-4 text-gray-500" />
+                          </span>
+                        </ListboxButton>
 
-          {/* Options */}
-          <ListboxOptions className="absolute mt-1 max-h-60 w-full overflow-auto rounded-lg border border-[#555] dark:border-gray-600 bg-white dark:bg-gray-800 text-xs shadow-lg focus:outline-none">
-            {teachers.length === 0 ? (
-              <div className="px-3 py-2 text-gray-400">🔍 No Teacher</div>
-            ) : (
-              teachers.map((teacher) => (
-                <ListboxOption
-                  key={teacher.teacherId}
-                  value={teacher}
-                  className={({ selected }) =>
-                    `relative cursor-default  w-full select-none py-2 pl-8 pr-3 ${
-                      selected
-                        ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                        : "text-gray-900 dark:text-gray-200"
-                    }`
-                  }
-                >
-                  {({ selected }) => (
-                    <>
-                      <span
-                        className={`block truncate ${
-                          selected ? "font-medium" : "font-normal"
-                        }`}
-                      >
-                        {teacher.teacherName}
-                      </span>
-                      {selected && (
-                        <span className="absolute inset-y-0 left-2 flex items-center text-blue-500">
-                          <Check className="h-4 w-4" />
-                        </span>
-                      )}
-                    </>
-                  )}
-                </ListboxOption>
-              ))
-            )}
-          </ListboxOptions>
-        </div>
-      </Listbox>
+                        {/* Options */}
+                        <ListboxOptions className="absolute mt-1 max-h-60 w-full overflow-auto rounded-lg border border-[#555] dark:border-gray-600 bg-white dark:bg-gray-800 text-xs shadow-lg focus:outline-none">
+                          {teachers.length === 0 ? (
+                            <div className="px-3 py-2 text-gray-400">
+                              🔍 No Teacher
+                            </div>
+                          ) : (
+                            teachers.map((teacher) => (
+                              <ListboxOption
+                                key={teacher.teacherId}
+                                value={teacher}
+                                className={({ selected }) =>
+                                  `relative cursor-default  w-full select-none py-2 pl-8 pr-3 ${
+                                    selected
+                                      ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                      : "text-gray-900 dark:text-gray-200"
+                                  }`
+                                }
+                              >
+                                {({ selected }) => (
+                                  <>
+                                    <span
+                                      className={`block truncate ${
+                                        selected ? "font-medium" : "font-normal"
+                                      }`}
+                                    >
+                                      {teacher.teacherName}
+                                    </span>
+                                    {selected && (
+                                      <span className="absolute inset-y-0 left-2 flex items-center text-blue-500">
+                                        <Check className="h-4 w-4" />
+                                      </span>
+                                    )}
+                                  </>
+                                )}
+                              </ListboxOption>
+                            ))
+                          )}
+                        </ListboxOptions>
+                      </div>
+                    </Listbox>
                   </div>
                 </div>
 

@@ -118,6 +118,7 @@ interface ApiResponse {
 // Define the transformed user structure
 interface TransformedUser {
   _id: string;
+  trialId: string;
   studentId: string;
   studentFirstName: string;
   studentLastName: string;
@@ -135,6 +136,50 @@ interface TransformedUser {
   paymentLink: string;
   studentStatus: string; // Optional if not always present
 }
+
+export interface IMeeting {
+  _id: string;
+  subject: string;
+  meetingLocation: string;
+  classType: string;
+  meetingType: string;
+  meetingLink: string;
+  isScheduledMeeting: boolean;
+  scheduledStartDate: string;
+  scheduledEndDate: string;
+  scheduledFrom: string;
+  scheduledTo: string;
+  timeZone: string;
+  description: string;
+  meetingStatus: string;
+  studentResponse: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  lastUpdatedDate: string;
+  lastUpdatedBy: string;
+  academicCoach: {
+    academicCoachId: string;
+    name: string;
+    email: string;
+  };
+  teacher: {
+    teacherId: string | null;
+    name: string | null;
+    email: string | null;
+  };
+  student: {
+    studentId: string;
+    name: string;
+    email: string;
+  };
+  course: {
+    courseId: string;
+    courseName: string;
+  };
+}
+
+
 
 const getAllUsers = async (): Promise<{
   success: boolean;
@@ -170,6 +215,7 @@ const getAllUsers = async (): Promise<{
         console.log("Item studentStatus before transform:", item.studentStatus);
         return {
           _id: item._id,
+          trialId: item.trialId,
           studentId: item.student.studentId,
           studentFirstName: item.student.studentFirstName,
           studentLastName: item.student.studentLastName,
@@ -386,7 +432,10 @@ const TrailSection = () => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchText, setSearchText] = useState("");
-
+  const [meetings, setMeetings] = useState<IMeeting[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState<any>(null);
   const [trialClassStatus, setTrialClassStatus] = useState("");
@@ -408,7 +457,24 @@ const TrailSection = () => {
     { teacherId: string; teacherName: string; teacherEmail?: string }[]
   >([]);
   const [isLoadingTeachers, setIsLoadingTeachers] = useState(false);
-
+  const [openActionMenuForId, setOpenActionMenuForId] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchMeetings = async () => {
+      try {
+        const response = await fetch("https://api.blackstoneinfomaticstech.com/meetinglist");
+        if (!response.ok) throw new Error("Failed to fetch meetings");
+        const data = await response.json();
+        setMeetings(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchMeetings();
+  }, []);
+  
   // Function to handle editable field changes
   const handleEditableFieldChange = (field: string, value: string) => {
     setEditableData((prev) => ({
@@ -1091,6 +1157,17 @@ const TrailSection = () => {
   const handleCloseModal = () => {
     setShowModal(false);
   };
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (openActionMenuForId) {
+        setOpenActionMenuForId(null);
+      }
+    };
+    if (openActionMenuForId) {
+      document.addEventListener("click", onDocClick);
+    }
+    return () => document.removeEventListener("click", onDocClick);
+  }, [openActionMenuForId]);
   // Add filter handling function
   const handleApplyFilters = (filters: {
     country: string;
@@ -1354,6 +1431,13 @@ const TrailSection = () => {
     );
   }
 
+  // Utility to find relevant meeting for a user
+  const getMeetingForUser = (user: TransformedUser) => {
+    return meetings.find(
+      (m) => m.student && m.student.studentId && m.student.studentId === user.studentId
+    );
+  };
+
   return (
     <div>
       <div className="">
@@ -1388,28 +1472,34 @@ const TrailSection = () => {
                     </span>
                   </div>
                 </div>
-                <div className="overflow-x-auto w-full">
-                  <table className="w-full table-fixed">
+                <div className="overflow-x-auto w-full thin-scroll">
+                  <table className="w-full table-fixed min-w-max">
                     <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                       <tr>
                         {[
-                          { label: "Trial ID", width: "w-[10%]" },
-                          { label: "Student Name", width: "w-[12%]" },
+                          { label: "Trial ID", width: "w-[18%]" },
+                          { label: "Student Name", width: "w-[14%]" },
                           { label: "Mobile", width: "w-[10%]" },
                           { label: "Country", width: "w-[8%]" },
-                          { label: "Course", width: "w-[9%]" },
-                          { label: "Date", width: "w-[8%]" },
-                          { label: "Preferred Teacher", width: "w-[10%]" },
-                          { label: "Assigned Teacher", width: "w-[10%]" },
+                          { label: "Course", width: "w-[10%]" },
                           { label: "Time", width: "w-[8%]" },
+                          { label: "Date", width: "w-[10%]" },
+                          { label: "Preferred Teacher", width: "w-[12%]" },
+                          { label: "Assigned Teacher", width: "w-[12%]" },
                           { label: "Trial Status", width: "w-[12%]" },
-                          { label: "Student Status", width: "w-[10%]" },
-                          { label: "Payment Status", width: "w-[10%]" },
+                          { label: "Student Status", width: "w-[12%]" },
+                          { label: "Payment Status", width: "w-[12%]" },
                           { label: "Action", width: "w-[7%]" },
                         ].map((header, index) => (
                           <th
                             key={header.label}
-                            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words ${header.width}`}
+                            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] whitespace-nowrap ${header.width} ${
+                              index === 0
+                                ? "sticky left-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                                : index === 12
+                                ? "sticky right-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                                : ""
+                            }`}
                           >
                             {header.label}
                           </th>
@@ -1420,50 +1510,67 @@ const TrailSection = () => {
                       {currentItems.length > 0 ? (
                         currentItems.map((item, index) => (
                           <tr
-                            key={item._id}
+                            key={item.trialId}
                             className={`text-[12px] ${
                               index % 2 === 0
                                 ? "bg-[#fff] dark:bg-[#2C2C2C] "
                                 : "bg-[#F8F8F8] dark:bg-[#303030]"
                             }`}
                           >
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
-                              {item._id}
+                            <td className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[18%] sticky left-0 z-10 ${
+                              index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
+                            }`}>
+                              {item.trialId}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[15%]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[14%]">
                               {item.studentFirstName} {item.studentLastName}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.number}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[8%]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.country}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.course}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
-                              {new Date(item.prefferedDate).toLocaleDateString(
-                                "en-US",
-                                {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                }
-                              )}{" "}
+                           
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[8%]">
+                              {(() => {
+                                 const meeting = getMeetingForUser(item);
+                                 return meeting
+                                  ? `${meeting.scheduledFrom || ''}${meeting.scheduledTo ? ' - ' + meeting.scheduledTo : ''}`
+                                  : item.time;
+                              })()}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
+                              {(() => {
+                                 const meeting = getMeetingForUser(item);
+                                 return meeting
+                                  ? (meeting.scheduledStartDate ? new Date(meeting.scheduledStartDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "")
+                                  : (item.prefferedDate ? new Date(item.prefferedDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "");
+                              })()}
+                            </td>
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.preferredTeacher}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
-                              {item.assignedTeacher}
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[12%]">
+                              {(() => {
+                                 const meeting = getMeetingForUser(item);
+                                 const name = meeting && meeting.teacher && meeting.teacher.name
+                                    ? meeting.teacher.name
+                                    : item.assignedTeacher;
+                                 return name && name.length > 0
+                                    ? name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()
+                                    : name;
+                              })()}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[8%]">
-                              {item.time}
-                            </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[8%]">
+                            
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[12%]">
                               <span
-                                className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
+                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
                                   item.trialClassStatus === "COMPLETED"
                                     ? "bg-[#ECFDF3] text-[#377E36] px-2 dark:bg-[#377E3633]"
                                     : item.trialClassStatus === "INPROGRESS"
@@ -1479,7 +1586,7 @@ const TrailSection = () => {
                               </span>
                             </td>
 
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] w-[8%]">
+                            <td className="px-3 py-2 text-[11px] text-[#010E30E5] dark:text-[#FDFDFD] whitespace-nowrap w-[12%]">
                               {(() => {
                                 // Debug log for table display
                                 console.log("Table display studentStatus:", {
@@ -1497,7 +1604,7 @@ const TrailSection = () => {
                                 });
                                 return (
                                   <span
-                                    className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
+                                    className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
                                       item.studentStatus?.toUpperCase() ===
                                       "JOINED"
                                         ? "bg-[#ECFDF3] text-[#377E36] px-6 dark:bg-[#377E3633]"
@@ -1517,9 +1624,9 @@ const TrailSection = () => {
                               })()}
                             </td>
 
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD]  w-[8%] break-words">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD]  w-[12%] whitespace-nowrap">
                               <span
-                                className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
+                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
                                   item.paymentStatus === "PAID"
                                     ? "bg-[#ECFDF3] text-[#377E36] px-5 dark:bg-[#377E3633]"
                                     : item.paymentStatus === "FAILED"
@@ -1530,9 +1637,18 @@ const TrailSection = () => {
                                 {item.paymentStatus ?? "PAID"}
                               </span>
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[5%]">
+                            <td className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[7%] sticky right-0 z-10 ${
+                              index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
+                            }`}>
+                              <div className="relative inline-block text-left">
                               <button
-                                onClick={() => handleClick(item._id.toString())}
+                                  onClick={() =>
+                                    setOpenActionMenuForId((prev) =>
+                                      prev === item._id ? null : item._id
+                                    )
+                                  }
                                 className="hover:cursor-pointer text-center p-2"
                               >
                                 <FaEllipsisV
@@ -1540,6 +1656,28 @@ const TrailSection = () => {
                                   className="text-[#5F6368] dark:text-white"
                                 />
                               </button>
+                                {openActionMenuForId === item._id && (
+                                  <div className="absolute right-0 mt-2 w-28 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-20 dark:bg-[#2E2E2E]">
+                                    <div className="py-1">
+                                      <button
+                                        className="block w-full px-3 py-2 text-left text-[11px] text-[#010E30E5] hover:bg-gray-100 dark:text-white dark:hover:bg-[#3A3A3A]"
+                                        onClick={() => {
+                                          handleClick(item._id.toString());
+                                          setOpenActionMenuForId(null);
+                                        }}
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        className="block w-full px-3 py-2 text-left text-[11px] text-[#D34645] hover:bg-gray-100 dark:hover:bg-[#3A3A3A]"
+                                        onClick={() => setOpenActionMenuForId(null)}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))
@@ -1553,6 +1691,12 @@ const TrailSection = () => {
                     </tbody>
                   </table>
                 </div>
+                <style jsx>{`
+                  .thin-scroll { scrollbar-width: thin; scrollbar-color: rgba(100,100,100,.5) transparent; }
+                  .thin-scroll::-webkit-scrollbar { height: 3px; }
+                  .thin-scroll::-webkit-scrollbar-track { background: transparent; }
+                  .thin-scroll::-webkit-scrollbar-thumb { background-color: rgba(100,100,100,.5); border-radius: 9999px; }
+                `}</style>
               </div>
             </div>
           </div>
@@ -1912,10 +2056,11 @@ const TrailSection = () => {
                   className=" bg-[#576CBC1A] text-[#576CBC] px-5 py-2 rounded-lg hover:shadow-lg transition-all duration-300 text-sm font-medium border border-[#576CBC1A] hover:bg-[#576CBC33] hover:text-[#576CBC] dark:hover:bg-[#576CBC33] dark:hover:text-[#576CBC]"
                 >
                   Cancel
-                </button>
-                {(editableData.availableTeacher &&
+                  </button>
+                {( (editableData.availableTeacher || formData?.assignedTeacherId) &&
                   ((editableData.changeDate || formData?.student.preferredDate) &&
-                   (editableData.changeTime || formData?.student.preferredFromTime))) && (
+                   (editableData.changeTime || formData?.student.preferredFromTime))
+                ) && (
                     <button
                       type="button"
                       onClick={handleSaveChanges}

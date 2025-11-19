@@ -51,6 +51,9 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
     startTime: "",
     endTime: "",
   });
+ 
+ 
+
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -79,7 +82,10 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
           setLoading(false);
           return;
         }
-        setClassData(data.classSchedule || []);
+        const sortedData = (data.classSchedule || []).sort((a: ClassSchedule, b: ClassSchedule) => {
+          return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+        });
+        setClassData(sortedData);
       } catch (err: any) {
         setError("Failed to fetch class schedule");
       } finally {
@@ -188,7 +194,7 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Student Class" />
+      <AdminHeader currentSection="Student Class"  showBackPath={`/admin-main/ui/studentlist?studentId=${studentId}`} showBackButton />
       <div>
         <div className="rounded-lg overflow-hidden">
           <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
@@ -222,12 +228,12 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
             >
               <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                 <tr className="font-medium">
-                  <th className="p-3 font-semibold text-[12px] text-center">Class ID</th>
-                  <th className="p-3 font-semibold text-[12px] text-center">Teacher Name</th>
-                  <th className="p-3 font-semibold text-[12px] text-center">Course Name</th>
-                  <th className="p-3 font-semibold text-[12px] text-center">Date</th>
-                  <th className="p-3 font-semibold text-[12px] text-center">Time</th>
-                  <th className="p-3 font-semibold text-[12px] text-center">Status</th>
+                  <th className="p-3 font-semibold text-[12px] text-left">Class ID</th>
+                  <th className="p-3 font-semibold text-[12px] text-left">Teacher Name</th>
+                  <th className="p-3 font-semibold text-[12px] text-left">Course Name</th>
+                  <th className="p-3 font-semibold text-[12px] text-left">Date</th>
+                  <th className="p-3 font-semibold text-[12px] text-left">Time</th>
+                  <th className="p-3 font-semibold text-[12px] text-left">Status</th>
                 </tr>
               </thead>
               <tbody className="text-[10px] text-[#1D2939]">
@@ -243,12 +249,12 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
                           : "bg-[#F8F8F8] dark:bg-[#303030]"
                       }`}
                     >
-                      <td className="p-3">{row._id}</td>
-                      <td className="p-3">{row.teacher?.teacherName}</td>
-                      <td className="p-3">{row.course?.courseName}</td>
-                      <td className="p-3">{new Date(row.startDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "2-digit" })}</td>
-                      <td className="p-3">{row.startTime?.[0]} - {row.endTime?.[0]}</td>
-                      <td className="p-3">
+                      <td className="p-3 text-left">{row._id}</td>
+                      <td className="p-3 text-left">{row.teacher?.teacherName}</td>
+                      <td className="p-3 text-left">{row.course?.courseName}</td>
+                      <td className="p-3 text-left">{new Date(row.startDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "2-digit" })}</td>
+                      <td className="p-3 text-left">{row.startTime?.[0]} - {row.endTime?.[0]}</td>
+                      <td className="p-3 text-left">
                         <span className={`px-3 py-1 rounded-md text-[10px] font-medium ${getStatusColor(row.scheduleStatus)}`}>
                           {row.scheduleStatus}
                         </span>
@@ -294,15 +300,34 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
                   onChange={(e) => setMeetingFilters({ ...meetingFilters, teacher: e.target.value })}
                 />
               </div>
-              <div className="mb-4">
-                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Course Name</label>
-                <input
-                  type="text"
-                  className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                  value={meetingFilters.course}
-                  onChange={(e) => setMeetingFilters({ ...meetingFilters, course: e.target.value })}
-                />
-              </div>
+             <div className="mb-4">
+  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+    Course
+  </label>
+
+  <select
+    className="w-full px-3 py-2 border rounded text-xs dark:text-white dark:border-[#5C5C5C] dark:bg-[#343434]"
+    value={meetingFilters.course}
+    onChange={(e) =>
+      setMeetingFilters({ ...meetingFilters, course: e.target.value })
+    }
+  >
+    <option value="">Select Course</option>
+    <option value="Quran">Quran</option>
+    <option value="Arabic">Arabic</option>
+    <option value="Islamic Studies	">Islamic Studies	</option>
+
+    {/* If you have dynamic course list, map here */}
+    {/* 
+    {courseList.map((course) => (
+      <option key={course._id} value={course.courseName}>
+        {course.courseName}
+      </option>
+    ))}
+    */}
+  </select>
+</div>
+
               <div className="mb-4">
                 <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Date</label>
                     <div className="flex gap-2">

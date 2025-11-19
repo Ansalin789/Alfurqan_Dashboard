@@ -2,39 +2,71 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const UpcomingTable = () => {
-  interface ClassEvent {
-    _id: string;
-    classDay: string[];
-    package: string;
-    preferedTeacher: string;
-    totalHours: number;
-    startDate: string;
-    endDate: string;
-    startTime: string[];
-    endTime: string[];
-    scheduleStatus: string;
-    status: string;
-    teacher: {
-      teacherName: string;
-    };
-    course: {
-      courseName: string;
-    };
-  }
+interface ClassData {
+  _id: string;
+  student: Student;
+  teacher: Teacher;
+  classDay: string[];
+  package: string;
+  preferedTeacher: string;
+  course: Course;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[];
+  endTime: string[];
+  scheduleStatus: string;
+  classLink: string;
+  status: string;
+  classStatus: string;
+  createdBy: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+}
+interface Student {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+}
+interface Teacher {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+}
+interface Course {
+  courseId: string;
+  courseName: string;
+}
 
-  const [classes, setClasses] = useState<ClassEvent[]>([]);
+interface ApiResponse {
+  totalCount: number;
+  classSchedule: ClassData[];
+}
+
+const UpcomingTable = () => {
   const [loading, setLoading] = useState(true);
 
+  const [upcomingClasses, setUpcomingClasses] = useState<ClassData[]>([]);
+  const [completedClasses, setCompletedClasses] = useState<ClassData[]>([]);
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const studentId = localStorage.getItem("StudentPortalId");
-        const token = localStorage.getItem("StudentAuthToken");
+        const studentId =
+          typeof window !== "undefined"
+            ? localStorage.getItem("StudentPortalId")
+            : null;
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("StudentAuthToken")
+            : null;
 
-        if (!token || !studentId) return;
+        if (!studentId || !token) {
+          console.log("Missing studentId or authToken");
+          return;
+        }
 
-        const response = await axios.get(
+        const response = await axios.get<ApiResponse>(
           "https://api.blackstoneinfomaticstech.com/classShedule/students",
           {
             params: { studentId },
@@ -45,30 +77,39 @@ const UpcomingTable = () => {
           }
         );
 
+        const classes = response.data.classSchedule;
         const now = new Date();
 
-        const upcoming = response.data.classSchedule
-          .filter((cls: ClassEvent) => {
+        const upcoming = classes
+          .filter((cls) => {
             const classDate = new Date(cls.startDate);
-            const [startHour, startMinute] = cls.startTime[0]?.split(":") || [
-              "00",
-              "00",
+            const [startHours, startMinutes] = cls.startTime[0]?.split(":") || [
+              0, 0,
             ];
-            classDate.setHours(+startHour, +startMinute, 0, 0);
-
+            classDate.setHours(+startHours, +startMinutes, 0, 0);
             return (
-              now < classDate && cls.scheduleStatus === "Scheduled" // ✅ Only Scheduled
+              now < classDate &&
+              (cls.scheduleStatus === "Scheduled" ||
+                cls.scheduleStatus === "Rescheduled" || cls.scheduleStatus === "Reschedulerequested")
             );
           })
           .sort(
-            (a: ClassEvent, b: ClassEvent) =>
+            (a, b) =>
               new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-          )
-          .slice(0, 5); // Limit to 5
+          );
 
-        setClasses(upcoming);
-      } catch (err) {
-        console.error("Error fetching student classes", err);
+        const completed = classes
+          .filter((cls) => cls.scheduleStatus === "Completed" || cls.scheduleStatus === "BothAbsent" || cls.scheduleStatus === "StudentAbsent" || cls.scheduleStatus === "TeacherAbsent" )
+          .sort(
+            (a, b) =>
+              new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+          );
+        setUpcomingClasses(upcoming);
+        setCompletedClasses(completed);
+        console.log("upcomoinig class",upcoming);
+        console.log("completed clasees",completed);
+      } catch (error) {
+        console.error("Error fetching class data:", error);
       } finally {
         setLoading(false);
       }
@@ -76,6 +117,14 @@ const UpcomingTable = () => {
 
     fetchClasses();
   }, []);
+
+  const getStatusClass = (status: string) => {
+    if (status === "Scheduled" || status === "Completed") {
+      return "bg-[#ECFDF3] text-[#377E36] dark:bg-[#408d4033]";
+    } else {
+      return "bg-gray-200 text-gray-600 dark:bg-[#DEDEDE33] dark:text-[#bbbdbc]";
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-lg dark:bg-[#343434]">
@@ -94,7 +143,7 @@ const UpcomingTable = () => {
                 ].map((col) => (
                   <th
                     key={col}
-                    className="py-4 px-2 font-semibold border border-[#466993] dark:border-[#466993]"
+                    className="py-4 px-2 font-semibold border border-[#466993] dark:border-[#466993] text-left"
                   >
                     {col}
                   </th>
@@ -111,7 +160,7 @@ const UpcomingTable = () => {
                     Loading...
                   </td>
                 </tr>
-              ) : classes.length === 0 ? (
+              ) : upcomingClasses.length === 0 ? (
                 <tr>
                   <td
                     colSpan={6}
@@ -121,7 +170,7 @@ const UpcomingTable = () => {
                   </td>
                 </tr>
               ) : (
-                classes.map((cls, index) => (
+                upcomingClasses.map((cls, index) => (
                   <tr
                     key={cls._id}
                     className={`text-[10px] px-2 py-4 border-none outline-none ${
@@ -130,14 +179,14 @@ const UpcomingTable = () => {
                         : "bg-[#F8F8F8] dark:bg-[#303030]"
                     }`}
                   >
-                    <td className="py-4 px-2 text-center">{cls._id}</td>
-                    <td className="py-2 px-2 text-center text-[#3D8FDE]">
-                      {cls.teacher.teacherName}
+                    <td className="py-4 px-2 text-left">{cls._id}</td>
+                    <td className="py-2 px-2 text-left text-[#3D8FDE]">
+                      {cls.teacher?.teacherName.charAt(0).toUpperCase() + cls.teacher?.teacherName.slice(1).toLowerCase() || "N/A"}
                     </td>
-                    <td className="py-2 px-2 text-center">
-                      {cls.course.courseName}
+                    <td className="py-2 px-2 text-left">
+                      {cls.course?.courseName || "N/A"}
                     </td>
-                    <td className="px-4 py-3 text-center ">
+                    <td className="px-4 py-3 text-left ">
                       {new Date(cls.startDate).toLocaleDateString("en-US", {
                         month: "short",
                         day: "2-digit",
@@ -145,16 +194,14 @@ const UpcomingTable = () => {
                       })}
                     </td>
 
-                    <td className="py-2 px-2 text-center">
-                      Starts at {cls.startTime[0]}
+                    <td className="py-2 px-2 text-left">
+                      {cls.startTime[0]} - {cls.endTime[0]}
                     </td>
-                    <td className="py-2 px-2 text-center">
+                    <td className="py-2 px-2 text-left">
                       <span
-                        className={`px-2 py-1 rounded-sm text-[10px] font-semibold ${
-                          cls.scheduleStatus === "Scheduled"
-                            ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#408d4033]"
-                            : "text-gray-800 dark:text-white"
-                        }`}
+                        className={`px-2 py-1 rounded-sm text-[10px] font-semibold ${getStatusClass(
+                          cls.scheduleStatus
+                        )}`}
                       >
                         {cls.scheduleStatus}
                       </span>

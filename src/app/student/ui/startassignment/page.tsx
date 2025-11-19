@@ -426,21 +426,39 @@ const QuizPage = () => {
             };
           }
 
+          // Utility: normalize image URL (absolute, relative, or raw base64)
+          const normalizeImageUrl = (value?: string): string | undefined => {
+            if (!value || value === "null") return undefined;
+            // Already a data URL
+            if (value.startsWith("data:")) return value;
+            // Absolute URL
+            if (value.startsWith("http://") || value.startsWith("https://")) return value;
+            // Relative path from backend
+            if (value.startsWith("/")) {
+              return `https://api.blackstoneinfomaticstech.com${value}`;
+            }
+            // Heuristics for common base64 image signatures
+            const looksBase64Image =
+              value.length > 100 &&
+              (/^(iVBOR|\/9j\/|UklG|R0lG)/.test(value)); // PNG, JPEG, WEBP, GIF
+            if (looksBase64Image) {
+              // Prefer webp if signature matches, else default jpeg
+              const mime = value.startsWith("UklG") ? "image/webp" :
+                           value.startsWith("iVBOR") ? "image/png" :
+                           value.startsWith("R0lG") ? "image/gif" :
+                           "image/jpeg";
+              return `data:${mime};base64,${value}`;
+            }
+            // Fallback: try treating as relative
+            return `https://api.blackstoneinfomaticstech.com/${value.replace(/^\/+/, "")}`;
+          };
+
           // Image identification
           if (
             type === "image identification" ||
             type === "image-identification"
           ) {
-            let uploadFile: string | undefined = undefined;
-            if (
-              item.uploadFile &&
-              item.uploadFile.length > 5 &&
-              item.uploadFile !== "null"
-            ) {
-              uploadFile = item.uploadFile.startsWith("http")
-                ? item.uploadFile
-                : `https://api.blackstoneinfomaticstech.com${item.uploadFile}`;
-            }
+            const uploadFile = normalizeImageUrl(item.uploadFile);
             options = [
               item.options.optionOne,
               item.options.optionTwo,
@@ -1189,14 +1207,14 @@ const QuizPage = () => {
             <div className="w-full flex flex-col max-w-full bg-[#f4f5fb] dark:bg-[#343434] rounded-xl p-4 items-center mx-auto min-h-[400px] justify-center">
               <div className="flex flex-row">
                 <div className="flex flex-col items-center justify-center mr-20 p-0">
-                  <img
+                  {/* <img
                     src="/assets/images/q5.svg"
                     alt="Cartoon"
                     className="w-40 h-40 object-contain"
-                  />
+                  /> */}
                 </div>
                 {/* Right: Question and controls */}
-                <div className="flex flex-col items-center justify-center flex-1 min-w-[320px] max-w-[500px]">
+                <div className="flex flex-col  justify-start flex-1 min-w-[320px] max-w-[500px] -ml-48">
                   <h2 className="text-[18px] font-semibold text-[#223857] mb-2 text-left w-full dark:text-[#fff] dark:opacity-90">
                     Tap the icon and read the following
                   </h2>
@@ -1750,11 +1768,22 @@ const QuizPage = () => {
                   <h2 className="text-2xl font-bold text-[#223857] mb-2 text-center">Nice Work</h2>
                   {/* Level */}
                   <div className="text-lg font-semibold text-[#223857] mb-2">
-                    Level: {getLevel((backendScore ?? totalScore), quizData.length)}
+                    Level: {assignment?.level}
                   </div>
                   {/* Stars */}
                   <div className="flex gap-1 mb-2 justify-center">
-                    {calculateStarRating((backendScore ?? totalScore), quizData.length)}
+                    {(() => {
+                      const score = backendScore ?? totalScore;
+                      const maxScore = quizData.length;
+                      console.log("[Star Rating] Calculating stars:", {
+                        backendScore,
+                        totalScore,
+                        usedScore: score,
+                        maxScore,
+                        quizDataLength: quizData.length,
+                      });
+                      return calculateStarRating(score, maxScore);
+                    })()}
                   </div>
                   {/* No raw score shown */}
                   {/* Submit/Close button logic remains unchanged */}

@@ -57,21 +57,22 @@ interface ClassScheduleResponse {
 interface SimpleStudent {
   studentId: string;
   name: string;
+  level?: string;
   studentDetails: {
     student: {
+      studentFirstName?: string;
+      studentId?: string;
       learningInterest?: string;
       languageLevel?: string;
       createdDate?: string;
       status?: string;
-      level?:string;
+      level?: string;
     };
     course: {
       courseName: string;
     };
     studentRate?: string;
     classType?: string;
-   
-  
   };
 }
 
@@ -110,6 +111,24 @@ function Analytics() {
     time: "",
   });
 
+  // helper to return tailwind / inline classes for status badges
+  const getStatusClasses = (status?: string) => {
+    const s = (status || "").toLowerCase();
+    if (s.includes("completed && active")) {
+      return "text-[#377E36] bg-[#ECFDF3] dark:bg-[#163216] dark:text-[#7EE08A]";
+    }
+    if (
+      s.includes("student absent") ||
+      s.includes("teacher absent") ||
+      s === "absent" ||
+      s.includes("absent")
+    ) {
+      return "text-[#B91C1C] bg-[#FFF1F1] dark:bg-[#3A1212] dark:text-[#FFB4B4]";
+    }
+    // default / other statuses
+    return "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white";
+  };
+
   // Get unique values for dropdowns from API data based on active view
   const getCourseNames = () => {
     if (activeView === "students") {
@@ -135,9 +154,7 @@ function Analytics() {
     if (activeView === "students") {
       return Array.from(
         new Set(
-          students
-            .map((item) => item.studentDetails.classType)
-            .filter(Boolean)
+          students.map((item) => item.studentDetails.classType).filter(Boolean)
         )
       );
     } else {
@@ -228,6 +245,7 @@ function Analytics() {
         );
 
         setStudents(response.data);
+        console.log("Students fetched:", response.data); // DEBUG
       } catch (error) {
         console.error("Error fetching students:", error);
       }
@@ -274,12 +292,13 @@ function Analytics() {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    
+
     if (activeView === "students") {
       // Search in students data
       const filtered = students.filter((item) => {
         const name = item.name?.toLowerCase() || "";
-        const course = item.studentDetails?.course?.courseName?.toLowerCase() || "";
+        const course =
+          item.studentDetails?.course?.courseName?.toLowerCase() || "";
         const classType = item.studentDetails?.classType?.toLowerCase() || "";
         const status = item.studentDetails?.student.status?.toLowerCase() || "";
         const studentId = item.studentId?.toLowerCase() || "";
@@ -311,7 +330,7 @@ function Analytics() {
       });
       setFilteredClasses(filtered);
     }
-    
+
     setCurrentPage(1);
   };
 
@@ -404,14 +423,14 @@ function Analytics() {
       toDate: "",
       time: "",
     });
-    
+
     // Reset based on active view
     if (activeView === "students") {
       setFilteredStudents(students); // show all students again
     } else {
       setFilteredClasses(uniqueStudentSchedules); // show all classes again
     }
-    
+
     setSearchQuery(""); // optionally clear search
     setIsFilterModalOpen(false); // close modal
   };
@@ -460,7 +479,8 @@ function Analytics() {
           const course =
             item.studentDetails?.course?.courseName?.toLowerCase() || "";
           const classType = item.studentDetails?.classType?.toLowerCase() || "";
-          const status = item.studentDetails?.student.status?.toLowerCase() || "";
+          const status =
+            item.studentDetails?.student.status?.toLowerCase() || "";
           const studentId = item.studentId?.toLowerCase() || "";
 
           return (
@@ -502,6 +522,63 @@ function Analytics() {
   const currentItems = filteredClasses.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
 
+  // table header definitions + renderer
+  const tableHeaders = {
+    students: [
+      { label: "Student ID", width: "w-[10%]" },
+      { label: "Student Name", width: "w-[14%]" },
+      { label: "Course", width: "w-[14%]" },
+      { label: "Class Type", width: "w-[10%]" },
+      { label: "Joined Date", width: "w-[14%]" },
+      { label: "Level", width: "w-[10%]" },
+      { label: "Status", width: "w-[8%]" },
+    ],
+    classes: [
+      { label: "Student ID", width: "w-[10%]" },
+      { label: "Student Name", width: "w-[14%]" },
+      { label: "Courses", width: "w-[14%]" },
+      { label: "Class Type", width: "w-[12%]" },
+      { label: "Course Duration", width: "w-[10%]" },
+      { label: "Class Date", width: "w-[12%]" },
+      { label: "Time", width: "w-[10%]" },
+      { label: "Status", width: "w-[8%]" },
+    ],
+    earnings: [
+      { label: "Student Id", width: "w-[10%]" },
+      { label: "Student Name", width: "w-[14%]" },
+      { label: "Course", width: "w-[12%]" },
+      { label: "Class Type", width: "w-[12%]" },
+      { label: "Course Duration", width: "w-[10%]" },
+      { label: "Class Date", width: "w-[12%]" },
+      { label: "Time", width: "w-[10%]" },
+      { label: "Amount", width: "w-[8%]" },
+      { label: "Status", width: "w-[8%]" },
+    ],
+  };
+
+  const renderTableHeader = (headers: { label: string; width: string }[]) => (
+    <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+      <tr className="font-medium">
+        {headers.map((h, idx) => (
+          <th
+            key={h.label}
+            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] whitespace-nowrap ${
+              h.width
+            } ${
+              idx === 0
+                ? "sticky left-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                : idx === headers.length - 1
+                ? "sticky right-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                : ""
+            }`}
+          >
+            {h.label}
+          </th>
+        ))}
+      </tr>
+    </thead>
+  );
+
   return (
     <BaseLayout>
       <div className="">
@@ -519,7 +596,7 @@ function Analytics() {
               >
                 <div className="flex flex-col justify-center">
                   <h3 className="text-sm font-medium text-[#0f172a] mb-4 dark:text-[#fff]">
-                    Total Students
+                    Students
                   </h3>
                   <div className="flex items-center gap-2">
                     <p className="text-[28px] font-bold text-[#0f172a] dark:text-[#fff]">
@@ -630,272 +707,225 @@ function Analytics() {
               </div>
 
               {activeView === "students" && (
-                <table
-                  className="table-auto xw-full"
-                  style={{ width: "100%", tableLayout: "fixed" }}
-                >
-                  <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
-                    <tr className="font-medium">
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Student ID{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Student Name{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Course{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Class Type{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Joined Date{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Level
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white  dark:bg-[#343434] dark:divide-gray-600">
-                    {filteredStudents.slice(0, 10).map((schedule) => (
-                      <tr
-                        key={schedule.name}
-                        className={`text-[12px] h-[50px] ${"bg-[#fff] dark:bg-[#2C2C2C]"}`}
-                      >
-                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                          {schedule.studentId}
-                        </td>
-                        <td className="px-4 py-2 text-center overflow-hidden text-ellipsis whitespace-nowrap">
-                          <div className="px-3 py-2 text-[#3D8FDE] font-medium text-left">
-                            {schedule.name}{" "}
-                          </div>
-                        </td>
+                <div className="overflow-x-auto">
+                  {" "}
+                  {/* allow horizontal scroll on small screens */}
+                  <table
+                    className="table-auto w-full"
+                    style={{ width: "100%", tableLayout: "auto" }}
+                  >
+                    {renderTableHeader(tableHeaders.students)}
+                    <tbody className="bg-white dark:bg-[#343434] dark:divide-gray-600">
+                      {filteredStudents.slice(0, 10).map((schedule) => (
+                        <tr
+                          key={schedule.studentId}
+                          className="text-[12px] h-[50px] bg-[#fff] dark:bg-[#2C2C2C] border-b border-gray-200 dark:border-gray-700"
+                        >
+                          {/* Student ID */}
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                            {schedule.studentDetails.student?.studentId ||
+                              schedule.studentId ||
+                              "-"}
+                          </td>
 
-                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                          {schedule.studentDetails.student?.learningInterest || "-"}
-                        </td>
-                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                          {schedule.studentDetails.classType}
-                        </td>
+                          {/* Student Name */}
+                          <td className="px-3 py-2 text-left">
+                            <div className="text-[#3D8FDE] font-medium">
+                              {schedule.studentDetails.student
+                                ?.studentFirstName ||
+                                schedule.name ||
+                                "-"}
+                            </div>
+                          </td>
 
-                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                          {
-                             schedule.studentDetails.student?.createdDate
+                          {/* Course / Learning Interest */}
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                            {schedule.studentDetails.student
+                              ?.learningInterest || "-"}
+                          </td>
+
+                          {/* Class Type */}
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                            {schedule.studentDetails.classType || "-"}
+                          </td>
+
+                          {/* Joined Date */}
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                            {schedule.studentDetails.student?.createdDate
                               ? new Date(
-                                schedule.studentDetails.student?.createdDate
+                                  schedule.studentDetails.student.createdDate
                                 ).toLocaleDateString("en-US", {
                                   month: "short",
                                   day: "2-digit",
                                   year: "numeric",
                                 })
-                              : "" // fallback text when date is undefined
-                          }
-                        </td>
+                              : "-"}
+                          </td>
 
-                        <td className="px-3 py-2 pl-6 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                          {schedule.studentDetails.student.level}
-                        </td>
-                        <td className="px-4 py-3 overflow-hidden text-ellipsis whitespace-nowrap ">
-                          <span className="px-2.5 py-1 bg-[#4ade80]/10 text-[#299350] rounded-lg text-[11px] ">
-                            {schedule.studentDetails.student.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          {/* Level */}
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                            {schedule.level || "-"}
+                          </td>
+
+                          {/* Status */}
+                          <td className="px-3 py-2 text-left">
+                            <span
+                              className={`px-2.5 py-1 rounded-lg text-[11px] inline-block font-semibold
+      ${
+        schedule.studentDetails.student?.status === "Active"
+          ? "text-[#0A8F40] bg-[#E8F5E9]"
+          : schedule.studentDetails.student?.status === "Inactive"
+          ? "text-[#B91C1C] bg-[#FEE2E2]"
+          : "text-gray-600 bg-gray-200 dark:bg-[#4F4F4F]" // default/unknown
+      }`}
+                            >
+                              {schedule.studentDetails.student?.status || "-"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
 
               {activeView === "classes" && (
-                <table
-                  className="table-auto xw-full"
-                  style={{ width: "100%", tableLayout: "fixed" }}
-                >
-                  <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
-                    <tr className="font-medium">
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Student ID{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap pl-10">
-                        Student Name{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Courses{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Class Type{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Course Duration{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Class Date{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Time{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Status{" "}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white  dark:bg-[#343434] dark:divide-gray-600">
-                    {filteredClasses
-                      .slice(indexOfFirstItem, indexOfLastItem)
-                      .map((cls) => (
-                        <tr
-                          key={cls._id}
-                          className={`text-[12px] h-[50px] ${"bg-[#fff] dark:bg-[#2C2C2C]"}`}
-                        >
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                            {cls._id}
-                          </td>
-                          <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left pl-10 overflow-hidden text-ellipsis whitespace-nowrap">
-                            {cls.student.studentFirstName}
-                          </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                            {cls.course.courseName}
-                          </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                            {cls.sessionClassType}
-                          </td>
-                          <td className="px-3 py-2 pl-4 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                            30 min
-                          </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                            {new Date(cls.startDate).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "2-digit",
-                                year: "numeric",
-                              }
-                            )}
-                          </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                            {cls.startTime}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap align-middle">
-  <span
-    className={`text-[10px] font-semibold py-1 px-2 rounded-lg inline-block w-[120px] text-center leading-tight break-words ${
-      cls.scheduleStatus === "Scheduled"
-        ? "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36]"
-        : cls.scheduleStatus === "Request Reschedule"
-        ? "text-[#6B4F00] bg-[#FDF6EC] dark:bg-[#4F4300] dark:text-[#FFC107]"
-        : "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white"
-    }`}
-  >
-    {cls.scheduleStatus}
-  </span>
-</td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
+                <div className="overflow-x-auto">
+                  <table
+                    className="table-auto w-full"
+                    style={{ width: "100%", tableLayout: "auto" }}
+                  >
+                    {renderTableHeader(tableHeaders.classes)}
+                    <tbody className="bg-white dark:bg-[#343434] dark:divide-gray-600">
+                      {filteredClasses
+                        .slice(indexOfFirstItem, indexOfLastItem)
+                        .map((cls) => (
+                          <tr
+                            key={cls._id}
+                            className="text-[12px] h-[50px] bg-[#fff] dark:bg-[#2C2C2C]"
+                          >
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                              {cls.student.studentId}
+                            </td>
+
+                            <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left break-words">
+                              {cls.student.studentFirstName}
+                            </td>
+
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                              {cls.course.courseName}
+                            </td>
+
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                              {cls.sessionClassType}
+                            </td>
+
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                              30 min
+                            </td>
+
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                              {new Date(cls.startDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "2-digit",
+                                  year: "numeric",
+                                }
+                              )}
+                            </td>
+
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                              {cls.startTime}
+                            </td>
+
+                            <td className="px-4 py-3 text-left">
+                              <span
+                                className={`text-[10px] font-semibold py-1 px-2 rounded-lg inline-block text-left leading-tight break-words ${getStatusClasses(
+                                  cls.scheduleStatus
+                                )}`}
+                              >
+                                {cls.scheduleStatus}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
 
               {activeView === "earnings" && (
-                <table
-                  className="table-auto xw-full"
-                  style={{ width: "100%", tableLayout: "fixed" }}
-                >
-                  <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
-                    <tr className="font-medium">
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Student Id{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap pl-4">
-                        Student Name{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Course{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Class Type{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Course Duration{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Class Date{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Time{" "}
-                      </th>
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Amount{" "}
-                      </th>
+                <div className="overflow-x-auto">
+                  <table
+                    className="table-auto w-full"
+                    style={{ width: "100%", tableLayout: "auto" }}
+                  >
+                    {renderTableHeader(tableHeaders.earnings)}
+                    <tbody>
+                      {(filteredClasses.length > 0
+                        ? filteredClasses
+                        : uniqueStudentSchedules
+                      )
+                        .slice(indexOfFirstItem, indexOfLastItem)
+                        .map((earning) => (
+                          <tr
+                            key={earning._id}
+                            className="text-[12px] h-[50px] bg-[#fff] dark:bg-[#2C2C2C]"
+                          >
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                              {earning.student.studentId}
+                            </td>
 
-                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                        Status{" "}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(filteredClasses.length > 0
-                      ? filteredClasses
-                      : uniqueStudentSchedules
-                    )
-                      .slice(indexOfFirstItem, indexOfLastItem)
-                      .map((earning) => (
-                        <tr
-                          key={earning._id}
-                          className={`text-[12px] h-[50px] ${"bg-[#fff] dark:bg-[#2C2C2C]"}`}
-                        >
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                            {earning._id}
-                          </td>
-                          <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left pl-12 overflow-hidden text-ellipsis whitespace-nowrap">
-                            {earning.student.studentFirstName}
-                          </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                            {earning.course.courseName}
-                          </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                            {earning.sessionClassType}
-                          </td>
-                          <td className="px-3 py-2 pl-4 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                            30 min
-                          </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                            {new Date(earning.startDate).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "2-digit",
-                                year: "numeric",
-                              }
-                            )}
-                          </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                            {earning.startTime}
-                          </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                            {earning.amount ? earning.amount : 0}
-                          </td>
-                          <td className="px-3 py-2 whitespace-nowrap pr-10">
-  <span
-    className={`text-[10px] font-semibold py-1 px-1 rounded-lg inline-block w-[120px] text-center leading-tight break-words ${
-      earning.scheduleStatus === "Scheduled"
-        ? "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36]"
-        : earning.scheduleStatus === "Request Reschedule"
-        ? "text-[#6B4F00] bg-[#FDF6EC] dark:bg-[#4F4300] dark:text-[#FFC107]"
-        : "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white"
-    }`}
-  >
-    {earning.scheduleStatus}
-  </span>
-</td>
+                            <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left break-words">
+                              {earning.student.studentFirstName}
+                            </td>
 
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                              {earning.course.courseName}
+                            </td>
 
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                              {earning.sessionClassType}
+                            </td>
 
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                              30 min
+                            </td>
+
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                              {new Date(earning.startDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "2-digit",
+                                  year: "numeric",
+                                }
+                              )}
+                            </td>
+
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                              {earning.startTime}
+                            </td>
+
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                              {earning.amount ? earning.amount : 0}
+                            </td>
+
+                            <td className="px-3 py-2 text-left">
+                              <span
+                                className={`text-[10px] font-semibold py-1 px-1 rounded-lg inline-block text-left leading-tight break-words ${getStatusClasses(
+                                  earning.scheduleStatus
+                                )}`}
+                              >
+                                {earning.scheduleStatus}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
 
@@ -948,7 +978,9 @@ function Analytics() {
                       setFilters({ ...filters, courseName: e.target.value })
                     }
                   >
-                    <option value="" className="text-gray-400 opacity-60">Select Course</option>
+                    <option value="" className="text-gray-400 opacity-60">
+                      Select Course
+                    </option>
                     {courseNames.map((course) => (
                       <option key={course} value={course}>
                         {course}
@@ -969,7 +1001,9 @@ function Analytics() {
                       setFilters({ ...filters, studentName: e.target.value })
                     }
                   >
-                    <option value="" className="text-gray-400 opacity-60">Select Student</option>
+                    <option value="" className="text-gray-400 opacity-60">
+                      Select Student
+                    </option>
                     {studentNames.map((name) => (
                       <option key={name} value={name}>
                         {name}
@@ -990,7 +1024,9 @@ function Analytics() {
                       setFilters({ ...filters, classType: e.target.value })
                     }
                   >
-                    <option value="" className="text-gray-400 opacity-60">Select ClassType</option>
+                    <option value="" className="text-gray-400 opacity-60">
+                      Select ClassType
+                    </option>
                     {classTypes.map((classType) => (
                       <option key={classType} value={classType}>
                         {classType}

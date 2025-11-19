@@ -211,11 +211,29 @@ const TeacherFilter = () => {
 
       const meetingName = item.meetingName?.toLowerCase() || "";
       const meetingId = item.meetingId?.toLowerCase() || "";
+      // Additional searchable fields
+      const status = (item.meetingStatus || "").toLowerCase();
+      const timing = `${item.startTime || ""} - ${item.endTime || ""}`.toLowerCase();
+      const dateObj = item.selectedDate ? new Date(item.selectedDate) : null;
+      const dateIso = item.selectedDate?.slice(0, 10).toLowerCase() || ""; // YYYY-MM-DD
+      const dateReadable = dateObj
+        ? dateObj
+            .toLocaleDateString("en-US", {
+              month: "short",
+              day: "2-digit",
+              year: "numeric",
+            })
+            .toLowerCase()
+        : "";
 
       return (
         meetingId.includes(query.toLowerCase()) ||
         meetingName.includes(query.toLowerCase()) ||
-        teacherNames.some((name) => name.includes(query.toLowerCase()))
+        teacherNames.some((name) => name.includes(query.toLowerCase())) ||
+        status.includes(query.toLowerCase()) ||
+        timing.includes(query.toLowerCase()) ||
+        dateIso.includes(query.toLowerCase()) ||
+        dateReadable.includes(query.toLowerCase())
       );
     });
     setFilteredMeetings(filtered);
@@ -386,7 +404,7 @@ const TeacherFilter = () => {
         >
           Scheduled ({upcomingClasses.length})
           {activeTab === "upcoming" && (
-            <span className="absolute left-0 ml-5 -bottom-1 w-[60px] h-[2px] rounded-full bg-[#576CBC]" />
+            <span className="absolute left-0 ml-4 -bottom-1 w-[60px] h-[2px] rounded-full bg-[#576CBC]" />
           )}
         </button>
         <button
@@ -399,7 +417,7 @@ const TeacherFilter = () => {
         >
           Completed ({completedData.length})
           {activeTab === "completed" && (
-            <span className="absolute left-0 ml-3 -bottom-1 w-[60px] h-[6px] rounded-full bg-[#576CBC]" />
+            <span className="absolute left-0 ml-3 -bottom-1 w-[60px] h-[2px] rounded-full bg-[#576CBC]" />
           )}
         </button>
       </div>
@@ -604,7 +622,7 @@ const TeacherFilter = () => {
               <div className="flex gap-2">
                 <input
                   type="date"
-                  className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]  [&::-webkit-calendar-picker-indicator]:dark:invert"
+                  className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] dark:[color-scheme:dark]"
                   value={meetingFilters.fromDate}
                   onChange={(e) =>
                     setMeetingFilters({
@@ -615,7 +633,7 @@ const TeacherFilter = () => {
                 />
                 <input
                   type="date"
-                  className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]  [&::-webkit-calendar-picker-indicator]:dark:invert"
+                  className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]  dark:[color-scheme:dark]"
                   value={meetingFilters.toDate}
                   onChange={(e) =>
                     setMeetingFilters({
@@ -630,7 +648,7 @@ const TeacherFilter = () => {
               <label className="block text-sm font-medium mb-1">Time</label>
               <input
                 type="time"
-                className="w-full border rounded-md p-2 text-[12px] dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]  [&::-webkit-calendar-picker-indicator]:dark:invert"
+                className="w-full border rounded-md p-2 text-[12px] dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] dark:[color-scheme:dark]"
                 value={meetingFilters.timing}
                 onChange={(e) =>
                   setMeetingFilters({
@@ -657,7 +675,7 @@ const TeacherFilter = () => {
                 <option value="">Select status</option>
                 <option value="Scheduled">Scheduled</option>
                 <option value="Rescheduled">Rescheduled</option>
-                <option value="Completed">Completed</option>
+                {/* <option value="Completed">Completed</option> */}
               </select>
             </div>
             <div className="flex justify-end gap-3">
@@ -809,7 +827,7 @@ const TeacherFilter = () => {
                     type="date"
                     value={rescheduleDate}
                     onChange={(e) => setRescheduleDate(e.target.value)}
-                    className="w-full text-xs px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                    className="w-full text-xs px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white dark:[color-scheme:dark]"
                   />
                 </div>
               </div>
@@ -823,8 +841,8 @@ const TeacherFilter = () => {
                     type="time"
                     value={rescheduleTime}
                     onChange={(e) => setRescheduleTime(e.target.value)}
-                    className="w-full text-sm px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
-                  />
+                    className="w-full text-sm px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white dark:[color-scheme:dark]"
+                  />     
                 </div>
               </div>
             </div>

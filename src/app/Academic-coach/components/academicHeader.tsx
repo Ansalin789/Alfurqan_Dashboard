@@ -17,6 +17,9 @@ type Props = {
   readonly showBackButton?: boolean;
   readonly showBackPath?: string;
   readonly students?: Student[];
+  readonly course? : string;
+   readonly packageName? : string;
+  readonly totalHours? : number;
 };
 export interface Student {
   _id: string;
@@ -43,6 +46,7 @@ export interface Student {
 }
 type NotificationType = {
   _id: string;
+  senderId: string;
   senderName: string;
   messages: string;
   createdDate: string;
@@ -56,6 +60,9 @@ export default function AcademicHeader({
   showBackButton = false,
   showBackPath = "",
   students = [],
+  course = "",
+  packageName = "",
+  totalHours = 0,
 }: Props) {
   const theme: any = useTheme();
   const darkMode = theme?.darkMode ?? false;
@@ -259,7 +266,7 @@ export default function AcademicHeader({
         return "👩‍🏫";
       case "SYSTEM_ALERT":
         return "⚠️";
-      case "MEETING_REMINDER":
+      case "REQUEST_RESCHEDULE_TEACHER":
         return "📅";
       case "MESSAGE":
         return "💬";
@@ -269,6 +276,38 @@ export default function AcademicHeader({
         return "🔔";
     }
   };
+
+  const handleNotificationRedirect = (notification : NotificationType) => {
+  const { notificationType, senderId } = notification;
+
+  switch (notificationType) {
+    case "STUDENT_NOTIFICATION":
+      router.push(`managestudentview?id=${senderId}`);
+      break;
+
+    case "TEACHER_ADDED":
+      router.push(`/Academic-coach/ui/teacherDetails?teacherId=${senderId}`);
+      break;
+
+    case "ADMIN_NOTIFICATION":
+      router.push(`/admin/alerts/${senderId}`);
+      break;
+
+    case "REQUEST_RESCHEDULE_TEACHER":
+      router.push(`/Academic-coach/ui/teacherDetails?teacherId=${senderId}`);
+      break;
+
+      case "REQUEST_RESCHEDULE_STUDENT":
+      router.push(`managestudentview?id=${senderId}`);
+      break;
+
+
+    default:
+      console.warn("Unknown notification type:", notificationType);
+      break;
+  }
+};
+
 
   const renderButton = () => {
     if (currentSection === "Dashboard") {
@@ -393,6 +432,9 @@ export default function AcademicHeader({
         <AddGroupAssignClass
           onClose={() => setAssignGroupClass(false)}
           students={students}
+          course={course}
+          packageName={packageName}
+          totalHours={totalHours}
         />
       )}
       {showUpgradeClass && (
@@ -488,22 +530,31 @@ export default function AcademicHeader({
                     <div className="flex-1">
                       <div className="flex justify-between">
                         <h4 className="text-xs font-semibold dark:text-white">
-                          {notification.senderName || "Unknown"}
+                          {notification.senderName.toLowerCase() || "Unknown"}
                         </h4>
                         <span className="text-xs text-gray-500 dark:text-[#bbb0b099]">
-                          {new Date(
-                            notification.createdDate
-                          ).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                          {new Date(notification.createdDate)
+                            .toLocaleString("en-GB", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            })
+                            .replace(",", "")}
                         </span>
                       </div>
                       <div className="text-xs mt-0.5 text-gray-800 flex items-center gap-1">
                         <span>
                           {getNotificationIcon(notification.notificationType)}
                         </span>
-                        <span className="text-xs text-[#43424299] dark:text-[#bbb0b099] dark:hover:text-white">
+                        <span
+                          onClick={() =>
+                            handleNotificationRedirect(notification)
+                          }
+                          className="text-xs text-[#43424299] dark:text-[#bbb0b099] dark:hover:text-white cursor-pointer hover:underline transition"
+                        >
                           {notification.messages}
                         </span>
                       </div>

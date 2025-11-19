@@ -7,8 +7,6 @@ import AdminHeader from "../../components/AdminHeader";
 const cardData = [
   {
     title: "Courses",
-    idLabel: "Course ID",
-    id: "HBC/ENG/28/29",
     totalLabel: "Total Levels",
     total: "100",
     course: "Islamic History",
@@ -20,8 +18,6 @@ const cardData = [
   },
   {
     title: "Assignments",
-    idLabel: "Assignment ID",
-    id: "HBC/ENG/28/30",
     totalLabel: "Total Levels",
     total: "100",
     course: "Islamic History",
@@ -33,8 +29,6 @@ const cardData = [
   },
   {
     title: "Assessments",
-    idLabel: "Assessment ID",
-    id: "HBC/ENG/28/31",
     totalLabel: "Total Levels",
     total: "100",
     duration: "70 Hours",
@@ -44,8 +38,6 @@ const cardData = [
   },
   {
     title: "Knowledge Base",
-    idLabel: "Knowledge Base ID",
-    id: "HBC/ENG/28/32",
     totalLabel: "Total Levels",
     total: "100",
     duration: "80 Hours",
@@ -55,8 +47,6 @@ const cardData = [
   },
   {
     title: "Packages",
-    idLabel: "Package ID",
-    id: "HBC/ENG/28/33",
     totalLabel: "Total Packages",
     total: "100",
     date: "13/05/25",
@@ -78,25 +68,13 @@ const Page = () => {
               className="w-full bg-white dark:bg-[#343434] rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-5 sm:p-6 text-center hover:border-[#576CBC] hover:border-[2.5px]"
             >
               {/* Title */}
-              <h2 className="text-lg font-semibold text-[#0b2447] dark:text-white mb-4 break-words">
+              <h2 className="text-lg font-semibold text-[#fff] bg-[#576CBC] rounded-sm dark:text-white mb-4 break-words">
                 {item.title}
               </h2>
 
-              {/* Image Placeholder */}
-              <div className="w-24 h-24 mx-auto sm:w-20 sm:h-20 bg-gray-200 dark:bg-[#C4C4C4] rounded-md mb-5" />
 
               {/* Info List */}
               <div className="w-full text-xs sm:text-[11px] text-gray-700 dark:text-gray-300 space-y-3 text-left">
-                {item.id && (
-                  <div className="grid grid-cols-[auto_1fr] gap-2 w-full">
-                    <span className="font-medium break-words">
-                      {item.idLabel || "ID"}
-                    </span>
-                    <span className="text-right break-words font-normal">
-                      {item.id}
-                    </span>
-                  </div>
-                )}
 
                 {item.duration && (
                   <div className="grid grid-cols-[auto_1fr] gap-2 w-full">

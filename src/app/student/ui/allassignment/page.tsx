@@ -47,7 +47,7 @@ interface AssignmentType {
   updatedDate?: string;
   updatedBy?: string;
   level?: string;
-  courses?: string;
+  course?: string;
   assignedDate?: string;
   dueDate?: string;
   answer?: string;
@@ -82,7 +82,7 @@ const StudentList = () => {
   const itemsPerPage = 10;
 
   // Helper functions for dropdowns
-  const getUniqueCourses = () => Array.from(new Set(assignments.map(a => a.courses).filter(Boolean)));
+  const getUniquecourse = () => Array.from(new Set(assignments.map(a => a.course).filter(Boolean)));
   const getUniqueLevels = () => Array.from(new Set(assignments.map(a => a.level).filter(Boolean)));
 
   // Filtering logic
@@ -94,7 +94,7 @@ const StudentList = () => {
         const fieldsToSearch = [
           assignment.assignmentId,
           assignment.studentName,
-          assignment.courses,
+          assignment.course,
           assignment.level,
           assignment.assignmentName,
           assignment.title,
@@ -112,7 +112,7 @@ const StudentList = () => {
         return false;
       }
       // Course filter
-      if (filters.course && assignment.courses !== filters.course) {
+      if (filters.course && assignment.course !== filters.course) {
         return false;
       }
       // Level filter
@@ -245,29 +245,38 @@ const StudentList = () => {
 
   return (
     <BaseLayout2>
-      <StudentHeader currentSection="Assignments" />
+        <StudentHeader currentSection="Assignments" showBackButton={true} showBackPath={`/student/ui/assignment`} />
+
   
         <div className="md:p-0 mx-auto w-full">
           <div className="flex flex-col h-full w-full justify-between">
             <div className="flex flex-col">
               {/* Tabs */}
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
-                <div className="flex flex-wrap gap-4 font-semibold">
-                  {tabOptions.map(({ type, label, count }) => (
-                    <button
-                      key={type}
-                      onClick={() => setActiveTab(type as "Pending" | "Completed")}
-                      className={
-                        activeTab === type
-                          ? "text-[#576CBC] border-b-2 text-[16px] border-[#576CBC]"
-                          : "text-[#010E30] dark:text-white text-[16px]"
-                      }
-                    >
-                      {label} ({count})
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <div className="flex flex-wrap gap-4 font-semibold">
+              {tabOptions.map(({ type, label, count }) => (
+                <button
+                  key={type}
+                  onClick={() => setActiveTab(type as "Pending" | "Completed")}
+                  className={
+                    activeTab === type
+                      ? "text-[#576CBC] text-[18px] relative pb-1"
+                      : "text-[#010E30] dark:text-white text-[18px]"
+                  }
+                  style={activeTab === type ? {
+                    position: 'relative'
+                  } : {}}
+                >
+                  {label} ({count})
+                  {activeTab === type && (
+                    <div 
+                      className="absolute bottom-0 left-10 transform -translate-x-1/2 w-12 h-0.5 bg-[#576CBC] rounded-full"
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
   
               {/* Search + Filter */}
               <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-lg">
@@ -341,7 +350,7 @@ const StudentList = () => {
                           {assignment.studentName}
                         </td>
                         <td className="px-3 py-3 break-words text-[11px]">
-                          {assignment.courses || "-"}
+                          {assignment.course || "-"}
                         </td>
   
                         <td className="px-3 py-3 break-words text-[11px]">
@@ -377,7 +386,7 @@ const StudentList = () => {
                         </td>
                         <td className="px-3 py-3 break-words">
                           <span
-                            className={`py-1 px-2 rounded-md text-[8px] flex items-center justify-center ${getStatusStyle(
+                            className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center font-semibold ${getStatusStyle(
                               assignment.assignmentStatus || ""
                             )}`}
                           >
@@ -507,7 +516,7 @@ const StudentList = () => {
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-gray-50 dark:bg-[#23272f] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
               >
                 <option value="">Select Course</option>
-                {getUniqueCourses().map(course => (
+                {getUniquecourse().map(course => (
                   <option key={course} value={course}>{course}</option>
                 ))}
               </select>

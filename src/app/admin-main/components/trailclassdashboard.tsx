@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react"
 import { Check, Clock, X } from "lucide-react"
 
-
 interface TrialRequestData {
   totalTrialRequest: number
   pendingRequest: number
@@ -14,85 +13,92 @@ interface TrialRequestData {
 }
 
 export default function TrialRequests() {
-
   const [data, setData] = useState<TrialRequestData | null>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('AdminAuthToken');
       if (token) {
-        fetchData(token); // pass token into the function
+        fetchData(token);
       } else {
         console.log("No auth token found.");
       }
     }
   }, []);
-    const fetchData = async (token: string) => {
-      try {
-        const response = await fetch("https://api.blackstoneinfomaticstech.com/dashboard/admin/totaltrialrequest",{
-          method: "GET",
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        const result = await response.json()
-        setData(result)
-      } catch (error) {
-        console.error("Failed to fetch trial request data:", error)
-      }
-    }
 
+  const fetchData = async (token: string) => {
+    try {
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/dashboard/admin/totaltrialrequest",{
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const result = await response.json()
+      console.log("trial request api result:", result) // helpful for debugging
+      setData(result)
+    } catch (error) {
+      console.error("Failed to fetch trial request data:", error)
+    }
+  }
 
   const requests = data
-  ? [
-    {
-      status: "Trails Request",
-      icon: Clock,
-      percentage: data.pendingRequestPercentage,
-      total: data.pendingRequest,
-      color: "bg-[#9EABD3]",
-    },
-      {
-        status: "Joined" ,
-        icon: Check,
-        percentage: data.joinedStudentsPercentage,
-        total: data.joinedStudents,
-        color: "bg-[#9EABD3]",
-      },
-      {
-        status: "Not joined",
-        icon: X,
-        percentage: data.notJoinedrequestPercentage,
-        total: data.notJoinedStudents,
-        color: "bg-[#9EABD3]",
-      },
-    ]
-  : []
+    ? [
+        {
+          status: "Trials Request",
+          icon: Clock,
+          percentage: data.pendingRequestPercentage ?? 0,
+          total: data.pendingRequest ?? 0,
+          color: "bg-[#9EABD3]",
+        },
+        {
+          status: "Joined",
+          icon: Check,
+          percentage: data.joinedStudentsPercentage ?? 0,
+          total: data.joinedStudents ?? 0,
+          color: "bg-[#9EABD3]",
+        },
+        {
+          status: "Not joined",
+          icon: X,
+          percentage: data.notJoinedrequestPercentage ?? 0,
+          total: data.notJoinedStudents ?? 0,
+          color: "bg-[#9EABD3]",
+        },
+      ]
+    : []
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-5 h-[227px] dark:bg-[#343434]">
       <div className="mb-3">
         <h2 className="text-[15px] ml-1.5 font-semibold text-gray-800 dark:text-[#fff]"> Trial Class Status</h2>
       </div>
+
       <div className="space-y-6 mx-2 ">
         {requests.map((request) => (
           <div key={request.status} className="flex items-center space-x-4 h-42">
-            {/* <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center">
-              <request.icon className="h-4 w-4 text-white" />
-            </div> */}
             <div className="flex-grow">
-              <div className="flex justify-between mb-1">
-                <span className="text-xs font-medium">{request.status}</span>
-                <span className="text-xs text-gray-500 dark:text-[#7889BB]">
-                {request?.percentage ? `${request.percentage.toFixed(0)}/100%` : '0/100%'}
+              <div className="flex justify-between mb-1 items-baseline">
+                <span className="text-xs font-medium flex items-center gap-2">
+                  {/* optional icon */}
+                  <request.icon className="h-4 w-4 text-gray-600 dark:text-[#fff]" />
+                  {request.status}
+                </span>
+
+                {/* Show count and percentage. If API includes totalTrialRequest, show "count / total" */}
+                <span className="text-xs text-gray-500 dark:text-[#7889BB] px-2">
+                  {typeof request.total === "number" ? request.total : 0}
+                  {data?.totalTrialRequest ? `` : ""}
+                  
                 </span>
               </div>
+
               <div className="h-2 w-full bg-[#E4EAF0] rounded-full overflow-hidden">
                 <div
-                  className={`h-full ${request.color} rounded-full`}
-                  style={{ width: `${request.percentage}%` }}
-                ></div>
+                  className={`h-full ${request.color} rounded-full transition-all duration-300`}
+                  style={{ width: `${Math.max(0, Math.min(100, request.percentage))}%` }}
+                />
               </div>
             </div>
           </div>
@@ -101,4 +107,3 @@ export default function TrialRequests() {
     </div>
   )
 }
-

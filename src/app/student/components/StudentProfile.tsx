@@ -4,6 +4,7 @@ import axios from "axios";
 import { BsPersonPlus } from "react-icons/bs";
 import { IoDiamondSharp } from "react-icons/io5";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export interface IStudentInvoice {
   _id: string;
@@ -51,11 +52,27 @@ const StudentProfile = () => {
     const studentId = localStorage.getItem("StudentPortalId");
     const token = localStorage.getItem("StudentAuthToken");
 
-    setStudentName(localStorage.getItem("StudentPortalName"));
-    setStudentEmail(localStorage.getItem("StudentPortalEmail"));
-
-    console.log("Student ID:", studentId);
-    console.log("Token:", token);
+    // Fetch student details from API and set name/email
+    const fetchStudentDetails = async () => {
+      if (!studentId || !token) return;
+      try {
+        const res = await axios.get(
+          `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        // Defensive: check for studentDetails and student
+        const details = res.data?.studentDetails;
+        setStudentName(details?.username || null);
+        setStudentEmail(details?.student?.studentEmail || null);
+      } catch (err) {
+        console.error("Failed to fetch student details", err);
+      }
+    };
+    fetchStudentDetails();
 
     const fetchStudentInvoices = async () => {
       try {
@@ -89,7 +106,7 @@ const StudentProfile = () => {
       }
     };
 
-    fetchStudentInvoices();
+  fetchStudentInvoices();
   }, []);
   const [dashboardCounts, setDashboardCounts] = useState({
     totalLevel: 0,
@@ -139,44 +156,45 @@ const StudentProfile = () => {
   }, []);
 
   return (
-    <div className="w-[310px] flex flex-col gap-4 cursor-pointer" onClick={() => router.push("student-profile")} >
-      <div className="rounded-xl shadow-lg bg-white h-[280px] dark:bg-[#343434] p-4 relative">
+    <div className="w-[310px] flex flex-col gap-4" >
+      <div className="rounded-xl shadow-lg bg-white h-[300px] dark:bg-[#343434] p-4 relative cursor-pointer" onClick={() => router.push("student-profile")}>
         <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">
           Student Profile
         </h3>
+        <div className="mt-6">
+          <img
+            src={studentImage || "/assets/images/stpr.svg"}
+            alt="profile"
+            className="w-20 h-20 rounded-full mx-auto mb-2"
+          />
 
-        <img
-          src={studentImage || "https://randomuser.me/api/portraits/men/32.jpg"}
-          alt="profile"
-          className="w-20 h-20 rounded-full mx-auto mb-2"
-        />
+          <h3 className="text-[#010E30] font-bold text-[16px] dark:text-white text-center">
+            {studentName ?? "Loading..."}
+          </h3>
+          <p className="text-[#4b5563] text-[13px] text-center mt-1">
+            {studentEmail ?? "Loading..."}
+          </p>
+          <p className="text-[#4b5563] text-[13px] mb-2 text-center mt-2">Level {dashboardCounts.totalLevel}</p>
 
-        <h3 className="text-[#010E30] font-bold text-[16px] dark:text-white text-center">
-          {studentName ?? "Loading..."}
-        </h3>
-        {/* <p className="text-gray-500 text-[12px] text-center">
-          {studentEmail ?? "Loading..."}
-        </p> */}
-        <p className="text-gray-500 text-[12px] mb-2 text-center">Level {dashboardCounts.totalLevel}</p>
-
-        <div className="flex justify-center space-x-1 mb-2">
-          {[...Array(4)].map((_, i) => (
-            <span key={i} className="text-yellow-400 text-lg">
-              ★
-            </span>
-          ))}
-          <span className="text-gray-300 text-lg">★</span>
+          <div className="flex justify-center space-x-1 mb-2">
+            {[...Array(4)].map((_, i) => (
+              <span key={i} className="text-yellow-400 text-xl">
+                ★
+              </span>
+            ))}
+            <span className="text-gray-300 text-lg">★</span>
+          </div>
         </div>
       </div>
 
       {/* Payment Item */}
-      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] p-4 h-[180px] mt-1 w-full">
-        <h3 className="text-[#010E30] font-semibold text-[16px] mb-3 dark:text-white">
+      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] p-4 h-[185px] mt-1 w-full cursor-pointer" onClick={() => router.push("payment")}>
+        <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">
           Upcoming Payments
         </h3>
 
         {invoices.filter((i) => i.invoiceStatus === "Pending").length === 0 ? (
-          <p className="text-gray-500 text-sm">No pending payments found</p>
+          <p className="text-gray-500 text-xs text-center mt-12 align-middle">No pending payments found</p>
         ) : (
           invoices
             .filter((i) => i.paymentStatus === "Pending")
@@ -188,7 +206,7 @@ const StudentProfile = () => {
               >
                 <div className="flex items-center gap-2">
                   <img
-                    src="https://randomuser.me/api/portraits/men/32.jpg"
+                    src="/assets/images/uppayment.svg"
                     alt="user"
                     className="w-8 h-8 rounded-full object-cover"
                   />
@@ -217,13 +235,13 @@ const StudentProfile = () => {
       </div>
 
       {/* Payment Item */}
-      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] mt-2 h-[180px] p-4 w-full">
-        <h3 className="text-[#010E30] font-semibold text-[16px] mb-3 dark:text-white">
+      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] mt-1 h-[185px] p-4 w-full cursor-pointer" onClick={() => router.push("payment")}>
+        <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">
           Recent Payments
         </h3>
 
         {invoices.filter((i) => i.invoiceStatus === "Paid").length === 0 ? (
-          <p className="text-gray-500 text-sm">No paid payments found</p>
+          <p className="text-gray-500 text-xs text-center mt-12 align-middle">No paid payments found</p>
         ) : (
           invoices
             .filter((i) => i.invoiceStatus === "Paid")
@@ -235,7 +253,7 @@ const StudentProfile = () => {
               >
                 <div className="flex items-center gap-2">
                   <img
-                    src="https://randomuser.me/api/portraits/men/32.jpg"
+                    src="/assets/images/uppayment.svg"
                     alt="user"
                     className="w-8 h-8 rounded-full object-cover"
                   />
@@ -264,7 +282,7 @@ const StudentProfile = () => {
       </div>
 
       {/* Gradient Action Cards - Example 1 */}
-      <div className="flex items-center justify-between p-4 mt-2 rounded-xl mb-0 bg-gradient-to-r from-[#7e57c2] to-[#5c6bc0] text-white">
+      <div className="flex items-center justify-between p-4 mt-1 rounded-xl mb-0 bg-gradient-to-r from-[#7e57c2] to-[#5c6bc0] text-white">
         <div className="flex items-center gap-4">
           {/* ICON CIRCLE with image */}
           <div className="bg-white bg-opacity-20 p-3 rounded-full w-10 h-10 flex items-center justify-center">
@@ -300,7 +318,12 @@ const StudentProfile = () => {
       </div>
 
       {/* Gradient Action Cards - Example 2 */}
-      <div className="flex items-center justify-between p-4 mt-2 rounded-xl bg-gradient-to-r from-[#ef5350] via-[#ec407a] to-[#ab47bc] text-white mb-3">
+      <Link 
+        href="https://alfweb.vercel.app/pricing" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="flex items-center justify-between p-4 mt-[3px] rounded-xl bg-gradient-to-r from-[#ef5350] via-[#ec407a] to-[#ab47bc] text-white mb-3 cursor-pointer no-underline"
+      >
         <div className="flex items-center gap-4">
           {/* Image icon in circle */}
           <div className="bg-white bg-opacity-20 p-3 rounded-full w-10 h-10 flex items-center justify-center">
@@ -333,7 +356,7 @@ const StudentProfile = () => {
             />
           </svg>
         </div>
-      </div>
+      </Link>
     </div>
   );
 };

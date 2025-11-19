@@ -283,7 +283,7 @@ const Page = () => {
               onClick={() => setShowForm(true)}
               className="w-full h-full bg-white dark:bg-[#343434] border hover:border-[#576CBC] hover:border-[2px] border-gray-300 dark:border-[#444] rounded-xl shadow hover:shadow-md transition flex flex-col items-center justify-center p-4 aspect-[4.8/5]"
             >
-              <div className="w-14 h-14 bg-[#576CBC] dark:bg-[#C4C4C4] rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-[#576CBC] dark:bg-[#C4C4C4] rounded-full flex items-center justify-center">
                 <Plus color="white" size={28} />
               </div>
             </button>
@@ -457,18 +457,17 @@ const CourseCard = ({
   createdBy,
 }: Course) => {
   return (
-    <div className="w-full bg-white dark:bg-[#343434] rounded-xl border hover:border-[#576CBC] hover:border-[2px] border-gray-300 dark:border-[#444] shadow hover:shadow-md transition flex flex-col justify-between p-4 aspect-[4.8/5]">
+    <div className="w-full bg-white dark:bg-[#343434] rounded-xl border hover:border-[#576CBC] hover:border-[2px] border-gray-300 dark:border-[#444] shadow hover:shadow-md transition flex flex-col justify-between p-5 aspect-[4.8/5]">
       {/* Title */}
-      <h2 className="text-sm sm:text-base font-bold text-[#0b2447] dark:text-white mb-2 text-center">
+      <h2 className="text-sm sm:text-base font-bold text-[#fff] bg-[#576CBC] rounded-sm dark:text-white mb-4 text-center">
         {courseTitle}
       </h2>
 
       {/* Image + Description */}
       <div className="flex flex-col items-center gap-2 flex-grow mb-2 ">
-        <div className="w-20 h-20 bg-gray-200 dark:bg-[#C4C4C4] rounded-md" />
-        <p className="text-[11px] text-gray-600 dark:text-gray-300 text-center truncate w-full px-2">
-          {courseDescription.length > 100
-            ? `${courseDescription.slice(0, 100)}...`
+        <p className="text-[11px] text-gray-600 dark:text-gray-300 text-center truncate w-full px-2 ">
+          {courseDescription.length > 200
+            ? `${courseDescription.slice(0, 200)}...`
             : courseDescription}
         </p>
       </div>
@@ -477,18 +476,10 @@ const CourseCard = ({
       <div className="text-[11px] sm:text-xs  font-normal space-y-1 ">
         <div className="flex justify-between">
           <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
-            Course ID
-          </span>
-          <span className="text-right text-[#322121cc] dark:text-[#DADADACC]">
-            {courseId}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
             Duration
           </span>
           <span className="text-[#322121cc] dark:text-[#DADADACC]">
-            {courseDuration}
+            {courseDuration} hrs
           </span>
         </div>
         <div className="flex justify-between">

@@ -131,7 +131,7 @@ export default function StudentList() {
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Student" />
+      <AdminHeader currentSection="Student" showBackPath="/admin-main/ui/student" showBackButton/>
       {student && (
         <div className="p-4 w-full overflow-hidden">
           <div
@@ -178,7 +178,7 @@ export default function StudentList() {
                   <div className="py-2 flex flex-row justify-between">
                     <span className="text-gray-200">Student ID</span>{" "}
                     <span className="text-gray-200 px-2 text-[10px]">
-                      {student._id}
+                      {student.student.studentId}
                     </span>
                   </div>
                   <div className="py-2 flex flex-row justify-between">
@@ -238,9 +238,9 @@ export default function StudentList() {
           {/* Tabbed Table Section */}
           <div className="w-full overflow-hidden">
             <TabbedTable
-              studentId={student._id}
+              studentId={student._id||student.student.studentId}
               courseName={student.student.course}
-              userId={paymentHistory[0]?.userId || ""} 
+              userId={paymentHistory[0]?.userId || ""}
             />
           </div>
         </div>

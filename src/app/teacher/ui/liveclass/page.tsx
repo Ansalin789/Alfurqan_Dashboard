@@ -9,6 +9,7 @@ import axios from "axios";
 import TeacherHeader from "../../components/TeacherHeader";
 
 import {useSearchParams } from "next/navigation";
+import { useRouter } from "next/router";
 
 interface Student {
   studentId: string;
@@ -84,6 +85,7 @@ export default function LiveClass() {
   const [roomName, setRoomName] = useState("");
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const params = useSearchParams();
+  const router = useRouter();
   const [editableLevel, setEditableLevel] = useState(
     classData?.student.level || ""
   );
@@ -347,7 +349,7 @@ export default function LiveClass() {
 
       if (response.status === 201 || response.status === 200) {
         setShowPopup(true);
-        setTimeout(() => setShowPopup(false), 3000);
+        setTimeout(() =>{ setShowPopup(false), router.push("schedule")} , 3000);
       } else {
         console.log("Failed to submit feedback. Please try again.");
       }

@@ -79,6 +79,7 @@ const StudentSchedulePage = () => {
   const [eventsForSelectedDate, setEventsForSelectedDate] = useState<Event[]>(
     []
   );
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [classSchedule, setClassSchedule] = useState<ClassSchedule[]>([]);
@@ -90,7 +91,10 @@ const StudentSchedulePage = () => {
       typeof window !== "undefined"
         ? localStorage.getItem("StudentAuthToken")
         : null;
-    const studentId = typeof window !== "undefined" ? localStorage.getItem("StudentPortalId") : null;
+    const studentId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("StudentPortalId")
+        : null;
 
     if (!token || !studentId) {
       console.error("❌ StudentAuthToken or StudentPortalId not found");
@@ -109,7 +113,9 @@ const StudentSchedulePage = () => {
       .then((data: ClassScheduleApiResponse) => {
         setClassSchedule(data.classSchedule);
       })
-      .catch((error) => console.error("Error fetching class schedule: ", error));
+      .catch((error) =>
+        console.error("Error fetching class schedule: ", error)
+      );
   }, []);
 
   useEffect(() => {
@@ -117,8 +123,8 @@ const StudentSchedulePage = () => {
       classSchedule.map((item) => ({
         id: item._id,
         title: `${item.course.courseName} with ${item.teacher.teacherName}`,
-        start: item.startTime[0] || '',
-        end: item.endTime[0] || '',
+        start: item.startTime[0] || "",
+        end: item.endTime[0] || "",
         description: `${item.package} | ${item.scheduleStatus}`,
         date: moment(item.startDate).format("YYYY-MM-DD"),
         status: item.scheduleStatus,
@@ -185,7 +191,7 @@ const StudentSchedulePage = () => {
 
   const WeeklyView = () => {
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
-
+    const currentDate = new Date();
     // Get start and end of current week
     const startOfWeek = moment(currentDate).startOf("week");
     const endOfWeek = moment(currentDate).endOf("week");
@@ -193,14 +199,14 @@ const StudentSchedulePage = () => {
     // Create an array of days in the week with their dates
     const daysInWeek = [];
     let currentDay = startOfWeek.clone();
-    
+
     while (currentDay <= endOfWeek) {
       daysInWeek.push({
         name: currentDay.format("dddd"),
         date: currentDay.format("YYYY-MM-DD"),
-        formattedDate: currentDay.format("MMMM D, YYYY")
+        formattedDate: currentDay.format("MMMM D, YYYY"),
       });
-      currentDay = currentDay.clone().add(1, 'days');
+      currentDay = currentDay.clone().add(1, "days");
     }
 
     // Filter events for current week
@@ -227,8 +233,7 @@ const StudentSchedulePage = () => {
       <div className="space-y-4 h-[540px] overflow-y-scroll scrollbar-none">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[16px] font-semibold">
-            {startOfWeek.format("MMM D")} -{" "}
-            {endOfWeek.format("MMM D, YYYY")}
+            {startOfWeek.format("MMM D")} - {endOfWeek.format("MMM D, YYYY")}
           </h3>
         </div>
 
@@ -304,10 +309,15 @@ const StudentSchedulePage = () => {
                             {event.status && (
                               <span
                                 className={`text-[10px] font-bold px-2 py-1 rounded ml-1
-                                  ${event.status === 'Scheduled' ? ' text-blue-700' :
-                                    event.status === 'Completed' ? ' text-green-700' :
-                                    event.status === 'Rescheduled' ? ' text-yellow-700' :
-                                    'bg-gray-200 text-gray-700'}`}
+                                  ${
+                                    event.status === "Scheduled"
+                                      ? " text-blue-700"
+                                      : event.status === "Completed"
+                                      ? " text-green-700"
+                                      : event.status === "Rescheduled"
+                                      ? " text-yellow-700"
+                                      : "bg-gray-200 text-gray-700"
+                                  }`}
                               >
                                 {event.status}
                               </span>
@@ -316,7 +326,9 @@ const StudentSchedulePage = () => {
                           <div className="flex items-center gap-2 mt-1">
                             <div className="flex items-center gap-1 text-[10px] text-gray-600 dark:text-gray-300">
                               <Clock size={12} />
-                              {moment(event.start, 'HH:mm').format("h:mm A")} - {moment(event.end, 'HH:mm').format("h:mm A")}
+                              {moment(event.start, "HH:mm").format(
+                                "h:mm A"
+                              )} - {moment(event.end, "HH:mm").format("h:mm A")}
                             </div>
                           </div>
                         </div>
@@ -336,10 +348,11 @@ const StudentSchedulePage = () => {
   };
 
   const DailyView = () => {
+    const currentDate = new Date();
     const dayEvents = getEventsForDate(currentDate);
 
     return (
-      <div className="space-y-4 h-[600px] overflow-y-scroll scrollbar-none">
+      <div className="space-y-4 h-[500px] overflow-y-scroll scrollbar-none">
         {dayEvents.map((event, idx) => (
           <div
             key={idx}
@@ -353,10 +366,15 @@ const StudentSchedulePage = () => {
                 {event.status && (
                   <span
                     className={`text-[10px] font-bold px-2 py-1 rounded ml-1
-                      ${event.status === 'Scheduled' ? ' text-blue-700' :
-                        event.status === 'Completed' ? ' text-green-700' :
-                        event.status === 'Rescheduled' ? ' text-yellow-700' :
-                        'bg-gray-200 text-gray-700'}`}
+                      ${
+                        event.status === "Scheduled"
+                          ? " text-blue-700"
+                          : event.status === "Completed"
+                          ? " text-green-700"
+                          : event.status === "Rescheduled"
+                          ? " text-yellow-700"
+                          : "bg-gray-200 text-gray-700"
+                      }`}
                   >
                     {event.status}
                   </span>
@@ -364,7 +382,8 @@ const StudentSchedulePage = () => {
               </div>
               <div className="flex items-center gap-1 text-[10px] text-gray-600 dark:text-gray-300">
                 <Clock size={12} />
-                {moment(event.start, 'HH:mm').format("h:mm A")} - {moment(event.end, 'HH:mm').format("h:mm A")}
+                {moment(event.start, "HH:mm").format("h:mm A")} -{" "}
+                {moment(event.end, "HH:mm").format("h:mm A")}
               </div>
             </div>
             <div className="text-[10px] text-gray-400 mt-1">
@@ -383,7 +402,16 @@ const StudentSchedulePage = () => {
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
     const emptyCells = Array.from({ length: firstDayOfMonth }, (_, i) => null);
     const totalDays = [...emptyCells, ...days];
+    const handleDayClick = (date: Date, day: number) => {
+      const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`;
+      const dayEvents = getEventsForDate(date);
 
+      if (dayEvents.length > 0) {
+        setOpenDropdown(openDropdown === dateKey ? null : dateKey);
+      }
+
+      handleDateClick(date);
+    };
     return (
       <>
         <div className="grid grid-cols-7 gap-2 text-center text-sm font-medium text-gray-500 mb-2 dark:bg-[#414141] bg-gray-100 rounded-xl p-2 dark:text-[#fff]">
@@ -405,48 +433,83 @@ const StudentSchedulePage = () => {
             );
             const dayEvents = getEventsForDate(date);
             const hasEvents = dayEvents.length > 0;
+            const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`;
+            const isDropdownOpen = openDropdown === dateKey;
+            const columnIndex = i % 7;
+            const isRightSide = columnIndex >= 4;
 
             return (
-              <button
-                key={i}
-                onClick={() => handleDateClick(date)}
-                className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${
-                  hasEvents
-                    ? "border border-[#576cbc] text-[#576cbc] bg-[#576cbc]/10"
-                    : isToday(day)
-                    ? "bg-[#27176518] text-white"
-                    : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"
-                }`}
-              >
-                <div
-                  className={`font-semibold ${
-                    isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""
-                  }`}
+              <div key={i} className="relative calendar-dropdown-container">
+                <button
+                  key={i}
+                  onClick={() => day && handleDayClick(date, day)}
+                  disabled={!day}
+                  className={`min-h-[80px] sm:min-h-[100px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 sm:p-2 cursor-pointer w-full transition-all duration-200
+      ${
+        !day
+          ? "bg-gray-100 dark:bg-[#414141] text-transparent cursor-default opacity-50"
+          : hasEvents
+          ? "border border-[#576cbc] text-[#576cbc] bg-[#576cbc]/10"
+          : isToday(day)
+          ? "bg-[#27176518] text-[#4b8cc9]"
+          : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"
+      }`}
                 >
-                  {day}
-                </div>
-                {hasEvents && (
-                  <div className="w-full overflow-hidden">
-                    <div className="text-[8px] truncate px-1">
-                      {dayEvents[0].title}
+                  {/* Day number */}
+                  <div
+                    className={`font-semibold text-xs sm:text-sm ${
+                      isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""
+                    }`}
+                  >
+                    {day}
+                  </div>
+
+                  {/* Event badge */}
+                  {hasEvents && (
+                    <div className="mt-1 px-2 py-0.5 rounded-md bg-[#576cbc] text-white text-[10px] sm:text-[11px] font-semibold">
+                      {dayEvents.length}{" "}
+                      {dayEvents.length === 1 ? "Event" : "Events"}
                     </div>
-                    <div className="text-[8px] truncate px-1">
-                      {dayEvents[0].start} - {dayEvents[0].end}
+                  )}
+                </button>
+
+                {/* Dropdown (event list) */}
+                {isDropdownOpen && hasEvents && (
+                  <div
+                    className={`absolute top-full ${
+                      isRightSide ? "right-0" : "left-0"
+                    } mt-1 z-50 w-44 sm:w-56 bg-white dark:bg-[#343434] rounded-lg shadow-lg border border-[#576cbc] dark:border-gray-600 p-3`}
+                  >
+                    <div className="text-[10px] font-semibold mb-2 text-gray-700 dark:text-gray-300">
+                      {moment(date).format("MMMM D, YYYY")}
                     </div>
-                    {dayEvents[0].status && (
-                      <span
-                        className={`text-[8px] font-bold px-1 rounded ml-1
-                          ${dayEvents[0].status === 'Scheduled' ? ' text-blue-700' :
-                            dayEvents[0].status === 'Completed' ? ' text-green-700' :
-                            dayEvents[0].status === 'Rescheduled' ? ' text-yellow-700' :
-                            'bg-gray-200 text-gray-700'}`}
-                      >
-                        {dayEvents[0].status}
-                      </span>
-                    )}
+
+                    <div className="space-y-2 h-24 overflow-y-auto scrollbar-none">
+                      {dayEvents.map((event) => (
+                        <div
+                          key={event.id}
+                          className="p-2 rounded-lg bg-[#576cbc]/10 dark:bg-[#414141] border-l-2 border-[#576cbc]"
+                        >
+                          <div className="text-[11px] font-semibold text-[#576cbc] dark:text-[#576cbc]">
+                            {event.title}
+                          </div>
+
+                          {/* Optional event details */}
+                          {/* 
+            <div className="flex items-center gap-1 text-[9px] text-gray-600 dark:text-gray-300 mt-1">
+              <Clock size={10} />
+              {moment(event.start, 'HH:mm').format("h:mm A")} - {moment(event.end, 'HH:mm').format("h:mm A")}
+            </div>
+            <div className="text-[9px] text-gray-500 dark:text-gray-400 mt-1">
+              {event.studentName}
+            </div> 
+            */}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
-              </button>
+              </div>
             );
           })}
         </div>
@@ -457,107 +520,115 @@ const StudentSchedulePage = () => {
   return (
     <BaseLayout2>
       <StudentHeader currentSection="Calendar" />
-        <div className="p-2">
-          <div className="mx-auto gap-4 flex flex-col lg:flex-row overflow-hidden min-h-[630px]">
-            {/* Calendar Component */}
-            <div className="w-full lg:w-2/3 p-4 md:p-6 bg-white dark:bg-[#343434] shadow-md rounded-xl">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex space-x-4 text-sm font-medium">
-                      {tabs.map((tab) => (
-                        <button
-                          key={tab}
-                          onClick={() => setActiveView(tab)}
-                          className={`capitalize ${
-                            activeView === tab
-                              ? "text-[#576cbc] border-b-2 border-[#576cbc]"
-                              : "text-gray-400"
-                          } pb-1`}
-                        >
-                          {tab}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={handlePrevMonth}
-                        className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
-                      >
-                        &lt;
-                      </button>
-                      <h2 className="text-[16px] font-semibold">
-                        {formatMonthYear(currentDate)}
-                      </h2>
-                      <button
-                        onClick={handleNextMonth}
-                        className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
-                      >
-                        &gt;
-                      </button>
-                    </div>
-                  </div>
-
-                  {activeView === "monthly" && <MonthlyView />}
-                  {activeView === "weekly" && <WeeklyView />}
-                  {activeView === "daily" && <DailyView />}
+      <div className="p-2">
+        <div className="mx-auto gap-4 flex flex-col lg:flex-row overflow-hidden min-h-[630px]">
+          {/* Calendar Component */}
+          <div className="w-full lg:w-2/3 p-4 md:p-6 bg-white dark:bg-[#343434] shadow-md rounded-xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex space-x-4 text-sm font-medium">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveView(tab)}
+                    className={`capitalize ${
+                      activeView === tab
+                        ? "text-[#576cbc] border-b-2 border-[#576cbc]"
+                        : "text-gray-400"
+                    } pb-1`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePrevMonth}
+                  className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
+                >
+                  &lt;
+                </button>
+                <h2 className="text-[16px] font-semibold">
+                  {formatMonthYear(currentDate)}
+                </h2>
+                <button
+                  onClick={handleNextMonth}
+                  className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
+                >
+                  &gt;
+                </button>
+              </div>
             </div>
 
-            {/* List Schedule */}
-            <div className="w-full lg:w-1/3 bg-white dark:bg-[#343434] shadow-md rounded-xl flex flex-col min-h-[630px] lg:h-[630px]">
-              <div className="p-4 md:p-6">
-                <h2 className="text-[18px] font-semibold mb-3">List Schedule</h2>
-                <div className="space-y-3 md:space-y-4">
-                  {eventsForSelectedDate.length > 0 ? (
-                    eventsForSelectedDate.map((item, index) => {
-                      const textColors = [
-                        "text-[#d77277]",
-                        "text-[#72B0D7]",
-                        "text-[#BF63B3]",
-                        "text-[#BFBC63]",
-                        "text-[#BF8C63]",
-                        "text-[#6EBF63]"
-                      ];
-                      const currentTextColor = textColors[index % textColors.length];
-                      return (
-                        <div
-                          key={item.id}
-                          className="border-b pb-2 border-[#dadada] dark:border-[#5b5b5b]"
-                        >
-                          <div className="flex justify-between">
-                            <h3 className={`font-medium text-[14px] ${currentTextColor}`}>
-                              {item.title}
-                            </h3>
-                            <div>
-                              <div className="flex gap-4">
-                              
-                              <div className="text-[9px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
-                              <FaClock size={10} />
-                                {(item.start)} -{" "}
-                                {(item.end)}
-                              </div>
-                              <span className="text-[9px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
-                              <BsFillCalendar2WeekFill  size={10} />{" "}
-                                {moment(item.date).format("DD MMM YYYY")}
-                              </span>
-                              </div>
-                            </div>
-                          </div>
+            {activeView === "monthly" && <MonthlyView />}
+            {activeView === "weekly" && <WeeklyView />}
+            {activeView === "daily" && <DailyView />}
+          </div>
 
-                          <p className="text-[10px] font-light text-[#333] dark:text-[#fff] mt-2">
-                            {item.description || ""}
-                          </p>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <p className="text-gray-500 text-[12px] text-center">
-                      No events scheduled
-                    </p>
-                  )}
+          {/* List Schedule */}
+          <div className="w-full lg:w-1/3 bg-white dark:bg-[#343434] shadow-md rounded-xl flex flex-col min-h-[630px] lg:h-[630px]">
+            <div className="p-4 md:p-6">
+              <h2 className="text-[18px] font-semibold mb-3">List Schedule</h2>
+              <div className="space-y-3 md:space-y-4">
+  {eventsForSelectedDate && eventsForSelectedDate.length > 0 ? (
+    [...eventsForSelectedDate]
+      .sort((a, b) => {
+         const dateA = new Date(`${a.date} ${a.start}`).getTime();
+    const dateB = new Date(`${b.date} ${b.start}`).getTime();
+        return dateA - dateB; // ascending order
+      })
+      .map((item, index) => {
+        const textColors = [
+          "text-[#d77277]",
+          "text-[#72B0D7]",
+          "text-[#BF63B3]",
+          "text-[#BFBC63]",
+          "text-[#BF8C63]",
+          "text-[#6EBF63]",
+        ];
+        const currentTextColor = textColors[index % textColors.length];
+
+        return (
+          <div
+            key={item.id}
+            className="border-b pb-2 border-[#dadada] dark:border-[#5b5b5b]"
+          >
+            <div className="flex justify-between">
+              <h3
+                className={`font-medium text-[14px] ${currentTextColor}`}
+              >
+                {item.title}
+              </h3>
+              <div>
+                <div className="flex gap-4">
+                  <div className="text-[9px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
+                    <FaClock size={10} />
+                    {item.start} - {item.end}
+                  </div>
+                  <span className="text-[9px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
+                    <BsFillCalendar2WeekFill size={10} />{" "}
+                    {moment(item.date).format("DD MMM YYYY")}
+                  </span>
                 </div>
               </div>
             </div>
+
+            <p className="text-[10px] font-light text-[#333] dark:text-[#fff] mt-2">
+              {item.description || ""}
+            </p>
+          </div>
+        );
+      })
+  ) : (
+    <p className="text-gray-500 text-[12px] text-center">
+      No events scheduled
+    </p>
+  )}
+</div>
+
+            </div>
           </div>
         </div>
+      </div>
     </BaseLayout2>
   );
 };

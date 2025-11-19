@@ -47,7 +47,7 @@ interface AssignmentType {
   updatedDate?: string;
   updatedBy?: string;
   level?: string;
-  courses?: string;
+  course?: string;
   assignedDate?: string;
   dueDate?: string;
   answer?: string;
@@ -80,7 +80,7 @@ const StudentList = () => {
   const router = useRouter();
 
   // Helper functions for dropdowns
-  const getUniqueCourses = () => Array.from(new Set(assignments.map(a => a.courses).filter(Boolean)));
+  const getUniquecourse = () => Array.from(new Set(assignments.map(a => a.course).filter(Boolean)));
   const getUniqueLevels = () => Array.from(new Set(assignments.map(a => a.level).filter(Boolean)));
 
   // Filtering logic
@@ -92,7 +92,7 @@ const StudentList = () => {
         const fieldsToSearch = [
           assignment.assignmentId,
           assignment.assignedTeacher,
-          assignment.courses,
+          assignment.course,
           assignment.level,
           assignment.assignmentName,
           assignment.title,
@@ -110,7 +110,7 @@ const StudentList = () => {
         return false;
       }
       // Course filter
-      if (filters.course && assignment.courses !== filters.course) {
+      if (filters.course && assignment.course !== filters.course) {
         return false;
       }
       // Level filter
@@ -220,7 +220,8 @@ useEffect(() => {
 
   return (
     <BaseLayout2>
-      <StudentHeader currentSection="Assignments" />
+      <StudentHeader currentSection="Assignments" showBackButton={true} showBackPath={`/student/ui/assignment`} />
+
       <div className="md:p-0 mx-auto w-full">
         <div className="flex flex-col h-full w-full justify-between">
           <div className="flex flex-col">
@@ -281,7 +282,7 @@ useEffect(() => {
                         className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-gray-50 dark:bg-[#23272f] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
                       >
                         <option value="">Select Course</option>
-                        {getUniqueCourses().map(course => (
+                        {getUniquecourse().map(course => (
                           <option key={course} value={course}>{course}</option>
                         ))}
                       </select>
@@ -424,7 +425,7 @@ useEffect(() => {
                               {assignment.assignedTeacher }
                             </td>
                             <td className="px-3 py-4 break-words text-[11px]">
-                              {assignment.courses}
+                              {assignment.course}
                             </td>
                             <td className="px-3 py-4 break-words text-[11px]">
                               {assignment.level}
@@ -442,7 +443,7 @@ useEffect(() => {
                               {assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}
                             </td>
                             <td className="px-3 py-4 break-words text-[11px]">
-                              <span className={`py-1 px-1 rounded-md text-[8px] flex items-center justify-center w-[80px] ${getStatusStyle(assignment.assignmentStatus || "")}`}>
+                              <span className={`py-1 px-1 rounded-md text-[10px] flex items-center justify-center w-[80px] font-semibold ${getStatusStyle(assignment.assignmentStatus || "")}`}>
                                 {assignment.assignmentStatus}
                               </span>
                             </td>

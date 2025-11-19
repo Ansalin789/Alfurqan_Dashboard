@@ -138,7 +138,7 @@ function LiveClass() {
         token,
         isBeacon: true,
         student: {
-          studnetSessionEnd: new Date().toTimeString().slice(0, 5), 
+          studnetSessionEnd: new Date().toTimeString().slice(0, 5),
         },
       };
 
@@ -520,6 +520,12 @@ function LiveClass() {
                           "shortcuts",
                           "tileview",
                         ],
+                      }}
+                      interfaceConfigOverwrite={{
+                        SHOW_JITSI_WATERMARK: false,
+                        SHOW_BRAND_WATERMARK: false,
+                        SHOW_PROMOTIONAL_CLOSE_PAGE: false,
+                        SHOW_POWERED_BY: false,
                       }}
                       onApiReady={(api) => {
                         api.addListener(

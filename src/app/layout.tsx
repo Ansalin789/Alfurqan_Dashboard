@@ -24,7 +24,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={poppins.className}>
         <ThemeProvider>
-          <GoogleOAuthProvider clientId="1095351282036-anf4nldkvcn2q9a9osrhuj6oqb11to05.apps.googleusercontent.com">
+          <GoogleOAuthProvider clientId="672400357916-n7nem2lvccl389dtpg50guj2i6gdsl8t.apps.googleusercontent.com">
             {children}
           </GoogleOAuthProvider>
         </ThemeProvider>

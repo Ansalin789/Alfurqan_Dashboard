@@ -33,14 +33,14 @@ interface Applicant {
   applicationDate: string;
   candidateEmail: string;
   candidatePhoneNumber: number;
-  
+
   candidateCountry: string;
   candidateCity: string;
   positionApplied: string;
   currency: string;
-  expectedSalary: number;
+  expectedSalary: string;
   preferedWorkingHours: string;
-  uploadResume: { type: string; data: number[] };
+  uploadResume: string;
   comments: string;
   applicationStatus: string;
   status: string;
@@ -74,18 +74,31 @@ interface ApiResponse {
   positionApplied: string;
   currency: string;
   gender: string;
-  expectedSalary: number;
+  expectedSalary: string;
   preferedWorkingHours: string;
   uploadResume: UploadResume;
   comments: string;
+  preferedWorkingDays: string;
+  quranReading: string;
+  tajweed: string;
+  arabicSpeaking: string;
+  arabicWriting: string;
+  englishSpeaking: string;
+  overallRating: number;
   applicationStatus: string;
-  professionalExperience: ProfessionalExperience[]; // <-- Corrected type
+  professionalExperience: ProfessionalExperience[];
   skills: string;
   status: string;
   createdDate: string;
   createdBy: string;
   _id: string;
   __v: number;
+  supervisor?: { // Add this if it exists in your response
+    supervisorId?: string;
+    supervisorName?: string;
+    supervisorEmail?: string;
+    supervisorRole?: string;
+  };
 }
 
 interface RadioOptionProps {
@@ -185,21 +198,31 @@ const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const createBlobUrl = (resumeData: any) => {
+  const createBlobUrl = async(resumeData: any) => {
     if (!resumeData) {
       console.error("No resume data provided");
       return null;
     }
 
     try {
-      // Convert base64 to binary
-      const binaryString = atob(resumeData);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
 
-      const blob = new Blob([bytes], { type: "application/pdf" });
+     
+    console.log("file " , resumeData)
+    const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${resumeData}`, {
+      method: "GET",
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch file");
+    const blob = await res.blob();
+ 
+      // // Convert base64 to binary
+      // const binaryString = atob(resumeData);
+      // const bytes = new Uint8Array(binaryString.length);
+      // for (let i = 0; i < binaryString.length; i++) {
+      //   bytes[i] = binaryString.charCodeAt(i);
+      // }
+
+      // const blob = new Blob([bytes], { type: "application/pdf" });
       return URL.createObjectURL(blob);
     } catch (error) {
       console.error("Error creating blob URL:", error);
@@ -220,7 +243,7 @@ const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
       }
 
       // Create new blob URL on each click
-      const newBlobUrl = createBlobUrl(resumeData);
+      const newBlobUrl =  await createBlobUrl(resumeData);
       if (!newBlobUrl) {
         setError("Failed to load resume");
         return;
@@ -272,7 +295,7 @@ if (typeof window !== "undefined") {
   window.addEventListener("beforeunload", cleanupBlobUrls);
 }
 
-function base64ToBlob(base64: string, contentType = 'application/pdf'): Blob {
+function base64ToBlob(base64: string, contentType = "application/pdf"): Blob {
   const byteCharacters = atob(base64);
   const byteNumbers = new Array(byteCharacters.length);
   for (let i = 0; i < byteCharacters.length; i++) {
@@ -282,13 +305,15 @@ function base64ToBlob(base64: string, contentType = 'application/pdf'): Blob {
   return new Blob([byteArray], { type: contentType });
 }
 
-function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[] }): string | undefined {
+function getResumeBlobUrl(
+  uploadResume?: string | { type: string; data: number[] }
+): string | undefined {
   if (!uploadResume) return undefined;
 
-  if (typeof uploadResume === 'string') {
+  if (typeof uploadResume === "string") {
     // Assume base64 string, strip possible data URI prefix
-    const base64Data = uploadResume.includes('base64,')
-      ? uploadResume.split('base64,')[1]
+    const base64Data = uploadResume.includes("base64,")
+      ? uploadResume.split("base64,")[1]
       : uploadResume;
     const blob = base64ToBlob(base64Data);
     return URL.createObjectURL(blob);
@@ -320,7 +345,7 @@ export default function ApplicantsPage() {
   const [arabicSpeaking, setArabicSpeaking] = useState("Advanced");
   const [arabicWriting, setArabicWriting] = useState("Advanced");
   const [englishSpeaking, setEnglishSpeaking] = useState("Advanced");
-  const [workingDays, setWorkingDays] = useState("Monday-Saturday");
+  // const [workingDays, setWorkingDays] = useState("Monday-Saturday");
   const [rating, setRating] = useState(4);
   const [comments, setComments] = useState("");
   const [mode, setMode] = useState<"view" | "edit">("view");
@@ -339,10 +364,24 @@ export default function ApplicantsPage() {
   const [toDate, setToDate] = useState("");
   const [positionApplied, setPositionApplied] = useState("");
   const [applicationStatus, setApplicationStatus] = useState("");
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [workingDays, setWorkingDays] = useState(""); // final formatted result
+  const [preferredWorkingHours, setPreferredWorkingHours] = useState("");
+  const [expectedSalary, setExpectedSalary] = useState("");
 
   // State for dynamic filter options
-  const [positionOptions, setPositionOptions] = useState<string[]>(["Islamic Teacher", "Quran Teacher", "Arabic Teacher"]);
-  const [statusOptions, setStatusOptions] = useState<string[]>(["Shortlisted", "Rejected", "Waiting", "Approved", "NewApplication"]);
+  const [positionOptions, setPositionOptions] = useState<string[]>([
+    "Islamic Teacher",
+    "Quran Teacher",
+    "Arabic Teacher",
+  ]);
+  const [statusOptions, setStatusOptions] = useState<string[]>([
+    "Shortlisted",
+    "Rejected",
+    "Waiting",
+    "Approved",
+    "NewApplication",
+  ]);
 
   // Extract skills utility function (moved to top-level for ES5 strict mode)
   const extractSkills = (rawText: string): string[] => {
@@ -414,14 +453,14 @@ export default function ApplicantsPage() {
         new Set(
           applicantsList
             .map((a: any) => a.positionApplied)
-            .filter((x: any): x is string => typeof x === 'string')
+            .filter((x: any): x is string => typeof x === "string")
         )
       ) as string[];
       const uniqueStatuses = Array.from(
         new Set(
           applicantsList
             .map((a: any) => a.applicationStatus)
-            .filter((x: any): x is string => typeof x === 'string')
+            .filter((x: any): x is string => typeof x === "string")
         )
       ) as string[];
       if (uniquePositions.length > 0) setPositionOptions(uniquePositions);
@@ -435,6 +474,22 @@ export default function ApplicantsPage() {
   useEffect(() => {
     fetchApplicants();
   }, []);
+  const fetchAndOpenFile = async (fileId: string) => {
+  try {
+    console.log("file ",fileId)
+    const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${fileId}`, {
+      method: "GET",
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch file");
+  console.log('res',res)
+    const blob = await res.blob();
+       const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, "_blank");
+  } catch (err) {
+    console.error("Error fetching file:", err);
+  }
+};
 
   // When Reset is clicked, clear filters and fetch all applicants
   const handleResetFilter = () => {
@@ -454,7 +509,9 @@ export default function ApplicantsPage() {
       ...(value ? { positionApplied: value } : {}),
       ...(applicationStatus ? { applicationStatus } : {}),
       ...(searchText ? { searchText } : {}),
-      ...(fromDate && toDate ? { "dateRange.from": fromDate, "dateRange.to": toDate } : {}),
+      ...(fromDate && toDate
+        ? { "dateRange.from": fromDate, "dateRange.to": toDate }
+        : {}),
     });
   };
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -464,7 +521,9 @@ export default function ApplicantsPage() {
       ...(positionApplied ? { positionApplied } : {}),
       ...(value ? { applicationStatus: value } : {}),
       ...(searchText ? { searchText } : {}),
-      ...(fromDate && toDate ? { "dateRange.from": fromDate, "dateRange.to": toDate } : {}),
+      ...(fromDate && toDate
+        ? { "dateRange.from": fromDate, "dateRange.to": toDate }
+        : {}),
     });
   };
 
@@ -508,7 +567,7 @@ export default function ApplicantsPage() {
         console.warn("⚠️ Unknown event type:", data.event);
       }
     };
-  
+
     socket.on("recruitmentlist", handleList);
     return () => {
       socket.off("recruitmentlist", handleList);
@@ -565,7 +624,7 @@ export default function ApplicantsPage() {
         return "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36] rounded-md px-6 text-[9px]";
       case "REJECTED":
         return "bg-[#FDECEC] dark:bg-[#503434] dark:text-[#D34645] text-[#D34645] rounded-md px-8 text-[9px]";
-       case "SENDAPPROVAL":
+      case "SENDAPPROVAL":
         return "bg-[#FDF9D9] dark:bg-[#4f4b29] dark:text-[#d0c02f] text-[#d0c02f] rounded-md px-6 text-[9px]";
       case "WAITING":
         return "bg-[#FDF6EC] dark:bg-[#534634] dark:text-[#F0AD4E] text-[#F0AD4E] rounded-md px-8 text-[9px]";
@@ -574,49 +633,146 @@ export default function ApplicantsPage() {
     }
   };
 
-  const handleMenuClick = async (_id: string) => {
-    setOpenMenuId(openMenuId === _id ? null : _id);
+ const handleMenuClick = async (_id: string) => {
+  setOpenMenuId(openMenuId === _id ? null : _id);
 
-    if (openMenuId !== _id) {
-      try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("SupervisorAuthToken")
-            : null;
+  if (openMenuId !== _id) {
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorAuthToken")
+          : null;
 
-        if (!token) {
-          console.error("❌ SupervisorAuthToken not found");
-          return;
-        }
-        const response = await axios.get<ApiResponse>(
-          `https://api.blackstoneinfomaticstech.com/applicants/${_id}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        console.log("Applicant data received:", response.data);
-        setApplicantbyid(response.data);
-
-        // Parse and set skills
-        const skillsFromApi = response.data.skills || "";
-        const skillsArray = extractSkills(skillsFromApi);
-        setParsedSkills(skillsArray);
-
-        // Handle resume using getResumeBlobUrl
-        if (response.data.uploadResume) {
-          console.log("Applicant uploadResume:", response.data.uploadResume);
-          const resumeUrl = getResumeBlobUrl(response.data.uploadResume);
-          console.log("Resume URL:", resumeUrl);
-          setResumeImages(resumeUrl || null);
-        }
-      } catch (error) {
-        console.error("Error fetching applicant data:", error);
+      if (!token) {
+        console.error("❌ SupervisorAuthToken not found");
+        return;
       }
+
+      const response = await axios.get<ApiResponse>(
+        `https://api.blackstoneinfomaticstech.com/applicants/${_id}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("✅ Applicant data received:", response.data);
+      setApplicantbyid(response.data);
+
+      // ✅ Initialize ALL editable fields with actual data from API
+      setPreferredWorkingHours(response.data.preferedWorkingHours || "");
+      setExpectedSalary(response.data.expectedSalary?.toString() || "");
+     
+      // Parse working days from backend data
+      if (response.data.preferedWorkingDays) {
+        parseWorkingDays(response.data.preferedWorkingDays);
+      } else {
+        setSelectedDays([]);
+        setWorkingDays("");
+      }
+
+      // Initialize other skill fields
+      setQuranReading(response.data.quranReading || "Medium");
+      setTajweed(response.data.tajweed || "Medium");
+      setArabicSpeaking(response.data.arabicSpeaking || "Advanced");
+      setArabicWriting(response.data.arabicWriting || "Advanced");
+      setEnglishSpeaking(response.data.englishSpeaking || "Advanced");
+      setRating(response.data.overallRating || 4);
+      setComments(response.data.comments || "");
+
+      // Parse and set skills
+      const skillsFromApi = response.data.skills || "";
+      const skillsArray = extractSkills(skillsFromApi);
+      setParsedSkills(skillsArray);
+
+      // Handle resume
+      if (response.data.uploadResume) {
+        const resumeUrl = getResumeBlobUrl(response.data.uploadResume);
+        setResumeImages(resumeUrl || null);
+      }
+
+      // Debug log to verify all data is loaded
+      console.log("📥 Loaded applicant data:", {
+        preferredWorkingHours: response.data.preferedWorkingHours,
+        expectedSalary: response.data.expectedSalary,
+        workingDays: response.data.preferedWorkingDays,
+        quranReading: response.data.quranReading,
+        tajweed: response.data.tajweed,
+        comments: response.data.comments
+      });
+
+    } catch (error) {
+      console.error("❌ Error fetching applicant data:", error);
     }
-  };
+  }
+};
+
+  // Helper function to parse working days
+  const parseWorkingDays = (daysString: string) => {
+  console.log("🔄 Parsing working days:", daysString);
+ 
+  if (!daysString || daysString.trim() === "") {
+    setSelectedDays([]);
+    setWorkingDays("");
+    return;
+  }
+
+  // Handle various formats
+  if (daysString.includes("-")) {
+    // Format: "Monday-Friday" or "Mon-Fri"
+    const [startDay, endDay] = daysString.split("-");
+    const fullDaysList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const shortDaysList = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+   
+    // Try full day names first
+    let startIndex = fullDaysList.indexOf(startDay);
+    let endIndex = fullDaysList.indexOf(endDay);
+   
+    // If not found, try short day names
+    if (startIndex === -1) {
+      startIndex = shortDaysList.indexOf(startDay);
+    }
+    if (endIndex === -1) {
+      endIndex = shortDaysList.indexOf(endDay);
+    }
+
+    if (startIndex !== -1 && endIndex !== -1 && startIndex <= endIndex) {
+      const selected = [];
+      for (let i = startIndex; i <= endIndex; i++) {
+        selected.push(daysList[i]);
+      }
+      setSelectedDays(selected);
+      setWorkingDays(`${fullDaysList[startIndex]}-${fullDaysList[endIndex]}`);
+      console.log("✅ Parsed day range:", selected);
+    } else {
+      console.warn("❌ Could not parse day range:", daysString);
+      setSelectedDays([]);
+      setWorkingDays("");
+    }
+  } else {
+    // Single day
+    const dayMap: { [key: string]: string } = {
+      "Monday": "Mon", "Tuesday": "Tue", "Wednesday": "Wed",
+      "Thursday": "Thu", "Friday": "Fri", "Saturday": "Sat", "Sunday": "Sun",
+      "Mon": "Mon", "Tue": "Tue", "Wed": "Wed", "Thu": "Thu",
+      "Fri": "Fri", "Sat": "Sat", "Sun": "Sun"
+    };
+   
+    const fullDayMap: { [key: string]: string } = {
+      "Mon": "Monday", "Tue": "Tuesday", "Wed": "Wednesday",
+      "Thu": "Thursday", "Fri": "Friday", "Sat": "Saturday", "Sun": "Sunday"
+    };
+   
+    const shortDay = dayMap[daysString] || daysString;
+    const fullDay = fullDayMap[shortDay] || daysString;
+   
+    setSelectedDays([shortDay]);
+    setWorkingDays(fullDay);
+    console.log("✅ Parsed single day:", shortDay, "->", fullDay);
+  }
+};
 
   const handleViewDetails = (applicant: Applicant) => {
     setSelectedApplicant(applicant);
@@ -639,56 +795,102 @@ export default function ApplicantsPage() {
     setArabicSpeaking("Advanced");
     setArabicWriting("Advanced");
     setEnglishSpeaking("Advanced");
-    setWorkingDays("Monday-Saturday");
-    setRating(1);
+    setPreferredWorkingHours("");
+    setExpectedSalary("");
+    setSelectedDays([]);
+    setWorkingDays("");
+    setRating(4);
     setComments("");
     setApplicationStatus("");
+    setMode("view");
   };
 
-  const handlesendupdate = async (id: string, status: string) => {
-    const updateData = {
-      applicationStatus: status,
-      quranReading,
-      tajweed,
-      arabicSpeaking,
-      arabicWriting,
-      englishSpeaking,
-      preferedWorkingDays: workingDays,
-      overallRating: rating,
-      comments,
-      level: "1",
-    };
+const handlesendupdate = async (id: string, status: string) => {
+  // Validate required fields
+  if (!preferredWorkingHours.trim()) {
+    setFailed(true);
+    setFailedMessage("Preferred working hours is required");
+    return;
+  }
 
-    try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("SupervisorAuthToken")
-          : null;
+  if (!expectedSalary.trim()) {
+    setFailed(true);
+    setFailedMessage("Expected salary is required");
+    return;
+  }
 
-      if (!token) {
-        console.error("❌ SupervisorAuthToken not found");
-        return;
-      }
+  if (isNaN(parseFloat(expectedSalary))) {
+    setFailed(true);
+    setFailedMessage("Expected salary must be a valid number");
+    return;
+  }
 
-      const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/applicants/${id}`,
-        updateData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json", // ✅ Explicitly set the content type
-          },
-        }
-      );
-      setSuccess(true);
-      setSuccessMessage(status);
-      console.log("✅ Update successful:", response.data);
-      handleviewclose();
-    } catch (error: any) {
-      console.error("❌ Update error:", error.response?.data || error.message);
+  if (selectedDays.length === 0) {
+    setFailed(true);
+    setFailedMessage("At least one working day must be selected");
+    return;
+  }
+
+  if (!Applicantbyid) {
+    setFailed(true);
+    setFailedMessage("Applicant data not loaded");
+    return;
+  }
+
+  // ✅ USE THE UPDATED STATE VALUES, NOT THE OLD ONES
+ const updateData = {
+    preferedWorkingHours: preferredWorkingHours,
+    expectedSalary: parseFloat(expectedSalary), // Convert to number
+    preferedWorkingDays: workingDays, // ✅ Correct field name
+    comments: comments,
+    overallRating: rating, // ✅ Correct field name
+    quranReading: quranReading,
+    tajweed: tajweed,
+    arabicSpeaking: arabicSpeaking,
+    arabicWriting: arabicWriting,
+    englishSpeaking: englishSpeaking,
+    applicationStatus: status,
+    status: "Active",
+    updatedDate: new Date().toISOString()
+  };
+
+  console.log("📤 UPDATED VALUES BEING SENT:", updateData);
+
+  try {
+    const token = localStorage.getItem("SupervisorAuthToken");
+    if (!token) {
+      setFailed(true);
+      setFailedMessage("Authentication token not found");
+      return;
     }
-  };
 
+    const response = await axios.put(
+      `https://api.blackstoneinfomaticstech.com/applicants/${id}`,
+      updateData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("✅ Update successful with NEW values:", {
+      sent: updateData,
+      received: response.data
+    });
+   
+    setSuccess(true);
+    setSuccessMessage(`Successfully ${status.toLowerCase()} the application`);
+    fetchApplicants();
+    handleviewclose();
+   
+  } catch (error: any) {
+    console.error("❌ Update failed:", error.response?.data);
+    setFailed(true);
+    setFailedMessage(error.response?.data?.message || "Update failed");
+  }
+};
   const [country, setCountry] = useState("USA");
   const [cities, setCities] = useState([]);
   const countriesCities = require("countries-cities");
@@ -697,6 +899,44 @@ export default function ApplicantsPage() {
     const fetchedCities = countriesCities.getCities(country);
     setCities(fetchedCities);
   }, [country]);
+
+  const daysList = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const fullDaysMap: { [key: string]: string } = {
+    Mon: "Monday",
+    Tue: "Tuesday",
+    Wed: "Wednesday",
+    Thu: "Thursday",
+    Fri: "Friday",
+    Sat: "Saturday",
+    Sun: "Sunday",
+  };
+
+  const handleDaySelection = (day: string) => {
+    if (mode === "view") return; // Don't allow selection in view mode
+
+    let updated = [...selectedDays];
+
+    if (updated.includes(day)) {
+      updated = updated.filter((d) => d !== day);
+    } else {
+      updated.push(day);
+    }
+
+    // Sort by actual weekday order
+    updated.sort((a, b) => daysList.indexOf(a) - daysList.indexOf(b));
+    setSelectedDays(updated);
+
+    // Format output: "Monday-Friday"
+    if (updated.length >= 2) {
+      const first = fullDaysMap[updated[0]];
+      const last = fullDaysMap[updated[updated.length - 1]];
+      setWorkingDays(`${first}-${last}`);
+    } else if (updated.length === 1) {
+      setWorkingDays(fullDaysMap[updated[0]]);
+    } else {
+      setWorkingDays("");
+    }
+  };
 
   return (
     <BaseLayout3>
@@ -797,7 +1037,9 @@ export default function ApplicantsPage() {
                             >
                               <option value="">All</option>
                               {positionOptions.map((option) => (
-                                <option key={option} value={option}>{option}</option>
+                                <option key={option} value={option}>
+                                  {option}
+                                </option>
                               ))}
                             </select>
                           </div>
@@ -816,7 +1058,9 @@ export default function ApplicantsPage() {
                             >
                               <option value="">All</option>
                               {statusOptions.map((option) => (
-                                <option key={option} value={option}>{option}</option>
+                                <option key={option} value={option}>
+                                  {option}
+                                </option>
                               ))}
                             </select>
                           </div>
@@ -959,8 +1203,12 @@ export default function ApplicantsPage() {
                                   <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10 dark:bg-[#252525] dark:text-[#fff]">
                                     {/* Show Edit only if supervisorId matches */}
                                     {supervisorId &&
-                                      supervisorId === String(applicant.supervisor?.supervisorId) &&
-                                      applicant.applicationStatus !== "APPROVED" && (
+                                      supervisorId ===
+                                        String(
+                                          applicant.supervisor?.supervisorId
+                                        ) &&
+                                      applicant.applicationStatus !==
+                                        "APPROVED" && (
                                         <button
                                           onClick={() => handleEdit(applicant)}
                                           className="block w-full px-4 py-2 text-left text-[12px] text-slate-600 dark:text-[#fff]"
@@ -985,7 +1233,6 @@ export default function ApplicantsPage() {
                                     </button>
                                   </div>
                                 )}
-                             
                               </div>
                             </td>
                           </tr>
@@ -1215,7 +1462,7 @@ export default function ApplicantsPage() {
                               checked={state === level}
                               onChange={() => setState(level)}
                               disabled={mode === "view"}
-                              className="appearance-none w-[10px] h-[10px] rounded-full border border-[#333D58] checked:bg-[#1E2A41] checked:ring-1 checked:ring-offset-1 transition-all 
+                              className="appearance-none w-[10px] h-[10px] rounded-full border border-[#333D58] checked:bg-[#1E2A41] checked:ring-1 checked:ring-offset-1 transition-all
                                        dark:border-[#A9A9A9] dark:checked:bg-[#E5E5E5] dark:checked:ring-[#E5E5E5] dark:ring-offset-[#333D58] disabled:opacity-50"
                             />
                             {level}
@@ -1228,61 +1475,102 @@ export default function ApplicantsPage() {
                   {/* Preferences */}
                   <div className="grid grid-cols-2 gap-4 mt-3">
                     {/* Preferred Working Days */}
-                    <div>
-                      <label
-                        htmlFor="prferworking days"
-                        className="block text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff]"
-                      >
-                        Preferred Working Days
-                      </label>
-                      <select
-                        className="border rounded px-2 py-1 w-full text-[10px] font-medium text-[#1E2A41] dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292] disabled:opacity-50"
-                        value={workingDays}
-                        onChange={(e) => setWorkingDays(e.target.value)}
-                        disabled={mode === "view"}
-                      >
-                        {[
-                          "Monday-Saturday",
-                          "Monday-Friday",
-                          "Sunday-Thursday",
-                        ].map((day) => (
-                          <option key={day} value={day}>
-                            {day}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
                     {/* Preferred Working Hours */}
                     <div>
-                      <label
-                        htmlFor="prferworking Hours"
-                        className="block text-[11px] font-semibold text-[#1E2A41] mb-1 dark:text-[#fff]"
-                      >
+                      <label className="block text-[11px] font-semibold text-[#1E2A41] mb-1 dark:text-[#fff]">
                         Preferred Working Hours
+                        {mode === "edit" && (
+                          <span className="text-red-500 ml-1">*</span>
+                        )}
                       </label>
                       <input
                         type="text"
-                        className="border rounded px-2 py-1 w-full text-[10px] font-medium text-[#1E2A41] dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292]"
-                        value={Applicantbyid?.preferedWorkingHours}
-                        disabled
+                        className={`border rounded px-2 py-1 w-full text-[10px] font-medium text-[#1E2A41] dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292] ${
+                          mode === "view"
+                            ? "bg-gray-100 cursor-not-allowed"
+                            : "bg-white border-gray-300"
+                        }`}
+                        value={preferredWorkingHours}
+                        onChange={(e) =>
+                          setPreferredWorkingHours(e.target.value)
+                        }
+                        disabled={mode === "view"}
+                        placeholder="e.g., 9 AM - 6 PM"
                       />
                     </div>
 
                     {/* Expected Salary per Hour */}
                     <div>
-                      <label
-                        htmlFor="Expected Salary per Hour"
-                        className="block text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff]"
-                      >
+                      <label className="block text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff]">
                         Expected Salary per Hour
+                           {mode === "edit" && <span className="text-red-500 ml-1">*</span>}
+
                       </label>
-                      <input
-                        type="text"
-                        className="border rounded px-2 py-1 w-full text-[10px] font-medium text-[#1E2A41] dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292]"
-                        value={Applicantbyid?.expectedSalary}
-                        disabled
-                      />
+                       <input
+    type="number"
+    className={`border rounded px-2 py-1 w-full text-[10px] font-medium text-[#1E2A41] dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292] ${
+      mode === "view" ? "bg-gray-100 cursor-not-allowed" : "bg-white border-gray-300"
+    }`}
+    value={expectedSalary}
+    onChange={(e) => {
+      // Ensure we're storing as string but will convert to number when sending
+      setExpectedSalary(e.target.value);
+    }}
+    disabled={mode === "view"}
+    placeholder="Enter expected salary"
+    min="0"
+    step="0.01"
+    onBlur={(e) => {
+      // Format the number when user leaves the field
+      const value = e.target.value;
+      if (value && !isNaN(parseFloat(value))) {
+        setExpectedSalary(parseFloat(value).toString());
+      }
+    }}
+  />
+                    </div>
+
+                    {/* Preferred Working Days */}
+                    <div>
+                      <label className="block text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff]">
+                        Preferred Working Days
+                        {mode === "edit" && (
+                          <span className="text-red-500 ml-1">*</span>
+                        )}
+                      </label>
+
+                      <div className="grid grid-cols-3 gap-2 text-[11px] dark:text-[#989292]">
+                        {daysList.map((day) => (
+                          <label
+                            key={day}
+                            className={`flex items-center gap-2 p-1 rounded ${
+                              mode === "view"
+                                ? "cursor-not-allowed"
+                                : "cursor-pointer"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedDays.includes(day)}
+                              onChange={() => handleDaySelection(day)}
+                              disabled={mode === "view"}
+                              className={
+                                mode === "view"
+                                  ? "cursor-not-allowed"
+                                  : "cursor-pointer"
+                              }
+                            />
+                            {day}
+                          </label>
+                        ))}
+                      </div>
+
+                      {/* Display current selection */}
+                      {workingDays && (
+                        <p className="mt-2 text-[12px] font-semibold text-[#1E2A41] dark:text-[#fff]">
+                          Selected: {workingDays}
+                        </p>
+                      )}
                     </div>
 
                     {/* Overall Rating */}
@@ -1363,7 +1651,7 @@ export default function ApplicantsPage() {
                   {resumeImages && (
                     <button
                       onClick={() => {
-                        window.open(resumeImages, '_blank');
+                        window.open(resumeImages, "_blank");
                       }}
                       className="text-[#38619A] hover:underline text-[12px] flex items-center gap-1"
                     >
@@ -1373,6 +1661,35 @@ export default function ApplicantsPage() {
                   )}
                 </div>
               </div>
+              {/* Add this temporarily in your JSX to debug */}
+{/* DEBUG SECTION */}
+{/* {mode === "edit" && (
+  <div className="mt-4 p-3 bg-yellow-100 rounded-lg dark:bg-yellow-900">
+    <button
+      onClick={() => {
+        console.log("🔍 CURRENT STATE VALUES:", {
+          preferredWorkingHours: preferredWorkingHours,
+          expectedSalary: expectedSalary,
+          workingDays: workingDays,
+          comments: comments,
+          quranReading: quranReading,
+          tajweed: tajweed,
+          rating: rating
+        });
+        console.log("🔍 WHAT WILL BE SENT TO BACKEND:", {
+          preferedWorkingHours: preferredWorkingHours,
+          expectedSalary: parseFloat(expectedSalary),
+          preferedWorkingDays: workingDays,
+          comments: comments,
+          overallRating: rating
+        });
+      }}
+      className="px-3 py-1 text-xs bg-yellow-500 text-white rounded"
+    >
+      Check Current vs Backend Field Names
+    </button>
+  </div>
+)} */}
             </div>
 
             {/* Footer (Fixed) */}
@@ -1405,10 +1722,7 @@ export default function ApplicantsPage() {
                   </button>
                   <button
                     onClick={() =>
-                      handlesendupdate(
-                        Applicantbyid?._id ?? "",
-                        "SENDAPPROVAL"
-                      )
+                      handlesendupdate(Applicantbyid?._id ?? "", "SENDAPPROVAL")
                     }
                     className="px-4 py-2 text-[12px] text-[#4E91F0] bg-[#ECF3FD] rounded-lg dark:bg-[#39475A]"
                   >

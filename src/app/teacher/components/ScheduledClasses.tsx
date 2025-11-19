@@ -312,7 +312,7 @@ if (Array.isArray(response.data.trialclasses)) {
 
     // Filter upcoming classes
     // const upcoming = allClasses.filter(cls =>
-    //   ["Scheduled", "Rescheduled", "RequestReschedule", "BothAbsent", "StudentAbsent", "TeacherAbsent"].includes(cls.scheduleStatus)
+    //   ["Scheduled", "Rescheduled", "Reschedulerequested", "BothAbsent", "StudentAbsent", "TeacherAbsent"].includes(cls.scheduleStatus)
     // );
 
     // console.log("Upcoming Classes:", upcoming);
@@ -328,19 +328,21 @@ if (Array.isArray(response.data.trialclasses)) {
       endDate < now
     );
   })
-  .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+  .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()); // descending
+  
 
 const upcoming = allClasses
   .filter(cls => {
     const endDate = new Date(cls.endDate);
     return (
-      ["Scheduled", "Rescheduled", "RequestReschedule"].includes(cls.scheduleStatus) &&
+      ["Scheduled", "Rescheduled", "Reschedulerequested"].includes(cls.scheduleStatus) &&
       endDate >= now
     );
   })
-  .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+  .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()); // descending
 
 
+console.log("Upcoming Classes:", upcoming);
     
     console.log("Completed Classes:", completed);
 
@@ -671,7 +673,7 @@ useEffect(() => {
 const hideLastNameStatuses = [
   "Scheduled",
   "Rescheduled",
-  "RequestReschedule",
+  "Reschedulerequested",
   "BothAbsent",
   "StudentAbsent",
   "TeacherAbsent",
@@ -727,7 +729,7 @@ const studentName =
       ${
         status === "Scheduled"
           ? "bg-green-100 text-green-800 dark:bg-green-800/20"
-          : status === "Rescheduled" || status === "RequestReschedule"
+          : status === "Rescheduled" || status === "Reschedulerequested"
           ? "bg-gray-200 text-gray-800 dark:bg-gray-500/20"
           : status === "BothAbsent"
           ? "bg-red-100 text-red-700 dark:bg-red-700/20"

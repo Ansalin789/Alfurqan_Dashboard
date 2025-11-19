@@ -31,6 +31,7 @@ const SchedulePage = () => {
   );
   const [events, setEvents] = useState<Event[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const tabs = ["monthly", "weekly", "daily"] as const;
 
@@ -62,6 +63,22 @@ const SchedulePage = () => {
       })
       .catch((error) => console.error("Error fetching data: ", error));
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.calendar-dropdown-container') && openDropdown) {
+        setOpenDropdown(null);
+      }
+    };
+
+    if (openDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [openDropdown]);
 
   const handleDateClick = (date: Date) => {
     const formattedDate = moment(date).format("YYYY-MM-DD");
@@ -263,7 +280,7 @@ const SchedulePage = () => {
     const dayEvents = getEventsForDate(currentDate);
 
     return (
-      <div className="space-y-4 h-[600px] overflow-y-scroll scrollbar-none">
+      <div className="space-y-4 h-[470px] overflow-y-scroll scrollbar-none">
         {dayEvents.map((event, idx) => (
           <div
             key={idx}
@@ -296,6 +313,17 @@ const SchedulePage = () => {
     const emptyCells = Array.from({ length: firstDayOfMonth }, (_, i) => null);
     const totalDays = [...emptyCells, ...days];
 
+    const handleDayClick = (date: Date, day: number) => {
+      const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`;
+      const dayEvents = getEventsForDate(date);
+      
+      if (dayEvents.length > 0) {
+        setOpenDropdown(openDropdown === dateKey ? null : dateKey);
+      }
+      
+      handleDateClick(date);
+    };
+
     return (
       <>
         <div className="grid grid-cols-7 gap-2 text-center text-sm font-medium text-gray-500 mb-2 dark:bg-[#414141] bg-gray-100 rounded-xl p-2 dark:text-[#fff]">
@@ -304,7 +332,7 @@ const SchedulePage = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-2 text-sm h-[470px] overflow-scroll scrollbar-none">
+        <div className="grid grid-cols-7 gap-2 text-sm h-[470px] overflow-scroll scrollbar-none relative">
           {totalDays.map((day, i) => {
             if (day === null) {
               return <div key={i} className="min-h-[80px] bg-transparent" />;
@@ -317,37 +345,65 @@ const SchedulePage = () => {
             );
             const dayEvents = getEventsForDate(date);
             const hasEvents = dayEvents.length > 0;
+            const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`;
+            const isDropdownOpen = openDropdown === dateKey;
+            // Calculate column index (0-6) - grid naturally places items in columns
+            const columnIndex = i % 7;
+            const isRightSide = columnIndex >= 4;
 
             return (
-              <button
-                key={i}
-                onClick={() => handleDateClick(date)}
-                className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${
-                  hasEvents
-                    ? "border border-[#576cbc] text-[#576cbc] bg-[#576cbc]/10"
-                    : isToday(day)
-                    ? "bg-[#27176518] text-white"
-                    : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"
-                }`}
-              >
-                <div
-                  className={`font-semibold ${
-                    isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""
+              <div key={i} className="relative calendar-dropdown-container">
+                <button
+                  onClick={() => handleDayClick(date, day)}
+                  className={`min-h-[80px] w-full rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${
+                    hasEvents
+                      ? "border border-[#576cbc] text-[#576cbc] bg-[#576cbc]/10"
+                      : isToday(day)
+                      ? "bg-[#27176518] text-white"
+                      : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"
                   }`}
                 >
-                  {day}
-                </div>
-                {hasEvents && (
-                  <div className="w-full overflow-hidden">
-                    <div className="text-[9px] truncate px-1">
-                      {dayEvents[0].title}
+                  <div
+                    className={`font-semibold ${
+                      isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""
+                    }`}
+                  >
+                    {day}
+                  </div>
+                  {hasEvents && (
+                    <div className="mt-1 px-2 py-0.5 rounded-md bg-[#576cbc] text-white text-[10px] font-semibold">
+                      {dayEvents.length} {dayEvents.length === 1 ? "Event" : "Events"}
                     </div>
-                    <div className="text-[8px] truncate px-1">
-                      {moment(dayEvents[0].start, 'HH:mm').format("h:mm A")} - {moment(dayEvents[0].end, 'HH:mm').format("h:mm A")}
+                  )}
+                </button>
+                
+                {isDropdownOpen && hasEvents && (
+                  <div className={`absolute top-full ${isRightSide ? 'right-0' : 'left-0'} mt-1 z-50 w-40 bg-white dark:bg-[#343434] rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 p-3`}>
+                    <div className="text-[10px] font-semibold mb-2 text-gray-700 dark:text-gray-300">
+                      {moment(date).format("MMMM D, YYYY")}
+                    </div>
+                    <div className="space-y-2 h-20 overflow-y-auto scrollbar-none">
+                      {dayEvents.map((event) => (
+                        <div
+                          key={event.id}
+                          className="p-2 rounded-lg bg-[#576cbc]/10 dark:bg-[#414141] border-l-2 border-[#576cbc]"
+                        >
+                          <div className="text-[11px] font-semibold text-[#576cbc] dark:text-[#576cbc]">
+                            {event.title}
+                          </div>
+                          {/* <div className="flex items-center gap-1 text-[9px] text-gray-600 dark:text-gray-300 mt-1">
+                            <Clock size={10} />
+                            {moment(event.start, 'HH:mm').format("h:mm A")} - {moment(event.end, 'HH:mm').format("h:mm A")}
+                          </div>
+                          <div className="text-[9px] text-gray-500 dark:text-gray-400 mt-1">
+                            {event.studentName}
+                          </div> */}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
-              </button>
+              </div>
             );
           })}
         </div>
@@ -406,7 +462,7 @@ const SchedulePage = () => {
           <div className="w-full lg:w-1/3 bg-white dark:bg-[#343434] shadow-md rounded-xl flex flex-col min-h-[630px] lg:h-[630px]">
             <div className="p-4 md:p-6">
               <h2 className="text-[18px] font-semibold">List Schedule</h2>
-              <div className="space-y-3 md:space-y-4">
+              <div className="space-y-3 md:space-y-4 mt-6">
                 {eventsForSelectedDate.length > 0 ? (
                   eventsForSelectedDate.map((item, index) => {
                     const textColors = [

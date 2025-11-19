@@ -42,7 +42,7 @@ interface AssignmentType {
   updatedDate?: string;
   updatedBy?: string;
   level?: string;
-  courses?: string;
+  course?: string;
   assignedDate?: string;
   dueDate?: string;
   answer?: string;
@@ -81,7 +81,7 @@ const StudentList = () => {
 
   // Get unique values for filter options
   const getUniqueCourses = () => {
-    const values = assignments.map(assignment => assignment.courses).filter(Boolean) as string[];
+    const values = assignments.map(assignment => assignment.course).filter(Boolean) as string[];
     return Array.from(new Set(values));
   };
   
@@ -103,6 +103,24 @@ const StudentList = () => {
       default:
         return "Pending";
     }
+  };
+
+  // Determine if assignment is past due (compares by end of day local time)
+  const isPastDue = (dueDate?: string) => {
+    if (!dueDate) return false;
+    const due = new Date(dueDate);
+    // Set to end of that day to include the full due day
+    due.setHours(23, 59, 59, 999);
+    return new Date() > due;
+  };
+
+  // Display status that considers due date
+  const getDisplayStatus = (assignment: AssignmentType) => {
+    const base = mapStatus(assignment.assignmentStatus);
+    if (base !== "Completed" && isPastDue(assignment.dueDate)) {
+      return "Overdue";
+    }
+    return base;
   };
 
   useEffect(() => {
@@ -157,15 +175,15 @@ const StudentList = () => {
         return false;
       }
       // Course filter
-      if (filters.course && assignment.courses !== filters.course) {
+      if (filters.course && assignment.course !== filters.course) {
         return false;
       }
       // Level filter
       if (filters.level && assignment.level !== filters.level) {
         return false;
       }
-      // Status filter (use mapped status)
-      if (filters.status && mapStatus(assignment.assignmentStatus) !== filters.status) {
+      // Status filter (use display status, which considers due date)
+      if (filters.status && getDisplayStatus(assignment) !== filters.status) {
         return false;
       }
       // Assigned Date range filter
@@ -228,6 +246,8 @@ const StudentList = () => {
         return "bg-[#FDF6EC] text-[#F0AD4E] dark:bg-[#534634] dark:text-[#F0AD4E]";
       case "ASSIGNED":
         return "bg-[#FDECEC] text-[#D34645] dark:bg-[#4D3131] dark:text-[#D34645]";
+      case "OVERDUE":
+        return "bg-[#FFEDEA] text-[#C23C2F] dark:bg-[#4D2F2B] dark:text-[#FF8A7A]";
       default:
         return "bg-gray-100 text-gray-600";
     }
@@ -275,11 +295,19 @@ const StudentList = () => {
                   onClick={() => setActiveTab(type as "Pending" | "Completed")}
                   className={
                     activeTab === type
-                      ? "text-[#576CBC] border-b-2 text-[16px] border-[#576CBC]"
-                      : "text-[#010E30] dark:text-white text-[16px]"
+                      ? "text-[#576CBC] text-[18px] relative pb-1"
+                      : "text-[#010E30] dark:text-white text-[18px]"
                   }
+                  style={activeTab === type ? {
+                    position: 'relative'
+                  } : {}}
                 >
                   {label} ({count})
+                  {activeTab === type && (
+                    <div 
+                      className="absolute bottom-0 left-10 transform -translate-x-1/2 w-12 h-0.5 bg-[#576CBC] rounded-full"
+                    />
+                  )}
                 </button>
               ))}
             </div>
@@ -449,7 +477,7 @@ const StudentList = () => {
           {(() => {
             return (
               <table className="table-fixed w-full">
-                <thead className="text-[13px] bg-[#4C6993] text-white">
+                <thead className="text-[12px] bg-[#4C6993] text-white text-left ">
                   <tr>
                     {[
                       "Assignment ID",
@@ -474,10 +502,10 @@ const StudentList = () => {
                 </thead>
                 <tbody>
                   {studentsToDisplay.map((assignment, index) => {
-                    const status = mapStatus(assignment.assignmentStatus);
-                    const isNotAssigned = status === "Pending";
-                    const isCompleted = status === "Completed";
-                    const isAssigned = status === "Assigned";
+                    const displayStatus = getDisplayStatus(assignment);
+                    const isNotAssigned = displayStatus === "Pending";
+                    const isCompleted = displayStatus === "Completed";
+                    const isAssigned = displayStatus === "Assigned";
 
                     // 🛠 Fix: Extract nested ternary condition
                     const rowBgClass =
@@ -497,7 +525,7 @@ const StudentList = () => {
                           {assignment.assignedTeacher}
                         </td>
                         <td className="px-3 py-4 break-words text-[11px]">
-                          {assignment.courses}
+                          {assignment.course}
                         </td>
                         <td className="px-3 py-4 break-words text-[11px]">
                           {assignment.level}
@@ -515,22 +543,23 @@ const StudentList = () => {
                           {assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}
                         </td>
                         <td className="px-3 py-4 break-words text-[11px]">
-                          <span className={`py-1 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(mapStatus(assignment.assignmentStatus))}`}>
-                            {mapStatus(assignment.assignmentStatus)}
+                          <span className={`py-1 px-2 rounded-md text-[10px] font-semibold flex items-center justify-center min-w-[80px] ${getStatusStyle(displayStatus)}`}>
+                            {displayStatus}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-center relative text-[11px]">
                           {(() => {
                             let buttonClass = "text-gray-500 hover:text-gray-700 dark:text-[#ffff] ";
-                            if (isNotAssigned) {
+                            const canOpenMenu = isAssigned || isCompleted;
+                            if (!canOpenMenu) {
                               buttonClass += "opacity-40 cursor-not-allowed";
                             }
                             const handleClick = () => {
-                              if (!isNotAssigned) {
+                              if (canOpenMenu) {
                                 toggleDropdown(assignment._id);
                               }
                             };
-                            const isButtonDisabled = isNotAssigned;
+                            const isButtonDisabled = !canOpenMenu;
                             return (
                               <button
                                 className={buttonClass}

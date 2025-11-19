@@ -8,21 +8,28 @@ import { FaClock } from "react-icons/fa";
 import { BsFillCalendar2WeekFill } from "react-icons/bs";
 import BaseLayout4 from "@/components/BaseLayout4";
 
+type Teacher = {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+  _id?: string;
+};
+
 interface Event {
   id: string;
+  meetingId?: string;
   title: string;
   start: string;
   end: string;
   description: string;
   date: string;
   meetingStatus?: string;
-  teachers?: Array<{
-    teacherId: string;
-    teacherName: string;
-    teacherEmail: string;
-    _id: string;
-  }>;
+  teachers?: Teacher[];
 }
+
+type FlattenedMeeting = Omit<Event, "teachers"> & {
+  teachers: Teacher[];
+};
 
 const AdminCalendar = () => {
   const [activeView, setActiveView] = useState<"monthly" | "weekly" | "daily">("monthly");
@@ -31,60 +38,67 @@ const AdminCalendar = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
+  const [expandedMeetingId, setExpandedMeetingId] = useState<string | null>(null);
 
   const tabs = ["monthly", "weekly", "daily"] as const;
 
   useEffect(() => {
-    const fetchMeetings = async () => {
-      const token = localStorage.getItem("AdminAuthToken");
-      if (!token) {
-        console.error("❌ AdminAuthToken not found");
-        setIsLoading(false);
-        return;
+const fetchMeetings = async () => {
+  const token = localStorage.getItem("AdminAuthToken");
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    setIsLoading(false);
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      "https://api.blackstoneinfomaticstech.com/allAdminMeeting",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
+    );
 
-      try {
-        const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/allAdminMeeting",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+    if (!response.ok) {
+      throw new Error("Failed to fetch meetings");
+    }
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch meetings");
-        }
+    const data = await response.json();
 
-        const data = await response.json();
-        
-        const mappedEvents = data.data.meetings.map((meeting: any) => ({
-          id: meeting._id,
-          title: meeting.meetingName,
-          start: meeting.startTime,
-          end: meeting.endTime,
-          description: meeting.description,
-          date: moment(meeting.selectedDate).format("YYYY-MM-DD"),
-          meetingStatus: meeting.meetingStatus,
-          teachers: meeting.teachers
-        }));
+    // Correct mapping
+    const mappedEvents = data.data.meetings.flatMap((meetingGroup: any) =>
+      meetingGroup.records.map((meeting: any) => ({
+        id: meeting._id,
+        title: meeting.meetingName,
+        start: meeting.startTime,
+        end: meeting.endTime,
+        description: meeting.description,
+        date: moment(meeting.selectedDate).format("YYYY-MM-DD"),
+        meetingStatus: meeting.meetingStatus,
+        teachers: meeting.teacher,
+      }))
+    );
 
-        setEvents(mappedEvents);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching meetings:", error);
-        setIsLoading(false);
-      }
-    };
+    setEvents(mappedEvents);
+    setIsLoading(false);
+  } catch (error) {
+    console.error("Error fetching meetings:", error);
+    setIsLoading(false);
+  }
+};
 
-    fetchMeetings();
-  }, []);
+  fetchMeetings();
+}, []);
 
+
+  // Filter events for selected date
   useEffect(() => {
     const filteredEvents = events.filter(
       (event) => event.date === selectedDate
     );
+    console.log(`📅 Events for selected date (${selectedDate}):`, filteredEvents);
     setEventsForSelectedDate(filteredEvents);
   }, [selectedDate, events]);
 
@@ -93,94 +107,69 @@ const AdminCalendar = () => {
     setSelectedDate(formattedDate);
   };
 
-  const getDaysInMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
+  const getDaysInMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  const getFirstDayOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
-  const getFirstDayOfMonth = (date: Date) => {
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-    return firstDay.getDay();
-  };
+  const handlePrevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
+  const handleNextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
 
-  const handlePrevMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1)
-    );
-  };
-
-  const handleNextMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1)
-    );
-  };
-
-  const formatMonthYear = (date: Date) => {
-    return date
-      .toLocaleString("default", { month: "long", year: "numeric" })
-      .toUpperCase();
-  };
+  const formatMonthYear = (date: Date) => date.toLocaleString("default", { month: "long", year: "numeric" }).toUpperCase();
 
   const isToday = (day: number) => {
     const today = new Date();
-    return (
-      day === today.getDate() &&
-      currentDate.getMonth() === today.getMonth() &&
-      currentDate.getFullYear() === today.getFullYear()
-    );
+    return day === today.getDate() && currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear();
   };
 
   const getEventsForDate = (date: Date) => {
     const dateStr = moment(date).format("YYYY-MM-DD");
-    return events.filter((event) => event.date === dateStr);
+    const filtered = events.filter((event) => event.date === dateStr);
+    console.log(`📌 Events for ${dateStr}:`, filtered);
+    return filtered;
+  };
+
+  const toggleMeetingDetails = (meetingId: string) => {
+    setExpandedMeetingId((prev) => (prev === meetingId ? null : meetingId));
   };
 
   const WeeklyView = () => {
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
-    // Get start and end of current week based on currentDate
     const startOfWeek = moment(currentDate).startOf("week");
     const endOfWeek = moment(currentDate).endOf("week");
 
-    // Create an array of days in the week with their dates
     const daysInWeek = [];
     let currentDay = startOfWeek.clone();
-    
     while (currentDay <= endOfWeek) {
       daysInWeek.push({
         name: currentDay.format("dddd"),
         date: currentDay.format("YYYY-MM-DD"),
-        formattedDate: currentDay.format("MMMM D, YYYY")
+        formattedDate: currentDay.format("MMMM D, YYYY"),
       });
-      currentDay = currentDay.clone().add(1, 'days');
+      currentDay = currentDay.clone().add(1, "days");
     }
 
-    // Filter events for current week
     const weekEvents = events.filter((event) => {
       const eventDate = moment(event.date);
       return eventDate >= startOfWeek && eventDate <= endOfWeek;
     });
 
-    // Group events by day
+    console.log("📆 Week Events:", weekEvents);
+
     const eventsByDay = weekEvents.reduce((acc, event) => {
       const day = moment(event.date).format("dddd");
-      if (!acc[day]) {
-        acc[day] = [];
-      }
+      if (!acc[day]) acc[day] = [];
       acc[day].push(event);
       return acc;
     }, {} as Record<string, Event[]>);
 
-    const handleDayClick = (day: string) => {
-      setSelectedDay(selectedDay === day ? null : day);
-    };
+    console.log("📌 Events by day:", eventsByDay);
+
+    const handleDayClick = (day: string) => setSelectedDay(selectedDay === day ? null : day);
 
     return (
       <div className="space-y-4 h-[540px] overflow-y-scroll scrollbar-none">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[16px] font-semibold">
-            {startOfWeek.format("MMM D")} -{" "}
-            {endOfWeek.format("MMM D, YYYY")}
-          </h3>
+          <h3 className="text-[16px] font-semibold">{startOfWeek.format("MMM D")} - {endOfWeek.format("MMM D, YYYY")}</h3>
         </div>
 
         <div className="space-y-2">
@@ -203,36 +192,17 @@ const AdminCalendar = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div>
-                        <div
-                          className={`text-base font-semibold ${
-                            isSelected
-                              ? "dark:text-white text-black"
-                              : "text-gray-800 dark:text-white"
-                          }`}
-                        >
+                        <div className={`text-base font-semibold ${isSelected ? "dark:text-white text-black" : "text-gray-800 dark:text-white"}`}>
                           {dayInfo.name}
                         </div>
-                        <div
-                          className={`text-[10px] ${
-                            isSelected
-                              ? "bg:text-white/80"
-                              : "text-gray-500 dark:text-gray-400"
-                          }`}
-                        >
+                        <div className={`text-[10px] ${isSelected ? "bg:text-white/80" : "text-gray-500 dark:text-gray-400"}`}>
                           {dayInfo.formattedDate}
                         </div>
                       </div>
                     </div>
                     {dayEvents.length > 0 && (
-                      <div
-                        className={`text-[10px] px-3 py-1 rounded-lg ${
-                          isSelected
-                            ? "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]"
-                            : "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]"
-                        }`}
-                      >
-                        {dayEvents.length}{" "}
-                        {dayEvents.length === 1 ? "Event" : "Events"}
+                      <div className={`text-[10px] px-3 py-1 rounded-lg ${isSelected ? "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]" : "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]"}`}>
+                        {dayEvents.length} {dayEvents.length === 1 ? "Event" : "Events"}
                       </div>
                     )}
                   </div>
@@ -248,9 +218,7 @@ const AdminCalendar = () => {
                         <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 w-1 h-8 rounded-lg dark:bg-[#555555] bg-[#f7f7f7]"></div>
                         <div className="flex justify-between items-start">
                           <div>
-                            <div className="text-sm font-semibold text-[#576cbc]">
-                              {event.title}
-                            </div>
+                            <div className="text-sm font-semibold text-[#576cbc]">{event.title}</div>
                           </div>
                           <div className="flex items-center gap-2 mt-1">
                             <div className="flex items-center gap-1 text-[10px] text-gray-600 dark:text-gray-300">
@@ -259,13 +227,9 @@ const AdminCalendar = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="text-[10px] text-gray-600 dark:text-gray-300 mt-1">
-                          {event.description}
-                        </div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-300 mt-1">{event.description}</div>
                         {event.teachers && event.teachers.length > 0 && (
-                          <div className="mt-2 text-[9px]">
-                            Attendees: {event.teachers.map(t => t.teacherName).join(", ")}
-                          </div>
+                          <div className="mt-2 text-[9px]">Attendees: {event.teachers.map(t => t.teacherName).join(", ")}</div>
                         )}
                       </div>
                     ))}
@@ -290,25 +254,17 @@ const AdminCalendar = () => {
             className="p-4 text-gray-500 mb-2 dark:bg-[#414141] bg-gray-100 rounded-xl dark:text-[#fff]"
           >
             <div className="flex justify-between items-start">
-              <div className="text-sm font-semibold text-[#576cbc]">
-                {event.title}
-              </div>
+              <div className="text-sm font-semibold text-[#576cbc]">{event.title}</div>
               <div className="flex items-center gap-1 text-[10px] text-gray-600 dark:text-gray-300">
                 <Clock size={12} />
                 {event.start} - {event.end}
               </div>
             </div>
 
-            <div className="text-[10px] text-gray-400 mt-1">
-              {event.description}
-            </div>
-            
+            <div className="text-[10px] text-gray-400 mt-1">{event.description}</div>
             {event.teachers && event.teachers.length > 0 && (
-              <div className="mt-2 text-[9px]">
-                Attendees: {event.teachers.map(t => t.teacherName).join(", ")}
-              </div>
+              <div className="mt-2 text-[9px]">Attendees: {event.teachers.map(t => t.teacherName).join(", ")}</div>
             )}
-            
             {event.meetingStatus && (
               <div className="mt-2 text-[9px] px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 inline-block">
                 Status: {event.meetingStatus}
@@ -325,7 +281,7 @@ const AdminCalendar = () => {
     const firstDayOfMonth = getFirstDayOfMonth(currentDate);
 
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-    const emptyCells = Array.from({ length: firstDayOfMonth }, (_, i) => null);
+    const emptyCells = Array.from({ length: firstDayOfMonth }, () => null);
     const totalDays = [...emptyCells, ...days];
 
     return (
@@ -342,17 +298,14 @@ const AdminCalendar = () => {
               return <div key={i} className="min-h-[80px] bg-transparent" />;
             }
 
-            const date = new Date(
-              currentDate.getFullYear(),
-              currentDate.getMonth(),
-              day
-            );
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
             const dayEvents = getEventsForDate(date);
             const hasEvents = dayEvents.length > 0;
+            const dateKey = moment(date).format("YYYY-MM-DD");
 
             return (
               <button
-                key={i}
+                key={`day-${dateKey}`}
                 onClick={() => handleDateClick(date)}
                 className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${
                   hasEvents
@@ -362,25 +315,13 @@ const AdminCalendar = () => {
                     : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"
                 }`}
               >
-                <div
-                  className={`font-semibold ${
-                    isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""
-                  }`}
-                >
-                  {day}
-                </div>
+                <div className={`font-semibold ${isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""}`}>{day}</div>
                 {hasEvents && (
                   <div className="w-full overflow-hidden">
-                    <div className="text-[9px] truncate px-1">
-                      {dayEvents[0].title}
-                    </div>
-                    <div className="text-[8px] truncate px-1">
-                      {dayEvents[0].start} - {dayEvents[0].end}
-                    </div>
+                    <div className="text-[9px] truncate px-1">{dayEvents[0].title}</div>
+                    <div className="text-[8px] truncate px-1">{dayEvents[0].start} - {dayEvents[0].end}</div>
                     {dayEvents[0].meetingStatus && (
-                      <div className="text-[7px] mt-1 px-1 py-0.5 rounded bg-gray-200 dark:bg-gray-600">
-                        {dayEvents[0].meetingStatus}
-                      </div>
+                      <div className="text-[7px] mt-1 px-1 py-0.5 rounded bg-gray-200 dark:bg-gray-600">{dayEvents[0].meetingStatus}</div>
                     )}
                   </div>
                 )}
@@ -416,21 +357,9 @@ const AdminCalendar = () => {
                 ))}
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  onClick={handlePrevMonth}
-                  className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
-                >
-                  &lt;
-                </button>
-                <h2 className="text-[16px] font-semibold">
-                  {formatMonthYear(currentDate)}
-                </h2>
-                <button
-                  onClick={handleNextMonth}
-                  className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
-                >
-                  &gt;
-                </button>
+                <button onClick={handlePrevMonth} className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors">&lt;</button>
+                <h2 className="text-[16px] font-semibold">{formatMonthYear(currentDate)}</h2>
+                <button onClick={handleNextMonth} className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors">&gt;</button>
               </div>
             </div>
 
@@ -456,25 +385,13 @@ const AdminCalendar = () => {
               ) : eventsForSelectedDate.length > 0 ? (
                 <div className="space-y-3 md:space-y-4">
                   {eventsForSelectedDate.map((item, index) => {
-                    const textColors = [
-                      "text-[#d77277]",
-                      "text-[#72B0D7]",
-                      "text-[#BF63B3]",
-                      "text-[#BFBC63]",
-                      "text-[#BF8C63]",
-                      "text-[#6EBF63]"
-                    ];
+                    const textColors = ["text-[#d77277]","text-[#72B0D7]","text-[#BF63B3]","text-[#BFBC63]","text-[#BF8C63]","text-[#6EBF63]"];
                     const currentTextColor = textColors[index % textColors.length];
                     
                     return (
-                      <div
-                        key={item.id}
-                        className="border-b pb-2 border-[#dadada] dark:border-[#5b5b5b]"
-                      >
+                      <div key={item.id} className="border-b pb-2 border-[#dadada] dark:border-[#5b5b5b]">
                         <div className="flex justify-between">
-                          <h3 className={`font-medium text-[14px] ${currentTextColor}`}>
-                            {item.title}
-                          </h3>
+                          <h3 className={`font-medium text-[14px] ${currentTextColor}`}>{item.title}</h3>
                           <div>
                             <div className="flex gap-4">
                               <div className="text-[9px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
@@ -482,41 +399,45 @@ const AdminCalendar = () => {
                                 {item.start} - {item.end}
                               </div>
                               <span className="text-[9px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
-                                <BsFillCalendar2WeekFill size={10} />{" "}
-                                {moment(item.date).format("DD MMM YYYY")}
+                                <BsFillCalendar2WeekFill size={10} /> {moment(item.date).format("DD MMM YYYY")}
                               </span>
                             </div>
                           </div>
                         </div>
 
-                        <p className="text-[10px] font-light text-[#333] dark:text-[#fff] mt-2">
-                          {item.description || ""}
-                        </p>
+                        <p className="text-[10px] font-light text-[#333] dark:text-[#fff] mt-2">{item.description || ""}</p>
 
-                        <div className="mt-2">
-                          <p className="text-[10px] font-semibold">Attendees:</p>
-                          {Array.isArray(item.teachers) ? (
-                            item.teachers.length > 0 ? (
-                              <ul className="text-[9px] space-y-1 mt-1">
-                                {item.teachers.map((teacher) => (
-                                  <li key={teacher.teacherId}>
-                                    {teacher.teacherName} ({teacher.teacherEmail})
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : (
-                              <p className="text-[9px] text-gray-500 italic mt-1">No attendees</p>
-                            )
-                          ) : (
-                            <p className="text-[9px] text-gray-500 italic mt-1">No attendees</p>
-                          )}
-                        </div>
+{/* View List Toggle Button */}
+<button
+  onClick={() => toggleMeetingDetails(item.id)}
+  className="mt-2 text-[10px] text-blue-600 dark:text-blue-300 underline"
+>
+  {expandedMeetingId === item.id ? "Hide List ▲" : "View List ▼"}
+</button>
+
+{/* Teacher List */}
+{expandedMeetingId === item.id && (
+  <div className="mt-2">
+    <p className="text-[10px] font-semibold mb-1">Teachers:</p>
+
+    {Array.isArray(item.teachers) && item.teachers.length > 0 ? (
+      <ul className="text-[10px] space-y-1 mt-1 list-disc list-inside">
+        {item.teachers.map((t) => (
+          <li key={t.teacherId}>
+            {t.teacherName} ({t.teacherEmail})
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p className="text-[9px] text-gray-500 italic mt-1">No Teachers</p>
+    )}
+  </div>
+)}
+
 
                         {item.meetingStatus && (
                           <div className="mt-2">
-                            <span className="text-[9px] px-2 py-1 rounded bg-gray-200 dark:bg-gray-600">
-                              Status: {item.meetingStatus}
-                            </span>
+                            <span className="text-[9px] px-2 py-1 rounded bg-gray-200 dark:bg-gray-600">Status: {item.meetingStatus}</span>
                           </div>
                         )}
                       </div>

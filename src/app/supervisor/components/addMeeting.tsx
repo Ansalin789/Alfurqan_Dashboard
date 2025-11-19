@@ -15,7 +15,6 @@ interface Teacher {
   teacherName: string;
   teacherEmail: string;
   attendee: string;
-
 }
 
 export default function AddMeeting({ onClose }: Props) {
@@ -28,15 +27,15 @@ export default function AddMeeting({ onClose }: Props) {
   const [failed, setFailed] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
   const [open, setOpen] = useState(false);
- const [activeTab, setActiveTab] = useState<Tab>("All");
+  const [activeTab, setActiveTab] = useState<Tab>("All");
   const [selectedTeachers, setSelectedTeachers] = useState<Teacher[]>([]);
   const [Teachers, setTeachers] = useState<Teacher[]>([]);
-  const tabs = ["All", "Quran", "Arabic", "Islamic"] as const; 
-  type Tab = typeof tabs[number];
+  const tabs = ["All", "Quran", "Arabic", "Islamic"] as const;
+  type Tab = (typeof tabs)[number];
 
   useEffect(() => {
     const FetachTeachers = async () => {
-      console.log('Active tabs',activeTab);
+      console.log("Active tabs", activeTab);
       try {
         const Id =
           typeof window !== "undefined"
@@ -54,7 +53,7 @@ export default function AddMeeting({ onClose }: Props) {
 
         if (activeTab !== "All") {
           params.teacherGroup = `${activeTab} Teacher`;
-          console.log('inserted', activeTab);
+          console.log("inserted", activeTab);
         }
 
         const response = await axios.get(url, {
@@ -105,8 +104,7 @@ export default function AddMeeting({ onClose }: Props) {
       teacherName: teacher.teacherName,
       teacherEmail: teacher.teacherEmail,
       _id: teacher.teacherId,
-          attendee:"absent",
-
+      attendee: "absent",
     }));
 
     const requestData = {
@@ -123,7 +121,7 @@ export default function AddMeeting({ onClose }: Props) {
         supervisorRole: "SUPERVISOR",
       },
       teacher: teachers,
-      meetingminutes:" ",
+      meetingminutes: " ",
       description,
       status: "Active",
       createdDate,
@@ -138,7 +136,7 @@ export default function AddMeeting({ onClose }: Props) {
       }
 
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/addMeeting",
+        "https://api.blackstoneinfomaticstech.com/addMeeting123",
         requestData,
         {
           headers: {
@@ -157,11 +155,15 @@ export default function AddMeeting({ onClose }: Props) {
           setEndTime("");
           setSelectedTeachers([]);
           setDescription("");
+           onClose();
         }, 2000);
       }
     } catch (err) {
       const error = err as AxiosError;
       const status = error.response?.status;
+       setTimeout(() => {
+          onClose();
+        }, 3000);
       if (Number(status === 400)) {
         console.log("please >");
         setFailedMessage("Please check the form inputs.");
@@ -303,6 +305,24 @@ export default function AddMeeting({ onClose }: Props) {
                   </section>
                 </div>
               </Dialog>
+              {selectedTeachers.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {selectedTeachers.map((t) => (
+                    <span
+                      key={t.teacherId}
+                      className="text-xs px-2 py-1 rounded bg-[#E9EEF7] text-[#344055] dark:bg-[#2E2E2E] dark:text-white flex items-center gap-1"
+                    >
+                      {t.teacherName}
+                      <button
+                        onClick={() => toggleTeacher(t)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -335,22 +355,6 @@ export default function AddMeeting({ onClose }: Props) {
                 onChange={(e) => setEndTime(e.target.value)}
                 className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
-            </div>
-            <div className="mb-3">
-              <label
-                htmlFor="uyvuhvyuc"
-                className="block text-sm text-gray-600 dark:text-white"
-              >
-                Selected Teacher
-              </label>
-              <select className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]">
-                <option value="">Show</option>
-                {selectedTeachers.map((teacher: Teacher) => (
-                  <option key={teacher.teacherId} value={teacher.teacherName}>
-                    {teacher.teacherName}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
         </div>

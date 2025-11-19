@@ -281,9 +281,9 @@ const Page: React.FC = () => {
                   <td className="py-4 px-2 text-left text-[#17243E] dark:text-[#FDFDFD] w-[10%]">
                     {emp.role}
                   </td>
-                  <td className="py-1 px-2 w-[10%]">
+                  <td className="py-1 px-2 w-[10%] text-left">
                     <button
-                      className="w-full py-[6px] px-[3px] rounded-md bg-[#576CBC] text-[#fff] text-[9px]"
+                      className="w-full py-[6px] px-[2px] rounded-md bg-[#576CBC] text-[#fff] text-[9px]"
                       onClick={() => handleChanges(emp._id, emp.role)}
                     >
                       {emp.role}
@@ -337,10 +337,10 @@ const Page: React.FC = () => {
                   name="designation"
                   value={filterCriteria.designation}
                   onChange={handleFilterChange}
-                  className="w-full mt-1 rounded-lg border px-4 py-2 text-sm text-gray-700 bg-white focus:outline-none"
+                  className="w-full mt-1 rounded-lg border px-4 py-2 text-xs text-gray-700 bg-white focus:outline-none"
                 >
                   <option value="">Select designation</option>
-                  <option value="ACADEMIC COACH">ACADEMIC COACH</option>
+                  <option value="ACADEMICCOACH">ACADEMIC COACH</option>
                   <option value="TEACHER">TEACHER</option>
                   <option value="SUPERVISOR">SUPERVISOR</option>
                   <option value="ADMIN">ADMIN</option>
@@ -355,7 +355,7 @@ const Page: React.FC = () => {
                   name="fromDate"
                   value={filterCriteria.fromDate}
                   onChange={handleFilterChange}
-                  className="w-full mt-1 rounded-lg border px-4 py-2 text-sm text-gray-700 focus:outline-none"
+                  className="w-full mt-1 rounded-lg border px-4 py-2 text-xs text-gray-700 focus:outline-none"
                 />
               </div>
               <div>
@@ -367,20 +367,20 @@ const Page: React.FC = () => {
                   name="toDate"
                   value={filterCriteria.toDate}
                   onChange={handleFilterChange}
-                  className="w-full mt-1 rounded-lg border px-4 py-2 text-sm text-gray-700 focus:outline-none"
+                  className="w-full mt-1 rounded-lg border px-4 py-2 text-xs text-gray-700 focus:outline-none"
                 />
               </div>
             </div>
             <div className="flex justify-between items-center mt-6">
               <button
                 onClick={applyFilters}
-                className="bg-[#012A4A] text-white px-4 py-2 text-sm font-medium rounded-xl"
+                className="bg-[#012A4A] text-white px-3 py-1 text-xs font-medium rounded-md"
               >
-                Show{employees.length} Results
+                Show  Results
               </button>
               <button
                 onClick={resetFilters}
-                className="border border-gray-300 px-4 py-2 text-sm font-medium rounded-xl text-gray-700"
+                className="border border-gray-300 px-3 py-1 text-xs font-medium rounded-md text-gray-700"
               >
                 Reset
               </button>

@@ -79,17 +79,21 @@ const TotalRequestChart = () => {
         }
       );
       const result = await res.json();
+      console.log("ress", result)
 
-      if (result && result.length > 0) {
-        const { totalCount = 0, maleCount = 0, femaleCount = 0 } = result[0];
+      const evalData = Array.isArray(result) ? result[0] : result.evaluation;
 
+      if (evalData) {
+        const { totalCount = 0, maleCount = 0, femaleCount = 0 } = evalData;
+      
         setChartData([
           { name: "male", value: maleCount, color: "#9FD0FF" },
           { name: "female", value: femaleCount, color: "#FECAFF" },
         ]);
-
+      
         setTotal(totalCount);
       }
+      
     } catch (error) {
       console.error("Failed to fetch chart data:", error);
     }

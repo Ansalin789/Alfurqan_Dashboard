@@ -57,6 +57,8 @@ const NextClass = () => {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [sessionNumber, setSessionNumber] = useState<number>(0);
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
+
 
   const filterUpcomingClass = (response: ApiResponse): ClassData | null => {
     const now = new Date();
@@ -127,6 +129,7 @@ const NextClass = () => {
 
   useEffect(() => {
     const fetchClassData = async () => {
+      setLoading(false);
       try {
         const studentId =
           typeof window !== "undefined"
@@ -138,6 +141,7 @@ const NextClass = () => {
             : null;
         if (!studentId || !token) {
           console.log("Missing studentId or authToken");
+          setLoading(false);
           return;
         }
 
@@ -153,6 +157,7 @@ const NextClass = () => {
         );
         const nextClass = filterUpcomingClass(response.data);
         setClassData(nextClass);
+        setLoading(false);
 
         // Calculate session number
         if (nextClass) {
@@ -161,6 +166,7 @@ const NextClass = () => {
         }
       } catch (err) {
         console.log("Error loading class details:", err);
+        setLoading(true);
       }
     };
     fetchClassData();
@@ -170,6 +176,7 @@ const NextClass = () => {
     if (!classData) return;
 
     const fetchNextClass = async () => {
+      setLoading(false);
       try {
         const studentId =
           typeof window !== "undefined"
@@ -201,6 +208,7 @@ const NextClass = () => {
         }
       } catch (error) {
         console.error("Failed to fetch next class:", error);
+        setLoading(false);
       }
     };
 
@@ -239,23 +247,69 @@ const NextClass = () => {
     return () => clearInterval(timer);
   }, [classData]);
 
+  if (loading) {
+    return (
+      <div className="bg-[#78A1DB] rounded-xl shadow flex items-center justify-between text-white p-2 px-4 min-h-[101px]">
+        <div className="flex-1 space-y-4">
+          <div className="h-2 bg-blue-200 rounded w-1/3 animate-pulse"></div>
+          <div className="h-2 bg-blue-200 rounded w-1/4 animate-pulse"></div>
+          <div className="h-2 bg-blue-200 rounded w-1/2 animate-pulse"></div>
+        </div>
+        <div className="flex items-center space-x-2 px-14">
+          <div className="w-16 h-16 bg-blue-300 rounded-full animate-pulse"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!classData) {
+    return (
+      <div className="relative overflow-hidden bg-[#78A1DB] rounded-xl shadow flex items-center justify-center text-white p-2 min-h-[102px]">
+        {/* Floating, soft background shapes */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-8 -left-8 w-24 h-24 bg-white/15 rounded-full blur-2xl animate-float-slow" />
+          <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-float-rev" />
+          <div className="absolute top-1/2 -translate-y-1/2 left-4 w-12 h-12 bg-white/10 rounded-full blur-xl animate-float-slower" />
+        </div>
+
+        {/* Message */}
+          <p className="float-text text-sm sm:text-base font-medium">Clear schedule for now 📚 No classes ahead</p>
+
+        {/* Scoped animations */}
+        <style jsx>{`
+          @keyframes floatY {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+          }
+          @keyframes floatYSmall {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+          }
+          .animate-float-slow { animation: floatY 7s ease-in-out infinite; }
+          .animate-float-slower { animation: floatY 9s ease-in-out infinite; }
+          .animate-float-rev { animation: floatY 8s ease-in-out infinite reverse; }
+          .float-text { animation: floatYSmall 5s ease-in-out infinite; }
+        `}</style>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full ">
-      <div className="max-w-screen-xl mx-auto bg-[#78A1DB] rounded-xl shadow-md px-1 py-4 sm:px-2 md:px-6 lg:px-8 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+      <div className="max-w-screen-xl mx-auto bg-[#78A1DB] rounded-xl shadow-md px-1 py-[11px] sm:px-2 md:px-6 lg:px-8 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div className="flex flex-col gap-2 w-full sm:w-auto">
           <h3 className="text-[15px] font-semibold">
-            Your Next Scheduled Class (
-            <div className="inline-flex items-center gap-1">
-              <FaUser className="w-[10px] h-[10px]" />
-              {classData?.teacher?.teacherName}
-            </div>
-            )
+            Your Next Scheduled Class 
           </h3>
           <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm sm:text-sm md:text-sm">
+            <div className="mb-4">
+            <p className="text-xs sm:text-[8px] md:text-[9px] items-center ml-4 whitespace-nowrap">(Teacher)</p>
             <span className="flex items-center gap-1">
-              <FaUser className="text-white/90 text-base sm:text-sm" />
-              {classData?.student?.studentFirstName ?? ""}
+              <FaUser className="text-white/90 text-base sm:text-sm -mt-1" />
+              {classData?.teacher?.teacherName.charAt(0).toUpperCase() + classData?.teacher?.teacherName.slice(1).toLowerCase() || "N/A"}
             </span>
+            </div>
+            
 
             <span className="flex items-center gap-1">
               <MdDateRange className="text-white/90 text-base sm:text-sm" />
@@ -264,7 +318,7 @@ const NextClass = () => {
 
             <span className="flex items-center gap-1">
               <AiOutlineClockCircle className="text-white/90 text-base sm:text-sm" />
-              {classData?.startTime?.[0] ?? "00:00"}
+              {classData?.createdDate ? classData.startDate.slice(0, 10) : "00:00"}
             </span>
           </div>
         </div>

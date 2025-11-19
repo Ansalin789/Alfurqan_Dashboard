@@ -234,14 +234,34 @@ export default function InvoicePage() {
 
       // Always use the latest selectedStudent and their evaluation
       const firstEvaluation = selectedStudent?.evaluation?.[0];
+      const evaluationData = firstEvaluation
+        ? {
+            ...firstEvaluation,
+            student: {
+              ...firstEvaluation.student,
+              // Force studentId to match the invoice studentId (ALF...)
+              studentId: invoiceData.student.studentId,
+            },
+          }
+        : undefined;
+
       const payload = {
         ...invoiceData,
-        evaluationData: firstEvaluation ? { ...firstEvaluation } : undefined,
+        // also include a top-level studentId to satisfy backends that read it here
+        studentId: invoiceData.student.studentId,
+        evaluationData,
       };
+
+      console.log("[Invoice] Using student ids:", {
+        invoiceStudentId: invoiceData.student.studentId,
+        evalStudentIdBefore: firstEvaluation?.student?.studentId,
+        evalStudentIdAfter: evaluationData?.student?.studentId,
+        topLevelStudentId: (payload as any).studentId,
+      });
 
       // Send data to backend
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/invoice/send",
+        "https://localhost:5001/invoice/send",
         payload,
         {
           headers: {
@@ -374,7 +394,7 @@ export default function InvoicePage() {
                           ...prev,
                           lastUpdatedBy: new Date().toISOString(),
                           student: {
-                            studentId: selected._id,
+                            studentId: selected.student.studentId,
                             studentName: selected.username,
                             studentEmail: selected.student.studentEmail,
                             studentPhone: String(selected.student.studentPhone),

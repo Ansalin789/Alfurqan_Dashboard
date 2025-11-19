@@ -61,8 +61,8 @@ const LiveMeeting = () => {
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const params = useSearchParams();
   const meetingId = params.get("id");
-const router = useRouter();
-const [redirectTo, setRedirectTo] = useState<string | null>(null);
+  const router = useRouter();
+  const [redirectTo, setRedirectTo] = useState<string | null>(null);
   const startTimeRef = useRef<string>("");
   const attendanceRef = useRef(attendance);
 
@@ -80,12 +80,15 @@ const [redirectTo, setRedirectTo] = useState<string | null>(null);
           return;
         }
 
-        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/teacherMeeting/${meetingId}`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(
+          `https://api.blackstoneinfomaticstech.com/teacherMeeting/${meetingId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         const meeting: Meeting = response.data;
         if (meeting && meeting.meetingStatus !== "Completed") {
@@ -114,83 +117,97 @@ const [redirectTo, setRedirectTo] = useState<string | null>(null);
   }, [params]);
 
   useEffect(() => {
-  if (redirectTo) {
-    router.push(redirectTo);
-  }
-}, [redirectTo, router]);
-
-const handleEndCall = async () => {
-  const endCallTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
-  const startTimeUsed = startTimeRef.current;
-
-  if (!meetingData || !startTimeUsed) {
-    console.error("Missing meeting data or start time");
-    return;
-  }
-
-  const scheduledDate = meetingData.selectedDate;
-  const scheduledTime = meetingData.startTime;
-  const scheduledStart = dayjs(`${scheduledDate}T${scheduledTime}`);
-  let joinHour = 0;
-  let joinMinute = 0;
-
-  if (startTimeUsed.includes(":")) {
-    const [h, m] = startTimeUsed.split(":").map(Number);
-    joinHour = h;
-    joinMinute = m;
-  }
-
-  const actualJoin = dayjs(`${scheduledDate}T${String(joinHour).padStart(2, "0")}:${String(joinMinute).padStart(2, "0")}`);
-  const diffMinutes = actualJoin.diff(scheduledStart, "minute");
-  const teacherAbsent = diffMinutes >= 15;
-
-  const student = attendanceRef.current[0];
-  const studentJoined = student?.joinTime && student.joinTime !== "";
-  const parsedStudentJoin = studentJoined ? dayjs(`${scheduledDate}T${student.joinTime}`) : null;
-  const studentLateBy = parsedStudentJoin ? parsedStudentJoin.diff(scheduledStart, "minute") : Infinity;
-  const studentAbsent = !studentJoined || studentLateBy > 15;
-  const studentAttendee = studentAbsent ? "absent" : "present";
-
-  let sessionStarttime = "00:00";
-  let sessionsEndtime = "00:00";
-
-  if (!teacherAbsent) {
-    if (!studentAbsent) {
-      sessionStarttime = startTimeUsed;
-      sessionsEndtime = endCallTime;
-    } else {
-      sessionStarttime = meetingData.startTime;
-      sessionsEndtime = meetingData.endTime;
+    if (redirectTo) {
+      router.push(redirectTo);
     }
-  }
+  }, [redirectTo, router]);
 
-  const payload = {
-    ...meetingData,
-    sessionStarttime,
-    sessionsEndtime,
-    meetingStatus: "Completed",
-    teacherAttendee: teacherAbsent ? "absent" : "present",
-    studentAttendee,
-  };
-
-  try {
-    const token = localStorage.getItem("StudentAuthToken");
-    await axios.put(`https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${meetingId}`, payload, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+  const handleEndCall = async () => {
+    const endCallTime = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
     });
-    console.log("Meeting schedule updated");
+    const startTimeUsed = startTimeRef.current;
 
-    // ✅ Instead of router.push directly
-    setRedirectTo("/Student/ui/meeting");
-  } catch (error) {
-    console.error("Failed to update meeting schedule:", error);
-  }
-};
+    if (!meetingData || !startTimeUsed) {
+      console.error("Missing meeting data or start time");
+      return;
+    }
 
+    const scheduledDate = meetingData.selectedDate;
+    const scheduledTime = meetingData.startTime;
+    const scheduledStart = dayjs(`${scheduledDate}T${scheduledTime}`);
+    let joinHour = 0;
+    let joinMinute = 0;
 
+    if (startTimeUsed.includes(":")) {
+      const [h, m] = startTimeUsed.split(":").map(Number);
+      joinHour = h;
+      joinMinute = m;
+    }
+
+    const actualJoin = dayjs(
+      `${scheduledDate}T${String(joinHour).padStart(2, "0")}:${String(
+        joinMinute
+      ).padStart(2, "0")}`
+    );
+    const diffMinutes = actualJoin.diff(scheduledStart, "minute");
+    const teacherAbsent = diffMinutes >= 15;
+
+    const student = attendanceRef.current[0];
+    const studentJoined = student?.joinTime && student.joinTime !== "";
+    const parsedStudentJoin = studentJoined
+      ? dayjs(`${scheduledDate}T${student.joinTime}`)
+      : null;
+    const studentLateBy = parsedStudentJoin
+      ? parsedStudentJoin.diff(scheduledStart, "minute")
+      : Infinity;
+    const studentAbsent = !studentJoined || studentLateBy > 15;
+    const studentAttendee = studentAbsent ? "absent" : "present";
+
+    let sessionStarttime = "00:00";
+    let sessionsEndtime = "00:00";
+
+    if (!teacherAbsent) {
+      if (!studentAbsent) {
+        sessionStarttime = startTimeUsed;
+        sessionsEndtime = endCallTime;
+      } else {
+        sessionStarttime = meetingData.startTime;
+        sessionsEndtime = meetingData.endTime;
+      }
+    }
+
+    const payload = {
+      ...meetingData,
+      sessionStarttime,
+      sessionsEndtime,
+      meetingStatus: "Completed",
+      teacherAttendee: teacherAbsent ? "absent" : "present",
+      studentAttendee,
+    };
+
+    try {
+      const token = localStorage.getItem("StudentAuthToken");
+      await axios.put(
+        `https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${meetingId}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Meeting schedule updated");
+
+      // ✅ Instead of router.push directly
+      setRedirectTo("/Student/ui/meeting");
+    } catch (error) {
+      console.error("Failed to update meeting schedule:", error);
+    }
+  };
 
   return (
     <BaseLayout2>
@@ -200,7 +217,10 @@ const handleEndCall = async () => {
           <div className="flex flex-col lg:flex-row gap-6 flex-1 w-full max-w-screen-xl mx-auto py-0">
             <div className="flex-1 overflow-auto">
               <div className="relative mb-0">
-                <Link href="/supervisor/ui/viewschedule" className="absolute top-0 right-0">
+                <Link
+                  href="/supervisor/ui/viewschedule"
+                  className="absolute top-0 right-0"
+                >
                   <LogOut className="w-6 h-6 text-red-500 hover:text-red-600 transition" />
                 </Link>
               </div>
@@ -216,10 +236,16 @@ const handleEndCall = async () => {
                     </span>
                   </div>
                   <div className="ml-auto w-64">
-                    <label htmlFor="attendance-select" className="block text-sm font-semibold mb-1">
+                    <label
+                      htmlFor="attendance-select"
+                      className="block text-sm font-semibold mb-1"
+                    >
                       Attendance
                     </label>
-                    <select id="attendance-select" className="w-full border p-2 rounded">
+                    <select
+                      id="attendance-select"
+                      className="w-full border p-2 rounded"
+                    >
                       {attendance.map((s) => {
                         let statusLabel = "❌ Not Joined";
                         if (s.joined) {
@@ -264,22 +290,37 @@ const handleEndCall = async () => {
                           "recording",
                         ],
                       }}
+                      interfaceConfigOverwrite={{
+                        SHOW_JITSI_WATERMARK: false,
+                        SHOW_BRAND_WATERMARK: false,
+                        SHOW_PROMOTIONAL_CLOSE_PAGE: false,
+                        SHOW_POWERED_BY: false,
+                      }}
                       onApiReady={(externalApi) => {
-                        externalApi.addListener("participantJoined", (event) => {
-                          const joinTime = new Date().toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                          });
-                          const parts = event.displayName?.split("| ID :");
-                          const studentId = parts?.[1]?.trim() ?? "N/A";
-                          const updated = attendanceRef.current.map((a) =>
-                            a.studentId === studentId
-                              ? { ...a, id: event.id, joined: true, joinTime, startTime: joinTime }
-                              : a
-                          );
-                          setAttendance(updated);
-                        });
+                        externalApi.addListener(
+                          "participantJoined",
+                          (event) => {
+                            const joinTime = new Date().toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            });
+                            const parts = event.displayName?.split("| ID :");
+                            const studentId = parts?.[1]?.trim() ?? "N/A";
+                            const updated = attendanceRef.current.map((a) =>
+                              a.studentId === studentId
+                                ? {
+                                    ...a,
+                                    id: event.id,
+                                    joined: true,
+                                    joinTime,
+                                    startTime: joinTime,
+                                  }
+                                : a
+                            );
+                            setAttendance(updated);
+                          }
+                        );
                         externalApi.addListener("participantLeft", (event) => {
                           const leaveTime = new Date().toLocaleTimeString([], {
                             hour: "2-digit",
@@ -293,11 +334,14 @@ const handleEndCall = async () => {
                           );
                         });
                         externalApi.addListener("videoConferenceJoined", () => {
-                          const startCallTime = new Date().toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                          });
+                          const startCallTime = new Date().toLocaleTimeString(
+                            [],
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            }
+                          );
                           startTimeRef.current = startCallTime;
                           setStartTime(startCallTime);
                         });

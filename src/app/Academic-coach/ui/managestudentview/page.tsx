@@ -180,9 +180,10 @@ const ManageStudentView = () => {
   const [data, setData] = useState<StudentDetails | null>(null);
   const [scheduledClasses, setScheduledClasses] = useState<ClassSchedule[]>([]);
   const [completedClasses, setCompletedClasses] = useState<ClassSchedule[]>([]);
+  const [unscheduledClasses, setUnscheduledClasses] = useState<ClassSchedule[]>([]);
   const [paginatedData, setPaginatedData] = useState<ClassSchedule[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [activeTab, setActiveTab] = useState<"scheduled" | "completed">(
+  const [activeTab, setActiveTab] = useState<"scheduled" | "completed" | "unscheduled">(
     "scheduled"
   );
   const searchParams = useSearchParams();
@@ -212,7 +213,11 @@ const ManageStudentView = () => {
   const currentItems = paginatedData.slice(indexOfFirstItem, indexOfLastItem);
 
   const dataToShow =
-    activeTab === "scheduled" ? scheduledClasses : completedClasses;
+    activeTab === "scheduled"
+      ? scheduledClasses
+      : activeTab === "completed"
+      ? completedClasses
+      : unscheduledClasses;
 
   // Calculate total pages once, outside useEffect
   const totalPages = Math.ceil(dataToShow.length / itemsPerPage);
@@ -399,12 +404,16 @@ useEffect(() => {
             (c) =>
               c.scheduleStatus === "Scheduled" ||
               c.scheduleStatus === "Rescheduled" ||
-              c.scheduleStatus === "RequestReschedule"
+              c.scheduleStatus === "Reschedulerequested"
           )
         );
 
         setCompletedClasses(
           sortedSchedules.filter((c) => c.scheduleStatus === "Completed" || c.scheduleStatus === "BothAbsent" || c.scheduleStatus === "TeacherAbsent" || c.scheduleStatus === "StudentAbsent" )
+        );
+
+        setUnscheduledClasses(
+          sortedSchedules.filter((c) => c.scheduleStatus === "Unscheduled")
         );
       } catch (err) {
         console.error("Failed to fetch class schedule", err);
@@ -416,6 +425,13 @@ useEffect(() => {
 
   const toggleDropdown = (index: number) => {
     setActiveDropdown(activeDropdown === index ? null : index);
+  };
+  const toTitleCase = (value: string) => {
+    if (!value) return value;
+    return value
+      .split(" ")
+      .map((part) => (part.length > 0 ? part[0].toUpperCase() + part.slice(1).toLowerCase() : part))
+      .join(" ");
   };
 
   const handleReschedule = (_id: string, course: string) => {
@@ -949,11 +965,14 @@ useEffect(() => {
           <div className="w-[560px] h-[246px] bg-[#5E6578] rounded-lg text-white p-4 sm:p-6 flex flex-col sm:flex-row items-center sm:items-start">
             {/* Profile Image + Name */}
             <div className="flex flex-col items-center sm:pr-6 sm:border-r border-white/30">
-              <img
-                src="/assets/images/alstudent.jpg"
-                alt="profile"
-                className="w-[150px] h-[150px] rounded-full object-cover"
-              />
+            <div className="w-[150px] h-[150px] rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+  <img
+    src="/assets/images/student-portfolio.svg"
+    alt="profile"
+    className="w-full h-full object-contain"
+  />
+</div>
+
               <h2 className="text-center text-[18px] font-semibold mt-3">
                 {data?.studentDetails?.username}
               </h2>
@@ -1036,6 +1055,23 @@ useEffect(() => {
             Scheduled ({scheduledClasses.length})
             {activeTab === "scheduled" && (
               <span className="absolute left-0 ml-5 -bottom-1 w-[60px] h-[2px] rounded-full bg-[#576CBC] dark:text-[#576CBC]" />
+            )}
+          </button>
+
+          <button
+            className={`relative text-[14px] transition font-medium ${
+              activeTab === "unscheduled"
+                ? "text-[#576CBC] font-semibold"
+                : "text-[#0A0A12] dark:text-[#fff] opacity-80"
+            }`}
+            onClick={() => {
+              setActiveTab("unscheduled");
+              setCurrentPage(1);
+            }}
+          >
+            Unscheduled ({unscheduledClasses.length})
+            {activeTab === "unscheduled" && (
+              <span className="absolute left-0 ml-6 -bottom-1 w-[60px] h-[3px] rounded-full bg-[#576CBC]" />
             )}
           </button>
 
@@ -1128,7 +1164,7 @@ useEffect(() => {
                   }`}
                 >
                   <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left">
-                    {item.teacher.teacherName}
+                    {toTitleCase(item.teacher.teacherName)}
                   </td>
                   <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                     {item.course.courseName}
@@ -1169,22 +1205,25 @@ useEffect(() => {
                       onClick={() => toggleDropdown(index)}
                       className={`${
                         (activeTab === "scheduled" && 
-                         ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
-                        activeTab === "completed"
+                         ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
+                        activeTab === "completed" ||
+                        activeTab === "unscheduled"
                           ? "cursor-pointer"
                           : "cursor-default"
                       }`}
                       disabled={
                         !((activeTab === "scheduled" && 
-                         ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
-                        activeTab === "completed")
+                         ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
+                        activeTab === "completed" ||
+                        activeTab === "unscheduled")
                       }
                     >
                       <MoreVertical
                         className={`w-4 h-4 mr-12 ${
                           (activeTab === "scheduled" && 
-                           ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
-                          activeTab === "completed"
+                           ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
+                          activeTab === "completed" ||
+                          activeTab === "unscheduled"
                             ? "text-slate-600 dark:text-[#FDFDFD]"
                             : "text-gray-500 dark:text-gray-200 opacity-50"
                         }`}
@@ -1194,8 +1233,9 @@ useEffect(() => {
                     {/* Show dropdown when activeDropdown is set and appropriate for the tab/status */}
                     {activeDropdown === index && 
                      ((activeTab === "scheduled" && 
-                       ["Scheduled", "RequestReschedule"].includes(item.scheduleStatus)) ||
-                      activeTab === "completed") && (
+                       ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
+                      activeTab === "completed" ||
+                      activeTab === "unscheduled") && (
                       <div
                         ref={dropdownRef}
                         className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border dark:border-[#5c5c5c] dark:bg-[#343434]"
@@ -1213,7 +1253,7 @@ useEffect(() => {
                               View Details
                             </button>
                           ) : (
-                            // For scheduled classes, show Reschedule option
+                            // For scheduled/unscheduled classes, show Reschedule/Schedule option
                             <button
                               className={`w-full text-left px-4 py-2 text-[12px] ${
                                 studentListWrite
@@ -1233,7 +1273,7 @@ useEffect(() => {
                               }
                               disabled={!studentListWrite}
                             >
-                              Reschedule
+                              {activeTab === "unscheduled" ? "Schedule" : "Reschedule"}
                             </button>
                           )}
                           <button
@@ -1264,7 +1304,13 @@ useEffect(() => {
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
         onApplyFilters={handleApplyFilters}
-        users={activeTab === "scheduled" ? scheduledClasses : completedClasses}
+        users={
+          activeTab === "scheduled"
+            ? scheduledClasses
+            : activeTab === "completed"
+            ? completedClasses
+            : unscheduledClasses
+        }
       />
 
       {/* Completed Class Details Modal */}

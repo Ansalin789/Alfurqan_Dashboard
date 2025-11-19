@@ -99,8 +99,27 @@ const SalaryCard = () => {
     }
   };
 
-  const upcomingData = classData.filter((item) => item.status !== "Completed");
-  const completedData = classData.filter((item) => item.status === "Completed");
+  const now = new Date();
+const completedData = classData
+  .filter(cls  => {
+    const endDate = new Date(cls.endDate);
+    return (
+      ["Completed", "BothAbsent", "StudentAbsent", "TeacherAbsent"].includes(cls.scheduleStatus) &&
+      endDate < now
+    );
+  })
+  .sort((a , b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()); // descending
+  
+
+const upcomingData = classData
+  .filter(cls => {
+    const endDate = new Date(cls.endDate);
+    return (
+      ["Scheduled", "Rescheduled", "Reschedulerequested"].includes(cls.scheduleStatus) &&
+      endDate >= now
+    );
+  })
+  .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()); // descending
   const baseData = activeTab === "Upcoming" ? upcomingData : completedData;
 
   const studentNames = Array.from(
@@ -201,7 +220,7 @@ const SalaryCard = () => {
 
   return (
     <BaseLayout4>
-    <AdminHeader currentSection={" All Classes"}>
+    <AdminHeader currentSection={" All Classes"} showBackButton={true} showBackPath="classes" >
       
     </AdminHeader>
      

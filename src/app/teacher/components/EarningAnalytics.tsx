@@ -187,7 +187,7 @@ const EarningAnalytics = () => {
   }
 
   return (
-    <div className="w-full h-full bg-white dark:bg-[#343434] rounded-2xl shadow-md p-4 flex flex-col justify-between">
+    <div className="w-full h-[230px] bg-white dark:bg-[#343434] rounded-2xl shadow-md p-4 flex flex-col justify-between">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-sm font-semibold text-[#010E30] dark:text-white">
           Earning Analytics
@@ -226,17 +226,17 @@ const EarningAnalytics = () => {
       <div className="space-y-3">
         {getTimePeriodData().map((item, index) => (
           <div key={index} className="flex justify-between items-center p-2 bg-[#F9F9F9] dark:bg-[#3A3A3A] rounded-lg">
-            <div className="text-sm font-medium text-[#010E30] dark:text-white">
+            <div className="text-xs font-medium text-[#010E30] dark:text-white">
               {item.label}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-[#010E30] dark:text-white">
+              <span className="text-xs font-medium text-[#010E30] dark:text-white">
                 {item.amount}
               </span>
               <span className={`${
                 item.isPositive 
-                  ? 'text-green-600 bg-green-100 dark:bg-green-900' 
-                  : 'text-red-600 bg-red-100 dark:bg-red-900'
+                  ? 'text-green-600 bg-green-100 dark:bg-[#377E3633]/20' 
+                  : 'text-red-600 bg-red-100 dark:bg-red-900/20'
               } text-[11px] font-semibold px-2 py-[2px] rounded-md`}>
                 {item.change}
               </span>

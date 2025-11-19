@@ -22,15 +22,15 @@ const SidebarItems = [
     href: '#',
     icon: MdBookmarks,
     subItems: [
-      { name: 'Trail Class', href: '/admin-main/ui/evaluations' },
+      { name: 'Trial Class', href: '/admin-main/ui/evaluations' },
       { name: 'Scheduled Trail class', href: '/admin-main/ui/trailmanagement' },
     ],
   },
   { name: 'Manage Students', href: '/admin-main/ui/student', icon: '/assets/images/local-library.png' },
   { name: 'Manage Employees', href: '/admin-main/ui/employees', icon: '/assets/images/business-center.png' },
-  { name: 'Courses', href: '/admin-main/ui/courses', icon: PiBookOpenFill },
+  { name: 'Learning management', href: '/admin-main/ui/courses', icon: PiBookOpenFill },
   {
-    name: 'Schedule',
+    name: 'Schedules',
     href: '#',
     icon: '/assets/images/ChalkboardTeacher.png',
     subItems: [

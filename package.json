@@ -59,10 +59,12 @@
     "rsuite": "^5.74.2",
     "socket.io-client": "^4.8.1",
     "stripe": "^17.4.0",
+    "sweetalert2": "^11.26.3",
     "tailwind-scrollbar": "^3.1.0",
     "tailwindcss-animate": "^1.0.7",
     "tw-elements-react": "^1.0.0-alpha-end",
     "uuid": "^11.0.3",
+    "wavesurfer.js": "^7.10.2",
     "whisper-node": "^1.1.1"
   },
   "devDependencies": {

@@ -85,7 +85,7 @@ const TrailManagement = () => {
       const uniqueStudents = Array.from(uniqueStudentsMap.values());
       const sorted = uniqueStudents.sort(
         (a, b) =>
-          new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
+          new Date(b.joiningDate).getTime() - new Date(a.joiningDate).getTime()
       );
 
       setAllStudents(sorted);
@@ -96,10 +96,7 @@ const TrailManagement = () => {
   };
 
   const handleClickOutside = (event: MouseEvent) => {
-    if (
-      popupRef.current &&
-      !popupRef.current.contains(event.target as Node)
-    ) {
+    if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
       setOpenPopup(null);
       setFilterPopupOpen(false);
     }
@@ -119,33 +116,42 @@ const TrailManagement = () => {
   };
 
   const applyFilters = () => {
-    const filtered = allStudents.filter((student) => {
-      const joinDate = student.evaluation?.[0]?.joiningDate
-        ? new Date(student.evaluation[0].joiningDate).toLocaleDateString("en-US")
-        : "";
+  const filtered = allStudents.filter((student) => {
+    const joinDate = student.evaluation?.[0]?.joiningDate
+      ? new Date(student.evaluation[0].joiningDate)
+          .toISOString()
+          .split("T")[0]
+      : "";
 
-      return (
-        (!filters.studentId ||
-          student.student.studentId.includes(filters.studentId)) &&
-        (!filters.studentName ||
-          student.username.toLowerCase().includes(filters.studentName.toLowerCase())) &&
-        (!filters.joiningDate ||
-          joinDate.includes(filters.joiningDate)) &&
-        (!filters.teacherName ||
-          student.teacherName.toLowerCase().includes(filters.teacherName.toLowerCase())) &&
-        (!filters.courseName ||
-          student.student.course.toLowerCase().includes(filters.courseName.toLowerCase())) &&
-        (!filters.contact ||
-          student.student.studentPhone.toString().includes(filters.contact)) &&
-        (!filters.scheduledClasses ||
-          student.classScheduleCount.toString().includes(filters.scheduledClasses)) &&
-        (!filters.level ||
-          student.level.toString().includes(filters.level))
-      );
-    });
+    return (
+      (!filters.studentId ||
+        student.student.studentId.includes(filters.studentId)) &&
+      (!filters.studentName ||
+        student.username
+          .toLowerCase()
+          .includes(filters.studentName.toLowerCase())) &&
+      (!filters.joiningDate || joinDate === filters.joiningDate) &&
+      (!filters.teacherName ||
+        student.teacherName
+          .toLowerCase()
+          .includes(filters.teacherName.toLowerCase())) &&
+      (!filters.courseName ||
+        student.student.course
+          .toLowerCase()
+          .includes(filters.courseName.toLowerCase())) &&
+      (!filters.contact ||
+        student.student.studentPhone.toString().includes(filters.contact)) &&
+      (!filters.scheduledClasses ||
+        student.classScheduleCount
+          .toString()
+          .includes(filters.scheduledClasses)) &&
+      (!filters.level || student.level.toString().includes(filters.level))
+    );
+  });
 
-    setStudents(filtered);
-  };
+  setStudents(filtered);
+};
+
 
   return (
     <div className="relative rounded-xl overflow-hidden">
@@ -175,108 +181,126 @@ const TrailManagement = () => {
 
       {/* Filter Popup */}
       {isFilterPopupOpen && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-    <div className="bg-white dark:bg-[#2C2C2C] p-6 rounded-xl shadow-xl w-full max-w-md">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-[16px] font-medium text-gray-800 dark:text-white">Filter by</h2>
-        <button
-          onClick={() => setFilterPopupOpen(false)}
-          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-        >
-          ×
-        </button>
-      </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white dark:bg-[#2C2C2C] p-6 rounded-xl shadow-xl w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-[16px] font-medium text-gray-800 dark:text-white">
+                Filter by
+              </h2>
+              <button
+                onClick={() => setFilterPopupOpen(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                ×
+              </button>
+            </div>
 
-      <div className="flex flex-col gap-4 text-[13px]">
-        {/* Student Name */}
-        <div>
-          <label className="block mb-1 text-gray-600 dark:text-gray-300">Student Name</label>
-          <input
-            type="text"
-            placeholder="Enter name"
-            className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-[13px] w-full"
-            value={filters.studentName}
-            onChange={(e) => setFilters({ ...filters, studentName: e.target.value })}
-          />
-        </div>
+            <div className="flex flex-col gap-4 text-[13px]">
+              {/* Student Name */}
+              <div>
+                <label className="block mb-1 text-gray-600 dark:text-gray-300">
+                  Student Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter name"
+                  className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-[13px] w-full"
+                  value={filters.studentName}
+                  onChange={(e) =>
+                    setFilters({ ...filters, studentName: e.target.value })
+                  }
+                />
+              </div>
 
-        {/* Course Name */}
-        <div>
-          <label className="block mb-1 text-gray-600 dark:text-gray-300">Course Name</label>
-          <select
-                                    className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-[13px] w-full"
-                                    value={filters.courseName}
-            onChange={(e) => setFilters({ ...filters, courseName: e.target.value })}
-          >
-            <option value="">All Courses</option>
-            {/* Add course options here */}
-            <option value="Quran">Quran</option>
-            <option value="Arabic">Arabic</option>
-            <option value="Tajweed">Tajweed</option>
-          </select>
-        </div>
+              {/* Course Name */}
+              <div>
+                <label className="block mb-1 text-gray-600 dark:text-gray-300">
+                  Course Name
+                </label>
+                <select
+                  className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-[13px] w-full"
+                  value={filters.courseName}
+                  onChange={(e) =>
+                    setFilters({ ...filters, courseName: e.target.value })
+                  }
+                >
+                  <option value="">All Courses</option>
+                  {/* Add course options here */}
+                  <option value="Quran">Quran</option>
+                  <option value="Arabic">Arabic</option>
+                  <option value="Tajweed">Tajweed</option>
+                </select>
+              </div>
 
-        {/* Teacher Name */}
-        <div>
-          <label className="block mb-1 text-gray-600 dark:text-gray-300">Teacher Name</label>
-          <input
-            type="text"
-            placeholder="Enter teacher name"
-            className="w-full border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-[13px]"
-            value={filters.teacherName}
-            onChange={(e) => setFilters({ ...filters, teacherName: e.target.value })}
-          />
-        </div>
+              {/* Teacher Name */}
+              <div>
+                <label className="block mb-1 text-gray-600 dark:text-gray-300">
+                  Teacher Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter teacher name"
+                  className="w-full border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-[13px]"
+                  value={filters.teacherName}
+                  onChange={(e) =>
+                    setFilters({ ...filters, teacherName: e.target.value })
+                  }
+                />
+              </div>
 
-        {/* Date Range */}
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <label className="block mb-1 text-gray-600 dark:text-gray-300">Joining Date</label>
-            <input
-              type="date"
-              className="w-full border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-[13px] [&::-webkit-calendar-picker-indicator]:invert"
-              value={filters.joiningDate || ""}
-              onChange={(e) => setFilters({ ...filters, joiningDate: e.target.value })}
-            />
+              {/* Date Range */}
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="block mb-1 text-gray-600 dark:text-gray-300">
+                    Joining Date
+                  </label>
+                  <input
+                    type="date"
+                                    className="w-full border border-gray-300 dark:border-[#5C5C5C] rounded-lg px-3 py-2 text-[13px] font-light text-gray-800 dark:text-white dark:bg-[#2B2B2B] focus:ring-2 focus:ring-[#576CBC] outline-none dark:[color-scheme:dark]"
+
+                    value={filters.joiningDate || ""}
+                    onChange={(e) =>
+                      setFilters({ ...filters, joiningDate: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="mt-6 flex justify-between">
+              <button
+                onClick={() => {
+                  setFilters({
+                    studentId: "",
+                    studentName: "",
+                    joiningDate: "",
+                    teacherName: "",
+                    courseName: "",
+                    contact: "",
+                    scheduledClasses: "",
+                    level: "",
+                  });
+                  setFilterPopupOpen(false);
+                  setStudents(allStudents); // Reset to all
+                }}
+                className="px-4 py-2 text-indigo-700 border border-indigo-600 rounded-md text-[12px]"
+              >
+                Reset
+              </button>
+              <button
+                onClick={() => {
+                  applyFilters();
+                  setFilterPopupOpen(false);
+                }}
+                className="px-4 py-2 text-white bg-indigo-600 rounded-md text-[12px]"
+              >
+                Show {students.length} results
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="mt-6 flex justify-between">
-        <button
-          onClick={() => {
-            setFilters({
-              studentId: "",
-              studentName: "",
-              joiningDate: "",
-              teacherName: "",
-              courseName: "",
-              contact: "",
-              scheduledClasses: "",
-              level: "",
-            });
-            setFilterPopupOpen(false);
-            setStudents(allStudents); // Reset to all
-          }}
-          className="px-4 py-2 text-indigo-700 border border-indigo-600 rounded-md text-[12px]"
-        >
-          Reset
-        </button>
-        <button
-          onClick={() => {
-            applyFilters();
-            setFilterPopupOpen(false);
-          }}
-          className="px-4 py-2 text-white bg-indigo-600 rounded-md text-[12px]"
-        >
-          Show {students.length} results
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
+      )}
 
       {/* Table */}
       <div className="overflow-x-auto max-h-none">
@@ -289,6 +313,7 @@ const TrailManagement = () => {
               {[
                 "Student ID",
                 "Student Name",
+                "Package",
                 "Date of Joining",
                 "Teacher Name",
                 "Course Name",
@@ -322,19 +347,19 @@ const TrailManagement = () => {
                         .toLowerCase()
                     : "";
                   return (
-                    student._id.toLowerCase().includes(search) ||
+                    student.student.studentId.toLowerCase().includes(search) ||
                     student.username.toLowerCase().includes(search) ||
                     student.teacherName.toLowerCase().includes(search) ||
                     student.student.course.toLowerCase().includes(search) ||
                     student.student.studentPhone.toString().includes(search) ||
                     formattedJoiningDate.includes(search) ||
-                    student.classScheduleCount
-                      .toString()
-                      .includes(search) ||
+                    student.classScheduleCount.toString().includes(search) ||
                     student.level.toString().includes(search)
                   );
                 })
-                .slice(-5).reverse().map((student, index) => (
+                .slice(-5)
+                .reverse()
+                .map((student, index) => (
                   <tr
                     key={student.student.studentId}
                     className={`dark:text-white ${
@@ -343,9 +368,12 @@ const TrailManagement = () => {
                         : "bg-[#F8F8F8] dark:bg-[#303030]"
                     } text-left text-[11px]`}
                   >
-                    <td className="p-3 w-[9%] break-words">{student._id}</td>
+                    <td className="p-3 w-[9%] break-words">{student.student.studentId}</td>
                     <td className="py-3 px-2 text-blue-600 cursor-pointer">
                       {student.username}
+                    </td>
+                    <td className="py-3 px-2 text-blue-600 cursor-pointer">
+                      {student.student.package}
                     </td>
                     <td className="py-3 px-2 text-left">
                       {new Date(
@@ -384,7 +412,7 @@ const TrailManagement = () => {
                           >
                             <button
                               className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:text-[#000] rounded-lg"
-                              onClick={() => handleViewDetails(student._id)}
+                              onClick={() => handleViewDetails(student._id || student.student.studentId)}
                             >
                               View Details
                             </button>

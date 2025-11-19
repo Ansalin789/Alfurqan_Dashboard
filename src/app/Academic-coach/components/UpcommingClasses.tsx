@@ -65,18 +65,23 @@ const UpcomingClasses: React.FC = () => {
         }
 
         const now = new Date();
+        const toDateTime = (item: any) => {
+          // Combine date and time if possible for accurate sorting
+          const datePart = new Date(item.scheduledStartDate);
+          if (item.scheduledFrom) {
+            const [h = 0, m = 0] = String(item.scheduledFrom).split(":").map((x: string) => parseInt(x, 10));
+            const combined = new Date(datePart);
+            combined.setHours(h || 0, m || 0, 0, 0);
+            return combined;
+          }
+          return datePart;
+        };
+
         const upcomingClasses = response.data
-          .filter((item: any) => {
-            const classStartDate = new Date(item.scheduledStartDate);
-            // Check if the class is today
-            return classStartDate.toDateString() === now.toDateString();
-          })
-          .sort((a: any, b: any) => {
-            return (
-              new Date(a.scheduledFrom).getTime() -
-              new Date(b.scheduledFrom).getTime()
-            );
-          })
+          // Keep only future classes (from now onward)
+          .filter((item: any) => toDateTime(item) > now)
+          // Sort chronologically by start date/time
+          .sort((a: any, b: any) => toDateTime(a).getTime() - toDateTime(b).getTime())
           .map((item: any, index: number) => ({
             id: item._id,
             date: new Date(item.scheduledStartDate).toLocaleDateString("en-GB", {
@@ -116,7 +121,7 @@ const UpcomingClasses: React.FC = () => {
       </div> */}
       <div className="relative border-l-2 border-dotted border-[#000] dark:border-[#fff] ml-5 space-y-6">
         {classes.length === 0 ? (
-          <p className="text-center text-gray-600 text-sm p-4 align-middle justify-center">No classes scheduled for today.</p>
+          <p className="text-center text-gray-600 text-sm p-4 align-middle justify-center">No upcoming classes.</p>
         ) : (
           classes.map((classItem, index) => {
             const colors = [

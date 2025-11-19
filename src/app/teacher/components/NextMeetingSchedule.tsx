@@ -5,6 +5,12 @@ import { AiOutlineClockCircle } from "react-icons/ai";
 import { use, useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
+import { FiVideo } from "react-icons/fi";
+import { TimerReset } from "lucide-react";
+import { BsThreeDotsVertical } from "react-icons/bs";
+
 // Interfaces based on your API response
 interface Teacher {
   teacherId: string;
@@ -103,6 +109,9 @@ const NextMeetingSchedule = () => {
   const [error, setError] = useState<string | null>(null);
   const [isTimeUp, setIsTimeUp] = useState(false);
 const [isMeetingOngoing, setIsMeetingOngoing] = useState(false);
+const [isPopupVisible, setIsPopupVisible] = useState(false);
+const [isCountdownFinished, setIsCountdownFinished] = useState(false);
+const [timeRemaining, setTimeRemaining] = useState(0);
 
 
   useEffect(() => {
@@ -245,11 +254,11 @@ router.push(`/teacher/ui/livemeeting?id=${classData?.meetingId}`);
 
   if (loading) {
     return (
-      <div className="bg-[#71a1db] rounded-xl shadow flex items-center justify-between text-white p-6 min-h-[100px]">
+      <div className="bg-[#78A1DB] rounded-xl shadow flex items-center justify-between text-white p-2 px-4 min-h-[90px]">
         <div className="flex-1 space-y-4">
-          <div className="h-3 bg-blue-200 rounded w-1/3 animate-pulse"></div>
-          <div className="h-3 bg-blue-200 rounded w-1/4 animate-pulse"></div>
-          <div className="h-3 bg-blue-200 rounded w-1/2 animate-pulse"></div>
+          <div className="h-2 bg-blue-200 rounded w-1/3 animate-pulse"></div>
+          <div className="h-2 bg-blue-200 rounded w-1/4 animate-pulse"></div>
+          <div className="h-2 bg-blue-200 rounded w-1/2 animate-pulse"></div>
         </div>
         <div className="flex items-center space-x-2 px-14">
           <div className="w-16 h-16 bg-blue-300 rounded-full animate-pulse"></div>
@@ -260,6 +269,39 @@ router.push(`/teacher/ui/livemeeting?id=${classData?.meetingId}`);
 
   if (error) {
     return <div className="text-center text-red-500">Error: {error}</div>;
+  }
+
+  // No meeting: show centered message
+  if (!classData) {
+    return (
+      <div className="relative overflow-hidden bg-[#78A1DB] rounded-xl shadow flex items-center justify-center text-white p-2 min-h-[90px]">
+        {/* Floating, soft background shapes */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-8 -left-8 w-24 h-24 bg-white/15 rounded-full blur-2xl animate-float-slow" />
+          <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-float-rev" />
+          <div className="absolute top-1/2 -translate-y-1/2 left-4 w-12 h-12 bg-white/10 rounded-full blur-xl animate-float-slower" />
+        </div>
+
+        {/* Message */}
+          <p className="float-text text-sm sm:text-base font-medium">Clear schedule for now 👀 no meetings ahead</p>
+
+        {/* Scoped animations */}
+        <style jsx>{`
+          @keyframes floatY {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+          }
+          @keyframes floatYSmall {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+          }
+          .animate-float-slow { animation: floatY 7s ease-in-out infinite; }
+          .animate-float-slower { animation: floatY 9s ease-in-out infinite; }
+          .animate-float-rev { animation: floatY 8s ease-in-out infinite reverse; }
+          .float-text { animation: floatYSmall 5s ease-in-out infinite; }
+        `}</style>
+      </div>
+    );
   }
 
   const isMeetingToday = (meeting: StudentMeeting | null) => {
@@ -285,7 +327,7 @@ router.push(`/teacher/ui/livemeeting?id=${classData?.meetingId}`);
   // }
 
   return (
-    <div className="bg-[#71a1db] rounded-xl shadow flex items-center justify-between text-white">
+    <div className="bg-[#78A1DB] rounded-xl shadow flex items-center justify-between text-white">
       <div className="items-center p-2 px-8">
         <h3 className="text-[13px] font-medium pt-3">
           Your Next Meeting is Scheduled In
@@ -307,72 +349,116 @@ router.push(`/teacher/ui/livemeeting?id=${classData?.meetingId}`);
           </p>
         )} */}
       </div>
-      <div className="flex items-center space-x-2 px-14">
-        {isMeetingOngoing  ? (
-          <>
-            <button
-              onClick={handleStartClass}
-              className="relative text-white px-4 py-2 rounded-full text-sm font-medium"
-              style={{
-                backgroundImage: "linear-gradient(270deg, #0048AB, #0F79BB, #1aa3c7)",
-                backgroundSize: "400% 400%",
-                animation: "moveGradient 5s ease infinite",
-              }}
-            >
-              Join Now
-            </button>
-            <style>
-              {`
-              @keyframes moveGradient {
-                0% {
-                  background-position: 0% 50%;
-                }
-                50% {
-                  background-position: 100% 50%;
-                }
-                100% {
-                  background-position: 0% 50%;
-                }
-              }
-              `}
-            </style>
-          </>
-        ) : (
-          <>
-            <p className="text-[13px] font-medium">Starts in</p>
-            <div className="relative flex items-center justify-center p-10">
-              <svg className="absolute w-14 h-20" viewBox="0 0 36 36">
-                <path
-                  className="circle-bg"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke="#fff"
-                  strokeWidth="2"
-                />
-                <path
-                  className="circle"
-                  strokeDasharray={`${progress}, 100`}
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke="#295CA0"
-                  strokeWidth="3"
-                />
-              </svg>
-              <div className="relative flex items-center justify-center w-2 rounded-full bg-[#234878] text-center">
-                <div className="absolute flex items-center justify-center w-10 h-10 rounded-full bg-white">
-                  <div className="text-[#234878] text-center">
-                  
-                    <p className="text-[8px] font-extrabold text-[#223857]">
-                      {formatTime(time.hours)}:{formatTime(time.minutes)}:
-                      {formatTime(time.seconds)}
-                    </p>
-                  </div>
+      {/* RIGHT: Countdown or Button */}
+      <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end relative flex-wrap px-10">
+          {/* POPUP */}
+          {isPopupVisible && !isCountdownFinished && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
+              <div className="bg-white dark:bg-[#1D1D1D] rounded-xl shadow-lg p-6 w-[90%] max-w-sm text-center">
+                <div className="flex justify-center mb-4">
+                  <TimerReset className="w-10 h-10 text-orange-600" />
                 </div>
+                <p className="text-[#010E30]/70 mb-4 text-sm sm:text-base dark:text-white">
+                  Please wait until your session starts...
+                </p>
+                <div className="w-32 h-1 bg-orange-500 my-4 rounded-full mx-auto"></div>
+                <button
+                  onClick={() => setIsPopupVisible(false)}
+                  className="px-5 py-2 text-sm sm:text-base bg-[#576CBC] text-white rounded-lg w-full hover:bg-[#4659a3] transition"
+                >
+                  Close
+                </button>
               </div>
             </div>
-          </>
-        )}
-      </div>
+          )}
+
+          {/* Label */}
+          {!isCountdownFinished && (
+            <p className="text-xs sm:text-sm md:text-base font-medium whitespace-nowrap">
+              Starts in
+            </p>
+          )}
+
+          {/* JOIN OR TIMER */}
+          {isCountdownFinished ? (
+            <button
+              onClick={() =>
+                router.push(`/student/ui/liveclass?id=${classData?._id}`)
+              }
+              className="relative px-5 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-semibold 
+              text-white bg-gradient-to-r from-[#576CBC] to-[#576CBC] 
+              shadow-lg hover:from-[#4961BC] hover:to-[#4961BC]
+              transition-all duration-700 ease-in-out 
+              animate-pulse hover:animate-none"
+            >
+              <button className="flex items-center gap-2">
+                <FiVideo className="text-white text-sm sm:text-lg" />
+                Join Now
+              </button>
+              <span
+                className="absolute inset-0 rounded-full bg-white opacity-10 blur-sm"
+                aria-hidden="true"
+              />
+            </button>
+          ) : (
+            <div className="relative w-16 h-16 sm:w-[52px] sm:h-[52px]">
+              <CircularProgressbar
+                value={60 - (timeRemaining % 60)}
+                maxValue={60}
+                strokeWidth={5}
+                text={""}
+                styles={buildStyles({
+                  pathColor: "#4178C4",
+                  trailColor: "#E0E0E0",
+                  strokeLinecap: "butt",
+                  pathTransitionDuration: 0.5,
+                })}
+              />
+              <svg
+                className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                viewBox="0 0 100 100"
+              >
+                {(() => {
+                  const progress = 60 - (timeRemaining % 60);
+                  const angle = (progress / 60) * 360 - 90;
+                  const radius = 47.5;
+                  const rad = (angle * Math.PI) / 180;
+                  const x = 50 + radius * Math.cos(rad);
+                  const y = 50 + radius * Math.sin(rad);
+
+                  return (
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r="5"
+                      fill="#235498"
+                      stroke="#4178C4"
+                      strokeWidth="2"
+                    />
+                  );
+                })()}
+              </svg>
+
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40px] h-[40px] sm:w-[40px] sm:h-[40px] rounded-full bg-white flex items-center justify-center text-[#1B1B1B] text-[8px] sm:text-[7px] font-semibold shadow-sm text-center leading-snug">
+                {(() => {
+                  const hours = Math.floor(timeRemaining / 3600);
+                  const minutes = Math.floor((timeRemaining % 3600) / 60); // ✅ stays within 0–59
+                  const seconds = timeRemaining % 60;
+
+                  return `${String(hours).padStart(2, "0")}:${String(
+                    minutes
+                  ).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+                })()}
+              </div>
+            </div>
+          )}
+
+          {/* 3-DOT MENU */}
+          <BsThreeDotsVertical
+            className="text-white text-lg sm:text-xl cursor-pointer"
+            onClick={() => setIsPopupVisible(!isPopupVisible)}
+          />
+        </div>
     </div>
   );
 };
