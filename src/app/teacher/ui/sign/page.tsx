@@ -1,11 +1,16 @@
 "use client";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
-import { GrApple } from "react-icons/gr";
-import { useRouter , useSearchParams  } from "next/navigation";
-import { GoogleLogin, CredentialResponse, GoogleOAuthProvider } from "@react-oauth/google";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  GoogleLogin,
+  CredentialResponse,
+  GoogleOAuthProvider,
+  useGoogleLogin,
+} from "@react-oauth/google";
 import axios from "axios";
-import { motion, AnimatePresence } from "framer-motion";
+import { AlertCircle, ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 export interface RoleModuleAccess {
   read: boolean;
@@ -66,7 +71,8 @@ export interface TeacherModules {
   support: {
     read: boolean;
     write: boolean;
-  };}
+  };
+}
 
 export interface RoleAccess {
   admin: boolean;
@@ -102,71 +108,35 @@ export interface AccessApiResponse {
   data: EmployeeAccessData;
 }
 
-const slides = [
-  {
-    text: "Start your journey by one click, explore beautiful world!",
-  },
-  {
-    text: "Discover new places and create unforgettable memories!",
-  },
-  {
-    text: "Adventure awaits, take the first step today!",
-  },
-];
 const SignIn: React.FC = () => {
- 
-
-const searchParams = useSearchParams();
-  const [emailNotExist, setEmailNotExist] = useState(false);
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [username, setUsername] = useState("");
-
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showError, setShowError] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % slides.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+
   useEffect(() => {
     if (error) {
       setShowError(true);
       setTimeout(() => {
         setShowError(false);
-      }, 5000); // Hide the error after 5 seconds
+      }, 5000);
     }
     const user = searchParams.get("username");
     const pass = searchParams.get("password");
-  
+
     if (user) setUsername(user);
     if (pass) setPassword(pass);
   }, [error]);
+
   const signIn = async (username: string, password: string) => {
-    try {
-      const response = await axios.post("http://localhost:5001/signin", {
-        username,
-        password,
-      });
-
-      // Handle successful login response
-      if (response.status === 200) {
-        return response.data;
-      }
-
-      throw new Error("Unexpected error occurred");
-    } catch (error: any) {
-      // Handle backend errors, e.g., user not found
-      if (error.response && error.response.status === 404) {
-        throw new Error("Email not found"); // Specific error message
-      }
-
-      // Handle other errors
-      throw new Error(error.message || "Login failed");
-    }
+    return axios.post("http://localhost:5001/signin", {
+      username,
+      password,
+    });
   };
 
   const fetchrolebasedaccesscontrol = async (
@@ -190,9 +160,7 @@ const searchParams = useSearchParams();
 
         console.log("Original Role Access from backend:", roleAccess);
 
-        // ✅ Use role string to determine the real access (override incorrect backend flags)
         if (role?.includes("TEACHER")) {
-          // Override if necessary
           roleAccess.teacher = true;
           roleAccess.admin = false;
 
@@ -201,13 +169,9 @@ const searchParams = useSearchParams();
             JSON.stringify(roleAccess.teachermodules)
           );
 
-          console.log(
-            "Stored only teachermodules after overriding admin flag"
-          );
+          console.log("Stored only teachermodules after overriding admin flag");
         } else {
-          console.warn(
-            "User is not an  Teacher. Ignoring teachermodules."
-          );
+          console.warn("User is not a Teacher. Ignoring teachermodules.");
         }
       } else {
         throw new Error("Failed to fetch role-based access control");
@@ -219,51 +183,52 @@ const searchParams = useSearchParams();
 
   const setLoginError = (message: string) => {
     setError(message);
-    setEmailNotExist(true);
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
+    setError("");
+    setLoading(true);
+
     try {
-      const data = await signIn(username, password);
-      const { accessToken, role, userId, userName ,_id } = data;
+      const response = await signIn(username, password);
+      const data = response.data;
+      const { accessToken, role, _id, userName } = data;
+      const userEmail: string = data.email ?? data.userEmail ?? "";
+
       if (!role?.includes("TEACHER")) {
-        setLoginError("Only Teacher are allowed to log in.");
+        setLoginError("Only Teachers are allowed to log in.");
         return;
       }
+
       localStorage.setItem("TeacherAuthToken", accessToken);
-      localStorage.setItem("TeacherPortalId", userId);
+      localStorage.setItem("TeacherPortalId", _id);
       localStorage.setItem("TeacherPortalName", userName);
+      localStorage.setItem("TeacherPortalEmail", userEmail);
+      localStorage.setItem("TeacherPortalRole", role);
       localStorage.setItem("TeacherId", _id);
 
-      
       await fetchrolebasedaccesscontrol(_id, accessToken, role);
-      const authToken = localStorage.getItem("TeacherAuthToken");
-      console.log(accessToken);
-      console.log(authToken);
-      console.log(userId);
-      console.log(_id);
-      if (role?.includes("TEACHER")) {
-        router.push("/teacher/ui/dashboard");
-        alert("Login successful as Teacher");
-      }
+
+      router.push("/teacher/ui/dashboard");
     } catch (error: any) {
       if (error.response) {
         const { status, data } = error.response;
-        if (status === 400) {
-          setEmailNotExist(true);
-        } else if (status === 404 && data.message === "Email not found") {
-          setEmailNotExist(true);
-        } else {
+
+        if (status === 404) {
+          setLoginError("Email not found");
+        } else if (status === 401) {
           setLoginError(
-            data.message || "Login failed. Please try again later."
+            data.message ?? "User already logged in on another device/session"
           );
+        } else {
+          setLoginError(data.message ?? "Login failed. Please try again later.");
         }
       } else {
-        setLoginError("Login failed. Please try again later.");
+        setLoginError("Network error. Please try again later.");
       }
-      console.error("Login error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -274,286 +239,351 @@ const searchParams = useSearchParams();
       setLoginError("Google login failed: No credential received");
       return;
     }
+
+    const extractEmailFromCredential = (credential: string) => {
+      try {
+        const base64 = credential.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+        const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, "=");
+        const decoded = JSON.parse(atob(padded));
+        return decoded.email;
+      } catch (err) {
+        console.error("Error decoding credential:", err);
+        return null;
+      }
+    };
+
+    const email = extractEmailFromCredential(credential);
+
     const checkEmail = async (email: string) => {
       try {
-        // Send a POST request to the backend to check if the email exists
         const response = await axios.post(
           `http://localhost:5001/allcheck-email`,
           { email }
         );
 
-        // If the response status is 200, the email exists
         if (response.status === 200) {
           console.log("Email exists:", response.data);
-          return { message: "Email exists", data: response.data }; // Return email data
+          return { message: "Email exists", data: response.data };
         }
       } catch (error: any) {
-        // Handle errors based on status code if available
         if (error.response) {
           if (error.response.status === 404) {
             console.log("Email not found");
-            return { message: "Email not found" }; // Email not found
+            return { message: "Email not found" };
           }
 
           if (error.response.status === 500) {
             console.log("Internal Server Error");
-            return { message: "Internal Server Error" }; // Handle server errors
+            return { message: "Internal Server Error" };
           }
         }
 
-        // Handle non-HTTP errors or unexpected issues (network error, etc.)
         console.log("Error occurred:", error.message || "Unknown error");
-        return { message: "Unknown error occurred" }; // Return unknown error message
+        return { message: "Unknown error occurred" };
       }
     };
-    const email = extractEmailFromCredential(credential); // Replace with your extraction logic
-    try {
-      // Call the checkEmail function to verify if the email exists
-      const result = await checkEmail(email);
 
+    try {
+      setLoading(true);
+      const result = await checkEmail(email);
       const role = result?.data?.role;
+
       if (result?.message === "Email exists" && role?.includes("TEACHER")) {
         localStorage.setItem("TeacherAuthToken", result.data.accessToken);
         localStorage.setItem("TeacherPortalId", result.data.id);
         localStorage.setItem("TeacherPortalName", result.data.username);
-        const authToken = localStorage.getItem("TeacherAuthToken");
-        console.log(authToken);
-        router.push("/teacher/ui/dashboard"); // Redirect to dashboard
+        router.push("/teacher/ui/dashboard");
       } else {
-        setLoginError("Email not found"); // Display appropriate error message
-        console.log(result?.message); // Log the error message for debugging
+        setLoginError("Access denied: Not a Teacher");
       }
     } catch (error) {
-      // Handle unexpected errors during the checkEmail call
       console.error("Error during email verification:", error);
       setLoginError("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const extractEmailFromCredential = (credential: string) => {
-    const decodedCredential = JSON.parse(atob(credential.split(".")[1])); // Decode the payload (base64)
-    return decodedCredential.email;
+  const handleGoogleFailure = (error?: any) => {
+    console.error("Google login failed:", error);
+    setLoginError("Google login failed. Please try again.");
   };
 
-  interface GoogleError {
-    error: string;
-    details?: string;
-  }
+  const login = useGoogleLogin({
+    onSuccess: (tokenResponse) => {
+      handleGoogleSuccess({ credential: tokenResponse.access_token } as CredentialResponse);
+    },
+    onError: handleGoogleFailure,
+  });
 
-  const handleGoogleFailure = (error: GoogleError) => {
-    console.error("Google login failed:", error.error);
-    if (error.details) {
-      console.error("Error details:", error.details);
-    }
-  };
-
-  const errorWrapper = () => {
-    const error: GoogleError = { error: "Some error message" };
-    handleGoogleFailure(error);
-  };
-  const newuserclick = () => {
-    router.push("https://alfweb.vercel.app/StudentForm");
-  };
   return (
-        <GoogleOAuthProvider clientId="45636645803-6arfjuthmcvfj3r6e6qep23dlpfntrc7.apps.googleusercontent.com">
-    
-    <div className="min-h-screen flex flex-col md:flex-row bg-gray-100 mx-auto">
-      {showError && error && (
-        <div className="fixed top-0 right-4 p-4 bg-red-600 text-white rounded-lg shadow-lg z-50">
-          {error}
-        </div>
-      )}
-      {emailNotExist ? (
-        <div className="flex-1 flex flex-col items-center justify-center bg-[#E8EFF6] px-8 md:px-16 ">
-          <div className="flex justify-center mb-8">
-            <Image
-              src="/assets/images/alf.png"
-              width={150}
-              height={150}
-              alt="Al Furqan Academy"
-              className="h-12"
+    <GoogleOAuthProvider clientId="45636645803-6arfjuthmcvfj3r6e6qep23dlpfntrc7.apps.googleusercontent.com">
+      <div className="h-screen flex overflow-hidden">
+        {showError && error && (
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+              className="fixed top-6 right-6 z-50 flex items-center gap-3 bg-gradient-to-r from-red-500 to-rose-600 text-white px-5 py-4 rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.2)] backdrop-blur-md border border-white/10"
+            >
+              <div className="p-2 bg-white/20 rounded-full">
+                <AlertCircle size={20} className="text-white" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-semibold text-sm tracking-wide">Error</span>
+                <span className="text-sm opacity-90">{error}</span>
+              </div>
+              <button
+                onClick={() => setShowError(false)}
+                className="ml-3 text-white/80 hover:text-white text-sm font-medium transition"
+              >
+                ✕
+              </button>
+            </motion.div>
+          </AnimatePresence>
+        )}
+
+        {/* Left Section - Sign In Form */}
+        <div className="w-full lg:w-1/2 h-screen bg-white flex flex-col overflow-hidden">
+          <div className="px-8 py-1">
+            <Image 
+              src="/assets/images/Logo - Website - big size 1.svg" 
+              alt="logo" 
+              width={150} 
+              height={160} 
+              priority 
+              style={{ height: 'auto' }} 
+              className='justify-left ml-[38px] mt-5 p-0'
             />
           </div>
-          <h4 className="text-center text-xl font-semibold text-gray-700 mt-4 ">
-            This email isn’t associated with us.
-          </h4>
-          <div className="w-[50%] max-w-lg h-auto min-h-[500px] p-3">
-            {/* Display uploaded image */}
-            <input
-              type="text"
-              placeholder="Enter your Email ID"
-              className="w-full px-4 py-2 border  border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
-              required
-            />
-            <p className="text-center text-sm px-4 py-2 text-gray-500 mt-4">
-              <button className="text-blue-600" onClick={newuserclick}>
-                New user?
-              </button>
-            </p>
-            <div className="mt-6 space-y-2">
-              <button
-                type="button"
-                className="w-full bg-[#42a7c3] px-4 py-2 hover:bg-[#42a7c3] text-white  rounded-md"
-              >
-                Book a Trial
-              </button>
-              <p className="text-center text-sm px-4 py-6 text-gray-500 mt-4">
-                <a href="/signup" className="text-gray-500">
-                  Already an existing user?
+
+          <div className="flex-1 flex items-center justify-center px-8 overflow-auto scrollbar-none">
+            <div className="w-full max-w-md">
+              <h2 className="text-[32px] font-bold text-black mb-2 mt-32">Sign in</h2>
+              <p className="text-[#718096] mb-8 text-[14px]">
+                Don't have an account?{' '}
+                <a href="#" className="text-[#5A73B3] hover:text-[#4d6295] underline">
+                  Create now
                 </a>
               </p>
-              <button
-                type="button"
-                className="w-full border px-4 py-2 border-gray-300  rounded-md hover:bg-gray-100"
-              >
-                Contact Support for Help
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="flex-1 flex items-center justify-center bg-[#E8EFF6] px-8 md:px-16">
-          <div className="w-full max-w-md">
-            {/* Logo */}
-            <div className='flex justify-center align-middle p-4 gap-2 mb-6 ml-44'>
-              <Image src="/assets/images/alf1.png" width={150} height={150} className='bg-cover bg-center w-10 h-14' alt='logo' />
-              <div className="text-white">
-                <h3 className="font-bold text-[30px] text-[#293453] ">AL FURQAN</h3>
-                <h4 className="font-normal text-[25px] text-[#F96484] justify-end ml-12 -mt-4 font-sans">academy</h4>
-              </div>
-            </div><div className="bg-white shadow-lg rounded-lg p-6 w-96 ml-32">
-              <h2 className="text-center text-xl font-semibold text-gray-800 mb-8">
-                Sign In
-              </h2>
 
-              {/* Sign In Form */}
-              <form className="space-y-0 mb-10" onSubmit={handleFormSubmit}>
-                <div className="my-4 flex gap-4">
-                  <div>
+              <form onSubmit={handleFormSubmit}>
+                <div className="mb-4">
+                  <label htmlFor="username" className="block text-sm font-medium text-[#718096] mb-1">
+                    Username
+                  </label>
+                  <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    required
+                    autoComplete="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Enter your username"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-[#4A5568] focus:ring-2 focus:ring-[#5A73B3] focus:border-transparent outline-none transition-all"
+                  />
+                </div>
+
+                <div className="mb-6">
+                  <label htmlFor="password" className="block text-sm font-medium text-[#718096] mb-2">
+                    Password
+                  </label>
+                  <div className="relative text-[#4A5568]">
                     <input
-                      type="text"
-                      placeholder="Username"
-                      className="w-full px-2 text-[12px] py-1 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Password"
-                      className="w-full px-2 text-[12px] py-1 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      required
+                      placeholder="Enter your password"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5A73B3] focus:border-transparent outline-none transition-all pr-12"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1 text-gray-500 text-[12px]"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showPassword ? "🙈" : "👁️"}
+                      {showPassword ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
                     </button>
                   </div>
                 </div>
+
+                <div className="flex items-center justify-between mb-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="w-3 h-3 rounded border-gray-300 text-[#5A73B3] focus:ring-[#5A73B3]"
+                    />
+                    <span className="text-[12px] text-[#718096]">Remember me</span>
+                  </label>
+                  <a href="#" className="text-[12px] text-[#5A73B3] hover:text-[#4d6295] underline">
+                    Forgot Password?
+                  </a>
+                </div>
+
                 <button
                   type="submit"
-                  className="w-full bg-gray-800 hover:bg-gray-900 text-white text-[10px] py-2 rounded-md"
+                  disabled={loading}
+                  className={`w-full bg-[#5A73B3] hover:bg-[#4d6299] text-white font-medium py-3 rounded-2xl transition-colors mb-4 ${
+                    loading ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
                 >
-                  Submit
+                  {loading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Signing in...
+                    </div>
+                  ) : (
+                    'Sign in'
+                  )}
                 </button>
-              </form>
 
-              {/* Sign In Options */}
-              <div className="my-4 flex gap-4">
-                <div
-                  className="flex flex-col justify-center items-center w-full text-[9px]"
-                  style={{ maxWidth: "800px", border: "none", padding: 0, fontSize: "8px" }} // Max width set here for Google login button
-                >
-                  <GoogleLogin
-                    onSuccess={handleGoogleSuccess}
-                    onError={errorWrapper}
-                    useOneTap
-                    shape="rectangular"
-                    size="medium"
-                    text="signin_with"
-                    theme="outline"
-                  />
+                <div className="relative mb-8">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-[#718096]"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-white text-[#718096]">OR</span>
+                  </div>
                 </div>
+
                 <button
                   type="button"
-                  className="w-full flex items-center justify-center border border-gray-300 py-0 bg-gray-100 rounded-md hover:bg-gray-200"
+                  onClick={() => login()}
+                  disabled={loading}
+                  className={`w-full flex items-center justify-center gap-3 bg-white border border-[#CBD5E0] hover:bg-gray-50 text-[#67728A] font-medium py-3 rounded-2xl transition-all mb-4 shadow-sm ${
+                    loading ? "opacity-70 cursor-not-allowed" : "hover:shadow-md"
+                  }`}
                 >
-                  <GrApple className="w-4 h-5 mr-1" />
-                  <span className="text-[12px] leading-none font-semibold">
-                    Sign in with Apple
-                  </span>
+                  {loading ? (
+                    <div className="w-5 h-5 border-2 border-[#4285F4] border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                      <path
+                        fill="#4285F4"
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                      />
+                    </svg>
+                  )}
+                  {loading ? "Signing in..." : "Continue with Google"}
                 </button>
-              </div>
 
-              {/* Book a Trial */}
-              <button
-                type="button"
-                className="w-full bg-[#42a7c3] hover:bg-[#42a7c3] text-white py-2 rounded-md text-[12px]"
-              >
-                Book a Trial
-              </button>
-
-              {/* Sign Up Option */}
-              <p className="text-center text-[11px] text-gray-500 mt-4">
-                New user?{" "}
-                <button className="text-blue-600" onClick={newuserclick}>
-                  Sign up
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-center gap-3 bg-white border border-[#CBD5E0] hover:bg-gray-50 text-[#67728A] font-medium py-3 rounded-2xl transition-colors"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+                  </svg>
+                  Continue with Apple
                 </button>
-              </p>
+              </form>
             </div>
           </div>
         </div>
-      )}
-      <div className="hidden md:flex flex-1 bg-[#E8EFF6] items-center justify-center">
-        <div className="flex items-center justify-center">
-          <div className="relative w-[400px] h-[500px] bg-[#4eb0cf] rounded-2xl p-6 shadow-lg overflow-hidden">
-            <div className="absolute -bottom-10 -left-16 w-80 h-80 bg-white/10 rounded-full"></div>
-            <div className="absolute -bottom-6 -left-14 w-72 h-72 bg-white/10 rounded-full"></div>
-            <div className="absolute -bottom-4 -left-12 w-64 h-64 bg-white/10 rounded-full"></div>
 
-            {/* Static Frame */}
-            <div className="relative border border-white/30 rounded-xl p-6 h-full flex flex-col justify-between">
-              {/* Animated Text */}
-              <div className="h-28 flex items-center">
-                <AnimatePresence mode="wait">
-                  <motion.p
-                    key={currentIndex}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.5 }}
-                    className="text-white text-lg font-semibold leading-snug text-center"
-                  >
-                    {slides[currentIndex].text}
-                  </motion.p>
-                </AnimatePresence>
+        {/* Right Section - Feature Showcase */}
+        <div className="relative w-full lg:w-1/2 h-screen overflow-hidden">
+          {/* Background Image */}
+          <Image
+            src="/assets/images/Frame 2147226048.svg"
+            alt="logo"
+            width={1920}
+            height={1080}
+            priority
+            className="hidden lg:block w-full h-full object-cover absolute inset-0"
+          />
+
+          {/* Overlay Content */}
+          <div className="relative z-10 flex flex-col justify-between w-full h-full px-6 lg:px-12 text-center py-6">
+            {/* Top Card */}
+            <div className="bg-white rounded-xl p-6 max-w-sm mx-auto shadow-2xl mt-14">
+              <div className="flex flex-col md:flex-row items-start gap-4">
+                <div className="flex-1 text-left">
+                  <h2 className="text-2xl font-bold text-[#5A73B3] mb-2">
+                    Welcome Teachers
+                  </h2>
+                  <p className="text-gray-600 mb-4 leading-relaxed text-sm">
+                    Access your teaching dashboard, manage classes, schedule lessons, 
+                    and track student progress all in one place.
+                  </p>
+                  <button className="bg-[#5A73B3] hover:bg-[#4d6295] text-xs text-white px-6 py-2 rounded-full font-medium transition-colors">
+                    Learn more
+                  </button>
+                </div>
+                <div className="flex-shrink-0">
+                  <img
+                    src="/assets/images/close-up-hands-holding-diplomas-caps.svg"
+                    alt="Teaching"
+                    className="w-36 h-40 object-cover rounded-xl"
+                  />
+                </div>
               </div>
+            </div>
 
-              {/* Pagination Dots */}
-              <div className="flex space-x-2">
-                {slides.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentIndex ? "bg-white" : "bg-white/50"
-                      }`}
-                  ></div>
-                ))}
+            {/* Bottom Section */}
+            <div className="text-center text-white mx-auto">
+              <h2 className="text-2xl font-semibold mb-2">Teaching Tools & Resources</h2>
+              <p className="text-[#CFD9E0] text-sm leading-relaxed max-w-md mx-auto mb-4">
+                Access comprehensive teaching resources, schedule management tools, 
+                and student progress tracking all in one integrated platform.
+              </p>
+
+              {/* Navigation Dots */}
+              <div className="flex items-center justify-center gap-4 mt-2">
+                {/* Left Arrow */}
+                <button className="w-6 h-6 flex items-center justify-center text-[#A6B4E2] hover:text-white transition-colors">
+                  <ChevronLeft size={16} />
+                </button>
+
+                {/* Dots Section */}
+                <div className="flex items-center gap-2">
+                  {/* Left small dot */}
+                  <div className="w-2 h-2 rounded-full bg-[#A6B4E2]" />
+
+                  {/* Center active dot with arc */}
+                  <div className="relative w-5 h-5 flex items-center justify-center">
+                    {/* Main dot */}
+                    <div className="w-2 h-2 rounded-full bg-[#E8EBF9]" />
+                    {/* Arc effect */}
+                    <div className="absolute w-full h-full rounded-full border-[3px] border-[#E8EBF9] border-t-transparent rotate-[25deg]" />
+                  </div>
+
+                  {/* Right small dot */}
+                  <div className="w-2 h-2 rounded-full bg-[#A6B4E2]" />
+                </div>
+
+                {/* Right Arrow */}
+                <button className="w-6 h-6 flex items-center justify-center text-[#A6B4E2] hover:text-white transition-colors">
+                  <ChevronRight size={16} />
+                </button>
               </div>
             </div>
           </div>
+
+          {/* Optional overlay for better text contrast */}
+          <div className="absolute inset-0 bg-black/30"></div>
         </div>
       </div>
-    </div>
-        </GoogleOAuthProvider>
-    
+    </GoogleOAuthProvider>
   );
 };
 
