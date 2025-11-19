@@ -753,7 +753,6 @@ useEffect(() => {
           console.error("Missing token or applicationStudentId");
           return;
         }
-
         const response = await axios.get(`http://localhost:5001/student/paymenthistory?userId=${applicationStudentId}`, { // Use applicationStudentId
           headers: {
             Authorization: `Bearer ${token}`,

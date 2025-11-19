@@ -40,7 +40,7 @@ interface Applicant {
   currency: string;
   expectedSalary: string;
   preferedWorkingHours: string;
-  uploadResume: { type: string; data: number[] };
+  uploadResume: string;
   comments: string;
   applicationStatus: string;
   status: string;
@@ -198,21 +198,31 @@ const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const createBlobUrl = (resumeData: any) => {
+  const createBlobUrl = async(resumeData: any) => {
     if (!resumeData) {
       console.error("No resume data provided");
       return null;
     }
 
     try {
-      // Convert base64 to binary
-      const binaryString = atob(resumeData);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
 
-      const blob = new Blob([bytes], { type: "application/pdf" });
+     
+    console.log("file " , resumeData)
+    const res = await fetch(`http://localhost:5001/files/view/${resumeData}`, {
+      method: "GET",
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch file");
+    const blob = await res.blob();
+ 
+      // // Convert base64 to binary
+      // const binaryString = atob(resumeData);
+      // const bytes = new Uint8Array(binaryString.length);
+      // for (let i = 0; i < binaryString.length; i++) {
+      //   bytes[i] = binaryString.charCodeAt(i);
+      // }
+
+      // const blob = new Blob([bytes], { type: "application/pdf" });
       return URL.createObjectURL(blob);
     } catch (error) {
       console.error("Error creating blob URL:", error);
@@ -233,7 +243,7 @@ const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
       }
 
       // Create new blob URL on each click
-      const newBlobUrl = createBlobUrl(resumeData);
+      const newBlobUrl =  await createBlobUrl(resumeData);
       if (!newBlobUrl) {
         setError("Failed to load resume");
         return;
@@ -464,6 +474,22 @@ export default function ApplicantsPage() {
   useEffect(() => {
     fetchApplicants();
   }, []);
+  const fetchAndOpenFile = async (fileId: string) => {
+  try {
+    console.log("file ",fileId)
+    const res = await fetch(`http://localhost:5001/files/view/${fileId}`, {
+      method: "GET",
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch file");
+  console.log('res',res)
+    const blob = await res.blob(); 
+       const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, "_blank");
+  } catch (err) {
+    console.error("Error fetching file:", err);
+  }
+};
 
   // When Reset is clicked, clear filters and fetch all applicants
   const handleResetFilter = () => {

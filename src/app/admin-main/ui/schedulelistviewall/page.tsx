@@ -201,7 +201,7 @@ const SalaryCard = () => {
 
   return (
     <BaseLayout4>
-    <AdminHeader currentSection={" All Classes"}>
+    <AdminHeader currentSection={" All Classes"} >
       
     </AdminHeader>
      
