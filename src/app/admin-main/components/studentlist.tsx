@@ -347,7 +347,7 @@ const TrailManagement = () => {
                         .toLowerCase()
                     : "";
                   return (
-                    student._id.toLowerCase().includes(search) ||
+                    student.student.studentId.toLowerCase().includes(search) ||
                     student.username.toLowerCase().includes(search) ||
                     student.teacherName.toLowerCase().includes(search) ||
                     student.student.course.toLowerCase().includes(search) ||
@@ -368,7 +368,7 @@ const TrailManagement = () => {
                         : "bg-[#F8F8F8] dark:bg-[#303030]"
                     } text-left text-[11px]`}
                   >
-                    <td className="p-3 w-[9%] break-words">{student._id}</td>
+                    <td className="p-3 w-[9%] break-words">{student.student.studentId}</td>
                     <td className="py-3 px-2 text-blue-600 cursor-pointer">
                       {student.username}
                     </td>
@@ -412,7 +412,7 @@ const TrailManagement = () => {
                           >
                             <button
                               className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:text-[#000] rounded-lg"
-                              onClick={() => handleViewDetails(student._id)}
+                              onClick={() => handleViewDetails(student._id || student.student.studentId)}
                             >
                               View Details
                             </button>

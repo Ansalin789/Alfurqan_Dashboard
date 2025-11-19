@@ -442,7 +442,7 @@ const Meetings = () => {
   return (
     <BaseLayout4>
       <div className="">
-        <AdminHeader currentSection="meetings" />
+        <AdminHeader currentSection="Meetings" />
         <div className="md:p-0 mx-auto">
           <NextMeetingSchedule />
 
@@ -454,7 +454,7 @@ const Meetings = () => {
                 } transition-all duration-200`}
               >
                 {/* Tabs */}
-                <div className="flex space-x-6  px-4 py-2 rounded-md">
+                <div className="flex space-x-6  px-4 py-4 rounded-md">
                   <button
                     className={`relative text-[14px] transition font-medium ${
                       activeTab === "upcoming"
@@ -485,7 +485,7 @@ const Meetings = () => {
                 </div>
 
                 <div className="w-full h-[610px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-2">
-                  <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+                  <div className="flex justify-between items-center px-3 py-0 rounded-md dark:bg-[#343434]">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
                       <input
