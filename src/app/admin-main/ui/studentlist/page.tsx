@@ -238,7 +238,7 @@ export default function StudentList() {
           {/* Tabbed Table Section */}
           <div className="w-full overflow-hidden">
             <TabbedTable
-              studentId={student._id}
+              studentId={student._id||student.student.studentId}
               courseName={student.student.course}
               userId={paymentHistory[0]?.userId || ""} 
             />
