@@ -296,8 +296,11 @@ const SignIn: React.FC = () => {
 
       if (result?.message === "Email exists" && role?.includes("TEACHER")) {
         localStorage.setItem("TeacherAuthToken", result.data.accessToken);
-        localStorage.setItem("TeacherPortalId", result.data.id);
+        localStorage.setItem("TeacherPortalId", result.data.userId);
         localStorage.setItem("TeacherPortalName", result.data.username);
+          localStorage.setItem("TeacherPortalEmail", result.data.userEmail);
+        localStorage.setItem("TeacherPortalRole", role);
+      localStorage.setItem("TeacherId",result.data._id);
         router.push("/teacher/ui/dashboard");
       } else {
         setLoginError("Access denied: Not a Teacher");
