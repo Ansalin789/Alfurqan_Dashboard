@@ -419,7 +419,7 @@ function LiveClass() {
         setPaymentStatus(data.paymentStatus);
         setPaymentLink(
           `https://blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(
-            data.trailId
+            data.trialId
           )}`
         );
         setFormData(data);
