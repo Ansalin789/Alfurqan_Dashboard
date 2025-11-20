@@ -193,7 +193,7 @@ const SignIn: React.FC = () => {
     try {
       const response = await signIn(username, password);
       const data = response.data;
-      const { accessToken, role, _id, userName } = data;
+      const { accessToken, role, _id, userName, userId } = data;
       const userEmail: string = data.email ?? data.userEmail ?? "";
 
       if (!role?.includes("TEACHER")) {
@@ -202,7 +202,7 @@ const SignIn: React.FC = () => {
       }
 
       localStorage.setItem("TeacherAuthToken", accessToken);
-      localStorage.setItem("TeacherPortalId", _id);
+      localStorage.setItem("TeacherPortalId", userId);
       localStorage.setItem("TeacherPortalName", userName);
       localStorage.setItem("TeacherPortalEmail", userEmail);
       localStorage.setItem("TeacherPortalRole", role);
