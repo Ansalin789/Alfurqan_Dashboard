@@ -270,7 +270,7 @@ export default function AcademicHeader({
         return "📅";
       case "MESSAGE":
         return "💬";
-      case "ASSIGNMENT_ALERT":
+      case "ADMIN_MEETING_SCHEDULED":
         return "📝";
       default:
         return "🔔";
@@ -299,6 +299,10 @@ export default function AcademicHeader({
 
       case "REQUEST_RESCHEDULE_STUDENT":
       router.push(`managestudentview?id=${senderId}`);
+      break;
+
+      case "ADMIN_MEETING_SCHEDULED":
+      router.push('');
       break;
 
 

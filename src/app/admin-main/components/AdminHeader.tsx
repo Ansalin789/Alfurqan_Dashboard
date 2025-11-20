@@ -189,7 +189,7 @@ useEffect(() => {
         return "👨‍💼";
       case "PACKAGE_UPDATE":
         return "📦";
-      case "MEETING_REMINDER":
+      case "ADMIN_MEETING_SCHEDULED":
         return "📅";
       case "EXPENSE_ALERT":
         return "💰";
@@ -207,9 +207,9 @@ useEffect(() => {
       router.push('evaluations');
       break;
 
-    // case "TEACHER_ADDED":
-    //   router.push(`/Academic-coach/ui/teacherDetails?teacherId=${senderId}`);
-    //   break;
+    case "ADMIN_MEETING_SCHEDULED":
+      router.push('meeting');
+      break;
 
     // case "ADMIN_NOTIFICATION":
     //   router.push(`/admin/alerts/${senderId}`);

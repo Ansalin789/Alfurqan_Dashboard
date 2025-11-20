@@ -207,7 +207,7 @@ export default function TeacherHeader({
         return "📅";
       case "MESSAGE":
         return "💬";
-      case "ASSIGNMENT_ALERT":
+      case "ADMIN_MEETING_SCHEDULED":
         return "📝";
       default:  
         return "🔔";
@@ -230,6 +230,10 @@ export default function TeacherHeader({
       case "TEACHER_TRAILCLASS_NOTIFICATION" :
       router.push(`/teacher/ui/schedule`);
       break; 
+
+      case "ADMIN_MEETING_SCHEDULED" :
+        router.push('/teacher/ui/meeting');
+        break;
       
     default:
       console.warn("Unknown notification type:", notificationType);
