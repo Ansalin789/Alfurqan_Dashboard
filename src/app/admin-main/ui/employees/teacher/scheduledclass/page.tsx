@@ -436,62 +436,62 @@ const page = () => {
             {/* Filter Modal */}
             {isFilterModalOpen && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-[#232323] p-6 rounded-lg w-96">
+                <div className="bg-white dark:bg-[#232323] p-6 rounded-lg w-96">
                   <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold text-white">Filter by</h2>
+                    <h2 className="text-xl font-bold text-black dark:text-white">Filter by</h2>
                     <button onClick={() => setIsFilterModalOpen(false)} className="text-gray-300 text-2xl">&times;</button>
                   </div>
-                  <label className="block mb-2 text-white text-sm">Student Name</label>
+                  <label className="block mb-2 text-black dark:text-white text-sm">Student Name</label>
                   <select
-                    className="w-full p-2 mb-4 rounded bg-[#343434] text-white text-xs"
+                    className="w-full p-2 mb-4 rounded bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs"
                     value={filterStudentName}
                     onChange={e => setFilterStudentName(e.target.value)}
                   >
                     <option value="">Select Student Name</option>
                     {studentNames.map(name => (
-                      <option className="text-white text-xs" key={name} value={name}>{name}</option>
+                      <option className="bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs" key={name} value={name}>{name}</option>
                     ))}
                   </select>
-                  <label className="block mb-2 text-white text-sm">Class Type</label>
+                  <label className="block mb-2 text-black dark:text-white text-sm">Class Type</label>
                   <select
-                    className="w-full p-2 mb-4 rounded bg-[#343434] text-white text-xs"
+                    className="w-full p-2 mb-4 rounded bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs"
                     value={filterClassType}
                     onChange={e => setFilterClassType(e.target.value)}
                   >
                     <option value="">Select Class Type</option>
                     {classTypes.map(type => (
-                      <option className="text-white text-xs" key={type} value={type}>{type}</option>
+                      <option className="bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs" key={type} value={type}>{type}</option>
                     ))}
                   </select>
-                  <label className="block mb-2 text-white text-sm">Status</label>
+                  <label className="block mb-2 text-black dark:text-white text-sm">Status</label>
                   <select
-                    className="w-full p-2 mb-4 rounded bg-[#343434] text-white text-xs"
+                    className="w-full p-2 mb-4 rounded bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs"
                     value={filterStatus}
                     onChange={e => setFilterStatus(e.target.value)}
                   >
                     <option value="">Select Status</option>
                     {statuses.map(status => (
-                      <option className="text-white text-xs" key={status} value={status}>{status}</option>
+                      <option className="bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs" key={status} value={status}>{status}</option>
                     ))}
                   </select>
-                  <label className="block mb-2 text-white text-sm">Date</label>
+                  <label className="block mb-2 text-black dark:text-white text-sm">Date</label>
                   <div className="flex gap-2 mb-4">
                     <input
                       type="date"
-                      className="w-1/2 p-2 rounded bg-[#343434] text-white text-xs"
+                      className="w-1/2 p-2 rounded bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs [&::-webkit-calendar-picker-indicator]:dark:invert"
                       value={filterStartDate}
                       onChange={e => setFilterStartDate(e.target.value)}
                     />
                     <input
                       type="date"
-                      className="w-1/2 p-2 rounded bg-[#343434] text-white text-xs"
+                      className="w-1/2 p-2 rounded bg-gray-100 dark:bg-[#343434] text-black dark:text-white text-xs [&::-webkit-calendar-picker-indicator]:dark:invert"
                       value={filterEndDate}
                       onChange={e => setFilterEndDate(e.target.value)}
                     />
                   </div>
                   <div className="flex justify-between">
                     <button
-                      className="px-2 py-1 border rounded text-white text-sm"
+                      className="px-2 py-1 border rounded text-black dark:text-white text-sm"
                       onClick={() => {
                         setFilterStudentName("");
                         setFilterClassType("");
@@ -519,11 +519,12 @@ const page = () => {
               >
                 <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                   <tr className="font-medium">
-                    <th className="p-4 font-semibold text-[12px] text-left">
-                      Student name
-                    </th>
+                    
                     <th className="p-4 font-semibold text-[12px] text-left">
                       Student ID
+                    </th>
+                    <th className="p-4 font-semibold text-[12px] text-left">
+                      Student name
                     </th>
                     <th className="p-4 font-semibold text-[12px] text-left">
                       Courses
@@ -556,8 +557,8 @@ const page = () => {
                             : "bg-[#F8F8F8] dark:bg-[#303030]"
                         }`}
                       >
-                        <td className="p-3">{event.student.studentFirstName}</td>
                         <td className="p-3 text-blue-600 font-medium">{event.student.studentId}</td>
+                        <td className="p-3">{event.student.studentFirstName}</td>
                         <td className="p-3">Quran</td>
                         <td className="p-3">{event.sessionClassType}</td>
                         <td className="p-3">30 Min</td>
