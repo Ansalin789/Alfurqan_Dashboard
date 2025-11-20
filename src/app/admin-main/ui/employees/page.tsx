@@ -179,6 +179,16 @@ const formatRole = (role: string) => {
 };
 // Replace COLORS object with array for correct indexing
 const COLORS = ["#A3D3FF", "#FFD6F7", "#B4C7ED"];
+const formatPercentageValue = (value?: number) => {
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return "0";
+  }
+  const rounded = Number(value.toFixed(2));
+  if (Number.isInteger(rounded)) {
+    return rounded.toString();
+  }
+  return rounded.toFixed(2);
+};
 interface GenderCountResponse {
   employeePercentage: number;
   employeeMalePercentage: string;
@@ -651,7 +661,12 @@ const Page = () => {
           "https://api.blackstoneinfomaticstech.com/leavesummary/list",
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setLeaveRequests(res.data.leavesummary); // <-- use leavesummary
+        const sortedData = res.data.leavesummary.sort(
+          (a, b) =>
+            new Date(b.fromDate).getTime() - new Date(a.fromDate).getTime()
+        );
+    
+        setLeaveRequests(sortedData);
       } catch (err) {
         console.error("Error fetching leave summary list", err);
       }
@@ -1261,8 +1276,9 @@ const Page = () => {
                             </span>
                           </div>
                           <div className="text-[10px] font-medium mt-[2px] text-[#010E30] dark:text-white/70">
-                            {genderData.find((g) => g.name === "Male")?.value ||
-                              0}
+                            {formatPercentageValue(
+                              genderData.find((g) => g.name === "Male")?.value
+                            )}
                           </div>
                         </div>
                         <div className="flex flex-col items-center text-start">
@@ -1276,8 +1292,9 @@ const Page = () => {
                             </span>
                           </div>
                           <div className="text-[10px] font-medium mt-[2px] text-[#010E30] dark:text-white/70">
-                            {genderData.find((g) => g.name === "Female")
-                              ?.value || 0}
+                            {formatPercentageValue(
+                              genderData.find((g) => g.name === "Female")?.value
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1582,7 +1599,7 @@ const Page = () => {
                   {/* Top analytics/statistics cards (Employees Record, Gender, Countries) - keep as is */}
                   <div className="flex flex-row gap-4 sm:gap-4 md:gap-4 lg:gap-4 xl:gap-4">
                     {/* Employees Record card */}
-                    <div className="bg-[#F7FBFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[370px] md:max-w-[390px] lg:max-w-[620px] h-[280px]">
+                    <div className="bg-[#FFFFFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[370px] md:max-w-[390px] lg:max-w-[620px] h-[280px]">
                       <h2 className="text-[16px] font-semibold text-[#0B0F19] dark:text-white mb-4">
                         Employees Record
                       </h2>
@@ -1633,7 +1650,7 @@ const Page = () => {
                     </div>
 
                     {/* Gender Chart (Employees section) */}
-                    <div className="bg-[#F7FBFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[312px] h-[280px] flex flex-col items-center justify-between relative">
+                    <div className="bg-[#FFFFFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[312px] h-[280px] flex flex-col items-center justify-between relative">
                       <h2 className="text-[16px] font-semibold text-[#0B0F19] dark:text-white self-start">
                         Gender
                       </h2>
@@ -1790,7 +1807,9 @@ const Page = () => {
                             </span>
                           </div>
                           <div className="text-[10px] font-medium mt-[2px] text-[#010E30] dark:text-white/70">
-                            {empData.find((g) => g.name === "Male")?.value || 0}
+                            {formatPercentageValue(
+                              empData.find((g) => g.name === "Male")?.value
+                            )}
                           </div>
                         </div>
                         <div className="flex flex-col items-center text-start">
@@ -1804,15 +1823,16 @@ const Page = () => {
                             </span>
                           </div>
                           <div className="text-[10px] font-medium mt-[2px] text-[#010E30] dark:text-white/70">
-                            {empData.find((g) => g.name === "Female")?.value ||
-                              0}
+                            {formatPercentageValue(
+                              empData.find((g) => g.name === "Female")?.value
+                            )}
                           </div>
                         </div>
                       </div>
                     </div>
 
                     {/* Countries Block */}
-                    <div className="bg-[#F7FBFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[312px] h-[280px] flex flex-col">
+                    <div className="bg-[#FFFFFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[312px] h-[280px] flex flex-col">
                       <h2 className="text-[16px] font-semibold text-[#0B0F19] dark:text-white">
                         Countries
                       </h2>
@@ -2227,7 +2247,7 @@ const Page = () => {
                     <tbody className="text-[10px] text-[#1D2939]">
                       {(filteredLeaveRequests?.length ?? 0) > 0 ? (
                         filteredLeaveRequests
-                          .slice(0, 6) // Show only the first 7 entries
+                          .slice(0, 5) // Show only the first 7 entries
                           .map((item, index) => {
                             const btnId = `action-btn-${item._id}`;
                             return (

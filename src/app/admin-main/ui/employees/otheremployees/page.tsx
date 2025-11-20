@@ -14,6 +14,7 @@ import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import { TooltipProps } from "recharts";
 import FilterModal, { FilterField } from "@/components/FilterModal";
+import { toDate } from "date-fns";
 
 interface Employee {
   _id: string;
@@ -86,6 +87,23 @@ interface EmployeeWage {
   totalearnings?: number;
   monthlyData?: MonthlyEarnings[];
 }
+interface EmployeeWagesResponse {
+  employeeId: string;
+  totalhours?: number;
+  totalearnings?: number;
+  monthlyData?: MonthlyEarnings[];
+  wageRecords: EmployeeWage[];
+}
+interface ShiftSchedule {
+  date?: string;
+  day: string;
+  fromTime: string;
+  toTime: string;
+  isExpanded?: boolean;
+  timings: { fromTime: string; toTime: string; date: string }[]; // Make date required here
+}
+
+
 
 // interfaces/LeaveRequest.ts
 
@@ -114,12 +132,6 @@ export interface ILeaveSummary {
   totalDeclined: number;
 }
 
-interface ShiftSchedule {
-  date: string;
-  day: string;
-  fromTime: string;
-  toTime: string;
-}
 
 type LeaveStatus = "APPROVED" | "WAITINGLIST" | "REJECTED";
 // CustomTooltip for dark mode
@@ -150,11 +162,22 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
 
 const EmployeePage = () => {
   const [activeTab, setActiveTab] = useState("Wages");
-  const tabs = ["Wages", "Earnings", "Leave Requests", "WorkingHours"];
+  const [schedule, setSchedule] = useState<ShiftSchedule[]>([]);
+
+  const tabs = ["Wages", "Earnings", "Leave Requests", "Working Hours"];
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [isFetched, setIsFetched] = useState(false); // Flag to check if data is fetched
   const searchParams = useSearchParams(); // Get the search params from the URL
   const [wages, setWages] = useState<EmployeeWage[]>([]); // was wage (single), now array
+  const [wageSummary, setWageSummary] = useState<{
+    totalhours: number;
+    totalearnings: number;
+    monthlyData: MonthlyEarnings[];
+  }>({
+    totalhours: 0,
+    totalearnings: 0,
+    monthlyData: [],
+  });
   const [searchWages, setSearchWages] = useState("");
   const [wagesPage, setWagesPage] = useState(1);
   const wagesPerPage = 5;
@@ -164,7 +187,6 @@ const EmployeePage = () => {
     totalApproved: 0,
     totalDeclined: 0,
   });
-  const [schedule, setSchedule] = useState<ShiftSchedule[]>([]);
   const [earningsPage, setEarningsPage] = useState(1);
   const earningsPerPage = 5;
   const [searchEarnings, setSearchEarnings] = useState("");
@@ -176,7 +198,21 @@ const EmployeePage = () => {
   const [searchWorking, setSearchWorking] = useState("");
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filters, setFilters] = useState<Record<string, any>>({});
-
+// Add this helper function to format dates
+const formatDate = (dateString: string): string => {
+  if (!dateString || dateString === "N/A") return "N/A";
+  
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    });
+  } catch (error) {
+    return "N/A";
+  }
+};
   const handleFilterChange = (newFilters: Record<string, any>) => {
     setFilters(newFilters);
   };
@@ -192,7 +228,7 @@ const EmployeePage = () => {
     const monthName = new Date(0, index).toLocaleString("default", {
       month: "short",
     });
-    const monthly = wages[0]?.monthlyData?.find(
+    const monthly = wageSummary.monthlyData?.find(
       (item) => item.month === monthNumber && item.year === currentYear
     );
     const rate = parseFloat(wages[0]?.classType?.rate ?? "0");
@@ -224,6 +260,17 @@ const EmployeePage = () => {
     }
 
     return searchMatch && filterMatch;
+  })
+  .sort((a, b) => {
+    const monthOrder = [
+      "Jan","Feb","Mar","Apr","May","Jun",
+      "Jul","Aug","Sep","Oct","Nov","Dec"
+    ];
+
+    return (
+      b.currentYear - a.currentYear ||
+      monthOrder.indexOf(b.monthName) - monthOrder.indexOf(a.monthName)
+    );
   });
   const totalEarningsPages = Math.ceil(
     filteredEarnings.length / earningsPerPage
@@ -273,37 +320,22 @@ const EmployeePage = () => {
     leavePage * leavePerPage
   );
 
-  const filteredWorking = schedule.filter((item) => {
-    const searchMatch =
-      item.day?.toLowerCase().includes(searchWorking.toLowerCase()) ||
-      item.date?.toLowerCase().includes(searchWorking.toLowerCase());
+ const filteredWorking = schedule.filter((item) => {
+  const searchMatch = item.day?.toLowerCase().includes(searchWorking.toLowerCase());
 
-    let filterMatch = true;
-    if (filters.day && item.day !== filters.day) {
-      filterMatch = false;
-    }
-    if (filters.dateRange) {
-      const itemDate = new Date(item.date);
-      const from = filters.dateRange.from
-        ? new Date(filters.dateRange.from)
-        : null;
-      const to = filters.dateRange.to ? new Date(filters.dateRange.to) : null;
-      if (from && itemDate < from) {
-        filterMatch = false;
-      }
-      if (to && itemDate > to) {
-        filterMatch = false;
-      }
-    }
+  let filterMatch = true;
+  if (filters.day && item.day !== filters.day) {
+    filterMatch = false;
+  }
 
-    return searchMatch && filterMatch;
-  });
-  const totalWorkingPages = Math.ceil(filteredWorking.length / workingPerPage);
-  const paginatedWorking = filteredWorking.slice(
-    (workingPage - 1) * workingPerPage,
-    workingPage * workingPerPage
-  );
+  return searchMatch && filterMatch;
+});
 
+const totalWorkingPages = Math.ceil(filteredWorking.length / workingPerPage);
+const paginatedWorking = filteredWorking.slice(
+  (workingPage - 1) * workingPerPage,
+  workingPage * workingPerPage
+);
   useEffect(() => {
     // Retrieve employeeId and userId from search params
     const employeeId = searchParams.get("employeeId");
@@ -368,8 +400,10 @@ const EmployeePage = () => {
         : null;
     if (!token) return;
     try {
-      const response = await axios.get<EmployeeWage[] | EmployeeWage>(
-        `https://api.blackstoneinfomaticstech.com/empwages/${employeeId}`,
+      const response = await axios.get<
+        EmployeeWagesResponse | EmployeeWage[] | EmployeeWage
+      >(
+        `https://api.blackstoneinfomaticstech.com/empwages?employeeId=${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -377,15 +411,44 @@ const EmployeePage = () => {
           },
         }
       );
-      // Accept both array and single object
       const data = response.data;
-      setWages(Array.isArray(data) ? data : [data]);
+      if (data && typeof data === "object" && "wageRecords" in data) {
+        const typed = data as EmployeeWagesResponse;
+        setWages(typed.wageRecords || []);
+        setWageSummary({
+          totalhours: typed.totalhours ?? 0,
+          totalearnings: typed.totalearnings ?? 0,
+          monthlyData: typed.monthlyData ?? [],
+        });
+      } else {
+        const wageArray = Array.isArray(data) ? data : [data];
+        setWages(wageArray as EmployeeWage[]);
+        const fallbackMonthly =
+          (!Array.isArray(data) && (data as EmployeeWage)?.monthlyData) || [];
+        setWageSummary({
+          totalhours: (wageArray as EmployeeWage[]).reduce(
+            (acc, wage) => acc + (wage.totalhours ?? 0),
+            0
+          ),
+          totalearnings: (wageArray as EmployeeWage[]).reduce(
+            (acc, wage) => acc + (wage.totalearnings ?? 0),
+            0
+          ),
+          monthlyData: fallbackMonthly ?? [],
+        });
+      }
     } catch (error: any) {
       console.error(
         "Error fetching wages:",
         error.response?.data ?? error.message
       );
+      console.log(error.response?.data ?? error.message);
       setWages([]);
+      setWageSummary({
+        totalhours: 0,
+        totalearnings: 0,
+        monthlyData: [],
+      });
     }
   };
 
@@ -411,28 +474,70 @@ const EmployeePage = () => {
     }
   };
 
-  const fetchData = async (employeeId: string) => {
-    try {
-      const res = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/shiftschedule/${employeeId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("AdminAuthToken")}`,
-          },
-        }
-      );
+ const fetchData = async (employeeId: string) => {
+  try {
+    const res = await axios.get(
+      `https://api.blackstoneinfomaticstech.com/shiftschedule/${employeeId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("AdminAuthToken")}`,
+        },
+      }
+    );
 
-      // 🔧 If the API returns an array directly:
-      setSchedule(res.data);
+    // Group schedules by day
+    const groupedSchedules = groupSchedulesByDay(res.data);
+    setSchedule(groupedSchedules);
 
-      // ❌ Avoid this unless API returns { records: [...] }
-      // setSchedule(res.data.records);
-    } catch (error) {
-      console.error("Failed to fetch shift schedule", error);
-      setSchedule([]); // fallback to empty array to prevent `.map()` errors
+  } catch (error) {
+    console.error("Failed to fetch shift schedule", error);
+    setSchedule([]);
+  }
+};
+
+// Helper function to group schedules by day
+// Helper function to group schedules by day
+// Helper function to group schedules by day
+const groupSchedulesByDay = (scheduleData: ShiftSchedule[]): ShiftSchedule[] => {
+  const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  
+  const groupedByDay: { [key: string]: { fromTime: string; toTime: string; date: string }[] } = {};
+  
+  scheduleData.forEach(item => {
+    const day = item.day;
+    if (!groupedByDay[day]) {
+      groupedByDay[day] = [];
     }
-  };
+    groupedByDay[day].push({
+      fromTime: item.fromTime,
+      toTime: item.toTime,
+      date: item.date || "N/A" // Ensure date is always present
+    });
+  });
+
+  const result: ShiftSchedule[] = dayOrder.map(day => {
+    const dayTimings = groupedByDay[day] || [{ fromTime: "N/A", toTime: "N/A", date: "N/A" }];
+    
+    return {
+      day: day,
+      fromTime: dayTimings[0].fromTime,
+      toTime: dayTimings[0].toTime,
+      timings: dayTimings, // Always has date property
+      isExpanded: false
+    };
+  });
+
+  return result;
+};
+
+const toggleDayExpansion = (day: string) => {
+  setSchedule(prev => prev.map(item => 
+    item.day === day 
+      ? { ...item, isExpanded: !item.isExpanded }
+      : item
+  ));
+};
 
   // Filtered and paginated wages
   const filteredWages = Array.isArray(wages)
@@ -507,11 +612,11 @@ const EmployeePage = () => {
       { name: 'status', label: 'Status', type: 'select', options: leaveStatusOptions },
   ];
 
-  const workingHoursDayOptions = Array.from(new Set(schedule.map(s => s.day).filter(Boolean))).map(o => ({value: o!, label: o!}));
-  const workingHoursFilterFields: FilterField[] = [
-      { name: 'day', label: 'Day', type: 'select', options: workingHoursDayOptions },
-      { name: 'dateRange', label: 'Date', type: 'date-range' },
-  ];
+const workingHoursDayOptions = Array.from(new Set(schedule.map(s => s.day).filter(Boolean))).map(o => ({value: o!, label: o!}));
+
+const workingHoursFilterFields: FilterField[] = [
+  { name: 'day', label: 'Day', type: 'select', options: workingHoursDayOptions },
+];
 
   const getFilterFieldsForTab = (tab: string) => {
     switch(tab) {
@@ -530,7 +635,7 @@ const EmployeePage = () => {
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Other Employees" />
+      <AdminHeader currentSection="Other Employees" showBackButton showBackPath="/admin-main/ui/employees"/>
       <div className="p-2 min-h-screen w-full">
         <div className="col-span-3 bg-[#5E6578] text-white px-4 py-3 rounded-lg shadow-sm flex flex-row">
           <div className="flex flex-col items-center w-[30%] pr-4 py-6 border-r border-[#BCBCBC] gap-y-2">
@@ -737,16 +842,16 @@ const EmployeePage = () => {
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
                               }`}
                             >
-                              <td className="p-3">
+                              <td className="p-3 text-left">
                                 {item.classType?.className || "-"}
                         </td>
-                              <td className="p-3">
+                              <td className="p-3 text-left">
                                 {item.classType?.rate || "-"}
                               </td>
-                              <td className="p-3">
+                              <td className="p-3 text-left">
                                 {item.classType?.currency || "-"}
                               </td>
-                              <td className="p-3">
+                              <td className="p-3 text-left">
                                 {item.classType?.hoursMins
                                   ? `${item.classType.hoursMins} mins`
                                   : "-"}
@@ -784,7 +889,7 @@ const EmployeePage = () => {
                   {[
                     {
                       title: "Total Earnings",
-                      count: wages[0]?.totalearnings || 0,
+                      count: wageSummary.totalearnings || 0,
                       color: "gray",
                       iconBg: "bg-gray-100",
                       iconColor: "text-gray-500",
@@ -859,16 +964,16 @@ const EmployeePage = () => {
                     >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Month
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Total Hours
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Total Earnings
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Total Deductions
                           </th>
                         </tr>
@@ -884,12 +989,12 @@ const EmployeePage = () => {
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
                               }`}
                             >
-                              <td className="p-3">{`${row.monthName} ${row.currentYear}`}</td>
-                              <td className="p-3">{row.totalhours}</td>
-                              <td className="p-3">
+                              <td className="p-3 text-left">{`${row.monthName} ${row.currentYear}`}</td>
+                              <td className="p-3 text-left">{row.totalhours}</td>
+                              <td className="p-3 text-left">
                                 ${row.earnings.toFixed(2)}
                               </td>
-                              <td className="p-3">$0</td>{" "}
+                              <td className="p-3 text-left">$0</td>{" "}
                             </tr>
                           ))
                         ) : (
@@ -1004,16 +1109,16 @@ const EmployeePage = () => {
                     >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Leave Type
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Date Range
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Reason For Leave
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Status
                           </th>
                         </tr>
@@ -1023,16 +1128,16 @@ const EmployeePage = () => {
                           paginatedLeave.map((item, index) => (
                           <tr
                             key={item._id}
-                              className={`text-center dark:text-white ${
+                              className={`text-left dark:text-white ${
                                 index % 2 === 0
                                   ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
                             }`}
                           >
-                              <td className="p-3 text-center">
+                              <td className="p-3 text-left">
                               {item.leaveType}
                             </td>
-                              <td className="p-3 text-center">
+                              <td className="p-3 text-left">
                               {new Date(item.fromDate).toLocaleDateString(
                                 "en-US",
                                 {
@@ -1051,9 +1156,9 @@ const EmployeePage = () => {
                                 }
                               )}
                             </td>
-                              <td className="p-3 text-center">{item.reason}</td>
-                              <td className="p-3 text-center">
-                              <div className="flex items-center gap-2 justify-center">
+                              <td className="p-3 text-left">{item.reason}</td>
+                              <td className="p-3 text-left">
+                              <div className="flex items-left gap-2 justify-center">
                                 <span className={getLeaveStatusStyle(item.leaveStatus)}>
                                   {item.leaveStatus}
                                 </span>
@@ -1085,100 +1190,128 @@ const EmployeePage = () => {
             )}
 
             {/* Working Hours Tab */}
-            {activeTab === "WorkingHours" && (
-              <div className="">
-                <div className="rounded-xl overflow-hidden">
-                  <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                    <input
-                      type="text"
-                      placeholder="Search"
-                      className="bg-transparent outline-none text-[12px] w-32 py-3"
-                      value={searchWorking}
-                      onChange={(e) => {
-                        setSearchWorking(e.target.value);
-                        setWorkingPage(1);
-                      }}
-                    />
-                    <div
-                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
-                      onClick={() => setIsFilterModalOpen(true)}
-                    >
-                      <MdTune className="w-4 h-4" />
-                      <span>Filter</span>
-                    </div>
-                    <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-                      Showing{" "}
-                      {filteredWorking.length === 0
-                        ? 0
-                        : (workingPage - 1) * workingPerPage + 1}{" "}
-                      to{" "}
-                      {Math.min(
-                        workingPage * workingPerPage,
-                        filteredWorking.length
-                      )}{" "}
-                      of {filteredWorking.length}
-                    </span>
-                  </div>
-                  <div className="overflow-x-auto max-h-none">
-                    <table
-                      className="w-full min-w-[900px] text-sm text-left table-auto"
-                      style={{ width: "100%", tableLayout: "fixed" }}
-                    >
-                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
-                        <tr className="font-medium">
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            Day
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            Date
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            Working Hours
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            GMT
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="text-[10px] text-[#1D2939]">
-                        {paginatedWorking.length > 0 ? (
-                          paginatedWorking.map((item, index) => (
-                            <tr
-                              key={index}
-                              className={`text-center dark:text-white ${
-                                index % 2 === 0
-                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
-                            >
-                              <td className="p-3">{item.day}</td>
-                              <td className="p-3">{item.date}</td>
-                              <td className="p-3">{`${item.fromTime} - ${item.toTime}`}</td>
-                              <td className="p-3">GMT</td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={4} className="p-4 text-center">
-                              No data available
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
+           {activeTab === "Working Hours" && (
+  <div className="">
+    <div className="rounded-xl overflow-hidden">
+      <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+        <input
+          type="text"
+          placeholder="Search by day"
+          className="bg-transparent outline-none text-[12px] w-32 py-3"
+          value={searchWorking}
+          onChange={(e) => {
+            setSearchWorking(e.target.value);
+            setWorkingPage(1);
+          }}
+        />
+        <div
+          className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+          onClick={() => setIsFilterModalOpen(true)}
+        >
+          <MdTune className="w-4 h-4" />
+          <span>Filter</span>
+        </div>
+        <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
+          Showing {filteredWorking.length} days
+        </span>
+      </div>
+      <div className="overflow-x-auto max-h-none">
+        <table
+          className="w-full min-w-[900px] text-sm text-left table-auto"
+          style={{ width: "100%", tableLayout: "fixed" }}
+        >
+          <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+            <tr className="font-medium">
+              <th className="p-4 font-semibold text-[12px] text-left">Day</th>
+              <th className="p-4 font-semibold text-[12px] text-left">Date</th>
+
+              <th className="p-4 font-semibold text-[12px] text-left">Working Hours</th>
+              <th className="p-4 font-semibold text-[12px] text-left">GMT</th>
+            </tr>
+          </thead>
+    <tbody className="text-[10px] text-[#1D2939]">
+  {paginatedWorking.length > 0 ? (
+    paginatedWorking.map((item, index) => {
+      const itemTimings = item.timings || [{ fromTime: item.fromTime, toTime: item.toTime, date: item.date }];
+      const hasMultipleTimings = itemTimings.length > 1;
+      
+      // Get formatted date range for display
+      const fromDate = formatDate(itemTimings[0]?.date || "N/A");
+      const toDate = formatDate(itemTimings[itemTimings.length - 1]?.date || "N/A");
+      
+      // If all dates are the same, show just one date, otherwise show range
+      const allDatesSame = itemTimings.every(timing => 
+        timing.date === itemTimings[0]?.date
+      );
+      const dateDisplay = allDatesSame ? fromDate : `${fromDate} - ${toDate}`;
+      
+      return (
+        <>
+          {/* Main row */}
+          <tr
+            key={item.day}
+            className={`text-left dark:text-white cursor-pointer ${
+              index % 2 === 0
+                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                : "bg-[#F8F8F8] dark:bg-[#303030]"
+            }`}
+            onClick={() => toggleDayExpansion(item.day)}
+          >
+            <td className="p-3 text-left font-medium">{item.day}</td>
+            <td className="p-3 text-left">{dateDisplay}</td>
+            <td className="p-3 text-left">
+              {!hasMultipleTimings ? (
+                // Single timing - show directly
+                `${itemTimings[0].fromTime} - ${itemTimings[0].toTime}`
+              ) : (
+                // Multiple timings - show first one + indicator
+                <div className="flex items-center gap-2">
+                  <span>{`${itemTimings[0].fromTime} - ${itemTimings[0].toTime}`}</span>
+                  <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                    +{itemTimings.length - 1} more
+                  </span>
                 </div>
-                {totalWorkingPages > 1 && (
-                  <div className="flex justify-end">
-                    <Pagination
-                      currentPage={workingPage}
-                      totalPages={totalWorkingPages}
-                      onPageChange={setWorkingPage}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
+              )}
+            </td>
+            <td className="p-3 text-left">GMT</td>
+          </tr>
+          
+          {/* Expanded rows for multiple timings */}
+          {item.isExpanded && hasMultipleTimings && (
+            itemTimings.slice(1).map((timing, timingIndex) => (
+              <tr
+                key={`${item.day}-${timingIndex}`}
+                className={`text-left dark:text-white ${
+                  index % 2 === 0
+                    ? "bg-[#f5f5f5] dark:bg-[#3a3a3a]"
+                    : "bg-[#f0f0f0] dark:bg-[#404040]"
+                }`}
+              >
+                <td className="p-3 text-left pl-8 text-gray-500">↳ {item.day}</td>
+                <td className="p-3 text-left">{formatDate(timing.date || "N/A")}</td>
+                <td className="p-3 text-left">
+                  {`${timing.fromTime} - ${timing.toTime}`}
+                </td>
+                <td className="p-3 text-left">GMT</td>
+              </tr>
+            ))
+          )}
+        </>
+      );
+    })
+  ) : (
+    <tr>
+      <td colSpan={4} className="p-4 text-left">
+        No data available
+      </td>
+    </tr>
+  )}
+</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+)}
           </div>
         </div>
       </div>
