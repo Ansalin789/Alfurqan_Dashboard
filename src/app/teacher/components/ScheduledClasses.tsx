@@ -16,6 +16,7 @@ import { getSocket } from "@/app/utils/socket";
 interface ClassData {
   isTrial: boolean;
   classType: string;
+  classId:string;
   trialclass: any;
   _id: string;
   classDay: string[]; // ISO date strings
@@ -218,6 +219,7 @@ if (Array.isArray(response.data.trialclasses)) {
 
   trialClasses = response.data.trialclasses.map((trialClass) => ({
     _id: trialClass._id || trialClass.trialId || "",
+    classId : "",
     classLink: trialClass.meetingLink || "",
     classDay: trialClass.scheduledStartDate ? [trialClass.scheduledStartDate] : [],
     package: "", // Trial classes may not have package
@@ -706,7 +708,7 @@ const studentName =
           }`}
         >
           <td className="px-3 py-2 text-[10px] text-left w-[200px] break-words whitespace-normal">
-            {isTrial ? item.trialclass?.trialId || item._id : item._id || "N/A"}
+            {isTrial ? item.trialclass?.trialId || item.classId : item.classId || "N/A"}
           </td>
           <td className="text-[#3D8FDE] px-3 py-2 text-left w-[180px] break-words whitespace-normal">
             {studentName || "N/A"}
