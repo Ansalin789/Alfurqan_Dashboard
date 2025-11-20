@@ -2413,7 +2413,7 @@ const Page = () => {
                             Employee ID
                           </label>
                           <input
-                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
+                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-[10px] dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
                             value={selectedLeave.id}
                             disabled
                           />
