@@ -512,7 +512,7 @@ const page = () => {
                     Student ID
                   </th>
                   <th className="p-3 font-semibold text-[12px] text-left">
-                    Student's name
+                  Student Name
                   </th>
                   <th className="p-3 font-semibold text-[12px] text-left">
                     Country

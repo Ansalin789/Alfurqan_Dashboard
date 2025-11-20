@@ -343,8 +343,20 @@ const Teacher = () => {
       );
 
       return matchesSearch && matchesFilters;
+    })
+    .sort((a, b) => {
+      const monthOrder = [
+        "Jan","Feb","Mar","Apr","May","Jun",
+        "Jul","Aug","Sep","Oct","Nov","Dec"
+      ];
+  
+      return (
+        b.currentYear - a.currentYear ||
+        monthOrder.indexOf(b.monthName) - monthOrder.indexOf(a.monthName)
+      );
     });
-
+  
+    
   const [teacherOverview, setTeacherOverview] = useState<TeacherOverview | null>(null);
   const [salaryWages, setSalaryWages] = useState<SalaryWageRecord[]>([]);
 
@@ -999,6 +1011,22 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
     }
   }
 
+  const formatClassName = (name: string) => {
+    if (!name) return "-";
+  
+    // Remove wrong spaces like "TRAILCLAS S" → "TRAILCLASS"
+    let cleaned = name.replace(/\s+/g, "");
+  
+    // Fix common spelling mistakes
+    cleaned = cleaned
+      .replace("TRAIL", "TRIAL")
+      .replace("GRUOP", "GROUP");
+  
+    // Add space before CLASS
+    return cleaned.replace(/CLASS$/, " CLASS");
+  };
+  
+
   return (
     <BaseLayout4>
       <TeacherHeader currentSection="Employees" showBackPath="/admin-main/ui/employees" showBackButton={true}/>
@@ -1167,10 +1195,13 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                             Student ID
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-left">
-                            Student's name
+                          Student Name
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Country
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-left">
+                          Package 
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Subject
@@ -1187,6 +1218,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                             .reverse()
                             .map((item, index) => {
                               const student = item.studentDetails?.student;
+                              const subscription = item.studentDetails?.subscription;
                               return (
                                 <tr
                                   key={item.studentId || index}
@@ -1201,6 +1233,9 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                                   </td>
                                   <td className="p-3">
                                     {student?.studentCountry}
+                                  </td>
+                                  <td className="p-3">
+                                    {subscription?.subscriptionName}
                                   </td>
                                   <td className="p-3">
                                     {student?.learningInterest}
@@ -1279,11 +1314,12 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                     >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
-                          <th className="p-4 font-semibold text-[12px] text-left">
-                            Student name
-                          </th>
+                          
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Student ID
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-left">
+                            Student Name
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Courses
@@ -1318,15 +1354,16 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                                     : "bg-[#F8F8F8] dark:bg-[#303030]"
                                   }`}
                               >
-                                <td className="p-3">
-                                  {event.student.studentFirstName}
-                                </td>
+                                
                                 <td className="p-3 text-blue-600 font-medium">
                                   {event.student.studentId}
                                 </td>
+                                <td className="p-3">
+                                  {event.student.studentFirstName}
+                                </td>
                                 <td className="p-3">Quran</td>
                                 <td className="p-3">
-                                  {event.sessionClassType}
+                                {event.sessionClassType? formatClassName(event.sessionClassType) : "-"}
                                 </td>
                                 <td className="p-3">30 Min</td>
                                 <td className="p-3">
@@ -1664,8 +1701,9 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                                 }`}
                             >
                               <td className="p-3">
-                                {item.classType?.className || "-"}
-                              </td>
+  {item.classType?.className ? formatClassName(item.classType.className) : "-"}
+</td>
+
                               <td className="p-3">
                                 <input
                                   type="text"

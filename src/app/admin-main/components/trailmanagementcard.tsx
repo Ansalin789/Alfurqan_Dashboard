@@ -511,7 +511,7 @@ const PreferredTeachersCard = () => {
 
 const TrialByTeachers = () => {
   const [teachers, setTeachers] = useState<
-    { teacherName: string; studentCount: number; joined: number; _id: string }[]
+    { teacherName: string; trialClassCount: number; joinedStudentsCount: number; _id: string }[]
   >([]);
 
   useEffect(() => {
@@ -526,7 +526,7 @@ const TrialByTeachers = () => {
   }, []);
 
   const fetchData = (token: string) => {
-    fetch("https://api.blackstoneinfomaticstech.com/teacher-student-count", {
+    fetch("http://localhost:5001/teacher-student-count", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -566,16 +566,16 @@ const TrialByTeachers = () => {
             {teachers.map((teacher, idx) => (
               <tr
                 key={teacher._id}
-                className="border-b dark:border-b-[#535252]"
+                className="border-b dark:border-b-[#535252] h-1"
               >
                 <td className="px-4 py-2 text-[#010E30] dark:text-[#fff] text-[10px]">
                   {teacher.teacherName}
                 </td>
                 <td className="px-4 py-2 text-[#010E30] dark:text-[#fff] text-[10px]">
-                  {teacher.studentCount ?? 0}
+                  {teacher.trialClassCount ?? 0}
                 </td>
                 <td className="px-4 py-2 text-[#010E30] dark:text-[#fff] text-[10px]">
-                  {teacher.studentCount ?? 0}
+                  {teacher.joinedStudentsCount ?? 0}
                 </td>
               </tr>
             ))}
