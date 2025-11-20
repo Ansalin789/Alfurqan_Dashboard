@@ -515,7 +515,7 @@ function LiveClass() {
         return;
       }
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/evaluation/${id}`,
+        `https://api.blackstoneinfomaticstech.com/evaluation/${formData?._id}`,
         {
           method: "PUT",
           headers: {
