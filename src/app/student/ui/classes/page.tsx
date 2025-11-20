@@ -32,6 +32,7 @@ interface Course {
 
 interface ClassData {
   _id: string;
+  classId:string;
   student: Student;
   teacher: Teacher;
   classDay: string[];
@@ -413,7 +414,7 @@ const completedCount = filteredClass.filter(cls =>
                       }`}
                     >
                       <td className="px-4 py-3 text-left break-words">
-                        <span className="text-xs">{cls._id}</span>
+                        <span className="text-xs">{cls.classId}</span>
                       </td>
                       <td className="px-4 py-3 text-left text-[#576CBC] text-xs sm:text-sm">
                         {cls.teacher?.teacherName || "N/A"}

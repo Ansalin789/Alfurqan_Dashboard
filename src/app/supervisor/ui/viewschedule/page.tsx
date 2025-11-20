@@ -33,6 +33,7 @@ const ViewSchedule = () => {
     student: Student;
     teacher: Teacher;
     _id: string;
+    classId: string;
     classDay: string[];
     package: string;
     course: {
@@ -657,7 +658,7 @@ console.log("currentItems", currentItems);
                       {item.teacher.teacherName}
                     </td>
                     <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                      {item._id}
+                      {item.classId}
                     </td>
 
                     <td className="px-8 py-3 text-left">{item.course?.courseName || 'N/A'}</td>

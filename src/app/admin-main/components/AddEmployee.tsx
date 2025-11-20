@@ -770,9 +770,11 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
                   className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 >
                   <option value="">Select Designation</option>
+                  <option value="ADMIN">ADMIN</option>
                   <option value="SUPERVISOR">SUPERVISOR</option>
                   <option value="ACADEMICCOACH">ACADEMIC COACH</option>
                   <option value="TEACHER">TEACHER</option>
+
                 </select>
               </div>
               <div>

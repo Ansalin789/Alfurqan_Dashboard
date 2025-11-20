@@ -16,7 +16,7 @@ import DatePicker from "react-datepicker";
 
 interface LeaveRequest {
   _id: string;
-  summaryId:string;
+  summaryId: string;
   name: string;
   employeeId: string;
   role: string;
@@ -47,23 +47,23 @@ export default function ApplicantsPage() {
   const router = useRouter();
 
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
-   const [selectedLeave, setSelectedLeave] = useState<{
-     employeeId: string;
-     id: string;
-     approvedId:string;
-     approvedName:string;
-     name: string;
-     designation: string;
-     fromDate: string;
-     toDate: string;
-     leaveType: string;
-     dateRange: string;
-     reason: string;
-     status: string;
-     approvedDays: string;
-     deductionDays: string;
-     summaryId?: string;
-   } | null>(null);
+  const [selectedLeave, setSelectedLeave] = useState<{
+    employeeId: string;
+    id: string;
+    approvedId: string;
+    approvedName: string;
+    name: string;
+    designation: string;
+    fromDate: string;
+    toDate: string;
+    leaveType: string;
+    dateRange: string;
+    reason: string;
+    status: string;
+    approvedDays: string;
+    deductionDays: string;
+    summaryId?: string;
+  } | null>(null);
   const [activeTab, setActiveTab] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [actionDropdown, setActionDropdown] = useState<string | null>(null);
@@ -127,7 +127,12 @@ export default function ApplicantsPage() {
         "https://api.blackstoneinfomaticstech.com/leavesummary/list",
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setLeaveRequests(res.data.leavesummary);
+      const sortedData = res.data.leavesummary.sort(
+        (a, b) =>
+          new Date(b.fromDate).getTime() - new Date(a.fromDate).getTime()
+      );
+
+      setLeaveRequests(sortedData);
     } catch (err) {
       console.error("Error fetching leave request list", err);
     }
@@ -249,7 +254,7 @@ export default function ApplicantsPage() {
   return (
     <BaseLayout4>
       <div>
-        <AdminHeader currentSection="Employees" />
+        <AdminHeader currentSection="Employees - Leave" showBackButton showBackPath="/admin-main/ui/employees" />
         <div className="md:p-0 mx-auto">
           <div className="h-full w-full flex flex-col justify-between">
             <div className="p-0 flex flex-col">
@@ -262,7 +267,7 @@ export default function ApplicantsPage() {
                     <Search className="w-4 h-4 text-gray-400" />
                     <input
                       type="text"
-                      placeholder="Search by name, role, or status"
+                      placeholder="Search by Keyword"
                       className="bg-transparent outline-none text-[15px] w-52 py-3"
                       value={searchText}
                       onChange={e => setSearchText(e.target.value)}
@@ -323,116 +328,125 @@ export default function ApplicantsPage() {
                           return (
                             <tr
                               key={item._id}
-                              className={`text-[12px] ${
-                                index % 2 === 0
+                              className={`text-[12px] ${index % 2 === 0
                                   ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
+                                }`}
                             >
                               <td className="px-3 py-3 dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">{item.employeeId}</td>
                               <td className="px-3 py-3 text-[#3D8FDE] font-medium">{item.name}</td>
                               <td className="px-3 py-3 dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap" >{item.role}</td>
                               <td className="px-3 py-3 dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">{item.leaveType}</td>
                               <td className="px-3 py-3 dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                                {`${new Date(item.fromDate).toLocaleDateString()} - ${new Date(
-                                  item.toDate
-                                ).toLocaleDateString()}`}
-                              </td>
-                              <td className="px-3 py-3 dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">{item.reason}</td>
-                                         <td className="px-4 py-3 whitespace-nowrap align-middle">
-                                  <span
-                                    className={`text-[10px] font-semibold py-1 rounded-lg inline-block w-[120px] text-center leading-tight break-words ${getLeaveStatusStyle(
-                                      item.leaveStatus
-                                    )}`}
-                                  >
-                                    {item.leaveStatus}
-                                  </span>
+                                {`${new Date(
+                                    item.fromDate
+                                  ).toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })} - ${new Date(
+                                    item.toDate
+                                  ).toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}`}
                                 </td>
-                                   <td className="px-3 py-3 text-center">
-                                                               <button
-                                                                 id={btnId}
-                                                                 className="text-[10px] font-semibold dark:text-white  "
-                                                                 onClick={(e) => {
-                                                                   if (actionDropdown === item._id) {
-                                                                     setActionDropdown(null);
-                                                                     setDropdownPos(null);
-                                                                   } else {
-                                                                     const rect = (
-                                                                       e.target as HTMLElement
-                                                                     ).getBoundingClientRect();
-                                                                     setDropdownPos({
-                                                                       top: rect.bottom + window.scrollY,
-                                                                       left: rect.left + window.scrollX,
-                                                                     });
-                                                                     setActionDropdown(item._id);
-                                                                   }
-                                                                 }}
-                                                               >
-                                                                 <MoreVertical size={16} />
-                                                               </button>
-                                                               {/* Portal dropdown */}
-                                                               {actionDropdown === item._id &&
-                                                                 dropdownPos &&
-                                                                 typeof window !== "undefined" &&
-                                                                 ReactDOM.createPortal(
-                                                                   <div
-                                                                     style={{
-                                                                       position: "absolute",
-                                                                       top: dropdownPos.top + 4,
-                                                                       left: dropdownPos.left - 80,
-                                                                       zIndex: 9999,
-                                                                       width: "7.5rem",
-                                                                     }}
-                                                                     className="bg-white dark:bg-[#3b3b3b] shadow-md text-center rounded-md"
-                                                                   >
-                                                                     <button
-                                                                       className="w-full px-2 py-1 text-[10px] text-[#17243E] dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
-                                                                       onClick={() => {
-                                                                         setSelectedLeave({
-                                                                           id: item._id, // This is the leave request id, used for update
-                                                                           summaryId: item._id, // If you need to send summaryId in body, keep this
-                                                                           employeeId: item.employeeId,
-                                                                           approvedId: item.approvedId,
-                                                                           approvedName: item.approvedName,
-                                                                           name: item.name,
-                                                                           designation: item.role,
-                                                                           leaveType: item.leaveType,
-                                                                           fromDate: item.fromDate,
-                                                                           toDate: item.toDate,
-                                                                           dateRange: `${new Date(item.fromDate).toLocaleDateString("en-US", {
-                                                                             month: "short",
-                                                                             day: "numeric",
-                                                                             year: "numeric",
-                                                                           })} - ${new Date(item.toDate).toLocaleDateString("en-US", {
-                                                                             month: "short",
-                                                                             day: "numeric",
-                                                                             year: "numeric",
-                                                                           })}`,
-                                                                           reason: item.reason,
-                                                                           status: item.leaveStatus,
-                                                                           approvedDays: item.approvedDays,
-                                                                           deductionDays: item.deductionDays,
-                                                                         });
-                                                                         setActionDropdown(null);
-                                                                         setDropdownPos(null);
-                                                                       }}
-                                                                     >
-                                                                       View
-                                                                     </button>
-                                                                     <button
-                                                                       className="w-full px-2 py-1 text-[10px] text-[#17243E] dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
-                                                                       onClick={() => {
-                                                                         // Implement cancel logic here
-                                                                         setActionDropdown(null);
-                                                                         setDropdownPos(null);
-                                                                       }}
-                                                                     >
-                                                                       Cancel
-                                                                     </button>
-                                                                   </div>,
-                                                                   document.body
-                                                                 )}
-                                                             </td>
+                              <td className="px-3 py-3 dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">{item.reason}</td>
+                              <td className="px-4 py-3 whitespace-nowrap align-middle">
+                                <span
+                                  className={`text-[10px] font-semibold py-1 rounded-lg inline-block w-[120px] text-center leading-tight break-words ${getLeaveStatusStyle(
+                                    item.leaveStatus
+                                  )}`}
+                                >
+                                  {item.leaveStatus}
+                                </span>
+                              </td>
+                              <td className="px-3 py-3 text-center">
+                                <button
+                                  id={btnId}
+                                  className="text-[10px] font-semibold dark:text-white  "
+                                  onClick={(e) => {
+                                    if (actionDropdown === item._id) {
+                                      setActionDropdown(null);
+                                      setDropdownPos(null);
+                                    } else {
+                                      const rect = (
+                                        e.target as HTMLElement
+                                      ).getBoundingClientRect();
+                                      setDropdownPos({
+                                        top: rect.bottom + window.scrollY,
+                                        left: rect.left + window.scrollX,
+                                      });
+                                      setActionDropdown(item._id);
+                                    }
+                                  }}
+                                >
+                                  <MoreVertical size={16} />
+                                </button>
+                                {/* Portal dropdown */}
+                                {actionDropdown === item._id &&
+                                  dropdownPos &&
+                                  typeof window !== "undefined" &&
+                                  ReactDOM.createPortal(
+                                    <div
+                                      style={{
+                                        position: "absolute",
+                                        top: dropdownPos.top + 4,
+                                        left: dropdownPos.left - 80,
+                                        zIndex: 9999,
+                                        width: "7.5rem",
+                                      }}
+                                      className="bg-white dark:bg-[#3b3b3b] shadow-md text-center rounded-md"
+                                    >
+                                      <button
+                                        className="w-full px-2 py-1 text-[10px] text-[#17243E] dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
+                                        onClick={() => {
+                                          setSelectedLeave({
+                                            id: item._id, // This is the leave request id, used for update
+                                            summaryId: item._id, // If you need to send summaryId in body, keep this
+                                            employeeId: item.employeeId,
+                                            approvedId: item.approvedId,
+                                            approvedName: item.approvedName,
+                                            name: item.name,
+                                            designation: item.role,
+                                            leaveType: item.leaveType,
+                                            fromDate: item.fromDate,
+                                            toDate: item.toDate,
+                                            dateRange: `${new Date(item.fromDate).toLocaleDateString("en-US", {
+                                              month: "short",
+                                              day: "numeric",
+                                              year: "numeric",
+                                            })} - ${new Date(item.toDate).toLocaleDateString("en-US", {
+                                              month: "short",
+                                              day: "numeric",
+                                              year: "numeric",
+                                            })}`,
+                                            reason: item.reason,
+                                            status: item.leaveStatus,
+                                            approvedDays: item.approvedDays,
+                                            deductionDays: item.deductionDays,
+                                          });
+                                          setActionDropdown(null);
+                                          setDropdownPos(null);
+                                        }}
+                                      >
+                                        View
+                                      </button>
+                                      <button
+                                        className="w-full px-2 py-1 text-[10px] text-[#17243E] dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
+                                        onClick={() => {
+                                          // Implement cancel logic here
+                                          setActionDropdown(null);
+                                          setDropdownPos(null);
+                                        }}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>,
+                                    document.body
+                                  )}
+                              </td>
                             </tr>
                           );
                         })
@@ -447,313 +461,313 @@ export default function ApplicantsPage() {
                 </table>
               </div>
 
-                  {selectedLeave && (
-                  <div className="fixed inset-0 z-50 bg-black bg-opacity-30 shadow-md flex items-center justify-center ">
-                    <div className="bg-white rounded-xl w-full max-w-4xl p-6 shadow-xl relative dark:bg-[#2c2c2c]">
-                      <h2 className="text-lg font-semibold text-[#0d1b3e] mb-6 dark:text-[#fcfcfc]">
-                        Leave Request Approval
-                      </h2>
+              {selectedLeave && (
+                <div className="fixed inset-0 z-50 bg-black bg-opacity-30 shadow-md flex items-center justify-center ">
+                  <div className="bg-white rounded-xl w-full max-w-4xl p-6 shadow-xl relative dark:bg-[#2c2c2c]">
+                    <h2 className="text-lg font-semibold text-[#0d1b3e] mb-6 dark:text-[#fcfcfc]">
+                      Leave Request Approval
+                    </h2>
 
-                      <button
-                        onClick={() => setSelectedLeave(null)}
-                        className="absolute top-4 right-4 text-xl text-[#0d1b3e] hover:text-gray-600 dark:text-[#fcfcfc]"
-                      >
-                        ✕
-                      </button>
+                    <button
+                      onClick={() => setSelectedLeave(null)}
+                      className="absolute top-4 right-4 text-xl text-[#0d1b3e] hover:text-gray-600 dark:text-[#fcfcfc]"
+                    >
+                      ✕
+                    </button>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Left Section */}
-                        <div className="grid grid-cols-[160px_1fr] items-center">
-                          {/* Employee ID */}
-                          <label
-                            htmlFor="employeeID"
-                            className="font-medium text-sm"
-                          >
-                            Employee ID
-                          </label>
-                          <input
-                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
-                            value={selectedLeave.id}
-                            disabled
-                          />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {/* Left Section */}
+                      <div className="grid grid-cols-[160px_1fr] items-center">
+                        {/* Employee ID */}
+                        <label
+                          htmlFor="employeeID"
+                          className="font-medium text-sm"
+                        >
+                          Employee ID
+                        </label>
+                        <input
+                          className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
+                          value={selectedLeave.id}
+                          disabled
+                        />
 
-                          {/* Employee Name */}
-                          <label
-                            htmlFor="employeeName"
-                            className="font-medium text-sm"
-                          >
-                            Employee Name
-                          </label>
-                          <input
-                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
-                            value={selectedLeave.name}
-                            disabled
-                          />
+                        {/* Employee Name */}
+                        <label
+                          htmlFor="employeeName"
+                          className="font-medium text-sm"
+                        >
+                          Employee Name
+                        </label>
+                        <input
+                          className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
+                          value={selectedLeave.name}
+                          disabled
+                        />
 
-                          {/* Designation */}
-                          <label
-                            htmlFor="Designation"
-                            className="font-medium text-sm"
-                          >
-                            Designation
-                          </label>
-                          <input
-                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
-                            value={selectedLeave.designation}
-                            disabled
-                          />
+                        {/* Designation */}
+                        <label
+                          htmlFor="Designation"
+                          className="font-medium text-sm"
+                        >
+                          Designation
+                        </label>
+                        <input
+                          className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
+                          value={selectedLeave.designation}
+                          disabled
+                        />
 
-                          {/* Leave Type */}
-                          <label
-                            htmlFor="Leavetype"
-                            className="font-medium text-sm"
-                          >
-                            Leave Type
-                          </label>
-                          <input
-                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]]"
-                            value={selectedLeave.leaveType}
-                            disabled
-                          />
+                        {/* Leave Type */}
+                        <label
+                          htmlFor="Leavetype"
+                          className="font-medium text-sm"
+                        >
+                          Leave Type
+                        </label>
+                        <input
+                          className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]]"
+                          value={selectedLeave.leaveType}
+                          disabled
+                        />
 
-                          {/* From Date */}
-                          <label
-                            htmlFor="from date"
-                            className="font-medium text-sm"
-                          >
-                            From Date
-                          </label>
-                          <input
-                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
-                            value={new Date(
-                              selectedLeave.fromDate
-                            ).toLocaleDateString("en-GB")}
-                            disabled
-                          />
+                        {/* From Date */}
+                        <label
+                          htmlFor="from date"
+                          className="font-medium text-sm"
+                        >
+                          From Date
+                        </label>
+                        <input
+                          className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
+                          value={new Date(
+                            selectedLeave.fromDate
+                          ).toLocaleDateString("en-GB")}
+                          disabled
+                        />
 
-                          {/* To Date */}
-                          <label
-                            htmlFor="todate"
-                            className="font-medium text-sm"
-                          >
-                            To Date
-                          </label>
-                          <input
-                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
-                            value={new Date(
-                              selectedLeave.toDate
-                            ).toLocaleDateString("en-GB")}
-                            disabled
-                          />
+                        {/* To Date */}
+                        <label
+                          htmlFor="todate"
+                          className="font-medium text-sm"
+                        >
+                          To Date
+                        </label>
+                        <input
+                          className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
+                          value={new Date(
+                            selectedLeave.toDate
+                          ).toLocaleDateString("en-GB")}
+                          disabled
+                        />
 
-                          {/* Reason For Leave */}
-                          <label
-                            htmlFor="reason"
-                            className="font-medium text-sm"
-                          >
-                            Reason For Leave
-                          </label>
-                          <textarea
-                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
-                            rows={3}
-                            value={selectedLeave.reason}
-                            disabled
-                          />
-                        </div>
+                        {/* Reason For Leave */}
+                        <label
+                          htmlFor="reason"
+                          className="font-medium text-sm"
+                        >
+                          Reason For Leave
+                        </label>
+                        <textarea
+                          className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
+                          rows={3}
+                          value={selectedLeave.reason}
+                          disabled
+                        />
+                      </div>
 
-                        {/* Right Section */}
-                        <div className="space-y-4 text-[#0d1b3e] text-sm  dark:text-[#cfcfcf]">
-                          <h3 className="font-semibold text-[#1e2a50] dark:text-[#fcfcfc] ">
-                            Leave Records
-                          </h3>
+                      {/* Right Section */}
+                      <div className="space-y-4 text-[#0d1b3e] text-sm  dark:text-[#cfcfcf]">
+                        <h3 className="font-semibold text-[#1e2a50] dark:text-[#fcfcfc] ">
+                          Leave Records
+                        </h3>
 
-                          {/* Leave Records Box */}
-                          <div className="border dark:border-[#8e8d8d] rounded-xl p-4 space-y-3">
-                            {[
-                              { label: "Sick Leave", value: "2" },
-                              { label: "Casual Leave", value: "2" },
-                            ].map((item) => (
-                              <div
-                                key={item.label}
-                                className="flex items-center justify-between"
-                              >
-                                <span>{item.label}</span>
-                                <input
-                                  className="w-20 border border-gray-300 rounded-md px-2 py-1 text-center text-[#0d1b3e] shadow-sm focus:outline-none dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
-                                  value={item.value}
-                                  readOnly
-                                />
-                              </div>
-                            ))}
-                          </div>
-
-                          <div className="space-y-4 text-[#0d1b3e] text-sm  dark:text-[#cfcfcf]">
-                            {/* Deductions */}
-                            <div className="flex items-center gap-3">
-                              <label
-                                htmlFor="deductions"
-                                className="w-32 font-medium"
-                              >
-                                Deductions
-                              </label>
+                        {/* Leave Records Box */}
+                        <div className="border dark:border-[#8e8d8d] rounded-xl p-4 space-y-3">
+                          {[
+                            { label: "Sick Leave", value: "2" },
+                            { label: "Casual Leave", value: "2" },
+                          ].map((item) => (
+                            <div
+                              key={item.label}
+                              className="flex items-center justify-between"
+                            >
+                              <span>{item.label}</span>
                               <input
-                                type="checkbox"
-                                checked
-                                className="w-5 h-5 border border-gray-400 rounded accent-[#576CBC]"
+                                className="w-20 border border-gray-300 rounded-md px-2 py-1 text-center text-[#0d1b3e] shadow-sm focus:outline-none dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
+                                value={item.value}
                                 readOnly
                               />
                             </div>
+                          ))}
+                        </div>
 
-                            {/* Approved Days */}
-                            <div className="flex items-center gap-3 dark:bg-[#2c2c2c] ">
-                              <label
-                                className="font-medium text-sm dark:bg-[#2c2c2c]"
-                                htmlFor="approveddays"
-                              >
-                                Approved Days
-                              </label>
-                              <div className="relative w-full">
-                                <input
-                                  type="text"
-                       
-                                  onChange={(e) =>
-                                    selectedLeave?.status === "WAITINGLIST" &&
-                                    setApprovedDays(e.target.value)
-                                  }
-                                  className="w-full border border-[#bfc6db] rounded-md px-4 py-2 text-[#012A4A] pr-10 shadow-sm 
+                        <div className="space-y-4 text-[#0d1b3e] text-sm  dark:text-[#cfcfcf]">
+                          {/* Deductions */}
+                          <div className="flex items-center gap-3">
+                            <label
+                              htmlFor="deductions"
+                              className="w-32 font-medium"
+                            >
+                              Deductions
+                            </label>
+                            <input
+                              type="checkbox"
+                              checked
+                              className="w-5 h-5 border border-gray-400 rounded accent-[#576CBC]"
+                              readOnly
+                            />
+                          </div>
+
+                          {/* Approved Days */}
+                          <div className="flex items-center gap-3 dark:bg-[#2c2c2c] ">
+                            <label
+                              className="font-medium text-sm dark:bg-[#2c2c2c]"
+                              htmlFor="approveddays"
+                            >
+                              Approved Days
+                            </label>
+                            <div className="relative w-full">
+                              <input
+                                type="text"
+
+                                onChange={(e) =>
+                                  selectedLeave?.status === "WAITINGLIST" &&
+                                  setApprovedDays(e.target.value)
+                                }
+                                className="w-full border border-[#bfc6db] rounded-md px-4 py-2 text-[#012A4A] pr-10 shadow-sm 
     dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
-                                  disabled={
-                                    selectedLeave?.status !== "WAITINGLIST"
-                                  }
-                                />
-                              </div>
+                                disabled={
+                                  selectedLeave?.status !== "WAITINGLIST"
+                                }
+                              />
                             </div>
+                          </div>
 
-                            {/* From Date */}
-                            <div className="flex items-center gap-3">
-                              <label
-                                htmlFor="fromdate"
-                                className="w-32 font-medium"
-                              >
-                                From Date
-                              </label>
-                              <div className="relative w-full">
-                                <input
-                                  type="date"
-                           
-                                  onChange={(e) =>
-                                    selectedLeave?.status === "WAITINGLIST" &&
-                                    setFromDate(e.target.value)
-                                  }
-                                  className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d] "
-                                  disabled={
-                                    selectedLeave?.status !== "WAITINGLIST"
-                                  }
-                                />
-                              </div>
+                          {/* From Date */}
+                          <div className="flex items-center gap-3">
+                            <label
+                              htmlFor="fromdate"
+                              className="w-32 font-medium"
+                            >
+                              From Date
+                            </label>
+                            <div className="relative w-full">
+                              <input
+                                type="date"
+
+                                onChange={(e) =>
+                                  selectedLeave?.status === "WAITINGLIST" &&
+                                  setFromDate(e.target.value)
+                                }
+                                className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d] "
+                                disabled={
+                                  selectedLeave?.status !== "WAITINGLIST"
+                                }
+                              />
                             </div>
+                          </div>
 
-                            {/* To Date */}
-                            <div className="flex items-center gap-3">
-                              <label
-                                htmlFor="todate"
-                                className="w-32 font-medium"
-                              >
-                                To Date
-                              </label>
-                              <div className="relative w-full">
-                                <input
-                                  type="date"
-                        
-                                  onChange={(e) =>
-                                    selectedLeave?.status === "WAITINGLIST" &&
-                                    setToDate(e.target.value)
-                                  }
-                                  className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d] "
-                                  disabled={
-                                    selectedLeave?.status !== "WAITINGLIST"
-                                  }
-                                />
-                              </div>
+                          {/* To Date */}
+                          <div className="flex items-center gap-3">
+                            <label
+                              htmlFor="todate"
+                              className="w-32 font-medium"
+                            >
+                              To Date
+                            </label>
+                            <div className="relative w-full">
+                              <input
+                                type="date"
+
+                                onChange={(e) =>
+                                  selectedLeave?.status === "WAITINGLIST" &&
+                                  setToDate(e.target.value)
+                                }
+                                className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d] "
+                                disabled={
+                                  selectedLeave?.status !== "WAITINGLIST"
+                                }
+                              />
                             </div>
+                          </div>
 
-                            {/* Deduction Days */}
-                            <div className="flex items-center gap-3">
-                              <label
-                                htmlFor="deductiondays"
-                                className="w-32 font-medium"
-                              >
-                                Deduction Days
-                              </label>
-                              <div className="relative w-full">
-                                <input
-                                  type="text"
-                                  value={
-                                    selectedLeave?.status === "APPROVED" ||
+                          {/* Deduction Days */}
+                          <div className="flex items-center gap-3">
+                            <label
+                              htmlFor="deductiondays"
+                              className="w-32 font-medium"
+                            >
+                              Deduction Days
+                            </label>
+                            <div className="relative w-full">
+                              <input
+                                type="text"
+                                value={
+                                  selectedLeave?.status === "APPROVED" ||
                                     selectedLeave?.status === "REJECTED"
-                                      ? selectedLeave?.deductionDays || ""
-                                      : deductionDays
-                                  }
-                                  onChange={(e) =>
-                                    selectedLeave?.status === "WAITINGLIST" &&
-                                    setDeductionDays(e.target.value)
-                                  }
-                                  className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d] "
-                                  disabled={
-                                    selectedLeave?.status !== "WAITINGLIST"
-                                  }
-                                />
+                                    ? selectedLeave?.deductionDays || ""
+                                    : deductionDays
+                                }
+                                onChange={(e) =>
+                                  selectedLeave?.status === "WAITINGLIST" &&
+                                  setDeductionDays(e.target.value)
+                                }
+                                className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d] "
+                                disabled={
+                                  selectedLeave?.status !== "WAITINGLIST"
+                                }
+                              />
 
-                                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none"></div>
-                              </div>
+                              <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none"></div>
                             </div>
                           </div>
                         </div>
                       </div>
+                    </div>
 
-                      <div className="flex justify-end gap-4 mt-6">
-                        {selectedLeave?.status === "WAITINGLIST" ? (
-                          <>
-                            {/* Decline Button */}
-                            <button
-                              onClick={handleDecline}
-                              className="px-4 py-1 border border-[#D34645] text-[#D34645] rounded-lg transition"
-                            >
-                              Decline
-                            </button>
+                    <div className="flex justify-end gap-4 mt-6">
+                      {selectedLeave?.status === "WAITINGLIST" ? (
+                        <>
+                          {/* Decline Button */}
+                          <button
+                            onClick={handleDecline}
+                            className="px-4 py-1 border border-[#D34645] text-[#D34645] rounded-lg transition"
+                          >
+                            Decline
+                          </button>
 
-                            {/* Approve Button */}
-                            <button
-                              onClick={handleApprove}
-                              className="px-4 py-1 bg-[#576CBC] text-white rounded-lg hover:bg-[#576CBC] transition"
-                            >
-                              Approve
-                            </button>
-                          </>
-                        ) : selectedLeave?.status === "APPROVED" ||
-                          selectedLeave?.status === "REJECTED" ? (
-                          <>
-                            {/* Disabled Decline Button */}
-                            <button
-                              disabled
-                              className="px-4 py-1 border border-[#576CBC] text-[#576CBC] rounded-lg opacity-50 cursor-not-allowed"
-                            >
-                              Decline
-                            </button>
+                          {/* Approve Button */}
+                          <button
+                            onClick={handleApprove}
+                            className="px-4 py-1 bg-[#576CBC] text-white rounded-lg hover:bg-[#576CBC] transition"
+                          >
+                            Approve
+                          </button>
+                        </>
+                      ) : selectedLeave?.status === "APPROVED" ||
+                        selectedLeave?.status === "REJECTED" ? (
+                        <>
+                          {/* Disabled Decline Button */}
+                          <button
+                            disabled
+                            className="px-4 py-1 border border-[#576CBC] text-[#576CBC] rounded-lg opacity-50 cursor-not-allowed"
+                          >
+                            Decline
+                          </button>
 
-                            {/* Disabled Approve Button */}
-                            <button
-                              disabled
-                              className="px-4 py-1 bg-[#576CBC] text-white rounded-lg opacity-50 cursor-not-allowed"
-                            >
-                              Approve
-                            </button>
-                          </>
-                        ) : null}
-                      </div>
+                          {/* Disabled Approve Button */}
+                          <button
+                            disabled
+                            className="px-4 py-1 bg-[#576CBC] text-white rounded-lg opacity-50 cursor-not-allowed"
+                          >
+                            Approve
+                          </button>
+                        </>
+                      ) : null}
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
               {/* Pagination */}
               <Pagination
