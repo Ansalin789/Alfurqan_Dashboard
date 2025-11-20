@@ -263,17 +263,17 @@ interface SalaryWagesResponse {
 }
 
 const Teacher = () => {
-  const [activeTab, setActiveTab] = useState("Studentslist");
+  const [activeTab, setActiveTab] = useState("Studentsl List");
   const [view, setView] = useState<"month" | "week" | "day" | "agenda">(
     "agenda"
   );
   const tabs = [
-    "Studentslist",
-    "ScheduledClass",
+    "Students List",
+    "Scheduled Class",
     "Earnings",
     "Payments",
     "Wages",
-    "WorkingHours",
+    "Working Hours",
   ];
   const searchParams = useSearchParams();
   const employeeId = searchParams.get("teacherId");
@@ -982,9 +982,9 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
 
   const getFilterFieldsForTab = (tab: string) => {
     switch (tab) {
-      case 'Studentslist':
+      case 'Students List':
         return studentslistFilterFields;
-      case 'ScheduledClass':
+      case 'Scheduled Class':
         return scheduledClassFilterFields;
       case 'Earnings':
         return earningsFilterFields;
@@ -992,7 +992,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
         return paymentsFilterFields;
       case 'Wages':
         return wagesFilterFields;
-      case 'WorkingHours':
+      case 'Working Hours':
         return workingHoursFilterFields;
       default:
         return [];
@@ -1001,7 +1001,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
 
   return (
     <BaseLayout4>
-      <TeacherHeader currentSection="Employees" />
+      <TeacherHeader currentSection="Employees" showBackPath="/admin-main/ui/employees" showBackButton={true}/>
       <div className="p-4 min-h-screen w-full">
         <div className="grid grid-cols-5 gap-2">
           {/* Left Card */}
@@ -1131,7 +1131,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
           </div>
 
           <div className="py-2">
-            {activeTab === "Studentslist" && (
+            {activeTab === "Students List" && (
               <div className="">
                 <div className="rounded-xl overflow-hidden">
                   <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
@@ -1163,19 +1163,19 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                     >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Student ID
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Student's name
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Country
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Subject
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Duration
                           </th>
                         </tr>
@@ -1190,12 +1190,12 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                               return (
                                 <tr
                                   key={item.studentId || index}
-                                  className={`text-center dark:text-white ${index % 2 === 0
+                                  className={`text-left dark:text-white ${index % 2 === 0
                                       ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                       : "bg-[#F8F8F8] dark:bg-[#303030]"
                                     }`}
                                 >
-                                  <td className="p-3">{item.studentId}</td>
+                                  <td className="p-3">{student?.studentId}</td>
                                   <td className="p-3">
                                     {student?.studentFirstName}
                                   </td>
@@ -1235,7 +1235,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
               </div>
             )}
 
-            {activeTab === "ScheduledClass" && (
+            {activeTab === "Scheduled Class" && (
               <div className="space-y-2 -mt-8">
                 <div className="justify-end text-end">
                   <button
@@ -1279,28 +1279,28 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                     >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Student name
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Student ID
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Courses
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Class Type
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Course Duration
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Date
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Time
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Status
                           </th>
                         </tr>
@@ -1313,7 +1313,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                             .map((event, index) => (
                               <tr
                                 key={event._id}
-                                className={`text-center dark:text-white ${index % 2 === 0
+                                className={`text-left dark:text-white ${index % 2 === 0
                                     ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                     : "bg-[#F8F8F8] dark:bg-[#303030]"
                                   }`}
@@ -1419,16 +1419,16 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                     >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Month
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Total Classes
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Total Hours
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Total Earnings
                           </th>
                         </tr>
@@ -1438,7 +1438,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                           paginatedEarnings.map((row, index) => (
                             <tr
                               key={row.key}
-                              className={`text-center dark:text-white ${index % 2 === 0
+                              className={`text-left dark:text-white ${index % 2 === 0
                                   ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
                                 }`}
@@ -1507,22 +1507,22 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                     >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Payment Date
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Amount
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             DeductionAmount
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Payment Method
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Status
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Action
                           </th>
                         </tr>
@@ -1535,7 +1535,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                             .map((item, index) => (
                               <tr
                                 key={item._id}
-                                className={`text-center dark:text-white ${index % 2 === 0
+                                className={`text-left dark:text-white ${index % 2 === 0
                                     ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                     : "bg-[#F8F8F8] dark:bg-[#303030]"
                                   }`}
@@ -1567,7 +1567,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                                     {item.paymentStatus}
                                   </span>
                                 </td>
-                                <td className="p-3 text-center">
+                                <td className="p-3 text-left">
                                   <button className="text-blue-500 text-[11px]">
                                     Download
                                   </button>
@@ -1638,16 +1638,16 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                     >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Class Name
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Rate
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Currency
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Duration
                           </th>
 
@@ -1658,7 +1658,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                           paginatedWages.map((item, index) => (
                             <tr
                               key={item._id}
-                              className={`text-center dark:text-white ${index % 2 === 0
+                              className={`text-left dark:text-white ${index % 2 === 0
                                   ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
                                 }`}
@@ -1669,7 +1669,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                               <td className="p-3">
                                 <input
                                   type="text"
-                                  className="w-16 px-2 py-1 text-xs dark:bg-[#2C2C2C] dark:text-white text-center"
+                                  className="w-16 px-2 py-1 text-xs dark:bg-[#2C2C2C] dark:text-white text-left"
                                   value={item.classType?.rate || ""}
                                   onChange={e => {
                                     const newRate = e.target.value;
@@ -1694,7 +1694,6 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                                     }
                                   }}
                                 />
-
                               </td>
                               <td className="p-3">
                                 {item.classType?.currency || "-"}
@@ -1704,7 +1703,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                                   <span className="text-xs dark:text-white">1 day</span>
                                 ) : (
                                   <select
-                                    className="w-20 px-2 py-1 text-xs dark:bg-[#2C2C2C] dark:text-white"
+                                    className="w-20 px-2 py-1 text-xs dark:bg-[#2C2C2C] dark:text-white text-left"
                                     value={item.classType?.hoursMins || ""}
                                     onChange={e => {
                                       const hoursMins = e.target.value;
@@ -1759,7 +1758,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
               </div>
             )}
 
-            {activeTab === "WorkingHours" && (
+            {activeTab === "Working Hours" && (
               <div className="space-y-6">
                 <div className="rounded-xl overflow-hidden">
                   <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
@@ -1790,16 +1789,16 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                     >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Day
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Date
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Working Hours
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             GMT
                           </th>
                         </tr>
@@ -1811,7 +1810,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                           .map((item, index) => (
                             <tr
                               key={index}
-                              className={`text-center dark:text-white ${index % 2 === 0
+                              className={`text-left dark:text-white ${index % 2 === 0
                                   ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
                                 }`}

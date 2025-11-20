@@ -428,7 +428,7 @@ const page = () => {
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Working Hours" />
+      <AdminHeader currentSection="Working Hours" showBackButton={true} showBackPath={`/admin-main/ui/employees/teacher?teacherId=${employeeId}`} />
       <div>
         <div>
           <div className="rounded-xl overflow-hidden">
@@ -517,16 +517,16 @@ const page = () => {
               >
                 <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                   <tr className="font-medium">
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Day
                     </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Date
                     </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       Working Hours
                     </th>
-                    <th className="p-4 font-semibold text-[12px] text-center">
+                    <th className="p-4 font-semibold text-[12px] text-left">
                       GMT
                     </th>
                   </tr>
@@ -536,7 +536,7 @@ const page = () => {
                     currentItems.map((item, index) => (
                       <tr
                         key={index}
-                        className={`text-center dark:text-white ${
+                        className={`text-left dark:text-white ${
                           index % 2 === 0
                             ? "bg-[#fff] dark:bg-[#2C2C2C]"
                             : "bg-[#F8F8F8] dark:bg-[#303030]"

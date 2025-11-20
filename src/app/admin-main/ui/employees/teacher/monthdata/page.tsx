@@ -197,28 +197,28 @@ const MonthDataPage = () => {
             style={{ width: "100%", tableLayout: "fixed" }}>
             <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
               <tr>
-                <th className="p-3 py-5  font-semibold text-center">Student Name</th>
-                <th className="p-3 py-5  font-semibold text-center">Student ID</th>
-                <th className="p-3 py-5  font-semibold text-center">Courses</th>
-                <th className="p-3 py-5  font-semibold text-center">Course Type</th>
-                <th className="p-3 py-5  font-semibold text-center">Course Duration</th>
-                <th className="p-3 py-5  font-semibold text-center">Class Date & Time</th>
-                <th className="p-3 py-5  font-semibold text-center">Amount</th>
-                <th className="p-3 py-5  font-semibold text-center">Status</th>
+                <th className="p-3 py-5  font-semibold text-left">Student Name</th>
+                <th className="p-3 py-5  font-semibold text-left">Student ID</th>
+                <th className="p-3 py-5  font-semibold text-left">Courses</th>
+                <th className="p-3 py-5  font-semibold text-left">Course Type</th>
+                <th className="p-3 py-5  font-semibold text-left">Course Duration</th>
+                <th className="p-3 py-5  font-semibold text-left">Class Date & Time</th>
+                <th className="p-3 py-5  font-semibold text-left">Amount</th>
+                <th className="p-3 py-5  font-semibold text-left">Status</th>
               </tr>
             </thead>
             <tbody className="text-gray-700">
               {currentItems.map((item, index) => (
                 <tr key={index} className={`text-[10px] font-medium mt-0 ${index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
                   }`}>
-                  <td className="px-6 py-2 whitespace-nowrap">{item.studentName}</td>
-                  <td className="px-6 py-2">{item.studentId}</td>
-                  <td className="px-6 py-2">{item.course}</td>
-                  <td className="px-6 py-2">{item.type}</td>
-                  <td className="px-6 py-2">{item.duration}</td>
-                  <td className="px-6 py-2">{item.dateTime}</td>
-                  <td className="px-6 py-2">{item.amount}</td>
-                  <td className="px-6 py-2">
+                  <td className="px-6 py-2 whitespace-nowrap text-left">{item.studentName}</td>
+                  <td className="px-6 py-2 text-left">{item.studentId}</td>
+                  <td className="px-6 py-2 text-left">{item.course}</td>
+                  <td className="px-6 py-2 text-left">{item.type}</td>
+                  <td className="px-6 py-2 text-left">{item.duration}</td>
+                  <td className="px-6 py-2 text-left">{item.dateTime}</td>
+                  <td className="px-6 py-2 text-left">{item.amount}</td>
+                  <td className="px-6 py-2 text-left">
                     <span className={`px-3 py-1 rounded-full text-[10px] font-medium ${getStatusColor(item.status)}`}>
                       {item.status}
                     </span>

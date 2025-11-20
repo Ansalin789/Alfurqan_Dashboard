@@ -88,57 +88,55 @@ const Support = () => {
             <div className="px-6">
               <details className="group mb-6 py-2 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  What if I encounter technical issues?
+                How can I view trial or evaluation class requests?
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Visit the Help Center or Support section of the site. You can
-                  often find troubleshooting guides or contact the support team
-                  via email, chat, or phone.
+                Go to the “Trial Classes” section to view all pending and scheduled trial or evaluation class
+                requests.
                 </div>
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  Can I use the Teacher Module to communicate with students?
-                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
+                How do I assign a teacher for a trial class?                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Yes, the Teacher Module provides features to communicate
-                  directly with students.
+                Teachers are usually assigned at the end of the evaluation session.
+You can also open a trial request, click “Assign Teacher”, and select an available teacher based
+on subject and timing.
                 </div>
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  Can I track my students' progress?
-                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
+                How do I reschedule a class requested by a teacher or student?                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Yes, the Teacher Module allows tracking student progress
-                  effectively.
+                Reschedule requests appear as notifications. Click the notification to open the Scheduled Class
+                List, review the request, and approve or modify the new class time.
                 </div>
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  Does the platform support mobile access?
+                How can I track pending evaluations or trial classes?
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Yes, the platform is fully responsive and can be accessed from
-                  any mobile device.
+                In the Trial Management List, use the filter to view “Pending Trials” under Trial Sessions or
+                Evaluation Sessions for pending follow-ups.
                 </div>
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  Can I provide personalized feedback to students?
-                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
+                How can I schedule regular classes for a student after a successful trial?                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Yes, you can provide personalized feedback to students through
-                  the platform.
+                Once approved, classes are auto-assigned based on student requests.
+You can also manually assign them by going to “Manage Student”, selecting the student, and
+setting up the teacher and class timings.
                 </div>
               </details>
             </div>

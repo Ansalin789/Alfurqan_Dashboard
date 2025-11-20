@@ -86,57 +86,58 @@ const Support = () => {
             <div className="px-6">
               <details className="group mb-6 py-2 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  What if I encounter technical issues?
+                 How can I view my upcoming class schedule and student list?
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Visit the Help Center or Support section of the site. You can
-                  often find troubleshooting guides or contact the support team
-                  via email, chat, or phone.
+                Go to the “Schedule” option in the menu to view all your assigned classes and upcoming
+sessions.
+To view your Student List and Class List, open the “Analytics” section from the menu.
                 </div>
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  Can I use the Teacher Module to communicate with students?
+                How do I mark student attendance or performance after class?
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Yes, the Teacher Module provides features to communicate
-                  directly with students.
+                Attendance is recorded automatically based on the session’s start and end time.
+After each class, you’ll be prompted to add a short feedback or performance note for the
+student.
                 </div>
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  Can I track my students' progress?
+                Can I reschedule or cancel a class due to an emergency?
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Yes, the Teacher Module allows tracking student progress
-                  effectively.
+                Yes. Click “Request Reschedule” next to the class you wish to change.
+Your request will be reviewed by the Academic Coach and approved based on student and class
+availability.
+Note: Reschedule requests must be made at least 4 hours before the class start time.
                 </div>
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  Does the platform support mobile access?
-                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
+                Where can I view my payment status or monthly earnings?                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Yes, the platform is fully responsive and can be accessed from
-                  any mobile device.
+                Go to “Analytics → Earnings” in your dashboard. It displays your teaching hours, monthly
+                summary, and payment history.
                 </div>
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
-                  Can I provide personalized feedback to students?
-                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
+                Who should I contact for technical or platform-related issues?                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
                 <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
-                  Yes, you can provide personalized feedback to students through
-                  the platform.
+                Reach out to the Support Team via the “Support” section in your dashboard or through the
+official contact number for immediate help.
                 </div>
               </details>
             </div>
