@@ -526,7 +526,7 @@ const TrialByTeachers = () => {
   }, []);
 
   const fetchData = (token: string) => {
-    fetch("http://localhost:5001/teacher-student-count", {
+    fetch("https://api.blackstoneinfomaticstech.com/teacher-student-count", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

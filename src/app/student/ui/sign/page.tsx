@@ -132,7 +132,7 @@ const SignIn: React.FC = () => {
 
   const checkEmail = async (email: string) => {
     try {
-      const response = await axios.post(`http://localhost:5001/check-email`, {
+      const response = await axios.post(`https://api.blackstoneinfomaticstech.com/check-email`, {
         email,
       });
 
