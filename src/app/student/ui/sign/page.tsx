@@ -158,14 +158,32 @@ const SignIn: React.FC = () => {
     }
   };
 
+  const getGoogleUserInfo = async (accessToken: string) => {
+  try {
+    const response = await axios.get(
+      "https://www.googleapis.com/oauth2/v3/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    return response.data; // contains email, name, picture, etc.
+  } catch (err) {
+    console.error("Failed to fetch Google user:", err);
+    return null;
+  }
+};
+
   const handleGoogleSuccess = async (response: CredentialResponse) => {
     const { credential } = response;
     if (!credential) {
       console.error("Google login failed: No credential received");
-      setError("Google login failed: No credential received");
       return;
     }
-    const email = extractEmailFromCredential(credential);
+    const emaildata =await getGoogleUserInfo(credential);
+    const email : any = emaildata.email;
     
     try {
       setLoading(true);
@@ -190,10 +208,7 @@ const SignIn: React.FC = () => {
     }
   };
 
-  const extractEmailFromCredential = (credential: string) => {
-    const decodedCredential = JSON.parse(atob(credential.split(".")[1]));
-    return decodedCredential.email;
-  };
+ 
 
   interface GoogleError {
     error: string;

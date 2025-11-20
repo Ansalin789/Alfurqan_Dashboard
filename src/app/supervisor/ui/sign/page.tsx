@@ -231,6 +231,24 @@ const SignIn: React.FC = () => {
     }
   };
 
+ const getGoogleUserInfo = async (accessToken: string) => {
+  try {
+    const response = await axios.get(
+      "https://www.googleapis.com/oauth2/v3/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    return response.data; // contains email, name, picture, etc.
+  } catch (err) {
+    console.error("Failed to fetch Google user:", err);
+    return null;
+  }
+};
+
   const handleGoogleSuccess = async (response: CredentialResponse) => {
     const { credential } = response;
     if (!credential) {
@@ -238,21 +256,8 @@ const SignIn: React.FC = () => {
       setLoginError("Google login failed: No credential received");
       return;
     }
-
-    const extractEmailFromCredential = (credential: string) => {
-      try {
-        const base64 = credential.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-        const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, "=");
-        const decoded = JSON.parse(atob(padded));
-        return decoded.email;
-      } catch (err) {
-        console.error("Error decoding credential:", err);
-        return null;
-      }
-    };
-
-    const email = extractEmailFromCredential(credential);
-
+    const emaildata =await getGoogleUserInfo(credential);
+    const email : any = emaildata.email;
     const checkEmail = async (email: string) => {
       try {
         const response = await axios.post(

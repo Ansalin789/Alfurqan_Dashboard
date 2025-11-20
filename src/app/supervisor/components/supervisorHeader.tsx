@@ -184,7 +184,7 @@ export default function SupervisorHeader({
         return "📅";
       case "MESSAGE":
         return "💬";
-      case "ASSIGNMENT_ALERT":
+      case "ADMIN_MEETING_SCHEDULED":
         return "📝";
       default:
         return "🔔";
@@ -205,6 +205,10 @@ export default function SupervisorHeader({
     case "ADMIN_NOTIFICATION":
       router.push(`/admin/alerts/${senderId}`);
       break;
+
+    case "ADMIN_MEETING_SCHEDULED":
+      router.push('/supervisor/ui/meetingandtraining');
+      break;  
 
     // case "REQUEST_RESCHEDULE_TEACHER":
     //   router.push(`/Academic-coach/ui/teacherDetails?teacherId=${senderId}`);
