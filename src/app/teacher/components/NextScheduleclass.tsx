@@ -237,7 +237,7 @@ const NextScheduledClass = () => {
       return;
     }
 
-    router.push(`/teacher/ui/liveclass?id=${classData._id}`);
+   window.open(`/teacher/ui/liveclass?id=${classData._id}`, "_blank");
   };
 
   const progress =

@@ -236,8 +236,8 @@ const NextScheduledClass = () => {
       setIsPopupVisible(true);
       return;
     }
-
-    router.push(`/teacher/ui/liveclass?id=${classData._id}`);
+window.open(`/teacher/ui/liveclass?id=${classData._id}`, "_blank");
+    // router.push(`/teacher/ui/liveclass?id=${classData._id}`);
   };
 
   const progress =
