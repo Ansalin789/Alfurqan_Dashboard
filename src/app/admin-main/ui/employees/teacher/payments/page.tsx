@@ -1,5 +1,6 @@
 "use client";
-
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import BaseLayout4 from "@/components/BaseLayout4";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
@@ -219,6 +220,7 @@ interface SalaryWageRecord {
   __v: number;
   balanceAmount: number;
   createdBy: string;
+  comments: string;
   createdDate: string;
   deductionAmount: number;
   employeeMail: string;
@@ -250,6 +252,8 @@ const page = () => {
   const employeeId = searchParams.get("teacherId");
 
   const [salaryWages, setSalaryWages] = useState<SalaryWageRecord[]>([]);
+const [selectedSalary, setSelectedSalary] = useState<SalaryWageRecord | null>(null);
+const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -336,6 +340,10 @@ const page = () => {
     setSearchTerm(query);
     setCurrentPage(1);
   };
+const handleViewDownload = (item: SalaryWageRecord) => {
+  setSelectedSalary(item);
+  setIsReceiptModalOpen(true);
+};
 
   // Filtered and paginated salary wages
   const filteredSalaryWages = salaryWages.filter((item) => {
@@ -377,24 +385,24 @@ const page = () => {
       <AdminHeader currentSection="Payments" showBackButton={true} showBackPath={`/admin-main/ui/employees/teacher?teacherId=${employeeId}`} />
       <div>
         <div className="rounded-xl overflow-hidden">
-        <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-        <input
-                type="text"
-                placeholder="Search"
-                className="bg-transparent outline-none text-[12px] w-32 py-3"
-                value={searchPayments}
-                onChange={(e) => setSearchPayments(e.target.value)}
-              />
+          <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+            <input
+              type="text"
+              placeholder="Search"
+              className="bg-transparent outline-none text-[12px] w-32 py-3"
+              value={searchPayments}
+              onChange={(e) => setSearchPayments(e.target.value)}
+            />
             <div
-                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-3 border-r-2 border-l-2 px-48 cursor-pointer"
-                      onClick={() => setIsFilterModalOpen(true)}
+              className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-3 border-r-2 border-l-2 px-48 cursor-pointer"
+              onClick={() => setIsFilterModalOpen(true)}
             >
               <MdTune className="w-4 h-4" />
               <span>Filter</span>
             </div>
             <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-            Showing {filteredSalaryWages.length === 0 ? 0 : indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredSalaryWages.length)} of {filteredSalaryWages.length}
-              </span>
+              Showing {filteredSalaryWages.length === 0 ? 0 : indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredSalaryWages.length)} of {filteredSalaryWages.length}
+            </span>
           </div>
           {/* Filter Modal */}
           {isFilterModalOpen && (
@@ -459,16 +467,22 @@ const page = () => {
               <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                 <tr className="font-medium">
                   <th className="p-4 font-semibold text-[12px] text-left">
+                    Payment ID
+                  </th>
+                  <th className="p-4 font-semibold text-[12px] text-left">
                     Payment Date
                   </th>
                   <th className="p-4 font-semibold text-[12px] text-left">
                     Amount
                   </th>
                   <th className="p-4 font-semibold text-[12px] text-left">
-                    DeductionAmount
+                    Paid For
                   </th>
                   <th className="p-4 font-semibold text-[12px] text-left">
                     Payment Method
+                  </th>
+                  <th className="p-4 font-semibold text-[12px] text-left">
+                    Comments for Reference
                   </th>
                   <th className="p-4 font-semibold text-[12px] text-left">
                     Status
@@ -483,41 +497,48 @@ const page = () => {
                   currentItems.map((item, index) => (
                     <tr
                       key={item._id}
-                      className={`text-left dark:text-white ${
-                        index % 2 === 0
+                      className={`text-left dark:text-white ${index % 2 === 0
                           ? "bg-[#fff] dark:bg-[#2C2C2C]"
                           : "bg-[#F8F8F8] dark:bg-[#303030]"
-                      }`}
+                        }`}
                     >
-                      <td className="p-3">
+                      <td className="p-3 text-left">
+                        
+                        {item._id}
+                      </td>
+                      <td className="p-3 text-left">
                         {new Date(item.createdDate).toLocaleDateString("en-US", {
                           year: "numeric",
                           month: "long",
                           day: "numeric",
                         })}
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 text-left">
                         {item.salaryAmount}
                       </td>
-                      <td className="p-3">{item.deductionAmount}</td>
-                      <td className="p-3">{item.paymentMethod}</td>
-                      <td className="p-3">
+                      <td className="p-3 text-left">{item.isSalaryProcessed || "Bonus"}</td>
+                      <td className="p-3 text-left">{item.paymentMethod}</td>
+                      <td className="p-3 text-left">{item.comments}</td>
+                      <td className="p-3 text-left">
                         <span
-                          className={`inline-flex items-center justify-center gap-1 px-3 py-[1px] rounded-md text-[10px] font-semibold
-                                  ${
-                                    item.paymentStatus.toLowerCase() === "pending"
-                                      ? "bg-red-100 text-[#D34645] dark:bg-[#D3464533] dark:bg-opacity-20 dark:text-[#D34645]"
-                                      : "bg-green-100 text-green-700 dark:bg-[#2E3C2E] dark:text-[#377E36] px-6"
-                                  }
+                          className={`inline-flex items-left text-left justify-center gap-1 px-3 py-[1px] rounded-md text-[10px] font-semibold
+                                  ${item.paymentStatus.toLowerCase() === "pending"
+                              ? "bg-red-100 text-[#D34645] dark:bg-[#D3464533] dark:bg-opacity-20 dark:text-[#D34645]"
+                              : "bg-green-100 text-green-700 dark:bg-[#2E3C2E] dark:text-[#377E36] px-6"
+                            }
                                 `}
                         >
                           {item.paymentStatus}
                         </span>
                       </td>
                       <td className="p-3 text-left">
-                        <button className="text-blue-500 text-[11px]">
-                          Download
+                        <button
+                          className="text-blue-500 text-[11px]"
+                          onClick={() => handleViewDownload(item)}
+                        >
+                          View / Download
                         </button>
+
                       </td>
                     </tr>
                   ))
@@ -544,6 +565,56 @@ const page = () => {
             />
           </div>
         )}
+
+        {isReceiptModalOpen && selectedSalary && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="bg-white dark:bg-[#232323] p-6 rounded-lg w-[600px] relative">
+      <button
+        className="absolute top-2 right-2 text-xl text-gray-500 dark:text-gray-300"
+        onClick={() => setIsReceiptModalOpen(false)}
+      >
+        &times;
+      </button>
+
+      <div id="salary-receipt" className="p-4">
+        <h2 className="text-xl font-bold mb-4">Salary Receipt</h2>
+        <p><strong>Employee Name:</strong> {selectedSalary.employeeName}</p>
+        <p><strong>Employee ID:</strong> {selectedSalary.employeeId}</p>
+        <p><strong>Designation:</strong> {selectedSalary.designation}</p>
+        <p><strong>Salary Amount:</strong> ${selectedSalary.salaryAmount}</p>
+        <p><strong>Deductions:</strong> ${selectedSalary.deductionAmount}</p>
+        <p><strong>Payment Method:</strong> {selectedSalary.paymentMethod}</p>
+        <p><strong>Payment Status:</strong> {selectedSalary.paymentStatus}</p>
+        <p><strong>Date:</strong> {new Date(selectedSalary.createdDate).toLocaleDateString()}</p>
+      </div>
+
+      <button
+        className="mt-4 px-4 py-2 bg-[#6C74F6] text-white rounded"
+        onClick={() => {
+          import("jspdf").then(jsPDFModule => {
+            import("html2canvas").then(html2canvasModule => {
+              const jsPDF = jsPDFModule.default;
+              const html2canvas = html2canvasModule.default;
+              const input = document.getElementById("salary-receipt")!;
+              html2canvas(input).then(canvas => {
+                const imgData = canvas.toDataURL("image/png");
+                const pdf = new jsPDF("p", "mm", "a4");
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+                pdf.save(`Salary_Receipt_${selectedSalary.employeeName}.pdf`);
+              });
+            });
+          });
+        }}
+      >
+        Download
+      </button>
+    </div>
+  </div>
+)}
+
       </div>
     </BaseLayout4>
   );
