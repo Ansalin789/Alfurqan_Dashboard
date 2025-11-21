@@ -265,9 +265,6 @@ function LiveClass() {
 
       if ([200, 201].includes(response.status)) {
         setSuccess(true);
-        setTimeout(() => {
-          router.push("/student/ui/classes");
-        }, 4000);
       }
     } catch (err) {
       const error = err as AxiosError;
