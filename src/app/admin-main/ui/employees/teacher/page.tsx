@@ -255,6 +255,7 @@ interface SalaryWageRecord {
   paymentMethod: string;
   paymentStatus: string;
   salaryAmount: number;
+  comments: string;
 }
 
 interface SalaryWagesResponse {
@@ -304,7 +305,14 @@ const Teacher = () => {
   const [searchWages, setSearchWages] = useState("");
   const [searchWorkingHours, setSearchWorkingHours] = useState("");
   const [searchEarnings, setSearchEarnings] = useState("");
+  const [selectedSalary, setSelectedSalary] = useState<SalaryWageRecord | null>(null);
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+
   // Filtered Earnings (months)
+  const handleViewDownload = (item: SalaryWageRecord) => {
+    setSelectedSalary(item);
+    setIsReceiptModalOpen(true);
+  };
   const filteredEarningsMonths = Array.from({ length: 12 })
     .map((_, index) => {
       const monthNumber = index + 1;
@@ -346,17 +354,17 @@ const Teacher = () => {
     })
     .sort((a, b) => {
       const monthOrder = [
-        "Jan","Feb","Mar","Apr","May","Jun",
-        "Jul","Aug","Sep","Oct","Nov","Dec"
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
       ];
-  
+
       return (
         b.currentYear - a.currentYear ||
         monthOrder.indexOf(b.monthName) - monthOrder.indexOf(a.monthName)
       );
     });
-  
-    
+
+
   const [teacherOverview, setTeacherOverview] = useState<TeacherOverview | null>(null);
   const [salaryWages, setSalaryWages] = useState<SalaryWageRecord[]>([]);
 
@@ -406,71 +414,71 @@ const Teacher = () => {
     setEditingWageId(wageId);
     setEditingRate(currentRate);
   };
-const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string) => {
-  try {
-    const token = localStorage.getItem("AdminAuthToken");
-    if (!token) {
-      console.error("❌ AdminAuthToken not found");
-      return;
-    }
-
-    // Step 1: Log incoming data
-    console.log("🔧 Saving rate for wageId:", wageId);
-    console.log("Rate:", rate);
-    console.log("HoursMins:", hoursMins);
-
-    // Step 2: Find wage to update
-    const wageToUpdate = wages.find(wage => wage._id === wageId);
-    if (!wageToUpdate) {
-      console.warn("⚠️ Wage not found for ID:", wageId);
-      return;
-    }
-
-    console.log("🧠 Found wage:", wageToUpdate);
-
-    // Step 3: Construct updated object
-    const updatedClassType = {
-      ...wageToUpdate.classType,
-      ...(rate !== undefined && rate !== "" && { rate }),
-      ...(hoursMins !== undefined && hoursMins !== "" && { hoursMins }),
-    };
-
-    const updatedWage = {
-      ...wageToUpdate,
-      classType: updatedClassType,
-    };
-
-    console.log("📦 Payload to send:", updatedWage);
-
-    // Step 4: Send API request
-    const response = await axios.put(
-      `https://api.blackstoneinfomaticstech.com/empwages/${wageId}`,
-      updatedWage,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+  const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string) => {
+    try {
+      const token = localStorage.getItem("AdminAuthToken");
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
       }
-    );
 
-    console.log("✅ API Response:", response.data);
+      // Step 1: Log incoming data
+      console.log("🔧 Saving rate for wageId:", wageId);
+      console.log("Rate:", rate);
+      console.log("HoursMins:", hoursMins);
 
-    // Step 5: Update local state
-    setWages(prevWages =>
-      prevWages.map(wage =>
-        wage._id === wageId ? updatedWage : wage
-      )
-    );
+      // Step 2: Find wage to update
+      const wageToUpdate = wages.find(wage => wage._id === wageId);
+      if (!wageToUpdate) {
+        console.warn("⚠️ Wage not found for ID:", wageId);
+        return;
+      }
 
-  } catch (error: any) {
-    // Step 6: Show detailed error
-    console.error("❌ Error updating wage rate:", error.message || error);
-    if (error.response) {
-      console.error("🚨 Backend error response:", error.response.data);
+      console.log("🧠 Found wage:", wageToUpdate);
+
+      // Step 3: Construct updated object
+      const updatedClassType = {
+        ...wageToUpdate.classType,
+        ...(rate !== undefined && rate !== "" && { rate }),
+        ...(hoursMins !== undefined && hoursMins !== "" && { hoursMins }),
+      };
+
+      const updatedWage = {
+        ...wageToUpdate,
+        classType: updatedClassType,
+      };
+
+      console.log("📦 Payload to send:", updatedWage);
+
+      // Step 4: Send API request
+      const response = await axios.put(
+        `https://api.blackstoneinfomaticstech.com/empwages/${wageId}`,
+        updatedWage,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("✅ API Response:", response.data);
+
+      // Step 5: Update local state
+      setWages(prevWages =>
+        prevWages.map(wage =>
+          wage._id === wageId ? updatedWage : wage
+        )
+      );
+
+    } catch (error: any) {
+      // Step 6: Show detailed error
+      console.error("❌ Error updating wage rate:", error.message || error);
+      if (error.response) {
+        console.error("🚨 Backend error response:", error.response.data);
+      }
     }
-  }
-};
+  };
 
 
   const handleCancelEdit = () => {
@@ -1013,23 +1021,23 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
 
   const formatClassName = (name: string) => {
     if (!name) return "-";
-  
+
     // Remove wrong spaces like "TRAILCLAS S" → "TRAILCLASS"
     let cleaned = name.replace(/\s+/g, "");
-  
+
     // Fix common spelling mistakes
     cleaned = cleaned
       .replace("TRAIL", "TRIAL")
       .replace("GRUOP", "GROUP");
-  
+
     // Add space before CLASS
     return cleaned.replace(/CLASS$/, " CLASS");
   };
-  
+
 
   return (
     <BaseLayout4>
-      <TeacherHeader currentSection="Employees" showBackPath="/admin-main/ui/employees" showBackButton={true}/>
+      <TeacherHeader currentSection="Employees" showBackPath="/admin-main/ui/employees" showBackButton={true} />
       <div className="p-4 min-h-screen w-full">
         <div className="grid grid-cols-5 gap-2">
           {/* Left Card */}
@@ -1148,8 +1156,8 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
               <button
                 key={tab}
                 className={`px-3 py-[7px] text-xs font-medium focus:outline-none transition-all duration-200 ${activeTab === tab
-                    ? "border-b border-b-[#576CBC] text-[#576CBC]"
-                    : "text-[#010E30] dark:text-white"
+                  ? "border-b border-b-[#576CBC] text-[#576CBC]"
+                  : "text-[#010E30] dark:text-white"
                   }`}
                 onClick={() => setActiveTab(tab)}
               >
@@ -1195,13 +1203,13 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                             Student ID
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-left">
-                          Student Name
+                            Student Name
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Country
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-left">
-                          Package 
+                            Package
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Subject
@@ -1223,8 +1231,8 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                                 <tr
                                   key={item.studentId || index}
                                   className={`text-left dark:text-white ${index % 2 === 0
-                                      ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                      : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                    ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                    : "bg-[#F8F8F8] dark:bg-[#303030]"
                                     }`}
                                 >
                                   <td className="p-3">{student?.studentId}</td>
@@ -1275,8 +1283,8 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                 <div className="justify-end text-end">
                   <button
                     className={`font-medium text-[14px] ${view === "month"
-                        ? "text-black"
-                        : "text-white bg-[#576CBC] py-[4px] px-2 rounded"
+                      ? "text-black"
+                      : "text-white bg-[#576CBC] py-[4px] px-2 rounded"
                       }`}
                     onClick={handleclickcalender}
                   >
@@ -1314,7 +1322,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                     >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
-                          
+
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Student ID
                           </th>
@@ -1350,11 +1358,11 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                               <tr
                                 key={event._id}
                                 className={`text-left dark:text-white ${index % 2 === 0
-                                    ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                    : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
                                   }`}
                               >
-                                
+
                                 <td className="p-3 text-blue-600 font-medium">
                                   {event.student.studentId}
                                 </td>
@@ -1363,7 +1371,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                                 </td>
                                 <td className="p-3">Quran</td>
                                 <td className="p-3">
-                                {event.sessionClassType? formatClassName(event.sessionClassType) : "-"}
+                                  {event.sessionClassType ? formatClassName(event.sessionClassType) : "-"}
                                 </td>
                                 <td className="p-3">30 Min</td>
                                 <td className="p-3">
@@ -1384,7 +1392,7 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                                   <span
                                     className={`text-[9px] dark:bg-[#2E3C2E] dark:text-[#377E36] font-semibold px-3 py-[2px] rounded-md inline-block ${statusStyle[
                                       event.scheduleStatus as keyof typeof statusStyle
-                                      ]
+                                    ]
                                       }`}
                                   >
                                     {event.scheduleStatus}
@@ -1419,101 +1427,137 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
             )}
 
             {activeTab === "Earnings" && (
-              <div className="space-y-2">
-                <div className="rounded-xl overflow-hidden">
-                  <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                    <input
-                      type="text"
-                      placeholder="Search"
-                      className="bg-transparent outline-none text-[12px] w-32 py-3"
-                      value={searchEarnings}
-                      onChange={(e) => setSearchEarnings(e.target.value)}
-                    />
-                    <div
-                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
-                      onClick={() => setIsFilterModalOpen(true)}
-                    >
-                      <MdTune className="w-4 h-4" />
-                      <span>Filter</span>
+              <div>
+                {/* Calculate totals */}
+                {(() => {
+                  const totalClasses = paginatedEarnings.reduce(
+                    (sum, item) => sum + (item.monthly?.totalclasses ?? 0),
+                    0
+                  );
+
+                  const totalHours = paginatedEarnings.reduce(
+                    (sum, item) => sum + (item.monthly?.totalhours ?? 0),
+                    0
+                  );
+
+                  const totalEarnings = paginatedEarnings.reduce(
+                    (sum, item) => sum + (item.monthly?.totalearnings ?? 0),
+                    0
+                  );
+
+                  return (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {[
+                        { title: "Total Classes", count: totalClasses },
+                        { title: "Total Hours", count: totalHours },
+                        { title: "Total Earnings", count: totalEarnings },
+                      ].map((card) => (
+                        <div
+                          key={card.title}
+                          className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col w-full p-3 h-full"
+                        >
+                          <div className="flex flex-col justify-between gap-y-4">
+                            <p className="text-[15px] font-medium">{card.title}</p>
+                            <h3 className="text-[24px] font-semibold">${card.count}</h3>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-                      Showing{" "}
-                      {filteredEarningsMonths.length === 0
-                        ? 0
-                        : (earningsPage - 1) * earningsPerPage + 1}{" "}
-                      to{" "}
-                      {Math.min(
-                        earningsPage * earningsPerPage,
-                        filteredEarningsMonths.length
-                      )}{" "}
-                      of {filteredEarningsMonths.length}
-                    </span>
-                  </div>
-                  <div className="overflow-x-auto max-h-none">
-                    <table
-                      className="w-full min-w-[900px] text-sm text-left table-auto"
-                      style={{ width: "100%", tableLayout: "fixed" }}
-                    >
-                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
-                        <tr className="font-medium">
-                          <th className="p-4 font-semibold text-[12px] text-left">
-                            Month
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-left">
-                            Total Classes
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-left">
-                            Total Hours
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-left">
-                            Total Earnings
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="text-[10px] text-[#1D2939]">
-                        {paginatedEarnings.length > 0 ? (
-                          paginatedEarnings.map((row, index) => (
-                            <tr
-                              key={row.key}
-                              className={`text-left dark:text-white ${index % 2 === 0
-                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                  );
+                })()}
+
+                <br />
+                {/* --- Search + Filter + Showing Count --- */}
+                <div className="space-y-2">
+                  <div className="rounded-xl overflow-hidden">
+                    <div className="flex flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[12px] w-32 py-3"
+                        value={searchEarnings}
+                        onChange={(e) => setSearchEarnings(e.target.value)}
+                      />
+
+                      <div
+                        className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+                        onClick={() => setIsFilterModalOpen(true)}
+                      >
+                        <MdTune className="w-4 h-4" />
+                        <span>Filter</span>
+                      </div>
+
+                      <span className="text-[12px] text-gray-400 py-3">
+                        Showing{" "}
+                        {filteredEarningsMonths.length === 0
+                          ? 0
+                          : (earningsPage - 1) * earningsPerPage + 1}{" "}
+                        to{" "}
+                        {Math.min(
+                          earningsPage * earningsPerPage,
+                          filteredEarningsMonths.length
+                        )}{" "}
+                        of {filteredEarningsMonths.length}
+                      </span>
+                    </div>
+
+                    {/* --- Earnings Table --- */}
+                    <div className="overflow-x-auto max-h-none">
+                      <table
+                        className="w-full min-w-[900px] text-sm text-left table-auto"
+                        style={{ width: "100%", tableLayout: "fixed" }}
+                      >
+                        <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                          <tr className="font-medium">
+                            <th className="p-4 text-left">Month</th>
+                            <th className="p-4 text-left">Total Classes</th>
+                            <th className="p-4 text-left">Total Hours</th>
+                            <th className="p-4 text-left">Total Earnings</th>
+                          </tr>
+                        </thead>
+
+                        <tbody className="text-[10px] text-[#1D2939]">
+                          {paginatedEarnings.length > 0 ? (
+                            paginatedEarnings.map((row, index) => (
+                              <tr
+                                key={row.key}
+                                className={`${index % 2 === 0
+                                  ? "bg-white dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                }`}
-                            >
-                              <td className="p-3">{`${row.monthName} ${row.currentYear}`}</td>
-                              <td className="p-3">
-                                {row.monthly?.totalclasses ?? 0}
-                              </td>
-                              <td className="p-3">
-                                {row.monthly?.totalhours ?? 0}
-                              </td>
-                              <td className="p-3">
-                                ${row.monthly?.totalearnings ?? 0}
+                                  }`}
+                              >
+                                <td className="p-3">{`${row.monthName} ${row.currentYear}`}</td>
+                                <td className="p-3">{row.monthly?.totalclasses ?? 0}</td>
+                                <td className="p-3">{row.monthly?.totalhours ?? 0}</td>
+                                <td className="p-3">${row.monthly?.totalearnings ?? 0}</td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan={4} className="p-4 text-center">
+                                No data available
                               </td>
                             </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={6} className="p-4 text-center">
-                              No data available
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
+
+                  {/* --- Pagination --- */}
+                  {totalEarningsPages > 1 && (
+                    <div className="flex justify-end mt-2">
+                      <Pagination
+                        currentPage={earningsPage}
+                        totalPages={totalEarningsPages}
+                        onPageChange={setEarningsPage}
+                      />
+                    </div>
+                  )}
                 </div>
-                {totalEarningsPages > 1 && (
-                  <div className="flex justify-end mt-2">
-                    <Pagination
-                      currentPage={earningsPage}
-                      totalPages={totalEarningsPages}
-                      onPageChange={setEarningsPage}
-                    />
-                  </div>
-                )}
               </div>
             )}
+
 
             {activeTab === "Payments" && (
               <div className="space-y-6">
@@ -1545,16 +1589,23 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
                           <th className="p-4 font-semibold text-[12px] text-left">
+                            Payment ID
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-left">
                             Payment Date
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Amount
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-left">
-                            DeductionAmount
+                            Paid For
+
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Payment Method
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-left">
+                            Comments for Reference
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Status
@@ -1573,11 +1624,15 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                               <tr
                                 key={item._id}
                                 className={`text-left dark:text-white ${index % 2 === 0
-                                    ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                    : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
                                   }`}
                               >
-                                <td className="p-3">
+                                <td className="p-3 text-left">
+
+                                  {item._id}
+                                </td>
+                                <td className="p-3 text-left">
                                   {new Date(item.createdDate).toLocaleDateString(
                                     "en-US",
                                     {
@@ -1587,14 +1642,15 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                                     }
                                   )}
                                 </td>
-                                <td className="p-3">
+                                <td className="p-3 text-left">
                                   {item.salaryAmount}
                                 </td>
-                                <td className="p-3">{item.deductionAmount}</td>
-                                <td className="p-3">{item.paymentMethod}</td>
-                                <td className="p-3">
+                                <td className="p-3 text-left">{item.isSalaryProcessed || "Bonus"}</td>
+                                <td className="p-3 text-left">{item.paymentMethod}</td>
+                                <td className="p-3 text-left">{item.comments}</td>
+                                <td className="p-3 text-left">
                                   <span
-                                    className={`inline-flex items-center justify-center gap-1 px-3 py-[1px] rounded-md text-[10px] font-semibold
+                                    className={`inline-flex text-left items-left justify-center gap-1 px-3 py-[1px] rounded-md text-[10px] font-semibold
                                     ${item.paymentStatus.toLowerCase() === "pending"
                                         ? "bg-red-100 text-[#D34645] dark:bg-[#D3464533] dark:bg-opacity-20 dark:text-[#D34645]"
                                         : "bg-green-100 text-green-700 dark:bg-[#2E3C2E] dark:text-[#377E36] px-6"
@@ -1605,8 +1661,11 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                                   </span>
                                 </td>
                                 <td className="p-3 text-left">
-                                  <button className="text-blue-500 text-[11px]">
-                                    Download
+                                  <button
+                                    className="text-blue-500 text-[11px]"
+                                    onClick={() => handleViewDownload(item)}
+                                  >
+                                    View / Download
                                   </button>
                                 </td>
                               </tr>
@@ -1636,7 +1695,54 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                 </div>
               </div>
             )}
+            {isReceiptModalOpen && selectedSalary && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                <div className="bg-white dark:bg-[#232323] p-6 rounded-lg w-[600px] relative">
+                  <button
+                    className="absolute top-2 right-2 text-xl text-gray-500 dark:text-gray-300"
+                    onClick={() => setIsReceiptModalOpen(false)}
+                  >
+                    &times;
+                  </button>
 
+                  <div id="salary-receipt" className="p-4">
+                    <h2 className="text-xl font-bold mb-4">Salary Receipt</h2>
+                    <p><strong>Employee Name:</strong> {selectedSalary.employeeName}</p>
+                    <p><strong>Employee ID:</strong> {selectedSalary.employeeId}</p>
+                    <p><strong>Designation:</strong> {selectedSalary.designation}</p>
+                    <p><strong>Salary Amount:</strong> ${selectedSalary.salaryAmount}</p>
+                    <p><strong>Deductions:</strong> ${selectedSalary.deductionAmount}</p>
+                    <p><strong>Payment Method:</strong> {selectedSalary.paymentMethod}</p>
+                    <p><strong>Payment Status:</strong> {selectedSalary.paymentStatus}</p>
+                    <p><strong>Date:</strong> {new Date(selectedSalary.createdDate).toLocaleDateString()}</p>
+                  </div>
+
+                  <button
+                    className="mt-4 px-4 py-2 bg-[#6C74F6] text-white rounded"
+                    onClick={() => {
+                      import("jspdf").then(jsPDFModule => {
+                        import("html2canvas").then(html2canvasModule => {
+                          const jsPDF = jsPDFModule.default;
+                          const html2canvas = html2canvasModule.default;
+                          const input = document.getElementById("salary-receipt")!;
+                          html2canvas(input).then(canvas => {
+                            const imgData = canvas.toDataURL("image/png");
+                            const pdf = new jsPDF("p", "mm", "a4");
+                            const imgProps = pdf.getImageProperties(imgData);
+                            const pdfWidth = pdf.internal.pageSize.getWidth();
+                            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                            pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+                            pdf.save(`Salary_Receipt_${selectedSalary.employeeName}.pdf`);
+                          });
+                        });
+                      });
+                    }}
+                  >
+                    Download
+                  </button>
+                </div>
+              </div>
+            )}
             {activeTab === "Wages" && (
               <div className="space-y-6">
                 <div className="rounded-xl overflow-hidden">
@@ -1696,13 +1802,13 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                             <tr
                               key={item._id}
                               className={`text-left dark:text-white ${index % 2 === 0
-                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
                                 }`}
                             >
                               <td className="p-3">
-  {item.classType?.className ? formatClassName(item.classType.className) : "-"}
-</td>
+                                {item.classType?.className ? formatClassName(item.classType.className) : "-"}
+                              </td>
 
                               <td className="p-3">
                                 <input
@@ -1849,8 +1955,8 @@ const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string)
                             <tr
                               key={index}
                               className={`text-left dark:text-white ${index % 2 === 0
-                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
                                 }`}
                             >
                               <td className="p-3">{item.day}</td>

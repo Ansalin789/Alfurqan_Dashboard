@@ -3,13 +3,10 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 
 import { JitsiMeeting } from "@jitsi/react-sdk";
-import BaseLayout from "@/components/BaseLayout";
 import axios from "axios";
 
-import TeacherHeader from "../../components/TeacherHeader";
 
-import {useSearchParams } from "next/navigation";
-import { useRouter } from "next/router";
+import { useSearchParams, useRouter } from "next/navigation";
 
 interface Student {
   studentId: string;
@@ -349,7 +346,7 @@ export default function LiveClass() {
 
       if (response.status === 201 || response.status === 200) {
         setShowPopup(true);
-        setTimeout(() =>{ setShowPopup(false), router.push("schedule")} , 3000);
+        setTimeout(() =>{ setShowPopup(false)} , 3000);
       } else {
         console.log("Failed to submit feedback. Please try again.");
       }
@@ -372,8 +369,6 @@ export default function LiveClass() {
   ];
 
   return (
-    <BaseLayout>
-      <TeacherHeader currentSection="Live Class" showBackButton={true} showBackPath="schedule" />
       <div className="flex h-screen">
         <div className="flex flex-col w-full min-h-screen px-4 sm:px-6 md:px-8">
           {/* Page Content */}
@@ -765,6 +760,5 @@ export default function LiveClass() {
           </div>
         </div>
       </div>
-    </BaseLayout>
   );
 }

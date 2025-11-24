@@ -1,10 +1,8 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import { JitsiMeeting } from "@jitsi/react-sdk";
-import BaseLayout2 from "@/components/BaseLayout2";
 import axios, { AxiosError } from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
-import StudentHeader from "../../components/StudentHeader";
 import { AiOutlineClockCircle } from "react-icons/ai";
 import { FaUser } from "react-icons/fa";
 import { MdDateRange } from "react-icons/md";
@@ -267,9 +265,6 @@ function LiveClass() {
 
       if ([200, 201].includes(response.status)) {
         setSuccess(true);
-        setTimeout(() => {
-          router.push("/student/ui/classes");
-        }, 4000);
       }
     } catch (err) {
       const error = err as AxiosError;
@@ -345,13 +340,6 @@ function LiveClass() {
   ];
 
   return (
-    <BaseLayout2>
-      <StudentHeader
-        currentSection="Live Class"
-        showBackButton={true}
-        showBackPath="classes"
-      />
-
       <div className=" min-w-screen min-h-screen px-1 sm:px-2 md:px-4 ">
         {/* ✅ Page Layout */}
         <div className="flex flex-col lg:flex-row gap-2 w-full max-w-screen-xl mx-auto flex-grow">
@@ -554,15 +542,14 @@ function LiveClass() {
             )}
           </div>
         </div>
-      </div>
-
-      {success && (
+ {success && (
         <SuccessPopup onClose={() => setSuccess(false)} title="Feedback" />
       )}
       {failed && (
         <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
       )}
-    </BaseLayout2>
+
+      </div>
   );
 }
 
