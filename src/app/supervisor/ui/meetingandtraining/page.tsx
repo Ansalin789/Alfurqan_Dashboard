@@ -86,7 +86,6 @@ const ScheduledClasses = () => {
   const [failed, setFailed] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
-  const [isDatePickerOpens, setIsDatePickerOpens] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 

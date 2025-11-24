@@ -400,11 +400,7 @@ export default function Dashboard() {
     fetchMeetings();
   }, []);
 
-  const today = new Date();
-  const currentMonth = today
-    .toLocaleString("default", { month: "long" })
-    .toUpperCase();
-  const currentYear = today.getFullYear();
+
   const fetchApplicantsData = async (auth: string) => {
     try {
       const token =
@@ -483,11 +479,6 @@ export default function Dashboard() {
   };
 
   if (!mounted) return null;
-  const data = [
-    { name: "Islamic Studies", value: 60, color: "#fbbf24" },
-    { name: "Arabic", value: 110, color: "#3b82f6" },
-    { name: "Quran", value: 80, color: "#a855f7" },
-  ];
 
   const totals = filteredPositions.reduce((sum, item) => sum + item.count, 0);
 
@@ -495,23 +486,9 @@ export default function Dashboard() {
   const totalShortlisted = dashboardCounts.shortlisted || 0;
   const totalRejected = dashboardCounts.rejected || 0;
   const totalWaiting = dashboardCounts.waiting || 0;
-
-  // Use the percentages directly from dashboardCounts
-  const shortlistedPercentage = dashboardCounts.shortlistedPercentage;
-  const rejectedPercentage = dashboardCounts.rejectedPercentage;
-  const waitingPercentage = dashboardCounts.waitingPercentage;
-
-  const total =
-    totalApplications + totalShortlisted + totalRejected + totalWaiting;
-
+  const total = totalApplications + totalShortlisted + totalRejected + totalWaiting;
   const percentageApplications = (totalApplications / total) * 100;
-  const percentageShortlisted = (totalShortlisted / total) * 100;
-  const percentageRejected = (totalRejected / total) * 100;
-  const percentageValue = 100;
-
   const remainingApplications = 100 - percentageApplications;
-  const remainingShortlisted = 100 - percentageShortlisted;
-  const remainingRejected = 100 - percentageRejected;
   console.log(remainingApplications);
 
   function base64ToBlob(base64: string, contentType = "application/pdf"): Blob {
@@ -535,28 +512,6 @@ export default function Dashboard() {
       return undefined;
     }
   }
-
-  // function getResumeBlobUrl(
-  //   uploadResume?: string | { type: string; data: number[] }
-  // ): string | undefined {
-  //   if (!uploadResume) return undefined;
-
-  //   if (typeof uploadResume === "string") {
-  //     // Assume base64 string, strip possible data URI prefix
-  //     const base64Data = uploadResume.includes("base64,")
-  //       ? uploadResume.split("base64,")[1]
-  //       : uploadResume;
-  //     const blob = base64ToBlob(base64Data);
-  //     return URL.createObjectURL(blob);
-  //   } else if (uploadResume.data && uploadResume.type) {
-  //     // Object with type and data array
-  //     const byteArray = new Uint8Array(uploadResume.data);
-  //     const blob = new Blob([byteArray], { type: uploadResume.type });
-  //     return URL.createObjectURL(blob);
-  //   }
-
-  //   return undefined;
-  // }
 
   return (
     <BaseLayout3>
@@ -776,11 +731,6 @@ export default function Dashboard() {
 </tbody>
                 </table>
               </div>
-            </div>
-            <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
-              <span className="text-left -ml-60 ">
-                Showing {applicants.length} of {totalApplications}
-              </span>
             </div>
           </div>
         </div>

@@ -364,9 +364,6 @@ const Schedules: React.FC = () => {
                             )}
                           </div>
                           <div className="flex items-center rounded-sm p-2 w-[50%] relative gap-2 mt-4">
-                            {/* <FaClock className="text-gray-500 mr-2" onClick={() => setIsStartTimePickerOpen(!isStartTimePickerOpen)} /> */}
-                            {/* <span className="text-gray-600">{startTime ? startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Start Time"}</span> */}
-
                             <div className="col-span-2">
                               <label htmlFor='start time' className="block font-medium text-gray-700 text-[12px]">Start Time</label>
                               <input type="time"
@@ -460,9 +457,6 @@ const Schedules: React.FC = () => {
                                 {teacher}
                               </span>
                             ))}
-                            {/* <button className="text-[#1C3557] border border-[#1C3557] rounded-full p-1">
-                 <FaPlus size={12} />
-               </button> */}
                           </div>
 
                           {/* Description */}

@@ -252,14 +252,6 @@ function LiveClass() {
                       <span>Time</span>
                       <span className="dark:text-[#a1a1a1]">{classData?.startTime?.[0] ?? "9.00"} - {classData?.endTime?.[0] ?? "10.30 AM"}</span>
                     </div>
-                    {/* <div className="flex justify-between">
-                      <span>Country</span>
-                      <span>{classData?. ?? "USA"}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Session</span>
-                      <span>{classData?. ?? "12"}</span>
-                    </div> */}
                     <div className="flex justify-between">
                       <span>Date</span>
                       <span className="dark:text-[#a1a1a1]">{new Date(classData?.startDate ?? "2023-10-06").toLocaleDateString()}</span>
