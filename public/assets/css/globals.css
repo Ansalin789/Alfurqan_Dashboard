@@ -662,3 +662,6 @@ body {
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-out;
 }
+.input {
+  @apply border border-gray-300 rounded px-3 py-2 w-full text-sm;
+}

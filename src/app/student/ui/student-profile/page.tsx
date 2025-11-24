@@ -168,7 +168,7 @@ const StudentProfile = () => {
       }
   
       await axios.put(
-        `http://localhost:5001/studentProfile/${studentId}`,
+        `https://api.blackstoneinfomaticstech.com/studentProfile/${studentId}`,
         updateData,
         {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }

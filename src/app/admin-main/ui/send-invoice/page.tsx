@@ -261,7 +261,7 @@ export default function InvoicePage() {
 
       // Send data to backend
       const response = await axios.post(
-        "https://localhost:5001/invoice/send",
+        "https://api.blackstoneinfomaticstech.com/invoice/send",
         payload,
         {
           headers: {

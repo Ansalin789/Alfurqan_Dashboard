@@ -15,6 +15,7 @@ import { Search } from "lucide-react";
 import { TooltipProps } from "recharts";
 import FilterModal, { FilterField } from "@/components/FilterModal";
 import { toDate } from "date-fns";
+import { MdEditSquare } from "react-icons/md";
 
 interface Employee {
   _id: string;
@@ -177,7 +178,9 @@ const EmployeePage = () => {
   const [fetchWorkingHours, setfetchWorkingHours] = useState<ShiftSchedule[]>(
     []
   );
-  const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
+  const [toast, setToast] = useState<{ type: string; message: string } | null>(
+    null
+  );
 
   useEffect(() => {
     if (toast) {
@@ -185,8 +188,8 @@ const EmployeePage = () => {
       return () => clearTimeout(timer);
     }
   }, [toast]);
-  
-  
+  // const [isEditOpen, setIsEditOpen] = useState(false);
+
   const tabs = ["Wages", "Earnings", "Leave Requests", "Working Hours"];
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [isFetched, setIsFetched] = useState(false); // Flag to check if data is fetched
@@ -254,6 +257,12 @@ const EmployeePage = () => {
   const handleResetFilters = () => {
     setFilters({});
   };
+
+  useEffect(() => {
+    setFormData(employee);
+  }, [employee]);
+
+  const [formData, setFormData] = useState<Employee | null>(null);
 
   // Paginated months for earnings
   const monthsArray = Array.from({ length: 12 }).map((_, index) => {
@@ -557,7 +566,7 @@ const EmployeePage = () => {
         typeof window !== "undefined"
           ? localStorage.getItem("AdminAuthToken")
           : null;
-  
+
       if (!selectedEmpId) {
         setToast({
           type: "error",
@@ -565,9 +574,9 @@ const EmployeePage = () => {
         });
         return;
       }
-  
+
       const response = await fetch(
-        `http://localhost:5001/shiftschedule?employeeId=${selectedEmpId}`,
+        `https://api.blackstoneinfomaticstech.com/shiftschedule?employeeId=${selectedEmpId}`,
         {
           method: "PUT",
           headers: {
@@ -582,9 +591,9 @@ const EmployeePage = () => {
           }),
         }
       );
-  
+
       const result = await response.json();
-  
+
       if (!response.ok) {
         setToast({
           type: "error",
@@ -592,29 +601,72 @@ const EmployeePage = () => {
         });
         return;
       }
-  
+
       setToast({
         type: "success",
         message: "Working hours updated successfully!",
       });
-  
+
       setIsEditOpen(false);
       fetchData(selectedEmpId);
     } catch (error) {
       console.error(error);
-  
+
       setToast({
         type: "error",
         message: "Failed to update working hours",
       });
     }
   };
-  
-  
 
-  // Helper function to group schedules by day
-  // Helper function to group schedules by day
-  // Helper function to group schedules by day
+  const handleUpdate = async () => {
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AdminAuthToken")
+          : null;
+
+      if (!token) {
+        setToast({ type: "error", message: "Auth token not found" });
+        return;
+      }
+
+      const res = await fetch(
+        `https://api.blackstoneinfomaticstech.com/otheremployee/${employee?._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        setToast({
+          type: "error",
+          message: result.message || "Failed to update employee",
+        });
+        return;
+      }
+
+      setToast({
+        type: "success",
+        message: "Employee updated successfully!",
+      });
+
+      // fetchEmployee(employee?._id);
+      setIsEditOpen(false);
+    } catch (error) {
+      console.error(error);
+      setToast({ type: "error", message: "Something went wrong!" });
+    }
+  };
+
+
   const groupSchedulesByDay = (
     scheduleData: ShiftSchedule[]
   ): ShiftSchedule[] => {
@@ -839,13 +891,24 @@ const EmployeePage = () => {
       <div className="p-2 min-h-screen w-full">
         <div className="col-span-3 bg-[#5E6578] text-white px-4 py-3 rounded-lg shadow-sm flex flex-row">
           <div className="flex flex-col items-center w-[30%] pr-4 py-6 border-r border-[#BCBCBC] gap-y-2">
-            <div className="w-[90px] h-[90px] rounded-full overflow-hidden border border-white">
-              <img
-                src="/assets/images/Avatar.png"
-                alt="Avatar"
-                className="object-cover w-full h-full"
-              />
+            <div className="flex">
+              <div className="w-[90px] h-[90px] rounded-full overflow-hidden border border-white">
+                <img
+                  src="/assets/images/Avatar.png"
+                  alt="Avatar"
+                  className="object-cover w-full h-full"
+                />
+              </div>
+              <div className="">
+                <button
+                  onClick={() => setIsEditOpen(true)}
+                  className=" text-white px-1 py-1 rounded-md text-xs font-semibold shadow border"
+                >
+                  <MdEditSquare />
+                </button>
+              </div>
             </div>
+
             <h2 className="text-[12px] font-semibold text-center mt-2">
               {employee?.firstName} {employee?.lastName}
             </h2>
@@ -957,6 +1020,382 @@ const EmployeePage = () => {
             </div>
           </div>
         </div>
+
+        {isEditOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white w-[750px] max-h-[90vh] overflow-y-scroll scrollbar-none rounded-xl p-8 shadow-2xl border border-gray-200">
+              <h2 className="text-xl font-semibold mb-6 text-gray-900">
+                Edit Employee Details
+              </h2>
+
+              <div className="grid grid-cols-2 gap-5">
+                {/* PERSONAL DETAILS */}
+                <h3 className="col-span-2 text-md font-semibold text-blue-700 border-l-4 border-blue-600 pl-3">
+                  Personal Information
+                </h3>
+
+                {/* First Name */}
+                <div className="gap-2 ml-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    First Name
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.firstName || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData!, firstName: e.target.value })
+                    }
+                  />
+                </div>
+
+                {/* Last Name */}
+                <div className="gap-2 ml-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Last Name
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.lastName || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData!, lastName: e.target.value })
+                    }
+                  />
+                </div>
+
+                {/* Gender */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Gender
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.gender || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData!, gender: e.target.value })
+                    }
+                  />
+                </div>
+
+                {/* DOB */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Date of Birth
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.dateOfBirth?.substring(0, 10) || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData!, dateOfBirth: e.target.value })
+                    }
+                  />
+                </div>
+
+                {/* Divider */}
+                <div className="col-span-2 border-b border-gray-200 my-2"></div>
+
+                {/* CONTACT DETAILS */}
+                <h3 className="col-span-2 text-md font-semibold text-blue-700 border-l-4 border-blue-600 pl-3">
+                  Contact Details
+                </h3>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Email
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.email || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData!, email: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Phone Number
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.phoneNumber || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData!,
+                        phoneNumber: Number(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Country
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.country || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData!, country: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    City
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.city || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData!, city: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Residential Address
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.address || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData!, address: e.target.value })
+                    }
+                  />
+                </div>
+
+                {/* Divider */}
+                <div className="col-span-2 border-b border-gray-200 my-2"></div>
+
+                {/* EDUCATIONAL INFORMATION */}
+                <h3 className="col-span-2 text-md font-semibold text-blue-700 border-l-4 border-blue-600 pl-3">
+                  Educational Information
+                </h3>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Highest Qualification
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.higherQualification || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData!,
+                        higherQualification: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    University / Institute
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.universityName || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData!,
+                        universityName: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Languages Known
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.languagesKnown || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData!,
+                        languagesKnown: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Experience (Years)
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.experience || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData!, experience: e.target.value })
+                    }
+                  />
+                </div>
+
+                {/* Divider */}
+                <div className="col-span-2 border-b border-gray-200 my-2"></div>
+
+                {/* BANK DETAILS */}
+                <h3 className="col-span-2 text-md font-semibold text-blue-700 border-l-4 border-blue-600 pl-3">
+                  Bank Details
+                </h3>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Bank Name
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.bankName || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData!, bankName: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Account Number
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.accountNumber || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData!,
+                        accountNumber: Number(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Bank Code
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.bankCode || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData!, bankCode: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Passport Number
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.passportNumber || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData!,
+                        passportNumber: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                {/* Divider */}
+                <div className="col-span-2 border-b border-gray-200 my-2"></div>
+
+                {/* EMERGENCY CONTACT */}
+                <h3 className="col-span-2 text-md font-semibold text-blue-700 border-l-4 border-blue-600 pl-3">
+                  Emergency Contact
+                </h3>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Emergency Contact Number
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.emergencyContactNumber || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData!,
+                        emergencyContactNumber: Number(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Relationship
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.relationshipWithEmployee || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData!,
+                        relationshipWithEmployee: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                {/* Divider */}
+                <div className="col-span-2 border-b border-gray-200 my-2"></div>
+
+                {/* JOB INFO */}
+                <h3 className="col-span-2 text-md font-semibold text-blue-700 border-l-4 border-blue-600 pl-3">
+                  Job Information
+                </h3>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Designation
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.designation || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData!, designation: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Department
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    value={formData!.department || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData!, department: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* BUTTONS */}
+              <div className="flex justify-end mt-6 gap-3">
+                <button
+                  className="px-3 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition text-xs"
+                  onClick={() => setIsEditOpen(false)}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={handleUpdate}
+                  className="px-3 py-2 bg-[#4C6993] text-white rounded-md hover:bg-[#4C6993] transition text-xs"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tabs Section */}
         <div className="mt-4 h-min">
@@ -1677,23 +2116,20 @@ const EmployeePage = () => {
             )}
           </div>
           {toast && (
-  <div className="fixed inset-0 flex items-center justify-center z-[9999] p-6">
-    {/* Overlay */}
-    <div className="absolute inset-0 bg-black/80"></div>
+            <div className="fixed inset-0 flex items-center justify-center z-[9999] p-6">
+              {/* Overlay */}
+              <div className="absolute inset-0 bg-black/80"></div>
 
-    {/* Popup */}
-    <div
-      className={`relative px-6 py-3 rounded-lg text-white text-sm font-medium shadow-xl
+              {/* Popup */}
+              <div
+                className={`relative px-6 py-3 rounded-lg text-white text-sm font-medium shadow-xl
         animate-fadeIn
         ${toast.type === "success" ? "bg-green-600 p-4" : "bg-red-600 p-4"}`}
-    >
-      {toast.message}
-    </div>
-  </div>
-)}
-
-
-
+              >
+                {toast.message}
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <FilterModal

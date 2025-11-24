@@ -59,7 +59,7 @@ useEffect(() => {
       const loginStudentId = localStorage.getItem("StudentPortalId");
       const token = localStorage.getItem("StudentAuthToken");
       const res = await axios.get(
-        `http://localhost:5001/alstudents/${loginStudentId}`,
+        `https://api.blackstoneinfomaticstech.com/alstudents/${loginStudentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -87,7 +87,7 @@ useEffect(() => {
 }, []);
 
   
-const shareUrl = `http://localhost:3001/StudentForm?refernceId=${referenceId}`;
+const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId}`;
   const message = encodeURIComponent(
     `Check this out! Join me here: ${shareUrl}`
   );
