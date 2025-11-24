@@ -27,7 +27,6 @@ const UpcomingClasses: React.FC = () => {
   >([]);
   const [error, setError] = useState<string | null>(null);
 
-  // Define the color cycle
   const colorCycle = [
     "blue-400",
     "emerald-400",
@@ -66,7 +65,6 @@ const UpcomingClasses: React.FC = () => {
 
         const now = new Date();
         const toDateTime = (item: any) => {
-          // Combine date and time if possible for accurate sorting
           const datePart = new Date(item.scheduledStartDate);
           if (item.scheduledFrom) {
             const [h = 0, m = 0] = String(item.scheduledFrom).split(":").map((x: string) => parseInt(x, 10));
@@ -78,17 +76,17 @@ const UpcomingClasses: React.FC = () => {
         };
 
         const upcomingClasses = response.data
-          // Keep only future classes (from now onward)
           .filter((item: any) => toDateTime(item) > now)
-          // Sort chronologically by start date/time
           .sort((a: any, b: any) => toDateTime(a).getTime() - toDateTime(b).getTime())
           .map((item: any, index: number) => ({
             id: item._id,
-            date: new Date(item.scheduledStartDate).toLocaleDateString("en-GB", {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric'
-            }).replace(/\//g, '-'),
+            date: new Date(item.scheduledStartDate)
+              .toLocaleDateString("en-GB", {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              })
+              .replace(/\//g, '-'),
             time: `${item.scheduledFrom} - ${item.scheduledTo}`,
             title: item.student?.name || item.classType || "Class",
             color: colorCycle[index % colorCycle.length],
@@ -113,17 +111,15 @@ const UpcomingClasses: React.FC = () => {
 
   return (
     <div className="pl-4 py-4">
-      {/* <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">Upcoming Classes</h3>
-        <button className="text-sm px-2 py-1 bg-gray-100 rounded-md text-blue-600">
-          Today
-        </button>
-      </div> */}
-      <div className="relative border-l-2 border-dotted border-[#000] dark:border-[#fff] ml-5 space-y-6">
-        {classes.length === 0 ? (
-          <p className="text-center text-gray-600 text-sm p-4 align-middle justify-center">No upcoming classes.</p>
-        ) : (
-          classes.map((classItem, index) => {
+
+      {/* ✅ FIXED: Only show timeline border when classes exist */}
+      {classes.length === 0 ? (
+        <p className="text-center text-gray-600 text-sm p-4">
+          No upcoming classes.
+        </p>
+      ) : (
+        <div className="relative border-l-2 border-dotted border-[#000] dark:border-[#fff] ml-5 space-y-6">
+          {classes.map((classItem, index) => {
             const colors = [
               "bg-[#d77277]",
               "bg-[#72B0D7]",
@@ -145,29 +141,27 @@ const UpcomingClasses: React.FC = () => {
 
             return (
               <div key={classItem.id} className="relative flex items-start">
-                {/* Time and dot */}
+
+                {/* Time + Dot */}
                 <div className="absolute -left-[46px] mt-3 flex flex-row items-center gap-2 justify-between">
-                  <span className="text-xs font-medium text-gray-700 dark:text-[#fff]">{classItem.time.split(' ')[0]}</span>
-                  <div
-                    className={`w-[10px] h-[10px] rounded-full ${currentColor} ml-[6px]`}
-                  />
+                  <span className="text-xs font-medium text-gray-700 dark:text-[#fff]">
+                    {classItem.time.split(' ')[0]}
+                  </span>
+
+                  <div className={`w-[10px] h-[10px] rounded-full ${currentColor} ml-[6px]`} />
                 </div>
 
                 {/* Card */}
                 <div className="bg-[#f4f4f4] dark:bg-[#404040] rounded-md p-2 w-full shadow-sm ml-4">
-                  {/* <div className="flex justify-between text-[10px] text-gray-500 dark:text-[#fff] dark:opacity-85">
-                    <span>{classItem.date}</span>
-                    <span>{classItem.time}</span>
-                  </div> */}
                   <h4 className={`text-[14px] font-medium ${currentTextColor}`}>
                     {classItem.title}
                   </h4>
                 </div>
               </div>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      )}
     </div>
   );
 };

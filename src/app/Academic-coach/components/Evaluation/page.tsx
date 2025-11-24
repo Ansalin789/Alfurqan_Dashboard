@@ -10,38 +10,37 @@ import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { getSocket } from "@/app/utils/socket";
-import { create } from "domain";
 
-interface Student {
-  learningInterest: string; // Replace with the exact type if known
-  studentId: string;
-  studentFirstName: string;
-  studentLastName: string;
-  studentEmail: string;
-  studentPhone: number;
-  studentCountry: string;
-  preferredTeacher: string;
-  preferredFromTime: string;
-  preferredToTime: string;
-  classStatus?: string;
-  status?: string;
-  trialClassStatus: string;
-  studentStatus: string;
-  createdDate: Date;
-}
+// interface Student {
+//   learningInterest: string; // Replace with the exact type if known
+//   studentId: string;
+//   studentFirstName: string;
+//   studentLastName: string;
+//   studentEmail: string;
+//   studentPhone: number;
+//   studentCountry: string;
+//   preferredTeacher: string;
+//   preferredFromTime: string;
+//   preferredToTime: string;
+//   classStatus?: string;
+//   status?: string;
+//   trialClassStatus: string;
+//   studentStatus: string;
+//   createdDate: Date;
+// }
 
-interface EvaluationItem {
-  paymentLink: string;
-  _id: string;
-  student: Student;
-  trialClassStatus: string;
-  assignedTeacher: string;
-  paymentStatus: string;
-}
+// interface EvaluationItem {
+//   paymentLink: string;
+//   _id: string;
+//   student: Student;
+//   trialClassStatus: string;
+//   assignedTeacher: string;
+//   paymentStatus: string;
+// }
 
-interface ApiResponse {
-  evaluation: EvaluationItem[];
-}
+// interface ApiResponse {
+//   evaluation: EvaluationItem[];
+// }
 
 // Define the transformed user structure
 interface TransformedUser {
@@ -1079,15 +1078,6 @@ const TrailManagement = () => {
           <div>No user data available for editing.</div>
         )}
       </Modal>
-      {/* <AddStudentModal
-        isOpen={isModalOpen}
-        onRequestClose={closeModal}
-        isEditMode={isEditMode}
-        onSave={() => {
-          fetchStudents();
-          closeModal();
-        }}
-      /> */}
       <FilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}

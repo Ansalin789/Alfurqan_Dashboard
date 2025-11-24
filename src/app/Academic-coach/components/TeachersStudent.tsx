@@ -11,6 +11,7 @@ interface TeacherData {
   teacherName: string;
   teacherEmail: string;
   studentCount: number;
+  joinedStudentsCount: number;
   maleCount:string;
   femaleCount:string;
 }
@@ -50,7 +51,7 @@ export default function Academic() {
     console.error("❌ AdminAuthToken not found");
     return;
   }
-        const teacherId = "some_teacher_id"; // Replace with actual teacherId
+        const teacherId = "some_teacher_id";
         const response = await axios.get<ApiResponse>(
           `https://api.blackstoneinfomaticstech.com/teacher-student-count`,
           {
@@ -78,24 +79,11 @@ export default function Academic() {
         </h3>
         <div className="overflow-y-scroll h-[275px] scrollbar-none px-2">
           <table className="min-w-full">
-            {/* <thead>
-              <tr>
-                <th className="px-4 py-2 text-start text-[12px] font-normal text-[#000] dark:text-[#fff] underline underline-offset-2">
-                  Teachers
-                </th>
-                <th className="px-4 py-2 text-center text-[12px] font-normal text-[#000] dark:text-[#fff] underline underline-offset-2">
-                  Students
-                </th>
-              </tr>
-            </thead> */}
             <tbody className="mb-1">
               {teachersData.map((teacher) => (
                 <tr key={teacher._id ?? teacher.teacherEmail}>
                   <div className="justify-between items-center flex border-b-[1px]  dark:border-[#585858] px-2 py-1">
-
-                  
                   <td className=" py-1 text-center text-[12px] font-normal flex text-[#010e30] opacity-90 dark:text-[#fff]">
-                    {/* <FaUserCircle className="text-[#000] mr-2 mt-1" /> */}
                     {(() => {
                       const val = teacher.teacherName ?? "";
                       return val
@@ -104,7 +92,7 @@ export default function Academic() {
                     })()}
                   </td>
                   <td className=" py-1 text-[13px] whitespace-nowrap text-center text-[#010e30] dark:text-[#fff] font-medium">
-                    {teacher.studentCount}
+                    {teacher.joinedStudentsCount}
                   </td>
                   </div>
                 </tr>
