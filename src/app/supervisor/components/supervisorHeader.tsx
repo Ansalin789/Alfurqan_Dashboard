@@ -194,9 +194,6 @@ export default function SupervisorHeader({
   const { notificationType, senderId } = notification;
 
   switch (notificationType) {
-    // case "STUDENT_NOTIFICATION":
-    //   router.push(`managestudentview?id=${senderId}`);
-    //   break;
 
     case "TEACHER_ADDED":
       router.push(`/supervisor/ui/recruitment`);
@@ -209,15 +206,6 @@ export default function SupervisorHeader({
     case "ADMIN_MEETING_SCHEDULED":
       router.push('/supervisor/ui/meetingandtraining');
       break;  
-
-    // case "REQUEST_RESCHEDULE_TEACHER":
-    //   router.push(`/Academic-coach/ui/teacherDetails?teacherId=${senderId}`);
-    //   break;
-
-    //   case "REQUEST_RESCHEDULE_STUDENT":
-    //   router.push(`managestudentview?id=${senderId}`);
-    //   break;
-
 
     default:
       console.warn("Unknown notification type:", notificationType);

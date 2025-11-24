@@ -67,35 +67,21 @@ const ViewSchedule = () => {
     Schedule[]
   >([]);
   const [selectedMenu, setSelectedMenu] = useState<number | null>(null);
-
-  // Date Range
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-
-  // Course
   const [course, setCourse] = useState("");
-
-  // Course Type (maps to sessionClassType)
   const [sessionClassType, setSessionClassType] = useState("");
-
-  // Timing (maps to startTime)
   const [startTime, setStartTime] = useState("");
-
-  // Status (maps to scheduleStatus)
   const [scheduleStatus, setScheduleStatus] = useState("");
-
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [showModal, setShowModal] = useState(false);
-
   const [activeTab, setActiveTab] = useState<string>("scheduled");
   const [upcomingClasses, setUpcomingClasses] = useState<Schedule[]>([]);
   const [completedClasses, setCompletedClasses] = useState<Schedule[]>([]);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
-  // Remove the filterData function and replace with useMemo
   const filteredData = useMemo(() => {
     if (!searchQuery) return uniqueStudentSchedules;
     
@@ -296,7 +282,6 @@ const ViewSchedule = () => {
   }, [activeTab, upcomingClasses, completedClasses]);
 
   const [showFilter, setShowFilter] = useState(false);
-  const dataToShow = uniqueStudentSchedules;
   const [currentPage, setCurrentPage] = useState(1);
 
   const itemsPerPage = 10;
@@ -595,9 +580,7 @@ console.log("currentItems", currentItems);
                     <option>Re-Scheduled</option>
                   </select>
                 </div>
-
                 <hr className="my-4" />
-
                 <div className="flex justify-between">
                   <button
                     className="px-4 py-2 rounded-md border border-[#576cbc] text-indigo-600 text-sm"
@@ -660,7 +643,6 @@ console.log("currentItems", currentItems);
                     <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                       {item.classId}
                     </td>
-
                     <td className="px-8 py-3 text-left">{item.course?.courseName || 'N/A'}</td>
                     <td className="px-6 py-3 text-left">Regular Class</td>
                     <td className="px-3 py-3 text-left">
@@ -700,7 +682,6 @@ console.log("currentItems", currentItems);
                           ) {
                             content = (
                               <button
-                                // onClick={() => handleLiveClassRedirect(item._id)}
                                 className="text-[10px] font-semibold px-[11px] py-1 rounded-lg bg-[#576cbc] text-white border cursor-pointer hover:opacity-80"
                                 onClick={() =>
                                   router.push(

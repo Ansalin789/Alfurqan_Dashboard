@@ -9,8 +9,7 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import { CgAttachment } from "react-icons/cg";
 import SupervisorHeader from "../../components/supervisorHeader";
-import { IStudent } from "@/app/teacher/ui/messages/page";
-import { getSocket } from "@/app/utils/socket";
+
 
 
 
