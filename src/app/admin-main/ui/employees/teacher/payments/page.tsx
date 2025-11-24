@@ -513,7 +513,17 @@ const handleViewDownload = (item: SalaryWageRecord) => {
                           day: "numeric",
                         })}
                       </td>
-                      <td className="p-3 text-left">
+                      <td className="p-3">
+                        {item._id}
+                      </td>
+                      <td className="p-3">
+                        {new Date(item.createdDate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </td>
+                      <td className="p-3">
                         {item.salaryAmount}
                       </td>
                       <td className="p-3 text-left">{item.isSalaryProcessed || "Bonus"}</td>
@@ -546,7 +556,7 @@ const handleViewDownload = (item: SalaryWageRecord) => {
                   <tr>
                     <td colSpan={6} className="p-4 text-center">
                       <div className="flex flex-col items-center justify-center py-8">
-                        <Image src="/assets/images/quote.jpg" alt="No data" width={120} height={120} />
+                        {/* <Image src="/assets/images/quote.jpg" alt="No data" width={120} height={120} /> */}
                         <div className="mt-4 text-gray-400 text-sm">No data available</div>
                       </div>
                     </td>

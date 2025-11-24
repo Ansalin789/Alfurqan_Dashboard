@@ -5,6 +5,10 @@ import { BsPersonPlus } from "react-icons/bs";
 import { IoDiamondSharp } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { FaWhatsappSquare } from "react-icons/fa";
+import { IoLogoLinkedin } from "react-icons/io";
+import { RiExternalLinkFill } from "react-icons/ri";
+
 
 export interface IStudentInvoice {
   _id: string;
@@ -35,18 +39,76 @@ export interface IStudentInvoice {
   __v: number;
 }
 
-
 const StudentProfile = () => {
   const [studentName, setStudentName] = useState<string | null>(null);
   const [studentEmail, setStudentEmail] = useState<string | null>(null);
   const [studentImage, setStudentImage] = useState<string | null>(null);
   const router = useRouter();
 
-  // ✅ Move this line INSIDE the component
   const [invoices, setInvoices] = useState<IStudentInvoice[]>([]);
 
-  // Define paymentStatus
-  const paymentStatus = "Pending"; // Set this to the desired status
+  const paymentStatus = "Pending";
+
+  const [showShareOptions, setShowShareOptions] = useState(false);
+
+const [referenceId, setReferenceId] = useState<string>("");
+
+useEffect(() => {
+  const fetchReferenceId = async () => {
+    try {
+      const loginStudentId = localStorage.getItem("StudentPortalId");
+      const token = localStorage.getItem("StudentAuthToken");
+      const res = await axios.get(
+        `http://localhost:5001/alstudents/${loginStudentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+     console.log("res",res);
+      const students = res.data?.studentDetails || [];
+  console.log("rege student",students)
+      
+
+      // If found, set their refernceId
+      if (students?.refernceId) {
+        console.log("referal code", students.refernceId)
+        setReferenceId(students.refernceId);
+      } else {
+        console.warn("Student does not have refernceId");
+      }
+    } catch (error) {
+      console.error("Error fetching referenceId:", error);
+    }
+  };
+
+  fetchReferenceId();
+}, []);
+
+  
+const shareUrl = `http://localhost:3001/StudentForm?refernceId=${referenceId}`;
+  const message = encodeURIComponent(
+    `Check this out! Join me here: ${shareUrl}`
+  );
+
+  const handleWhatsAppShare = () => {
+    window.open(`https://wa.me/?text=${message}`, "_blank");
+  };
+
+  const handleLinkedInShare = () => {
+    window.open(
+      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+        shareUrl
+      )}`,
+      "_blank"
+    );
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareUrl);
+    alert("Link copied to clipboard!");
+  };
 
   useEffect(() => {
     const studentId = localStorage.getItem("StudentPortalId");
@@ -106,14 +168,14 @@ const StudentProfile = () => {
       }
     };
 
-  fetchStudentInvoices();
+    fetchStudentInvoices();
   }, []);
   const [dashboardCounts, setDashboardCounts] = useState({
     totalLevel: 0,
   });
 
   useEffect(() => {
-    const fetchData = async () => { 
+    const fetchData = async () => {
       try {
         const token =
           typeof window !== "undefined"
@@ -156,8 +218,11 @@ const StudentProfile = () => {
   }, []);
 
   return (
-    <div className="w-[310px] flex flex-col gap-4" >
-      <div className="rounded-xl shadow-lg bg-white h-[300px] dark:bg-[#343434] p-4 relative cursor-pointer" onClick={() => router.push("student-profile")}>
+    <div className="w-[310px] flex flex-col gap-4">
+      <div
+        className="rounded-xl shadow-lg bg-white h-[300px] dark:bg-[#343434] p-4 relative cursor-pointer"
+        onClick={() => router.push("student-profile")}
+      >
         <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">
           Student Profile
         </h3>
@@ -174,7 +239,9 @@ const StudentProfile = () => {
           <p className="text-[#4b5563] text-[13px] text-center mt-1">
             {studentEmail ?? "Loading..."}
           </p>
-          <p className="text-[#4b5563] text-[13px] mb-2 text-center mt-2">Level {dashboardCounts.totalLevel}</p>
+          <p className="text-[#4b5563] text-[13px] mb-2 text-center mt-2">
+            Level {dashboardCounts.totalLevel}
+          </p>
 
           <div className="flex justify-center space-x-1 mb-2">
             {[...Array(4)].map((_, i) => (
@@ -188,13 +255,18 @@ const StudentProfile = () => {
       </div>
 
       {/* Payment Item */}
-      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] p-4 h-[185px] mt-1 w-full cursor-pointer" onClick={() => router.push("payment")}>
+      <div
+        className="rounded-xl shadow-lg bg-white dark:bg-[#343434] p-4 h-[185px] mt-1 w-full cursor-pointer"
+        onClick={() => router.push("payment")}
+      >
         <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">
           Upcoming Payments
         </h3>
 
         {invoices.filter((i) => i.invoiceStatus === "Pending").length === 0 ? (
-          <p className="text-gray-500 text-xs text-center mt-12 align-middle">No pending payments found</p>
+          <p className="text-gray-500 text-xs text-center mt-12 align-middle">
+            No pending payments found
+          </p>
         ) : (
           invoices
             .filter((i) => i.paymentStatus === "Pending")
@@ -220,7 +292,9 @@ const StudentProfile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
-                  <p className="text-gray-400 text-[11px]">{invoice.invoiceStatus}</p>
+                  <p className="text-gray-400 text-[11px]">
+                    {invoice.invoiceStatus}
+                  </p>
                   <p className="text-gray-400 text-[12px]">
                     {new Date(invoice.dueDate).toLocaleDateString("en-US", {
                       year: "numeric",
@@ -235,13 +309,18 @@ const StudentProfile = () => {
       </div>
 
       {/* Payment Item */}
-      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] mt-1 h-[185px] p-4 w-full cursor-pointer" onClick={() => router.push("payment")}>
+      <div
+        className="rounded-xl shadow-lg bg-white dark:bg-[#343434] mt-1 h-[185px] p-4 w-full cursor-pointer"
+        onClick={() => router.push("payment")}
+      >
         <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">
           Recent Payments
         </h3>
 
         {invoices.filter((i) => i.invoiceStatus === "Paid").length === 0 ? (
-          <p className="text-gray-500 text-xs text-center mt-12 align-middle">No paid payments found</p>
+          <p className="text-gray-500 text-xs text-center mt-12 align-middle">
+            No paid payments found
+          </p>
         ) : (
           invoices
             .filter((i) => i.invoiceStatus === "Paid")
@@ -267,7 +346,9 @@ const StudentProfile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
-                  <p className="text-[#377E36] text-[11px]">{invoice.invoiceStatus}</p>
+                  <p className="text-[#377E36] text-[11px]">
+                    {invoice.invoiceStatus}
+                  </p>
                   <p className="text-gray-400 text-[12px]">
                     {new Date(invoice.paymentDate).toLocaleDateString("en-US", {
                       year: "numeric",
@@ -282,14 +363,15 @@ const StudentProfile = () => {
       </div>
 
       {/* Gradient Action Cards - Example 1 */}
-      <div className="flex items-center justify-between p-4 mt-1 rounded-xl mb-0 bg-gradient-to-r from-[#7e57c2] to-[#5c6bc0] text-white">
+      <div
+        className="flex items-center justify-between p-4 mt-1 rounded-xl mb-0 bg-gradient-to-r from-[#7e57c2] to-[#5c6bc0] text-white cursor-pointer relative"
+        onClick={() => setShowShareOptions(!showShareOptions)}
+      >
         <div className="flex items-center gap-4">
-          {/* ICON CIRCLE with image */}
           <div className="bg-white bg-opacity-20 p-3 rounded-full w-10 h-10 flex items-center justify-center">
-          <BsPersonPlus />
+            <BsPersonPlus />
           </div>
 
-          {/* Text */}
           <div>
             <p className="text-sm font-semibold">Refer a Friend</p>
             <p className="text-[10px] opacity-80">
@@ -298,7 +380,6 @@ const StudentProfile = () => {
           </div>
         </div>
 
-        {/* Arrow Icon */}
         <div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -315,19 +396,79 @@ const StudentProfile = () => {
             />
           </svg>
         </div>
+
+        {showShareOptions && (
+          <div
+            className="absolute top-full left-0 mt-3 w-60 rounded-2xl shadow-xl 
+      bg-white/80 dark:bg-[#2c2c2c]/80 backdrop-blur-xl border border-white/20 
+      z-50 animate-fadeIn p-3"
+          >
+            <p className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">
+              Share via
+            </p>
+
+            {/* WhatsApp */}
+            <div className="flex">
+            <button
+              onClick={handleWhatsAppShare}
+              className=" items-center gap-2 px-3 py-2 rounded-full 
+      hover:bg-text-100 dark:hover:bg-green-900/30 transition-all duration-200"
+            >
+              
+              <FaWhatsappSquare
+                className="w-6 h-6 bg-green-600 ml-2"
+              />
+              <span className="text-[10px] font-medium text-green-600 dark:text-green-400">
+                WhatsApp
+              </span>
+              
+            </button>
+
+            {/* LinkedIn */}
+            <button
+              onClick={handleLinkedInShare}
+              className=" items-center gap-2 px-3 py-2 rounded-full 
+      hover:bg-text-100 dark:hover:bg-blue-900/30 transition-all duration-200"
+            >
+              <IoLogoLinkedin
+                className="w-6 h-6 bg-blue-600 ml-2"
+              />
+              <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400">
+                LinkedIn
+              </span>
+            </button>
+
+            {/* Copy Link */}
+            <button
+              onClick={handleCopyLink}
+              className=" items-center gap-2 px-3 py-2 rounded-full 
+      hover:bg-text-200 dark:hover:bg-gray-700 transition-all duration-200"
+            >
+              <RiExternalLinkFill
+                className="w-6 h-6 dark:invert opacity-80 bg-gray-600 text-center ml-2"
+              />
+              <span className="text-[10px] font-medium text-gray-900 dark:text-white">
+                Copy
+              </span>
+            </button>
+            
+            </div>
+            
+          </div>
+        )}
       </div>
 
       {/* Gradient Action Cards - Example 2 */}
-      <Link 
-        href="https://alfweb.vercel.app/pricing" 
-        target="_blank" 
+      <Link
+        href="https://alfweb.vercel.app/pricing"
+        target="_blank"
         rel="noopener noreferrer"
         className="flex items-center justify-between p-4 mt-[3px] rounded-xl bg-gradient-to-r from-[#ef5350] via-[#ec407a] to-[#ab47bc] text-white mb-3 cursor-pointer no-underline"
       >
         <div className="flex items-center gap-4">
           {/* Image icon in circle */}
           <div className="bg-white bg-opacity-20 p-3 rounded-full w-10 h-10 flex items-center justify-center">
-          <IoDiamondSharp  />
+            <IoDiamondSharp />
           </div>
 
           {/* Text content */}

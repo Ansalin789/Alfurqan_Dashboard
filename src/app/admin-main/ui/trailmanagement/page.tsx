@@ -11,6 +11,7 @@ import AdminHeader from "../../components/AdminHeader";
 
 export interface TransformedUser {
   _id: string;
+  trialId: string;
   academicCoachId: string;
   student: {
     studentId: string;
@@ -235,13 +236,13 @@ const TrailManagement = () => {
                 {filteredItems.length > 0 ? (
                   filteredItems.slice(-5).reverse().map((item, index) => (
                     <tr
-                      key={item._id}
+                      key={item.trialId}
                       className={`text-[11px] ${
                         index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"
                       }`}
                     >
                       <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] break-words w-[10%]">
-                        {item._id}
+                        {item.trialId}
                       </td>
                       <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left break-words w-[12%]">
                         {item.student.studentFirstName}{" "}

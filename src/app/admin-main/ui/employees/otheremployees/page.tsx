@@ -95,6 +95,9 @@ interface EmployeeWagesResponse {
   wageRecords: EmployeeWage[];
 }
 interface ShiftSchedule {
+  workhrs: string;
+  employeeId: string;
+  _id: string;
   date?: string;
   day: string;
   fromTime: string;
@@ -102,8 +105,6 @@ interface ShiftSchedule {
   isExpanded?: boolean;
   timings: { fromTime: string; toTime: string; date: string }[]; // Make date required here
 }
-
-
 
 // interfaces/LeaveRequest.ts
 
@@ -132,11 +133,12 @@ export interface ILeaveSummary {
   totalDeclined: number;
 }
 
-
 type LeaveStatus = "APPROVED" | "WAITINGLIST" | "REJECTED";
 // CustomTooltip for dark mode
 const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
-  const isDark = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
+  const isDark =
+    typeof window !== "undefined" &&
+    document.documentElement.classList.contains("dark");
   if (active && payload && payload.length) {
     return (
       <div
@@ -146,10 +148,19 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
             : "bg-white text-[#22223b] border-gray-200"
         }`}
       >
-        <div className={`font-normal ${isDark ? 'text-white' : 'text-[#22223b]'}`}>{label}</div>
+        <div
+          className={`font-normal ${isDark ? "text-white" : "text-[#22223b]"}`}
+        >
+          {label}
+        </div>
         <div>
           {payload.map((entry: any, idx: number) => (
-            <div key={idx} className={isDark ? 'text-white text-[10px]' : 'text-[#22223b] text-[10px]'}>
+            <div
+              key={idx}
+              className={
+                isDark ? "text-white text-[10px]" : "text-[#22223b] text-[10px]"
+              }
+            >
               {entry.value} Employees
             </div>
           ))}
@@ -163,12 +174,33 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
 const EmployeePage = () => {
   const [activeTab, setActiveTab] = useState("Wages");
   const [schedule, setSchedule] = useState<ShiftSchedule[]>([]);
+  const [fetchWorkingHours, setfetchWorkingHours] = useState<ShiftSchedule[]>(
+    []
+  );
+  const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
 
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+  
+  
   const tabs = ["Wages", "Earnings", "Leave Requests", "Working Hours"];
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [isFetched, setIsFetched] = useState(false); // Flag to check if data is fetched
   const searchParams = useSearchParams(); // Get the search params from the URL
   const [wages, setWages] = useState<EmployeeWage[]>([]); // was wage (single), now array
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editData, setEditData] = useState({
+    id: "",
+    employeeId: "",
+    fromtime: "",
+    totime: "",
+    workhrs: "",
+  });
+
   const [wageSummary, setWageSummary] = useState<{
     totalhours: number;
     totalearnings: number;
@@ -198,25 +230,27 @@ const EmployeePage = () => {
   const [searchWorking, setSearchWorking] = useState("");
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filters, setFilters] = useState<Record<string, any>>({});
-// Add this helper function to format dates
-const formatDate = (dateString: string): string => {
-  if (!dateString || dateString === "N/A") return "N/A";
-  
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric"
-    });
-  } catch (error) {
-    return "N/A";
-  }
-};
+  const [selectedId, setSelectedId] = useState("");
+  const [selectedEmpId, setSelectedEmpId] = useState("");
+  // Add this helper function to format dates
+  const formatDate = (dateString: string): string => {
+    if (!dateString || dateString === "N/A") return "N/A";
+
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch (error) {
+      return "N/A";
+    }
+  };
   const handleFilterChange = (newFilters: Record<string, any>) => {
     setFilters(newFilters);
   };
-  
+
   const handleResetFilters = () => {
     setFilters({});
   };
@@ -243,35 +277,49 @@ const formatDate = (dateString: string): string => {
       earnings,
     };
   });
-  const filteredEarnings = monthsArray.filter((row) => {
-    const searchMatch =
-      row.monthName.toLowerCase().includes(searchEarnings.toLowerCase()) ||
-      row.currentYear.toString().includes(searchEarnings);
+  const filteredEarnings = monthsArray
+    .filter((row) => {
+      const searchMatch =
+        row.monthName.toLowerCase().includes(searchEarnings.toLowerCase()) ||
+        row.currentYear.toString().includes(searchEarnings);
 
-    let filterMatch = true;
-    if (filters.month && row.monthNumber.toString() !== filters.month) {
-      filterMatch = false;
-    }
-    if (filters.totalhours && row.totalhours.toString() !== filters.totalhours) {
-      filterMatch = false;
-    }
-    if (filters.earnings && row.earnings.toFixed(2) !== filters.earnings) {
-      filterMatch = false;
-    }
+      let filterMatch = true;
+      if (filters.month && row.monthNumber.toString() !== filters.month) {
+        filterMatch = false;
+      }
+      if (
+        filters.totalhours &&
+        row.totalhours.toString() !== filters.totalhours
+      ) {
+        filterMatch = false;
+      }
+      if (filters.earnings && row.earnings.toFixed(2) !== filters.earnings) {
+        filterMatch = false;
+      }
 
-    return searchMatch && filterMatch;
-  })
-  .sort((a, b) => {
-    const monthOrder = [
-      "Jan","Feb","Mar","Apr","May","Jun",
-      "Jul","Aug","Sep","Oct","Nov","Dec"
-    ];
+      return searchMatch && filterMatch;
+    })
+    .sort((a, b) => {
+      const monthOrder = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
 
-    return (
-      b.currentYear - a.currentYear ||
-      monthOrder.indexOf(b.monthName) - monthOrder.indexOf(a.monthName)
-    );
-  });
+      return (
+        b.currentYear - a.currentYear ||
+        monthOrder.indexOf(b.monthName) - monthOrder.indexOf(a.monthName)
+      );
+    });
   const totalEarningsPages = Math.ceil(
     filteredEarnings.length / earningsPerPage
   );
@@ -320,22 +368,30 @@ const formatDate = (dateString: string): string => {
     leavePage * leavePerPage
   );
 
- const filteredWorking = schedule.filter((item) => {
-  const searchMatch = item.day?.toLowerCase().includes(searchWorking.toLowerCase());
+  const filteredWorking = schedule.filter((item) => {
+    const searchMatch = item.day
+      ?.toLowerCase()
+      .includes(searchWorking.toLowerCase());
 
-  let filterMatch = true;
-  if (filters.day && item.day !== filters.day) {
-    filterMatch = false;
-  }
+    let filterMatch = true;
+    if (filters.day && item.day !== filters.day) {
+      filterMatch = false;
+    }
+    console.log("filetred serach match", searchMatch);
+    console.log("filetred  match", filterMatch);
 
-  return searchMatch && filterMatch;
-});
+    return searchMatch && filterMatch;
+  });
 
-const totalWorkingPages = Math.ceil(filteredWorking.length / workingPerPage);
-const paginatedWorking = filteredWorking.slice(
-  (workingPage - 1) * workingPerPage,
-  workingPage * workingPerPage
-);
+  useEffect(() => {
+    console.log("empon edit", editData);
+  }, [editData]);
+
+  const totalWorkingPages = Math.ceil(filteredWorking.length / workingPerPage);
+  const paginatedWorking = filteredWorking.slice(
+    (workingPage - 1) * workingPerPage,
+    workingPage * workingPerPage
+  );
   useEffect(() => {
     // Retrieve employeeId and userId from search params
     const employeeId = searchParams.get("employeeId");
@@ -351,7 +407,7 @@ const paginatedWorking = filteredWorking.slice(
       fetchEmployee(employeeId);
       fetchWages(employeeId);
       fetchData(employeeId); // Fetch shift schedule data
-
+      setSelectedEmpId(employeeId);
       if (userId) {
         fetchLeaveData(userId); // ✅ Only call if userId is not null
       } else {
@@ -474,70 +530,148 @@ const paginatedWorking = filteredWorking.slice(
     }
   };
 
- const fetchData = async (employeeId: string) => {
-  try {
-    const res = await axios.get(
-      `https://api.blackstoneinfomaticstech.com/shiftschedule/${employeeId}`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("AdminAuthToken")}`,
-        },
-      }
-    );
+  const fetchData = async (employeeId: string) => {
+    try {
+      const res = await axios.get(
+        `https://api.blackstoneinfomaticstech.com/shiftschedule/${employeeId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("AdminAuthToken")}`,
+          },
+        }
+      );
 
-    // Group schedules by day
-    const groupedSchedules = groupSchedulesByDay(res.data);
-    setSchedule(groupedSchedules);
-
-  } catch (error) {
-    console.error("Failed to fetch shift schedule", error);
-    setSchedule([]);
-  }
-};
-
-// Helper function to group schedules by day
-// Helper function to group schedules by day
-// Helper function to group schedules by day
-const groupSchedulesByDay = (scheduleData: ShiftSchedule[]): ShiftSchedule[] => {
-  const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  
-  const groupedByDay: { [key: string]: { fromTime: string; toTime: string; date: string }[] } = {};
-  
-  scheduleData.forEach(item => {
-    const day = item.day;
-    if (!groupedByDay[day]) {
-      groupedByDay[day] = [];
+      // Group schedules by day
+      const groupedSchedules = groupSchedulesByDay(res.data);
+      setSchedule(groupedSchedules);
+    } catch (error) {
+      console.error("Failed to fetch shift schedule", error);
+      setSchedule([]);
     }
-    groupedByDay[day].push({
-      fromTime: item.fromTime,
-      toTime: item.toTime,
-      date: item.date || "N/A" // Ensure date is always present
+  };
+
+  const updateWorkingHours = async (editData: any) => {
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AdminAuthToken")
+          : null;
+  
+      if (!selectedEmpId) {
+        setToast({
+          type: "error",
+          message: "Employee ID missing!",
+        });
+        return;
+      }
+  
+      const response = await fetch(
+        `http://localhost:5001/shiftschedule?employeeId=${selectedEmpId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            employeeId: selectedEmpId,
+            fromtime: editData.fromtime,
+            totime: editData.totime,
+            workhrs: editData.workhrs,
+          }),
+        }
+      );
+  
+      const result = await response.json();
+  
+      if (!response.ok) {
+        setToast({
+          type: "error",
+          message: result.message || "Failed to update working hours",
+        });
+        return;
+      }
+  
+      setToast({
+        type: "success",
+        message: "Working hours updated successfully!",
+      });
+  
+      setIsEditOpen(false);
+      fetchData(selectedEmpId);
+    } catch (error) {
+      console.error(error);
+  
+      setToast({
+        type: "error",
+        message: "Failed to update working hours",
+      });
+    }
+  };
+  
+  
+
+  // Helper function to group schedules by day
+  // Helper function to group schedules by day
+  // Helper function to group schedules by day
+  const groupSchedulesByDay = (
+    scheduleData: ShiftSchedule[]
+  ): ShiftSchedule[] => {
+    const dayOrder = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ];
+
+    const groupedByDay: {
+      [key: string]: { fromTime: string; toTime: string; date: string }[];
+    } = {};
+
+    scheduleData.forEach((item) => {
+      const day = item.day;
+      if (!groupedByDay[day]) {
+        groupedByDay[day] = [];
+      }
+      groupedByDay[day].push({
+        fromTime: item.fromTime,
+        toTime: item.toTime,
+        date: item.date || "N/A", // Ensure date is always present
+      });
     });
-  });
 
-  const result: ShiftSchedule[] = dayOrder.map(day => {
-    const dayTimings = groupedByDay[day] || [{ fromTime: "N/A", toTime: "N/A", date: "N/A" }];
-    
-    return {
-      day: day,
-      fromTime: dayTimings[0].fromTime,
-      toTime: dayTimings[0].toTime,
-      timings: dayTimings, // Always has date property
-      isExpanded: false
-    };
-  });
+    const result: ShiftSchedule[] = dayOrder.map((day) => {
+      const dayTimings = groupedByDay[day] || [
+        { fromTime: "N/A", toTime: "N/A", date: "N/A" },
+      ];
 
-  return result;
-};
+      return {
+        _id: "",
+        employeeId: "",
+        workhrs: "0",
 
-const toggleDayExpansion = (day: string) => {
-  setSchedule(prev => prev.map(item => 
-    item.day === day 
-      ? { ...item, isExpanded: !item.isExpanded }
-      : item
-  ));
-};
+        day: day,
+        fromTime: dayTimings[0].fromTime,
+        toTime: dayTimings[0].toTime,
+        timings: dayTimings,
+        isExpanded: false,
+      };
+    });
+
+    return result;
+  };
+
+  const toggleDayExpansion = (day: string) => {
+    setSchedule((prev) =>
+      prev.map((item) =>
+        item.day === day ? { ...item, isExpanded: !item.isExpanded } : item
+      )
+    );
+  };
 
   // Filtered and paginated wages
   const filteredWages = Array.isArray(wages)
@@ -549,14 +683,17 @@ const toggleDayExpansion = (day: string) => {
         ];
 
         let matchesFilters = true;
-        if (filters.className && item.classType?.className !== filters.className) {
-            matchesFilters = false;
+        if (
+          filters.className &&
+          item.classType?.className !== filters.className
+        ) {
+          matchesFilters = false;
         }
         if (filters.rate && item.classType?.rate !== filters.rate) {
-            matchesFilters = false;
+          matchesFilters = false;
         }
         if (filters.currency && item.classType?.currency !== filters.currency) {
-            matchesFilters = false;
+          matchesFilters = false;
         }
 
         const matchesSearch = searchFields.some((field) =>
@@ -587,55 +724,118 @@ const toggleDayExpansion = (day: string) => {
     );
   }
 
-  const wageClassNameOptions = Array.from(new Set(wages.map(w => w.classType?.className).filter(Boolean))).map(o => ({value: o!, label: o!}));
-  const wageRateOptions = Array.from(new Set(wages.map(w => w.classType?.rate).filter(Boolean))).map(o => ({value: o!, label: o!}));
-  const wageCurrencyOptions = Array.from(new Set(wages.map(w => w.classType?.currency).filter(Boolean))).map(o => ({value: o!, label: o!}));
+  const wageClassNameOptions = Array.from(
+    new Set(wages.map((w) => w.classType?.className).filter(Boolean))
+  ).map((o) => ({ value: o!, label: o! }));
+  const wageRateOptions = Array.from(
+    new Set(wages.map((w) => w.classType?.rate).filter(Boolean))
+  ).map((o) => ({ value: o!, label: o! }));
+  const wageCurrencyOptions = Array.from(
+    new Set(wages.map((w) => w.classType?.currency).filter(Boolean))
+  ).map((o) => ({ value: o!, label: o! }));
 
   const wagesFilterFields: FilterField[] = [
-      { name: 'className', label: 'Class Name', type: 'select', options: wageClassNameOptions },
-      { name: 'rate', label: 'Rate', type: 'select', options: wageRateOptions },
-      { name: 'currency', label: 'Currency', type: 'select', options: wageCurrencyOptions },
+    {
+      name: "className",
+      label: "Class Name",
+      type: "select",
+      options: wageClassNameOptions,
+    },
+    { name: "rate", label: "Rate", type: "select", options: wageRateOptions },
+    {
+      name: "currency",
+      label: "Currency",
+      type: "select",
+      options: wageCurrencyOptions,
+    },
   ];
 
   const earningsFilterFields: FilterField[] = [
-      { name: 'month', label: 'Month', type: 'select', options: Array.from({length: 12}, (_, i) => ({value: (i+1).toString(), label: new Date(0, i).toLocaleString('default', { month: 'long' }) }))},
-      { name: 'totalhours', label: 'Total Hours', type: 'text' },
-      { name: 'earnings', label: 'Total Earnings', type: 'text' },
+    {
+      name: "month",
+      label: "Month",
+      type: "select",
+      options: Array.from({ length: 12 }, (_, i) => ({
+        value: (i + 1).toString(),
+        label: new Date(0, i).toLocaleString("default", { month: "long" }),
+      })),
+    },
+    { name: "totalhours", label: "Total Hours", type: "text" },
+    { name: "earnings", label: "Total Earnings", type: "text" },
   ];
 
-  const leaveTypeOptions = Array.from(new Set(leaveData.map(l => l.leaveType).filter(Boolean))).map(o => ({value: o!, label: o!}));
-  const leaveStatusOptions = Array.from(new Set(leaveData.map(l => l.leaveStatus).filter(Boolean))).map(o => ({value: o as string, label: o as string}));
+  const leaveTypeOptions = Array.from(
+    new Set(leaveData.map((l) => l.leaveType).filter(Boolean))
+  ).map((o) => ({ value: o!, label: o! }));
+  const leaveStatusOptions = Array.from(
+    new Set(leaveData.map((l) => l.leaveStatus).filter(Boolean))
+  ).map((o) => ({ value: o as string, label: o as string }));
 
   const leaveRequestFilterFields: FilterField[] = [
-      { name: 'leaveType', label: 'Leave Type', type: 'select', options: leaveTypeOptions },
-      { name: 'dateRange', label: 'Date', type: 'date-range' },
-      { name: 'status', label: 'Status', type: 'select', options: leaveStatusOptions },
+    {
+      name: "leaveType",
+      label: "Leave Type",
+      type: "select",
+      options: leaveTypeOptions,
+    },
+    { name: "dateRange", label: "Date", type: "date-range" },
+    {
+      name: "status",
+      label: "Status",
+      type: "select",
+      options: leaveStatusOptions,
+    },
   ];
 
-const workingHoursDayOptions = Array.from(new Set(schedule.map(s => s.day).filter(Boolean))).map(o => ({value: o!, label: o!}));
+  const workingHoursDayOptions = Array.from(
+    new Set(schedule.map((s) => s.day).filter(Boolean))
+  ).map((o) => ({ value: o!, label: o! }));
 
-const workingHoursFilterFields: FilterField[] = [
-  { name: 'day', label: 'Day', type: 'select', options: workingHoursDayOptions },
-];
+  const workingHoursFilterFields: FilterField[] = [
+    {
+      name: "day",
+      label: "Day",
+      type: "select",
+      options: workingHoursDayOptions,
+    },
+  ];
 
   const getFilterFieldsForTab = (tab: string) => {
-    switch(tab) {
-      case 'Wages':
+    switch (tab) {
+      case "Wages":
         return wagesFilterFields;
-      case 'Earnings':
+      case "Earnings":
         return earningsFilterFields;
-      case 'Leave Requests':
+      case "Leave Requests":
         return leaveRequestFilterFields;
-      case 'WorkingHours':
+      case "WorkingHours":
         return workingHoursFilterFields;
       default:
         return [];
     }
-  }
+  };
+
+  const calculateWorkHours = (from: string, to: string) => {
+    if (!from || !to) return "";
+
+    const start = new Date(`2000-01-01T${from}:00`);
+    const end = new Date(`2000-01-01T${to}:00`);
+
+    if (end < start) return ""; // optional: avoid negative hours
+
+    const diffMs = end.getTime() - start.getTime();
+    const diffHours = diffMs / (1000 * 60 * 60);
+
+    return diffHours.toFixed(2); // format example: "2.50"
+  };
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Other Employees" showBackButton showBackPath="/admin-main/ui/employees"/>
+      <AdminHeader
+        currentSection="Other Employees"
+        showBackButton
+        showBackPath="/admin-main/ui/employees"
+      />
       <div className="p-2 min-h-screen w-full">
         <div className="col-span-3 bg-[#5E6578] text-white px-4 py-3 rounded-lg shadow-sm flex flex-row">
           <div className="flex flex-col items-center w-[30%] pr-4 py-6 border-r border-[#BCBCBC] gap-y-2">
@@ -767,8 +967,8 @@ const workingHoursFilterFields: FilterField[] = [
                 key={tab}
                 className={`px-3 py-[7px] text-xs font-medium focus:outline-none transition-all duration-200 ${
                   activeTab === tab
-                  ? "border-b border-b-[#576CBC] text-[#576CBC]"
-                  : "text-[#010E30] dark:text-white"
+                    ? "border-b border-b-[#576CBC] text-[#576CBC]"
+                    : "text-[#010E30] dark:text-white"
                 }`}
                 onClick={() => setActiveTab(tab)}
               >
@@ -799,7 +999,7 @@ const workingHoursFilterFields: FilterField[] = [
                     >
                       <MdTune className="w-4 h-4" />
                       <span>Filter</span>
-                        </div>
+                    </div>
                     <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
                       Showing{" "}
                       {filteredWages.length === 0
@@ -809,7 +1009,7 @@ const workingHoursFilterFields: FilterField[] = [
                       {Math.min(wagesPage * wagesPerPage, filteredWages.length)}{" "}
                       of {filteredWages.length}
                     </span>
-                        </div>
+                  </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
                       className="w-full min-w-[900px] text-sm text-left table-auto"
@@ -819,18 +1019,18 @@ const workingHoursFilterFields: FilterField[] = [
                         <tr className="font-medium">
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Class Name
-                      </th>
+                          </th>
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Rate
-                      </th>
+                          </th>
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Currency
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Duration
-                      </th>
-                    </tr>
-                  </thead>
+                          </th>
+                        </tr>
+                      </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
                         {paginatedWages.length > 0 ? (
                           paginatedWages.map((item, index) => (
@@ -844,7 +1044,7 @@ const workingHoursFilterFields: FilterField[] = [
                             >
                               <td className="p-3 text-left">
                                 {item.classType?.className || "-"}
-                        </td>
+                              </td>
                               <td className="p-3 text-left">
                                 {item.classType?.rate || "-"}
                               </td>
@@ -855,18 +1055,18 @@ const workingHoursFilterFields: FilterField[] = [
                                 {item.classType?.hoursMins
                                   ? `${item.classType.hoursMins} mins`
                                   : "-"}
-                        </td>
-                      </tr>
+                              </td>
+                            </tr>
                           ))
-                    ) : (
-                      <tr>
-                        <td colSpan={4} className="p-4 text-left">
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="p-4 text-left">
                               No data available
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
                 {totalWagesPages > 1 && (
@@ -909,17 +1109,17 @@ const workingHoursFilterFields: FilterField[] = [
                       className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col  w-full p-3 h-full"
                     >
                       <div className="flex flex-col justify-between gap-y-4">
-                    <div>
+                        <div>
                           <p className="text-[15px] font-medium dark:text-white text-white">
                             {card.title}
                           </p>
-                    </div>
-                    <div>
+                        </div>
+                        <div>
                           <h3 className="text-[24px] font-semibold dark:text-white text-white">
                             ${card.count}
                           </h3>
-                    </div>
-                  </div>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -990,7 +1190,9 @@ const workingHoursFilterFields: FilterField[] = [
                               }`}
                             >
                               <td className="p-3 text-left">{`${row.monthName} ${row.currentYear}`}</td>
-                              <td className="p-3 text-left">{row.totalhours}</td>
+                              <td className="p-3 text-left">
+                                {row.totalhours}
+                              </td>
                               <td className="p-3 text-left">
                                 ${row.earnings.toFixed(2)}
                               </td>
@@ -1057,17 +1259,17 @@ const workingHoursFilterFields: FilterField[] = [
                       className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col  w-full p-3 h-full"
                     >
                       <div className="flex flex-col justify-between gap-y-4">
-                    <div>
+                        <div>
                           <p className="text-[15px] font-medium dark:text-white text-white">
                             {card.title}
                           </p>
-                    </div>
-                    <div>
+                        </div>
+                        <div>
                           <h3 className="text-[24px] font-semibold dark:text-white text-white">
                             ${card.count}
                           </h3>
-                    </div>
-                  </div>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1126,45 +1328,49 @@ const workingHoursFilterFields: FilterField[] = [
                       <tbody className="text-[10px] text-[#1D2939]">
                         {paginatedLeave.length > 0 ? (
                           paginatedLeave.map((item, index) => (
-                          <tr
-                            key={item._id}
+                            <tr
+                              key={item._id}
                               className={`text-left dark:text-white ${
                                 index % 2 === 0
                                   ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
-                            }`}
-                          >
+                              }`}
+                            >
                               <td className="p-3 text-left">
-                              {item.leaveType}
-                            </td>
+                                {item.leaveType}
+                              </td>
                               <td className="p-3 text-left">
-                              {new Date(item.fromDate).toLocaleDateString(
-                                "en-US",
-                                {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                }
-                              )}{" "}
-                              -{" "}
-                              {new Date(item.toDate).toLocaleDateString(
-                                "en-US",
-                                {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                }
-                              )}
-                            </td>
+                                {new Date(item.fromDate).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  }
+                                )}{" "}
+                                -{" "}
+                                {new Date(item.toDate).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  }
+                                )}
+                              </td>
                               <td className="p-3 text-left">{item.reason}</td>
                               <td className="p-3 text-left">
-                              <div className="flex items-left gap-2 justify-center">
-                                <span className={getLeaveStatusStyle(item.leaveStatus)}>
-                                  {item.leaveStatus}
-                                </span>
-                              </div>
-                            </td>
-                          </tr>
+                                <div className="flex items-left gap-2 justify-center">
+                                  <span
+                                    className={getLeaveStatusStyle(
+                                      item.leaveStatus
+                                    )}
+                                  >
+                                    {item.leaveStatus}
+                                  </span>
+                                </div>
+                              </td>
+                            </tr>
                           ))
                         ) : (
                           <tr>
@@ -1190,129 +1396,304 @@ const workingHoursFilterFields: FilterField[] = [
             )}
 
             {/* Working Hours Tab */}
-           {activeTab === "Working Hours" && (
-  <div className="">
-    <div className="rounded-xl overflow-hidden">
-      <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-        <input
-          type="text"
-          placeholder="Search by day"
-          className="bg-transparent outline-none text-[12px] w-32 py-3"
-          value={searchWorking}
-          onChange={(e) => {
-            setSearchWorking(e.target.value);
-            setWorkingPage(1);
-          }}
-        />
-        <div
-          className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
-          onClick={() => setIsFilterModalOpen(true)}
-        >
-          <MdTune className="w-4 h-4" />
-          <span>Filter</span>
-        </div>
-        <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-          Showing {filteredWorking.length} days
-        </span>
-      </div>
-      <div className="overflow-x-auto max-h-none">
-        <table
-          className="w-full min-w-[900px] text-sm text-left table-auto"
-          style={{ width: "100%", tableLayout: "fixed" }}
-        >
-          <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
-            <tr className="font-medium">
-              <th className="p-4 font-semibold text-[12px] text-left">Day</th>
-              <th className="p-4 font-semibold text-[12px] text-left">Date</th>
+            {activeTab === "Working Hours" && (
+              <div className="">
+                <div className="rounded-xl overflow-hidden">
+                  <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <input
+                      type="text"
+                      placeholder="Search by day"
+                      className="bg-transparent outline-none text-[12px] w-32 py-3"
+                      value={searchWorking}
+                      onChange={(e) => {
+                        setSearchWorking(e.target.value);
+                        setWorkingPage(1);
+                      }}
+                    />
 
-              <th className="p-4 font-semibold text-[12px] text-left">Working Hours</th>
-              <th className="p-4 font-semibold text-[12px] text-left">GMT</th>
-            </tr>
-          </thead>
-    <tbody className="text-[10px] text-[#1D2939]">
-  {paginatedWorking.length > 0 ? (
-    paginatedWorking.map((item, index) => {
-      const itemTimings = item.timings || [{ fromTime: item.fromTime, toTime: item.toTime, date: item.date }];
-      const hasMultipleTimings = itemTimings.length > 1;
-      
-      // Get formatted date range for display
-      const fromDate = formatDate(itemTimings[0]?.date || "N/A");
-      const toDate = formatDate(itemTimings[itemTimings.length - 1]?.date || "N/A");
-      
-      // If all dates are the same, show just one date, otherwise show range
-      const allDatesSame = itemTimings.every(timing => 
-        timing.date === itemTimings[0]?.date
-      );
-      const dateDisplay = allDatesSame ? fromDate : `${fromDate} - ${toDate}`;
-      
-      return (
-        <>
-          {/* Main row */}
-          <tr
-            key={item.day}
-            className={`text-left dark:text-white cursor-pointer ${
-              index % 2 === 0
-                ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                : "bg-[#F8F8F8] dark:bg-[#303030]"
-            }`}
-            onClick={() => toggleDayExpansion(item.day)}
-          >
-            <td className="p-3 text-left font-medium">{item.day}</td>
-            <td className="p-3 text-left">{dateDisplay}</td>
-            <td className="p-3 text-left">
-              {!hasMultipleTimings ? (
-                // Single timing - show directly
-                `${itemTimings[0].fromTime} - ${itemTimings[0].toTime}`
-              ) : (
-                // Multiple timings - show first one + indicator
-                <div className="flex items-center gap-2">
-                  <span>{`${itemTimings[0].fromTime} - ${itemTimings[0].toTime}`}</span>
-                  <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                    +{itemTimings.length - 1} more
-                  </span>
+                    <div
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
+                    >
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
+                    </div>
+
+                    <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
+                      Showing {filteredWorking.length} days
+                    </span>
+                  </div>
+
+                  <div className="overflow-x-auto max-h-none">
+                    <table
+                      className="w-full min-w-[900px] text-sm text-left table-auto"
+                      style={{ width: "100%", tableLayout: "fixed" }}
+                    >
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr className="font-medium">
+                          <th className="p-4 font-semibold text-[12px] text-left">
+                            Day
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-left">
+                            Date
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-left">
+                            Working Hours
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-left">
+                            GMT
+                          </th>
+
+                          {/* NEW EDIT COLUMN */}
+                          <th className="p-4 font-semibold text-[12px] text-left">
+                            Edit
+                          </th>
+                        </tr>
+                      </thead>
+
+                      <tbody className="text-[10px] text-[#1D2939]">
+                        {paginatedWorking.length > 0 ? (
+                          paginatedWorking.map((item, index) => {
+                            const itemTimings = item.timings || [
+                              {
+                                fromTime: item.fromTime,
+                                toTime: item.toTime,
+                                date: item.date,
+                              },
+                            ];
+
+                            const hasMultipleTimings = itemTimings.length > 1;
+
+                            const fromDate = formatDate(
+                              itemTimings[0]?.date || "N/A"
+                            );
+                            const toDate = formatDate(
+                              itemTimings[itemTimings.length - 1]?.date || "N/A"
+                            );
+
+                            const allDatesSame = itemTimings.every(
+                              (timing) => timing.date === itemTimings[0]?.date
+                            );
+
+                            const dateDisplay = allDatesSame
+                              ? fromDate
+                              : `${fromDate} - ${toDate}`;
+
+                            return (
+                              <>
+                                {/* Main Row */}
+                                <tr
+                                  key={item.day}
+                                  className={`text-left dark:text-white cursor-pointer ${
+                                    index % 2 === 0
+                                      ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                      : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                  }`}
+                                  onClick={() => toggleDayExpansion(item.day)}
+                                >
+                                  <td className="p-3 text-left font-medium">
+                                    {item.day}
+                                  </td>
+
+                                  <td className="p-3 text-left">
+                                    {dateDisplay}
+                                  </td>
+
+                                  <td className="p-3 text-left">
+                                    {!hasMultipleTimings ? (
+                                      `${itemTimings[0].fromTime} - ${itemTimings[0].toTime}`
+                                    ) : (
+                                      <div className="flex items-center gap-2">
+                                        <span>{`${itemTimings[0].fromTime} - ${itemTimings[0].toTime}`}</span>
+                                        <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                                          +{itemTimings.length - 1} more
+                                        </span>
+                                      </div>
+                                    )}
+                                  </td>
+
+                                  <td className="p-3 text-left">GMT</td>
+
+                                  {/* EDIT BUTTON */}
+                                  <td className="p-3 text-left">
+                                    <button
+                                      className="px-3 py-1 text-xs bg-blue-600 text-white rounded"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEditData({
+                                          id: item._id,
+                                          employeeId: item.employeeId,
+                                          fromtime: itemTimings[0].fromTime,
+                                          totime: itemTimings[0].toTime,
+                                          workhrs: item.workhrs || "",
+                                        });
+                                        setIsEditOpen(true);
+                                      }}
+                                    >
+                                      Edit
+                                    </button>
+                                  </td>
+                                </tr>
+
+                                {/* Expanded Rows */}
+                                {item.isExpanded &&
+                                  hasMultipleTimings &&
+                                  itemTimings
+                                    .slice(1)
+                                    .map((timing, timingIndex) => (
+                                      <tr
+                                        key={`${item.day}-${timingIndex}`}
+                                        className={`text-left dark:text-white ${
+                                          index % 2 === 0
+                                            ? "bg-[#f5f5f5] dark:bg-[#3a3a3a]"
+                                            : "bg-[#f0f0f0] dark:bg-[#404040]"
+                                        }`}
+                                      >
+                                        <td className="p-3 text-left pl-8 text-gray-500">
+                                          ↳ {item.day}
+                                        </td>
+
+                                        <td className="p-3 text-left">
+                                          {formatDate(timing.date || "N/A")}
+                                        </td>
+
+                                        <td className="p-3 text-left">{`${timing.fromTime} - ${timing.toTime}`}</td>
+
+                                        <td className="p-3 text-left">GMT</td>
+                                        <td></td>
+                                      </tr>
+                                    ))}
+                              </>
+                            );
+                          })
+                        ) : (
+                          <tr>
+                            <td colSpan={5} className="p-4 text-left">
+                              No data available
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              )}
-            </td>
-            <td className="p-3 text-left">GMT</td>
-          </tr>
-          
-          {/* Expanded rows for multiple timings */}
-          {item.isExpanded && hasMultipleTimings && (
-            itemTimings.slice(1).map((timing, timingIndex) => (
-              <tr
-                key={`${item.day}-${timingIndex}`}
-                className={`text-left dark:text-white ${
-                  index % 2 === 0
-                    ? "bg-[#f5f5f5] dark:bg-[#3a3a3a]"
-                    : "bg-[#f0f0f0] dark:bg-[#404040]"
-                }`}
-              >
-                <td className="p-3 text-left pl-8 text-gray-500">↳ {item.day}</td>
-                <td className="p-3 text-left">{formatDate(timing.date || "N/A")}</td>
-                <td className="p-3 text-left">
-                  {`${timing.fromTime} - ${timing.toTime}`}
-                </td>
-                <td className="p-3 text-left">GMT</td>
-              </tr>
-            ))
-          )}
-        </>
-      );
-    })
-  ) : (
-    <tr>
-      <td colSpan={4} className="p-4 text-left">
-        No data available
-      </td>
-    </tr>
-  )}
-</tbody>
-        </table>
-      </div>
+
+                {/* -------------------- EDIT MODAL -------------------- */}
+                {isEditOpen && (
+                  <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+                    <div className="bg-white dark:bg-[#2C2C2C] p-6 rounded-lg w-[350px] shadow-lg">
+                      <h2 className="text-lg font-semibold mb-4 dark:text-white">
+                        Edit Working Hours
+                      </h2>
+
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm dark:text-white">
+                            From Time
+                          </label>
+                          <input
+                            type="time"
+                            value={editData.fromtime}
+                            onChange={(e) => {
+                              const newFrom = e.target.value;
+                              const newWorkHrs = calculateWorkHours(
+                                newFrom,
+                                editData.totime
+                              );
+
+                              setEditData({
+                                ...editData,
+                                fromtime: newFrom,
+                                workhrs: newWorkHrs,
+                              });
+                            }}
+                            className="w-full p-2 border rounded dark:bg-[#343434] dark:text-white text-[12px]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm dark:text-white">
+                            To Time
+                          </label>
+                          <input
+                            type="time"
+                            value={editData.totime}
+                            onChange={(e) => {
+                              const newTo = e.target.value;
+                              const newWorkHrs = calculateWorkHours(
+                                editData.fromtime,
+                                newTo
+                              );
+
+                              setEditData({
+                                ...editData,
+                                totime: newTo,
+                                workhrs: newWorkHrs,
+                              });
+                            }}
+                            className="w-full p-2 border rounded dark:bg-[#343434] dark:text-white text-[12px]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-sm dark:text-white">
+                            Work Hours
+                          </label>
+                          <input
+                            type="number"
+                            value={editData.workhrs}
+                            onChange={(e) =>
+                              setEditData({
+                                ...editData,
+                                workhrs: e.target.value,
+                              })
+                            }
+                            className="w-full p-2 border rounded dark:bg-[#343434] dark:text-white text-[12px]"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-3 mt-5">
+                        <button
+                          className="px-3 py-1 text-sm bg-gray-300 dark:bg-gray-600 dark:text-white rounded"
+                          onClick={() => setIsEditOpen(false)}
+                        >
+                          Cancel
+                        </button>
+
+                        <button
+                          className="px-3 py-1 text-sm bg-blue-600 text-white rounded"
+                          onClick={() => {
+                            updateWorkingHours(editData);
+                          }}
+                        >
+                          Update
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          {toast && (
+  <div className="fixed inset-0 flex items-center justify-center z-[9999] p-6">
+    {/* Overlay */}
+    <div className="absolute inset-0 bg-black/80"></div>
+
+    {/* Popup */}
+    <div
+      className={`relative px-6 py-3 rounded-lg text-white text-sm font-medium shadow-xl
+        animate-fadeIn
+        ${toast.type === "success" ? "bg-green-600 p-4" : "bg-red-600 p-4"}`}
+    >
+      {toast.message}
     </div>
   </div>
 )}
-          </div>
+
+
+
         </div>
       </div>
       <FilterModal

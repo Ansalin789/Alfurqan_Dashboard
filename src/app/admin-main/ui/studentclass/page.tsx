@@ -9,6 +9,7 @@ import Pagination from "@/components/Pagination";
 
 interface ClassSchedule {
   _id: string;
+  classId: string;
   student: {
     studentId: string;
     studentFirstName: string;
@@ -249,7 +250,7 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
                           : "bg-[#F8F8F8] dark:bg-[#303030]"
                       }`}
                     >
-                      <td className="p-3 text-left">{row._id}</td>
+                      <td className="p-3 text-left">{row.classId}</td>
                       <td className="p-3 text-left">{row.teacher?.teacherName}</td>
                       <td className="p-3 text-left">{row.course?.courseName}</td>
                       <td className="p-3 text-left">{new Date(row.startDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "2-digit" })}</td>

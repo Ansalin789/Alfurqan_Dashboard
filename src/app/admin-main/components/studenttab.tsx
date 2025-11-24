@@ -18,6 +18,7 @@ type TabbedTableProps = {
 // types.ts (or wherever you define your types)
 interface ClassSchedule {
   _id: string;
+  classId: string;
   package: string;
   startDate: string;
   endDate: string;
@@ -969,7 +970,7 @@ useEffect(() => {
                             : "bg-[#F8F8F8] dark:bg-[#303030]"
                         }`}
                       >
-                        <td className="p-3">{row._id}</td>
+                        <td className="p-3">{row.classId}</td>
                         <td className="p-3">{row.teacher.teacherName}</td>
                         <td className="p-3">{row.course.courseName}</td>
                         <td className="p-3">

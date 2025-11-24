@@ -11,6 +11,7 @@ import AdminHeader from "../../components/AdminHeader";
 
 export interface StudentClassData {
   _id: string;
+  classId: string;
   student: {
     studentId: string;
     studentFirstName: string;
@@ -289,7 +290,7 @@ const upcomingData = classData
               >
                 <thead className="text-[12px] bg-[#4C6993] text-white">
                   <tr>
-                    <th className="text-left px-4 py-3 w-[190px]">ID</th>
+                    <th className="text-left px-4 py-3 w-[190px]">Class ID</th>
                     <th className="text-left px-4 py-3 w-[180px]">
                       Student Name
                     </th>
@@ -313,7 +314,7 @@ const upcomingData = classData
                       }`}
                     >
                       <td className="px-3 py-3 text-[11px] text-left break-words whitespace-normal">
-                        {row._id}
+                        {row.classId}
                       </td>
                       <td className=" text-[#3D8FDE] px-3 py-3 text-left  break-words whitespace-normal">
                         {row.student?.studentFirstName}{" "}
@@ -329,9 +330,13 @@ const upcomingData = classData
                       <td className="px-3 py-3 text-left w-[180px] break-words whitespace-normal">
                         {row.sessionClassType}
                       </td>
-                      <td className="px-3 py-3 text-left w-[180px] break-words whitespace-normal">
-                        {new Date(row.startDate).toLocaleDateString()}
-                      </td>
+                      <td className="px-3 py-3 text-left break-words whitespace-normal">
+  {new Date(row.startDate).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })}
+</td>
                       <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[180px] break-words whitespace-normal">
                         <span
                           className={`px-3 py-2 font-semibold text-[11px] text-center  rounded-md ${

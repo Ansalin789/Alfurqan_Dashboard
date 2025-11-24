@@ -87,8 +87,8 @@ const StudentProfile = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [formEmail, setFormEmail] = useState("");
   const [formPhone, setFormPhone] = useState("");
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  // const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  // const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   
   interface StudentData {
@@ -118,169 +118,87 @@ const StudentProfile = () => {
     if (studentData) {
       setFormEmail(studentData.student.studentEmail || "");
       setFormPhone(studentData.student.studentPhone?.toString() || "");
-      setImagePreview(studentData.student.photoUrl || null);
-      setSelectedImage(null);
+      // setImagePreview(studentData.student.photoUrl || null);
+      // setSelectedImage(null);
       setIsEditModalOpen(true);
     }
   };
 
   // Handle image selection in modal
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (!file) return;
 
-    setSelectedImage(file);
-    const previewUrl = URL.createObjectURL(file);
-    setImagePreview(previewUrl);
-  };
+  //   setSelectedImage(file);
+  //   const previewUrl = URL.createObjectURL(file);
+  //   setImagePreview(previewUrl);
+  // };
 
 
   // Handle save all changes
   const handleSaveAll = async () => {
     if (!studentData) return;
-
+  
     setIsUpdating(true);
-    let hasErrors = false;
-
+  
     try {
       const token = localStorage.getItem("StudentAuthToken");
       const studentId = studentData._id;
-
-      // Check if there are any changes
-      const emailChanged = formEmail !== studentData.student.studentEmail;
-      const phoneChanged = formPhone !== studentData.student.studentPhone?.toString();
-      const hasChanges = emailChanged || phoneChanged || selectedImage;
-
-      if (!hasChanges) {
-        // No changes made, just close the modal
+  
+      if (!token) {
+        alert("Auth token not found.");
+        setIsUpdating(false);
+        return;
+      }
+  
+      const updateData: { student: Partial<StudentData["student"]> } = { student: {} };
+  
+      if (formEmail !== studentData.student.studentEmail) {
+        updateData.student.studentEmail = formEmail;
+      }
+  
+      if (formPhone !== studentData.student.studentPhone?.toString()) {
+        updateData.student.studentPhone = Number(formPhone);
+      }
+  
+      if (Object.keys(updateData.student).length === 0) {
         setIsEditModalOpen(false);
         setIsUpdating(false);
         return;
       }
-
-      // If image is selected, use FormData to send both image and contact info
-      if (selectedImage) {
-        try {
-          const formData = new FormData();
-          formData.append("profilePhoto", selectedImage);
-          
-          // Append student data fields
-          formData.append("student[studentId]", studentData.student.studentId);
-          formData.append("student[studentEmail]", formEmail);
-          formData.append("student[studentPhone]", String(Number(formPhone)));
-          formData.append("student[course]", studentData.student.course || "");
-          formData.append("student[package]", studentData.student.package || "");
-          formData.append("student[gender]", studentData.student.gender || "");
-          
-          // Add city and country if they exist
-          if (studentData.student.city) {
-            formData.append("student[city]", studentData.student.city);
-          }
-          if (studentData.student.country) {
-            formData.append("student[country]", studentData.student.country);
-          }
-
-          await axios.put(
-            `https://api.blackstoneinfomaticstech.com/studentProfile/${studentId}`,
-            formData,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data",
+  
+      await axios.put(
+        `http://localhost:5001/studentProfile/${studentId}`,
+        updateData,
+        {
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+        }
+      );
+  
+      setStudentData((prev) =>
+        prev
+          ? {
+              ...prev,
+              student: {
+                ...prev.student,
+                ...updateData.student,
               },
             }
-          );
-
-          // Update local state
-          setStudentData((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  student: {
-                    ...prev.student,
-                    studentEmail: formEmail,
-                    studentPhone: Number(formPhone),
-                    photoUrl: imagePreview || prev.student.photoUrl,
-                  },
-                }
-              : prev
-          );
-
-          console.log("✅ Profile updated successfully");
-        } catch (error) {
-          console.error("❌ Failed to update profile:", error);
-          alert("Failed to update profile. Please try again.");
-          hasErrors = true;
-        }
-      } else {
-        // If no image, send JSON with contact updates only
-        try {
-          const updateData: any = {
-            student: {
-              studentId: studentData.student.studentId,
-              studentEmail: formEmail,
-              studentPhone: Number(formPhone),
-              course: studentData.student.course,
-              package: studentData.student.package,
-              gender: studentData.student.gender,
-            },
-          };
-          
-          // Add city and country if they exist
-          if (studentData.student.city) {
-            updateData.student.city = studentData.student.city;
-          }
-          if (studentData.student.country) {
-            updateData.student.country = studentData.student.country;
-          }
-
-          await axios.put(
-            `https://api.blackstoneinfomaticstech.com/studentProfile/${studentId}`,
-            updateData,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-
-          // Update local state
-          setStudentData((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  student: {
-                    ...prev.student,
-                    studentEmail: formEmail,
-                    studentPhone: Number(formPhone),
-                  },
-                }
-              : prev
-          );
-
-          console.log("✅ Contact information updated successfully");
-        } catch (error) {
-          console.error("❌ Failed to update contact information:", error);
-          alert("Failed to update contact information. Please try again.");
-          hasErrors = true;
-        }
-      }
-
-      // Close modal only if no errors and changes were made
-      if (!hasErrors) {
-        alert("Profile updated successfully!");
-        setIsEditModalOpen(false);
-        setSelectedImage(null);
-        setImagePreview(null);
-      }
+          : prev
+      );
+  
+      alert("Profile updated successfully!");
+      setIsEditModalOpen(false);
     } catch (error) {
       console.error("❌ Error updating profile:", error);
-      alert("An error occurred. Please try again.");
+      alert("Failed to update profile. Please try again.");
     } finally {
       setIsUpdating(false);
     }
   };
+  
+  
+  
 
   // Legacy handler for direct file input (kept for backward compatibility)
   const handleProfileChange = async (
@@ -613,7 +531,7 @@ const StudentProfile = () => {
           {/* Modal Body */}
           <div className="p-6 space-y-6">
             {/* Update Image Section */}
-            <div className="space-y-4">
+            {/* <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
                 Update Image
               </h3>
@@ -648,7 +566,7 @@ const StudentProfile = () => {
                   </p>
                 )}
               </div>
-            </div>
+            </div> */}
 
             {/* Divider */}
             <div className="border-t border-gray-200 dark:border-gray-700"></div>

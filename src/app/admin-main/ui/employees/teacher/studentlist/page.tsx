@@ -506,7 +506,7 @@ const page = () => {
               className="w-full min-w-[900px] text-sm text-left table-auto"
               style={{ width: "100%", tableLayout: "fixed" }}
             >
-              <thead className="text-[12px] bg-[#576CBC] text-white dark:bg-[#6087C0]">
+              <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                 <tr className="font-medium">
                   <th className="p-3 font-semibold text-[12px] text-left">
                     Student ID
