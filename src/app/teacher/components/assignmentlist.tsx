@@ -3,9 +3,9 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
 interface Assignment {
-assignedTeacherId:string;
+  assignedTeacherId: string;
   _id: string;
-  studentId:string;
+  studentId: string;
   assignmentName: string;
   assignedTeacher: string;
   assignmentType: string;
@@ -45,17 +45,17 @@ const AssignmentList = () => {
     const fetchAssignments = async () => {
       const storedStudentId = localStorage.getItem('studentviewcontrol');
       try {
-         const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+        const token =
+          typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
 
-  if (!token) {
-    console.error("❌ TeacherAuthToken not found");
-    return;
-  } 
+        if (!token) {
+          console.error("❌ TeacherAuthToken not found");
+          return;
+        }
         const response = await axios.get("https://api.blackstoneinfomaticstech.com/allAssignment", {
           headers: {
             "Content-Type": "application/json",
-            "Authorization":`Bearer ${token}`,
+            "Authorization": `Bearer ${token}`,
 
           },
         });
@@ -115,7 +115,7 @@ const AssignmentList = () => {
   const [dueDate, setDueDate] = useState("");
   const [comment, setComment] = useState("");
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>('');
- 
+
 
   const handleFinalAssign = () => {
     setTitle("");
@@ -161,7 +161,7 @@ const AssignmentList = () => {
     setDueDate("");
     setComment("");
   };
-  
+
 
 
 
@@ -179,60 +179,60 @@ const AssignmentList = () => {
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
   };
- 
+
   const handleAssign = async () => {
-    const studentId11=localStorage.getItem('studentviewcontrol');
-    const studentId1=localStorage.getItem('TeacherPortalName');
+    const studentId11 = localStorage.getItem('studentviewcontrol');
+    const studentId1 = localStorage.getItem('TeacherPortalName');
     const formData = new FormData();
-    formData.append("assignedTeacherId",localStorage.getItem('TeacherPortalId') ?? '');
- formData.append("studentId",studentId11 ?? "");
-formData.append("assignmentName", quizData.assignmentName);
-formData.append("assignedTeacher",studentId1 ?? " " );
-formData.append("assignmentType", title);
-formData.append("chooseType", questionType.choose.toString());
-formData.append("trueorfalseType", questionType.trueOrFalse.toString());
-formData.append("question", quizData.question);
-formData.append("hasOptions", (!showNoOptions.writing && !showNoOptions.reading && !showNoOptions.image).toString());
-formData.append("options", JSON.stringify(quizData.options));
-formData.append("status", "Not assigned");
-formData.append("createdDate", new Date().toISOString());
-formData.append("createdBy", "System");
-formData.append("updatedDate", new Date().toISOString());
-formData.append("updatedBy", "System");
-formData.append("level", "0");
-formData.append("courses", "");
-formData.append("assignedDate", assignedDate || new Date().toISOString());
-formData.append("dueDate", dueDate || new Date().toISOString());
-formData.append('answer', selectedAnswer ?? "");
-formData.append("answerValidation", "");
-if (selectedFile) {
-  formData.append("uploadFile", selectedFile);
-}
+    formData.append("assignedTeacherId", localStorage.getItem('TeacherPortalId') ?? '');
+    formData.append("studentId", studentId11 ?? "");
+    formData.append("assignmentName", quizData.assignmentName);
+    formData.append("assignedTeacher", studentId1 ?? " ");
+    formData.append("assignmentType", title);
+    formData.append("chooseType", questionType.choose.toString());
+    formData.append("trueorfalseType", questionType.trueOrFalse.toString());
+    formData.append("question", quizData.question);
+    formData.append("hasOptions", (!showNoOptions.writing && !showNoOptions.reading && !showNoOptions.image).toString());
+    formData.append("options", JSON.stringify(quizData.options));
+    formData.append("status", "Not assigned");
+    formData.append("createdDate", new Date().toISOString());
+    formData.append("createdBy", "System");
+    formData.append("updatedDate", new Date().toISOString());
+    formData.append("updatedBy", "System");
+    formData.append("level", "0");
+    formData.append("courses", "");
+    formData.append("assignedDate", assignedDate || new Date().toISOString());
+    formData.append("dueDate", dueDate || new Date().toISOString());
+    formData.append('answer', selectedAnswer ?? "");
+    formData.append("answerValidation", "");
+    if (selectedFile) {
+      formData.append("uploadFile", selectedFile);
+    }
 
-if (selectedAudio) {
-  formData.append("audioFile",selectedAudio);
-}
-console.log(">>>>>>>>>>>>.",JSON.stringify(quizData.options));
+    if (selectedAudio) {
+      formData.append("audioFile", selectedAudio);
+    }
+    console.log(">>>>>>>>>>>>.", JSON.stringify(quizData.options));
 
-formData.forEach((value, key) => {
-  console.log(`${key}:`, value);
-});
+    formData.forEach((value, key) => {
+      console.log(`${key}:`, value);
+    });
 
 
     try {
-       const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
 
-  if (!token) {
-    console.error("❌ TeacherAuthToken not found");
-    return;
-  } 
+      if (!token) {
+        console.error("❌ TeacherAuthToken not found");
+        return;
+      }
       const response = await fetch("https://api.blackstoneinfomaticstech.com/assignments", {
         method: "POST",
-        body: formData, 
-        headers:{
-             "Content-Type": "application/json",
-            "Authorization":`Bearer ${token}`,
+        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         }
       });
       console.log(formData);
@@ -250,24 +250,24 @@ formData.forEach((value, key) => {
       console.error("Error assigning assignment:", error);
     }
   };
-  const handleAssign1=async()=>{
+  const handleAssign1 = async () => {
     console.log("assigned is clicked");
     try {
- const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
 
-  if (!token) {
-    console.error("❌ TeacherAuthToken not found");
-    return;
-  }       
-  const response = await axios.get(`https://api.blackstoneinfomaticstech.com/assignments/${selectedAssignmentId}`,{
-    headers:{
-      "Authorization" :`Bearer ${token}`,
-      "Content-Type":"application/json"
-    }
-  }
+      if (!token) {
+        console.error("❌ TeacherAuthToken not found");
+        return;
+      }
+      const response = await axios.get(`https://api.blackstoneinfomaticstech.com/assignments/${selectedAssignmentId}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      }
 
-  );
+      );
       console.log(response.data);
       const data = response.data;
       // **Step 2: PUT REQUEST** (Update assignment)
@@ -275,18 +275,18 @@ formData.forEach((value, key) => {
       // Define the type of 'date' explicitly as 'string'
       const formatDate = (date: string): string => {
         const [day, month, year] = date.split('/'); // Assuming "13/2/25"
-      
+
         // Ensure correct year format
         const formattedYear = year.length === 2 ? `20${year}` : year;
-      
+
         // Return YYYY-MM-DD format
         return `${formattedYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
       };
-      
+
       // Example usage
       const formattedAssignedDate = formatDate(assignedDate);
       const formattedDueDate = formatDate(dueDate);
-      formData.append("assignedTeacherId",data.assignedTeacherId);
+      formData.append("assignedTeacherId", data.assignedTeacherId);
       // Append all fields from the assignment data into FormData
       formData.append("assignmentName", data.assignmentName);
       formData.append("assignedTeacher", data.assignedTeacher);
@@ -298,7 +298,7 @@ formData.forEach((value, key) => {
       formData.append("options", JSON.stringify(data.options));  // Ensure it's JSON formatted if needed
       formData.append("audioFile", data.audioFile);  // For file uploads
       formData.append("uploadFile", data.uploadFile);  // For file uploads
-      formData.append("status","Assigned");
+      formData.append("status", "Assigned");
       formData.append("createdDate", data.createdDate);
       formData.append("createdBy", data.createdBy);
       formData.append("updatedDate", data.updatedDate);
@@ -311,17 +311,17 @@ formData.forEach((value, key) => {
       formData.append("answerValidation", data.answerValidation);
       formData.append("studentId", data.studentId);
       console.log(formData);
-      await axios.put(`https://api.blackstoneinfomaticstech.com/assignments/${selectedAssignmentId}`, formData ,{
-        headers:{
-          "Authorization":` Bearer ${token}`
+      await axios.put(`https://api.blackstoneinfomaticstech.com/assignments/${selectedAssignmentId}`, formData, {
+        headers: {
+          "Authorization": ` Bearer ${token}`
         }
       });
       setIsFormOpen1(false);
     } catch (error) {
       console.error("Error:", error);
       alert("Operation failed.");
-    } 
-     
+    }
+
   };
 
   const handleNoOptionsChange = (type: keyof typeof showNoOptions) => {
@@ -392,36 +392,34 @@ formData.forEach((value, key) => {
 
   return (
     <div className="w-[900px] ml-56 mt-[30px] pr-10 bg-[#fff] p-3">
-      <div  className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold text-gray-800 p-2">Assignment List</h1>
-        <button className="bg-[#223857] text-white px-3 py-1 border rounded-md "  
+        <button className="bg-[#223857] text-white px-3 py-1 border rounded-md "
           onClick={() =>
-           setIsFormOpen(true)  }>Add Assignment</button>
+            setIsFormOpen(true)}>Add Assignment</button>
       </div>
 
       {/* Tabs */}
       <div className="flex border-b mb-4 text-sm">
-  <button
-    className={`px-3 py-2 ${
-      activeTab === "Pending"
-        ? "border-b-2 border-blue-500 text-blue-500 font-medium"
-        : "text-gray-500"
-    }`}
-    onClick={() => setActiveTab("Pending")}
-  >
-    Pending ({filteredAssignments.filter(a => a.status !== "completed").length})
-  </button>
-  <button
-    className={`px-3 py-2 ${
-      activeTab === "Completed"
-        ? "border-b-2 border-blue-500 text-blue-500 font-medium"
-        : "text-gray-500"
-    }`}
-    onClick={() => setActiveTab("Completed")}
-  >
-    Completed ({filteredAssignments.filter(a => a.status === "completed").length})
-  </button>
-</div>
+        <button
+          className={`px-3 py-2 ${activeTab === "Pending"
+              ? "border-b-2 border-blue-500 text-blue-500 font-medium"
+              : "text-gray-500"
+            }`}
+          onClick={() => setActiveTab("Pending")}
+        >
+          Pending ({filteredAssignments.filter(a => a.status !== "completed").length})
+        </button>
+        <button
+          className={`px-3 py-2 ${activeTab === "Completed"
+              ? "border-b-2 border-blue-500 text-blue-500 font-medium"
+              : "text-gray-500"
+            }`}
+          onClick={() => setActiveTab("Completed")}
+        >
+          Completed ({filteredAssignments.filter(a => a.status === "completed").length})
+        </button>
+      </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
@@ -453,9 +451,8 @@ formData.forEach((value, key) => {
             {currentItems.map((assignment, index) => (
               <tr
                 key={assignment._id}
-                className={`border-b ${
-                  index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                }`}
+                className={`border-b ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                  }`}
               >
                 <td className="px-3 py-2 text-xs text-center">{assignment.assignmentName}</td>
                 <td className="px-3 py-2 text-xs text-center">{assignment._id}</td>
@@ -464,11 +461,10 @@ formData.forEach((value, key) => {
                 <td className="px-3 py-2 text-xs text-center">{new Date(assignment.dueDate).toLocaleDateString()}</td>
                 <td className="px-3 py-2 text-xs text-center">
                   <span
-                    className={`px-2 py-1 text-[8px] rounded-lg  ${
-                      assignment.status === "Assigned"
+                    className={`px-2 py-1 text-[8px] rounded-lg  ${assignment.status === "Assigned"
                         ? "bg-green-100 text-green-700 px-6 border border-green-700"
-                        :  "bg-red-100 text-red-700 px-3 border border-red-700"
-                    }`}
+                        : "bg-red-100 text-red-700 px-3 border border-red-700"
+                      }`}
                   >
                     {assignment.status}
                   </span>
@@ -486,42 +482,40 @@ formData.forEach((value, key) => {
 
                   {/* Dropdown Menu */}
                   {openDropdownIndex === index && (
-  <div className="absolute right-10 -mt-[30px] bg-white border rounded-md shadow-lg z-10 w-40">
-    <button
-      className={`block w-full text-left px-4 py-2 text-[12px] ${
-        assignment.status === "Not assigned"
-          ? "hover:bg-gray-100"
-          : "text-gray-400 cursor-not-allowed"
-      }`}
-      onClick={() => {
-        if (assignment.status === "Not assigned") {
-          setSelectedAssignmentId(assignment._id);
-          setOpenDropdownIndex(null);
-          setIsFormOpen1(true);
-          handleFinalAssign();
-        }
-      }}
-      disabled={assignment.status !== "Not assigned"}
-    >
-      Assign
-    </button>
-    <button
-      className={`block w-full text-left px-4 py-2 text-[12px] ${
-        assignment.status === "Not assigned"
-          ? "hover:bg-gray-100"
-          : "text-gray-400 cursor-not-allowed"
-      }`}
-      onClick={() => {
-        if (assignment.status === "Not assigned") {
-          setOpenDropdownIndex(null);
-        }
-      }}
-      disabled={assignment.status !== "Not assigned"}
-    >
-      Cancel
-    </button>
-  </div>
-)}
+                    <div className="absolute right-10 -mt-[30px] bg-white border rounded-md shadow-lg z-10 w-40">
+                      <button
+                        className={`block w-full text-left px-4 py-2 text-[12px] ${assignment.status === "Not assigned"
+                            ? "hover:bg-gray-100"
+                            : "text-gray-400 cursor-not-allowed"
+                          }`}
+                        onClick={() => {
+                          if (assignment.status === "Not assigned") {
+                            setSelectedAssignmentId(assignment._id);
+                            setOpenDropdownIndex(null);
+                            setIsFormOpen1(true);
+                            handleFinalAssign();
+                          }
+                        }}
+                        disabled={assignment.status !== "Not assigned"}
+                      >
+                        Assign
+                      </button>
+                      <button
+                        className={`block w-full text-left px-4 py-2 text-[12px] ${assignment.status === "Not assigned"
+                            ? "hover:bg-gray-100"
+                            : "text-gray-400 cursor-not-allowed"
+                          }`}
+                        onClick={() => {
+                          if (assignment.status === "Not assigned") {
+                            setOpenDropdownIndex(null);
+                          }
+                        }}
+                        disabled={assignment.status !== "Not assigned"}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
 
                 </td>
               </tr>
@@ -536,49 +530,46 @@ formData.forEach((value, key) => {
           Showing {indexOfFirstItem + 1}–{Math.min(indexOfLastItem, filteredAssignments.length)} of {filteredAssignments.length} items
         </span>
         <div className="flex space-x-2">
-          <button 
+          <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className={`px-3 py-1 text-xs rounded ${
-              currentPage === 1 
-                ? 'text-gray-400 bg-gray-100' 
+            className={`px-3 py-1 text-xs rounded ${currentPage === 1
+                ? 'text-gray-400 bg-gray-100'
                 : 'text-gray-600 bg-gray-200 hover:bg-gray-300'
-            }`}
+              }`}
           >
             Previous
           </button>
-          
+
           {[...Array(totalPages)].map((_, index) => (
             <button
               key={index + 1}
               onClick={() => handlePageChange(index + 1)}
-              className={`px-3 py-1 text-xs rounded ${
-                currentPage === index + 1
+              className={`px-3 py-1 text-xs rounded ${currentPage === index + 1
                   ? 'text-white bg-[#223857]'
                   : 'text-gray-600 bg-gray-200 hover:bg-gray-300'
-              }`}
+                }`}
             >
               {index + 1}
             </button>
           ))}
-          
-          <button 
+
+          <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className={`px-3 py-1 text-xs rounded ${
-              currentPage === totalPages 
-                ? 'text-gray-400 bg-gray-100' 
+            className={`px-3 py-1 text-xs rounded ${currentPage === totalPages
+                ? 'text-gray-400 bg-gray-100'
                 : 'text-gray-600 bg-gray-200 hover:bg-gray-300'
-            }`}
+              }`}
           >
             Next
           </button>
         </div>
       </div>
-      {isFormOpen1 &&(
+      {isFormOpen1 && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-md shadow-md w-[400px]">
-          <div className="flex space-x-2 mb-4">
+            <div className="flex space-x-2 mb-4">
               <input
                 type="text"
                 className="w-1/2 border-b-2 p-2 rounded text-[14px]"
@@ -607,9 +598,9 @@ formData.forEach((value, key) => {
               >
                 Assign
               </button>
-            </div> 
             </div>
           </div>
+        </div>
       )}
 
       {/* Assign Form Modal */}
@@ -631,7 +622,7 @@ formData.forEach((value, key) => {
               >
                 +
               </button>
-              
+
               {showTypeDropdown && (
                 <div className="absolute right-0 -mt-2 text-center justify-center w-[350px] bg-white border rounded-lg shadow-lg z-20">
                   <div className="py-1">
@@ -679,22 +670,6 @@ formData.forEach((value, key) => {
                 </div>
               )}
             </div>
-            {/* <div className="flex space-x-2 mb-4">
-              <input
-                type="text"
-                className="w-1/2 border-b-2 p-2 rounded text-[14px]"
-                placeholder="Assigned Date"
-                value={assignedDate}
-                onChange={(e) => setAssignedDate(e.target.value)}
-              />
-              <input
-                type="text"
-                className="w-1/2 border-b-2 p-2 rounded text-[14px]"
-                placeholder="Due Date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-              />
-            </div> */}
             <textarea
               placeholder="Comment"
               className="w-full border-b-2 p-2 rounded mb-4 text-[14px]"
@@ -719,31 +694,28 @@ formData.forEach((value, key) => {
         </div>
       )}
 
-{showQuizModal && (
+      {showQuizModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white rounded-lg p-4 w-[500px] h-[600px]">
             <h2 className="text-lg font-semibold mb-2 text-[#012A4A]">Add Assignments</h2>
             <div className="flex">
-            <div className="mb-2 grid ml-4">
-              <label htmlFor="scbaivbcia" className="text-[12px] text-[#012A4A]">Assignment Name</label>
-              <input
-                type="text"
-                className="w-[90%] border border-[#808FA4] rounded-lg p-2 mt-1 text-[12px]"
-                placeholder="Name of Assignment"
-                value={quizData.assignmentName}
-                onChange={(e) => setQuizData(prev => ({ ...prev, assignmentName: e.target.value }))}
-              />
+              <div className="mb-2 grid ml-4">
+                <label htmlFor="scbaivbcia" className="text-[12px] text-[#012A4A]">Assignment Name</label>
+                <input
+                  type="text"
+                  className="w-[90%] border border-[#808FA4] rounded-lg p-2 mt-1 text-[12px]"
+                  placeholder="Name of Assignment"
+                  value={quizData.assignmentName}
+                  onChange={(e) => setQuizData(prev => ({ ...prev, assignmentName: e.target.value }))}
+                />
+              </div>
+              <div className="mb-2 ml-10">
+                <label htmlFor="scbaivbciass" className="text-[12px] text-[#012A4A]">Assignment Type</label>
+                <select name="" id="" className="w-[100%] border border-[#808FA4] text-[#223857] text-[12px] rounded-lg p-2 mt-1">
+                  <option value="Quiz">Quiz</option>
+                </select>
+              </div>
             </div>
-
-            <div className="mb-2 ml-10">
-              <label htmlFor="scbaivbciass"  className="text-[12px] text-[#012A4A]">Assignment Type</label>
-              <select name="" id="" className="w-[100%] border border-[#808FA4] text-[#223857] text-[12px] rounded-lg p-2 mt-1">
-                <option value="Quiz">Quiz</option>
-              </select>
-            </div>
-            </div>
-            
-            
 
             <div className="mb-4">
               <p className="text-sm font-medium mb-2 ml-2 text-[#012A4A]">Quiz Template</p>
@@ -753,7 +725,7 @@ formData.forEach((value, key) => {
                     type="checkbox"
                     checked={questionType.choose}
                     onChange={(e) => setQuestionType(prev => ({ ...prev, choose: e.target.checked }))}
-                    className="mr-2"/>{/** */}
+                    className="mr-2" />{/** */}
                   Choose
                 </label>
                 <label className="flex items-center text-[#012A4A] text-[13px]">
@@ -767,9 +739,8 @@ formData.forEach((value, key) => {
                 </label>
               </div>
             </div>
-
             <div className="mb-4">
-              <label htmlFor="scbaivbcia"  className="text-[12px] text-gray-600">Type the question</label>
+              <label htmlFor="scbaivbcia" className="text-[12px] text-gray-600">Type the question</label>
               <div className="relative">
                 <textarea
                   className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
@@ -778,32 +749,29 @@ formData.forEach((value, key) => {
                   onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
                   placeholder="Which of the following letters is considered a Qalqalah letter?"
                 />
-                
               </div>
             </div>
 
             <div className="space-y-3">
-            {['optionOne', 'optionTwo', 'optionThree', 'optionFour'].map((optionKey, index) => (
-      <div key={optionKey} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
-        {/* Checkbox for answer */}
-        <input
-            type="checkbox"
-            checked={selectedAnswer === quizData.options[optionKey]}  // Check if this option value is selected
-            onChange={() => handleAnswerChange(optionKey)}
-            className="w-5 h-3"
-          />
-        {/* Input for the option */}
-        <input
-          type="text"
-          className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
-          placeholder={`Option ${index + 1}`}
-          value={quizData.options[optionKey]}
-          onChange={(e) => handleOptionChange(optionKey, e.target.value)}
-        />
-      </div>
-    ))}
-
-
+              {['optionOne', 'optionTwo', 'optionThree', 'optionFour'].map((optionKey, index) => (
+                <div key={optionKey} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
+                  {/* Checkbox for answer */}
+                  <input
+                    type="checkbox"
+                    checked={selectedAnswer === quizData.options[optionKey]}  // Check if this option value is selected
+                    onChange={() => handleAnswerChange(optionKey)}
+                    className="w-5 h-3"
+                  />
+                  {/* Input for the option */}
+                  <input
+                    type="text"
+                    className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
+                    placeholder={`Option ${index + 1}`}
+                    value={quizData.options[optionKey]}
+                    onChange={(e) => handleOptionChange(optionKey, e.target.value)}
+                  />
+                </div>
+              ))}
             </div>
 
             <div className="flex justify-center space-x-3 mt-6">
@@ -831,31 +799,28 @@ formData.forEach((value, key) => {
           <div className="bg-white rounded-lg p-4 w-[500px] h-[600px]">
             <h2 className="text-lg font-semibold mb-2 text-[#012A4A]">Add Assignments</h2>
             <div className="flex">
-            <div className="mb-2 grid ml-4">
-              <label htmlFor="scbaivbcia"  className="text-[12px] text-[#012A4A]">Assignment Name</label>
-              <input
-                type="text"
-                className="w-[90%] border border-[#808FA4] rounded-lg p-2 mt-1 text-[12px]"
-                placeholder="Name of Assignment"
-                value={quizData.assignmentName}
-                onChange={(e) => setQuizData(prev => ({ ...prev, assignmentName: e.target.value }))}
-              />
-            </div>
+              <div className="mb-2 grid ml-4">
+                <label htmlFor="scbaivbcia" className="text-[12px] text-[#012A4A]">Assignment Name</label>
+                <input
+                  type="text"
+                  className="w-[90%] border border-[#808FA4] rounded-lg p-2 mt-1 text-[12px]"
+                  placeholder="Name of Assignment"
+                  value={quizData.assignmentName}
+                  onChange={(e) => setQuizData(prev => ({ ...prev, assignmentName: e.target.value }))}
+                />
+              </div>
 
-            <div className="mb-2 ml-10">
-              <label htmlFor="scbaivbcia"  className="text-[12px] text-[#012A4A]">Assignment Type</label>
-              <select name="" id="" className="w-[100%] border border-[#808FA4] text-[#223857] text-[12px] rounded-lg p-2 mt-1">
-                <option value="Quiz">Writing</option>
-              </select>
+              <div className="mb-2 ml-10">
+                <label htmlFor="scbaivbcia" className="text-[12px] text-[#012A4A]">Assignment Type</label>
+                <select name="" id="" className="w-[100%] border border-[#808FA4] text-[#223857] text-[12px] rounded-lg p-2 mt-1">
+                  <option value="Quiz">Writing</option>
+                </select>
+              </div>
             </div>
-            </div>
-            
-            
-
             <div className="mb-4">
               <p className="text-sm font-medium mb-2 ml-2 text-[#012A4A]">Writing Template</p>
               <div className="flex space-x-4 ml-4">
-                
+
                 <label className="flex items-center text-[#012A4A] text-[13px]">
                   <input
                     type="checkbox"
@@ -878,7 +843,7 @@ formData.forEach((value, key) => {
             </div>
 
             <div className="mb-4">
-              <label htmlFor="scbaivbcia"  className="text-[12px] text-gray-600">Type the question</label>
+              <label htmlFor="scbaivbcia" className="text-[12px] text-gray-600">Type the question</label>
               <div className="relative">
                 <textarea
                   className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
@@ -887,64 +852,64 @@ formData.forEach((value, key) => {
                   onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
                   placeholder="Type your question here..."
                 />
-             <div className="absolute right-2 bottom-2 flex space-x-4">
-  {/* Image Upload */}
-  <label className="cursor-pointer">
-    <input
-      type="file"
-      accept="image/*"
-      onChange={handleFileUpload}
-      className="hidden" // Hide default input
-    />
-     <span className="sr-only">Upload file</span>
-    <svg
-      className="w-6 h-6 text-gray-500 hover:text-gray-700"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-      />
-    </svg>
-  </label>
+                <div className="absolute right-2 bottom-2 flex space-x-4">
+                  {/* Image Upload */}
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden" // Hide default input
+                    />
+                    <span className="sr-only">Upload file</span>
+                    <svg
+                      className="w-6 h-6 text-gray-500 hover:text-gray-700"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </label>
 
-  {/* Audio Upload */}
-  <label className="cursor-pointer">
-    <input
-      type="file"
-      accept="audio/*"
-      onChange={handleAudioUpload}
-      className="hidden" // Hide default input
-    />
-     <span className="sr-only">Upload Audio</span>
-    <svg
-      className="w-6 h-6 text-gray-500 hover:text-gray-700"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
-      />
-    </svg>
-  </label>
-</div>
+                  {/* Audio Upload */}
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      onChange={handleAudioUpload}
+                      className="hidden" // Hide default input
+                    />
+                    <span className="sr-only">Upload Audio</span>
+                    <svg
+                      className="w-6 h-6 text-gray-500 hover:text-gray-700"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                      />
+                    </svg>
+                  </label>
+                </div>
               </div>
-              
+
               {/* Preview section */}
               <div className="mt-2 flex space-x-2">
                 {selectedFile && (
                   <div className="relative">
-                    <img 
-                      src={URL.createObjectURL(selectedFile)} 
-                      alt="Uploaded file" 
+                    <img
+                      src={URL.createObjectURL(selectedFile)}
+                      alt="Uploaded file"
                       className="h-16 w-16 object-cover rounded"
                     />
                     <button
@@ -955,7 +920,7 @@ formData.forEach((value, key) => {
                     </button>
                   </div>
                 )}
-               
+
               </div>
             </div>
 
@@ -978,7 +943,7 @@ formData.forEach((value, key) => {
                       checked={answer.isCorrect}
                       onChange={() => setQuizData(prev => ({
                         ...prev,
-                        answers: prev.answers.map(ans => 
+                        answers: prev.answers.map(ans =>
                           ans.id === answer.id ? { ...ans, isCorrect: !ans.isCorrect } : ans
                         )
                       }))}
@@ -991,7 +956,7 @@ formData.forEach((value, key) => {
                       value={answer.text}
                       onChange={(e) => setQuizData(prev => ({
                         ...prev,
-                        answers: prev.answers.map(ans => 
+                        answers: prev.answers.map(ans =>
                           ans.id === answer.id ? { ...ans, text: e.target.value } : ans
                         )
                       }))}
@@ -1021,395 +986,385 @@ formData.forEach((value, key) => {
           </div>
         </div>
       )}
-{showReadingModal && (
-              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                <div className="bg-white rounded-lg p-4 w-[500px] h-[600px]">
-                  <h2 className="text-lg font-semibold mb-2 text-[#012A4A]">Add Assignments</h2>
-                  <div className="flex">
-                  <div className="mb-2 grid ml-4">
-                    <label htmlFor="scbaivbcia"  className="text-[12px] text-[#012A4A]">Assignment Name</label>
-                    <input
-                      type="text"
-                      className="w-[90%] border border-[#808FA4] rounded-lg p-2 mt-1 text-[12px]"
-                      placeholder="Name of Assignment"
-                      value={quizData.assignmentName}
-                      onChange={(e) => setQuizData(prev => ({ ...prev, assignmentName: e.target.value }))}
-                    />
-                  </div>
+      {showReadingModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg p-4 w-[500px] h-[600px]">
+            <h2 className="text-lg font-semibold mb-2 text-[#012A4A]">Add Assignments</h2>
+            <div className="flex">
+              <div className="mb-2 grid ml-4">
+                <label htmlFor="scbaivbcia" className="text-[12px] text-[#012A4A]">Assignment Name</label>
+                <input
+                  type="text"
+                  className="w-[90%] border border-[#808FA4] rounded-lg p-2 mt-1 text-[12px]"
+                  placeholder="Name of Assignment"
+                  value={quizData.assignmentName}
+                  onChange={(e) => setQuizData(prev => ({ ...prev, assignmentName: e.target.value }))}
+                />
+              </div>
 
-                  <div className="mb-2 ml-10">
-                    <label htmlFor="scbaivbcia"  className="text-[12px] text-[#012A4A]">Assignment Type</label>
-                    <select name="" id="" className="w-[100%] border border-[#808FA4] text-[#223857] text-[12px] rounded-lg p-2 mt-1">
-                      <option value="Quiz">Reading</option>
-                    </select>
-                  </div>
-                  </div>
-                  
-                  
+              <div className="mb-2 ml-10">
+                <label htmlFor="scbaivbcia" className="text-[12px] text-[#012A4A]">Assignment Type</label>
+                <select name="" id="" className="w-[100%] border border-[#808FA4] text-[#223857] text-[12px] rounded-lg p-2 mt-1">
+                  <option value="Quiz">Reading</option>
+                </select>
+              </div>
+            </div>
 
-                  <div className="mb-4">
-                    <p className="text-sm font-medium mb-2 ml-2 text-[#012A4A]">Reading Template</p>
-                    <div className="flex space-x-4 ml-4">
-                      
-                      <label className="flex items-center text-[#012A4A] text-[13px]">
-                        <input
-                          type="checkbox"
-                          checked={questionType.choose}
-                          onChange={(e) => setQuestionType(prev => ({ ...prev, choose: e.target.checked }))}
-                          className="mr-2"
-                        />{/** */}
-                        Choose
-                      </label>
-                      <label className="flex items-center text-[#012A4A] text-[13px]">
-                        <input
-                          type="checkbox"
-                          checked={questionType.trueOrFalse}
-                          onChange={(e) => setQuestionType(prev => ({ ...prev, trueOrFalse: e.target.checked }))}
-                          className="mr-2"
-                        />{/** */}
-                        True or False
-                      </label>
-                    </div>
-                  </div>
+            <div className="mb-4">
+              <p className="text-sm font-medium mb-2 ml-2 text-[#012A4A]">Reading Template</p>
+              <div className="flex space-x-4 ml-4">
 
-                  <div className="mb-4">
-                    <label htmlFor="scbaivbcia"  className="text-[12px] text-gray-600">Type the question</label>
-                    <div className="relative">
-                      <textarea
-                        className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
-                        rows={3}
-                        value={quizData.question}
-                        onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
-                        placeholder="Type your question here..."
-                      />
-                      <div className="absolute right-2 bottom-2 flex space-x-2">
-                        
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleReadingFileUpload}
-                            className="hidden"
-                          />
-                          <svg 
-                            className="w-5 h-5 text-gray-500 hover:text-gray-700"
-                            fill="none" 
-                            stroke="currentColor" 
-                            viewBox="0 0 24 24"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                      
-                        
-                          <input
-                            type="file"
-                            accept="audio/*"
-                            onChange={handleReadingAudioUpload}
-                            className="hidden"
-                          />
-                          <svg 
-                            className="w-5 h-5 text-gray-500 hover:text-gray-700"
-                            fill="none" 
-                            stroke="currentColor" 
-                            viewBox="0 0 24 24"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                          </svg>
-                       
-                      </div>
-                    </div>
-                    
-                    {/* Preview section */}
-                    <div className="mt-2 flex space-x-2">
-                      {readingFile && (
-                        <div className="relative">
-                          <img 
-                            src={URL.createObjectURL(readingFile)} 
-                            alt="Uploaded file" 
-                            className="h-16 w-16 object-cover rounded"
-                          />
-                          <button
-                            onClick={() => setReadingFile(null)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      )}
-                      {readingAudio && (
-                        <div className="relative">
-                          <audio controls className="h-8">
-                            <source src={URL.createObjectURL(readingAudio)} />
-                            <track kind="captions" src="path_to_captions.vtt" default />
-                          </audio>
-                          <button
-                            onClick={() => setReadingAudio(null)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                <label className="flex items-center text-[#012A4A] text-[13px]">
+                  <input
+                    type="checkbox"
+                    checked={questionType.choose}
+                    onChange={(e) => setQuestionType(prev => ({ ...prev, choose: e.target.checked }))}
+                    className="mr-2"
+                  />{/** */}
+                  Choose
+                </label>
+                <label className="flex items-center text-[#012A4A] text-[13px]">
+                  <input
+                    type="checkbox"
+                    checked={questionType.trueOrFalse}
+                    onChange={(e) => setQuestionType(prev => ({ ...prev, trueOrFalse: e.target.checked }))}
+                    className="mr-2"
+                  />{/** */}
+                  True or False
+                </label>
+              </div>
+            </div>
 
-                    <label className="flex items-center text-[#012A4A] text-[13px]">
-                        <input
-                          type="checkbox"
-                          checked={showNoOptions.reading}
-                          onChange={() => handleNoOptionsChange('reading')}
-                          className="mr-2"
-                        />{/** */}
-                        No Options
-                      </label>
+            <div className="mb-4">
+              <label htmlFor="scbaivbcia" className="text-[12px] text-gray-600">Type the question</label>
+              <div className="relative">
+                <textarea
+                  className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
+                  rows={3}
+                  value={quizData.question}
+                  onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
+                  placeholder="Type your question here..."
+                />
+                <div className="absolute right-2 bottom-2 flex space-x-2">
 
-                  {!showNoOptions.reading && (
-                    <div className="space-y-3">
-                      {quizData.answers.map((answer, index) => (
-                        <div key={answer.id} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
-                          <input
-                            type="checkbox"
-                            checked={answer.isCorrect}
-                            onChange={() => setQuizData(prev => ({
-                              ...prev,
-                              answers: prev.answers.map(ans => 
-                                ans.id === answer.id ? { ...ans, isCorrect: !ans.isCorrect } : ans
-                              )
-                            }))}
-                            className="w-5 h-3"
-                          />
-                          <input
-                            type="text"
-                            className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
-                            placeholder={`${answer.id}) Answer ${index + 1}`}
-                            value={answer.text}
-                            onChange={(e) => setQuizData(prev => ({
-                              ...prev,
-                              answers: prev.answers.map(ans => 
-                                ans.id === answer.id ? { ...ans, text: e.target.value } : ans
-                              )
-                            }))}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleReadingFileUpload}
+                    className="hidden"
+                  />
+                  <svg
+                    className="w-5 h-5 text-gray-500 hover:text-gray-700"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
 
-                  <div className="flex justify-end space-x-3 mt-6 ">
-                    <button
-                      className="px-4 py-2 border rounded-lg text-[12px]"
-                      onClick={() => setShowReadingModal(false)}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="px-4 py-2 bg-[#223857] text-white rounded-lg text-[12px]"
-                      onClick={() => {
-                        // Handle save logic here
-                        setShowReadingModal(false);
-                      }}
-                    >
-                      Save
-                    </button>
-                  </div>
+
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    onChange={handleReadingAudioUpload}
+                    className="hidden"
+                  />
+                  <svg
+                    className="w-5 h-5 text-gray-500 hover:text-gray-700"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                  </svg>
+
                 </div>
               </div>
+
+              {/* Preview section */}
+              <div className="mt-2 flex space-x-2">
+                {readingFile && (
+                  <div className="relative">
+                    <img
+                      src={URL.createObjectURL(readingFile)}
+                      alt="Uploaded file"
+                      className="h-16 w-16 object-cover rounded"
+                    />
+                    <button
+                      onClick={() => setReadingFile(null)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+                {readingAudio && (
+                  <div className="relative">
+                    <audio controls className="h-8">
+                      <source src={URL.createObjectURL(readingAudio)} />
+                      <track kind="captions" src="path_to_captions.vtt" default />
+                    </audio>
+                    <button
+                      onClick={() => setReadingAudio(null)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <label className="flex items-center text-[#012A4A] text-[13px]">
+              <input
+                type="checkbox"
+                checked={showNoOptions.reading}
+                onChange={() => handleNoOptionsChange('reading')}
+                className="mr-2"
+              />{/** */}
+              No Options
+            </label>
+
+            {!showNoOptions.reading && (
+              <div className="space-y-3">
+                {quizData.answers.map((answer, index) => (
+                  <div key={answer.id} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
+                    <input
+                      type="checkbox"
+                      checked={answer.isCorrect}
+                      onChange={() => setQuizData(prev => ({
+                        ...prev,
+                        answers: prev.answers.map(ans =>
+                          ans.id === answer.id ? { ...ans, isCorrect: !ans.isCorrect } : ans
+                        )
+                      }))}
+                      className="w-5 h-3"
+                    />
+                    <input
+                      type="text"
+                      className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
+                      placeholder={`${answer.id}) Answer ${index + 1}`}
+                      value={answer.text}
+                      onChange={(e) => setQuizData(prev => ({
+                        ...prev,
+                        answers: prev.answers.map(ans =>
+                          ans.id === answer.id ? { ...ans, text: e.target.value } : ans
+                        )
+                      }))}
+                    />
+                  </div>
+                ))}
+              </div>
             )}
+
+            <div className="flex justify-end space-x-3 mt-6 ">
+              <button
+                className="px-4 py-2 border rounded-lg text-[12px]"
+                onClick={() => setShowReadingModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-[#223857] text-white rounded-lg text-[12px]"
+                onClick={() => {
+                  // Handle save logic here
+                  setShowReadingModal(false);
+                }}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showImageModal && (
-              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                <div className="bg-white rounded-lg p-4 w-[500px] h-[600px]">
-                  <h2 className="text-lg font-semibold mb-2 text-[#012A4A]">Add Assignments</h2>
-                  <div className="flex">
-                  <div className="mb-2 grid ml-4">
-                    <label htmlFor="scbaivbcia"  className="text-[12px] text-[#012A4A]">Assignment Name</label>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg p-4 w-[500px] h-[600px]">
+            <h2 className="text-lg font-semibold mb-2 text-[#012A4A]">Add Assignments</h2>
+            <div className="flex">
+              <div className="mb-2 grid ml-4">
+                <label htmlFor="scbaivbcia" className="text-[12px] text-[#012A4A]">Assignment Name</label>
+                <input
+                  type="text"
+                  className="w-[90%] border border-[#808FA4] rounded-lg p-2 mt-1 text-[12px]"
+                  placeholder="Name of Assignment"
+                  value={quizData.assignmentName}
+                  onChange={(e) => setQuizData(prev => ({ ...prev, assignmentName: e.target.value }))}
+                />
+              </div>
+
+              <div className="mb-2 ml-10">
+                <label htmlFor="scbaivbcia" className="text-[12px] text-[#012A4A]">Assignment Type</label>
+                <select name="" id="" className="w-[100%] border border-[#808FA4] text-[#223857] text-[12px] rounded-lg p-2 mt-1">
+                  <option value="Quiz">Image</option>
+                </select>
+              </div>
+            </div>
+            <div className="mb-4">
+              <p className="text-sm font-medium mb-2 ml-2 text-[#012A4A]">Image Identification Template</p>
+              <div className="flex space-x-4 ml-4">
+
+                <label className="flex items-center text-[#012A4A] text-[13px]">
+                  <input
+                    type="checkbox"
+                    checked={questionType.choose}
+                    onChange={(e) => setQuestionType(prev => ({ ...prev, choose: e.target.checked }))}
+                    className="mr-2"
+                  />{/** */}
+                  Choose
+                </label>
+                <label className="flex items-center text-[#012A4A] text-[13px]">
+                  <input
+                    type="checkbox"
+                    checked={questionType.trueOrFalse}
+                    onChange={(e) => setQuestionType(prev => ({ ...prev, trueOrFalse: e.target.checked }))}
+                    className="mr-2"
+                  />{/** */}
+                  True or False
+                </label>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label htmlFor="scbaivbcia" className="text-[12px] text-gray-600">Type the question</label>
+              <div className="relative">
+                <textarea
+                  className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
+                  rows={3}
+                  value={quizData.question}
+                  onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
+                  placeholder="Type your question here..."
+                />
+                <div className="absolute right-2 bottom-2 flex space-x-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageFileUpload}
+                    className="hidden"
+                  />
+                  <svg
+                    className="w-5 h-5 text-gray-500 hover:text-gray-700"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    onChange={handleImageAudioUpload}
+                    className="hidden"
+                  />
+                  <svg
+                    className="w-5 h-5 text-gray-500 hover:text-gray-700"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                  </svg>
+
+                </div>
+              </div>
+
+              {/* Preview section */}
+              <div className="mt-2 flex space-x-2">
+                {imageFile && (
+                  <div className="relative">
+                    <img
+                      src={URL.createObjectURL(imageFile)}
+                      alt="Uploaded file"
+                      className="h-16 w-16 object-cover rounded"
+                    />
+                    <button
+                      onClick={() => setImageFile(null)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+                {imageAudio && (
+                  <div className="relative">
+                    <audio controls className="h-8">
+                      <source src={URL.createObjectURL(imageAudio)} />
+                      <track kind="captions" src="path_to_captions.vtt" default />
+                    </audio>
+                    <button
+                      onClick={() => setImageAudio(null)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <label className="flex items-center text-[#012A4A] text-[13px]">
+              <input
+                type="checkbox"
+                checked={showNoOptions.image}
+                onChange={() => handleNoOptionsChange('image')}
+                className="mr-2"
+              />{/** */}
+              No Options
+            </label>
+
+            {!showNoOptions.image && (
+              <div className="space-y-3">
+                {quizData.answers.map((answer, index) => (
+                  <div key={answer.id} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
+                    <input
+                      type="checkbox"
+                      checked={answer.isCorrect}
+                      onChange={() => setQuizData(prev => ({
+                        ...prev,
+                        answers: prev.answers.map(ans =>
+                          ans.id === answer.id ? { ...ans, isCorrect: !ans.isCorrect } : ans
+                        )
+                      }))}
+                      className="w-5 h-3"
+                    />
                     <input
                       type="text"
-                      className="w-[90%] border border-[#808FA4] rounded-lg p-2 mt-1 text-[12px]"
-                      placeholder="Name of Assignment"
-                      value={quizData.assignmentName}
-                      onChange={(e) => setQuizData(prev => ({ ...prev, assignmentName: e.target.value }))}
+                      className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
+                      placeholder={`${answer.id}) Answer ${index + 1}`}
+                      value={answer.text}
+                      onChange={(e) => setQuizData(prev => ({
+                        ...prev,
+                        answers: prev.answers.map(ans =>
+                          ans.id === answer.id ? { ...ans, text: e.target.value } : ans
+                        )
+                      }))}
                     />
                   </div>
-
-                  <div className="mb-2 ml-10">
-                    <label htmlFor="scbaivbcia"  className="text-[12px] text-[#012A4A]">Assignment Type</label>
-                    <select name="" id="" className="w-[100%] border border-[#808FA4] text-[#223857] text-[12px] rounded-lg p-2 mt-1">
-                      <option value="Quiz">Image</option>
-                    </select>
-                  </div>
-                  </div>
-                  
-                  
-
-                  <div className="mb-4">
-                    <p className="text-sm font-medium mb-2 ml-2 text-[#012A4A]">Image Identification Template</p>
-                    <div className="flex space-x-4 ml-4">
-                      
-                      <label className="flex items-center text-[#012A4A] text-[13px]">
-                        <input
-                          type="checkbox"
-                          checked={questionType.choose}
-                          onChange={(e) => setQuestionType(prev => ({ ...prev, choose: e.target.checked }))}
-                          className="mr-2"
-                        />{/** */}
-                        Choose
-                      </label>
-                      <label className="flex items-center text-[#012A4A] text-[13px]">
-                        <input
-                          type="checkbox"
-                          checked={questionType.trueOrFalse}
-                          onChange={(e) => setQuestionType(prev => ({ ...prev, trueOrFalse: e.target.checked }))}
-                          className="mr-2"
-                        />{/** */}
-                        True or False
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="mb-4">
-                    <label htmlFor="scbaivbcia"  className="text-[12px] text-gray-600">Type the question</label>
-                    <div className="relative">
-                      <textarea
-                        className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
-                        rows={3}
-                        value={quizData.question}
-                        onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
-                        placeholder="Type your question here..."
-                      />
-                      <div className="absolute right-2 bottom-2 flex space-x-2">
-                        
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageFileUpload}
-                            className="hidden"
-                          />
-                          <svg 
-                            className="w-5 h-5 text-gray-500 hover:text-gray-700"
-                            fill="none" 
-                            stroke="currentColor" 
-                            viewBox="0 0 24 24"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                       
-                        
-                          <input
-                            type="file"
-                            accept="audio/*"
-                            onChange={handleImageAudioUpload}
-                            className="hidden"
-                          />
-                          <svg 
-                            className="w-5 h-5 text-gray-500 hover:text-gray-700"
-                            fill="none" 
-                            stroke="currentColor" 
-                            viewBox="0 0 24 24"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                          </svg>
-                      
-                      </div>
-                    </div>
-                    
-                    {/* Preview section */}
-                    <div className="mt-2 flex space-x-2">
-                      {imageFile && (
-                        <div className="relative">
-                          <img 
-                            src={URL.createObjectURL(imageFile)} 
-                            alt="Uploaded file" 
-                            className="h-16 w-16 object-cover rounded"
-                          />
-                          <button
-                            onClick={() => setImageFile(null)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      )}
-                      {imageAudio && (
-                        <div className="relative">
-                          <audio controls className="h-8">
-                            <source src={URL.createObjectURL(imageAudio)} />
-                            <track kind="captions" src="path_to_captions.vtt" default />
-                          </audio>
-                          <button
-                            onClick={() => setImageAudio(null)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <label className="flex items-center text-[#012A4A] text-[13px]">
-                        <input
-                          type="checkbox"
-                          checked={showNoOptions.image}
-                          onChange={() => handleNoOptionsChange('image')}
-                          className="mr-2"
-                        />{/** */}
-                        No Options
-                      </label>
-
-                  {!showNoOptions.image && (
-                    <div className="space-y-3">
-                      {quizData.answers.map((answer, index) => (
-                        <div key={answer.id} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
-                          <input
-                            type="checkbox"
-                            checked={answer.isCorrect}
-                            onChange={() => setQuizData(prev => ({
-                              ...prev,
-                              answers: prev.answers.map(ans => 
-                                ans.id === answer.id ? { ...ans, isCorrect: !ans.isCorrect } : ans
-                              )
-                            }))}
-                            className="w-5 h-3"
-                          />
-                          <input
-                            type="text"
-                            className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
-                            placeholder={`${answer.id}) Answer ${index + 1}`}
-                            value={answer.text}
-                            onChange={(e) => setQuizData(prev => ({
-                              ...prev,
-                              answers: prev.answers.map(ans => 
-                                ans.id === answer.id ? { ...ans, text: e.target.value } : ans
-                              )
-                            }))}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex justify-end space-x-3 mt-6">
-                    <button
-                      className="px-4 py-2 border rounded-lg text-[12px]"
-                      onClick={() => setShowImageModal(false)}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="px-4 py-2 bg-[#223857] text-white rounded-lg text-[12px]"
-                      onClick={() => {
-                        // Handle save logic here
-                        setShowImageModal(false);
-                      }}
-                    >
-                      Save
-                    </button>
-                  </div>
-                </div>
+                ))}
               </div>
             )}
 
-     
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                className="px-4 py-2 border rounded-lg text-[12px]"
+                onClick={() => setShowImageModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-[#223857] text-white rounded-lg text-[12px]"
+                onClick={() => {
+                  // Handle save logic here
+                  setShowImageModal(false);
+                }}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Success Modal */}
       {showSuccessModal && (

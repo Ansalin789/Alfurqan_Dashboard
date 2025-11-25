@@ -1,8 +1,6 @@
 "use client";
-
-import { FaUserAlt } from "react-icons/fa";
 import { AiOutlineClockCircle } from "react-icons/ai";
-import { use, useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
@@ -229,29 +227,6 @@ useEffect(() => {
 }, [classData]);
 
 
-
-
-  const handleStartClass = () => {
-router.push(`/teacher/ui/livemeeting?id=${classData?.meetingId}`);
-    // router.push(`/teacher/livemeeting/${classData?.meetingId}`);
-  };
-
-  const formatTime = (time: number) => (time < 10 ? `0${time}` : time);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-    return `${day < 10 ? "0" + day : day}.${
-      month < 10 ? "0" + month : month
-    }.${year}`;
-  };
-
-  const progress =
-    ((time.hours * 3600 + time.minutes * 60 + time.seconds) / (5 * 60 * 60)) *
-    100;
-
   if (loading) {
     return (
       <div className="bg-[#78A1DB] rounded-xl shadow flex items-center justify-between text-white p-2 px-4 min-h-[90px]">
@@ -304,27 +279,6 @@ router.push(`/teacher/ui/livemeeting?id=${classData?.meetingId}`);
     );
   }
 
-  const isMeetingToday = (meeting: StudentMeeting | null) => {
-    if (!meeting || !meeting.selectedDate) return false;
-    const today = new Date();
-    const meetingDate = new Date(meeting.selectedDate);
-    return (
-      today.getFullYear() === meetingDate.getFullYear() &&
-      today.getMonth() === meetingDate.getMonth() &&
-      today.getDate() === meetingDate.getDate()
-    );
-  };
-
-  // if (!classData || !isMeetingToday(classData)) {
-  //   return (
-  //     <div className="flex flex-col items-center justify-center bg-gradient-to-br from-[#71a1db] to-[#71a1db] rounded-xl shadow p-5 min-h-[90px]">
-  //       <div className="text-3xl mb-1 animate-bounce">✨</div>
-  //       <div className="text-md font-semibold text-blue-50 mb-1">
-  //         No meeting scheduled for today!
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   return (
     <div className="bg-[#78A1DB] rounded-xl shadow flex items-center justify-between text-white">
@@ -343,11 +297,6 @@ router.push(`/teacher/ui/livemeeting?id=${classData?.meetingId}`);
             <p className="text-[13px]">{classData?.startTime}</p>
           </div>
         </div>
-        {/* {classData?.selectedDate && (
-          <p className="text-[13px] mt-2 text-gray-300">
-            Class Date: {formatDate(classData.selectedDate)}
-          </p>
-        )} */}
       </div>
       {/* RIGHT: Countdown or Button */}
       <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end relative flex-wrap px-10">

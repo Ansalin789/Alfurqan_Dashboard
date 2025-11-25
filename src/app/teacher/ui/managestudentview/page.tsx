@@ -3,10 +3,9 @@
 import BaseLayout from "@/components/BaseLayout";
 import React, { useState, useRef, useEffect } from "react";
 import { MdTune } from "react-icons/md";
-import { MoreVertical, Search } from "lucide-react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Search } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Modal from "react-modal";
-import AcademicHeader from "@/app/Academic-coach/components/academicHeader";
 import { PieChart, Pie, Cell } from "recharts";
 import TeacherHeader from "../../components/TeacherHeader";
 import axios from "axios";
@@ -257,10 +256,6 @@ interface ClassSchedule {
   classDay: string[];
   package: string;
 }
-interface ApiResponse {
-  totalCount: number;
-  assignments: Assignment[];
-}
 
 export interface Assignment {
   _id: string;
@@ -335,37 +330,19 @@ type CardProps = {
   description: string;
 };
 
-const Card = ({ title, value, description }: CardProps) => (
-  <div className="bg-[#7689BD] rounded-lg shadow-md p-4">
-    <div className="text-[20px] text-[#fff] font font-semibold mb-4">
-      {title}
-    </div>
-    <div className="text-[14px] text-[#fff] font-semibold ">{value}</div>
-    <div className="text-[12px] text-[#fff] ">{description}</div>
-  </div>
-);
-
 const ManageStudentView = () => {
   const itemsPerPage = 5;
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-
   const [data, setData] = useState<StudentDetails | null>(null);
-  const [scheduledClasses, setScheduledClasses] = useState<ClassSchedule[]>([]);
-  const [completedClasses, setCompletedClasses] = useState<ClassSchedule[]>([]);
-  const [paginatedData, setPaginatedData] = useState<ClassSchedule[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-
   const searchParams = useSearchParams();
   const studentId = searchParams.get("studentId");
-  const dropdownRef = useRef<HTMLTableCellElement | null>(null);
-  const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const initialFilters = {
     studentName: "",
     assignmentName: "",
     status: "",
     // Add more filter fields as needed
   };
-  const [filters, setFilters] = useState(initialFilters);
   const [searchText, setSearchText] = useState("");
   const [studentListWrite, setStudentListWrite] = useState(false); // For Assign Group Class
 
@@ -379,8 +356,6 @@ const ManageStudentView = () => {
     AssignmentData[]
   >([]);
 
-  const [regularCount, setRegularCount] = useState<number>(0);
-  const [groupCount, setGroupCount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<"Regular" | "Group">("Regular");
   const [assignmentData, setAssignmentData] = useState({
     totalAssigned: 0,
@@ -388,10 +363,7 @@ const ManageStudentView = () => {
     totalPending: 0,
   });
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [openModalId, setOpenModalId] = useState<string | null>(null);
   // Calculate total pages for pagination
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -428,25 +400,13 @@ const ManageStudentView = () => {
     fetchData();
   }, []);
 
-  const studentsToDisplay =
-    activeTab === "Regular" ? regularStudents : groupStudents;
-
-  // const toggleDropdown = (id: string) => {
-  //   setOpenDropdownId((prev) => (prev === id ? null : id));
-  // };
   const router = useRouter(); // Add this
-
   const handleViewProfile = (studentId: string) => {
     const studentId1 = searchParams.get("studentId");
     const assignmentId = searchParams.get("assignmentId");
     router.push(
       `/teacher/ui/question?id=${studentId}&studentId=${studentId1}&assignmentId=${assignmentId}`
     );
-  };
-
-  const handleClick = () => {
-    console.log("Create Assignment clicked");
-    // Add assignment creation logic
   };
 
   const getStatusStyle = (status: string) => {
@@ -577,19 +537,19 @@ const ManageStudentView = () => {
   console.log("Completion Percentage:", completionPercentage);
   console.log("Pending Percentage:", pendingPercentage);
 
-const cards = [
-  {
-    title: "Total Assignment Assigned",
-    count: assignmentData.totalAssigned,
-    percentage:
-      assignmentData.totalAssigned > 0
-        ? Math.round((assignmentData.totalAssigned / assignmentData.totalAssigned) * 100)
-        : 0,
-    ringColor: "#7DB5CB",
-    bgColor: "#CDD5E2",
-    pieData:
-      assignmentData.totalAssigned > 0
-        ? [
+  const cards = [
+    {
+      title: "Total Assignment Assigned",
+      count: assignmentData.totalAssigned,
+      percentage:
+        assignmentData.totalAssigned > 0
+          ? Math.round((assignmentData.totalAssigned / assignmentData.totalAssigned) * 100)
+          : 0,
+      ringColor: "#7DB5CB",
+      bgColor: "#CDD5E2",
+      pieData:
+        assignmentData.totalAssigned > 0
+          ? [
             {
               value: Math.round(
                 (assignmentData.totalAssigned / assignmentData.totalAssigned) * 100
@@ -603,22 +563,22 @@ const cards = [
                 ),
             },
           ]
-        : [{ value: 0 }, { value: 100 }],
-  },
-  {
-    title: "Total Assignment Completed",
-    count: assignmentData.totalCompleted,
-    percentage:
-      assignmentData.totalAssigned > 0
-        ? Math.round(
+          : [{ value: 0 }, { value: 100 }],
+    },
+    {
+      title: "Total Assignment Completed",
+      count: assignmentData.totalCompleted,
+      percentage:
+        assignmentData.totalAssigned > 0
+          ? Math.round(
             (assignmentData.totalCompleted / assignmentData.totalAssigned) * 100
           )
-        : 0,
-    ringColor: "#88CF9B",
-    bgColor: "#CDD5E2",
-    pieData:
-      assignmentData.totalAssigned > 0
-        ? [
+          : 0,
+      ringColor: "#88CF9B",
+      bgColor: "#CDD5E2",
+      pieData:
+        assignmentData.totalAssigned > 0
+          ? [
             {
               value: Math.round(
                 (assignmentData.totalCompleted / assignmentData.totalAssigned) * 100
@@ -632,36 +592,9 @@ const cards = [
                 ),
             },
           ]
-        : [{ value: 0 }, { value: 100 }],
-  },
-  // {
-  //   title: "Total Assignment Pending",
-  //   count: assignmentData.totalPending,
-  //   percentage:
-  //     assignmentData.totalAssigned > 0
-  //       ? Math.round((assignmentData.totalPending / assignmentData.totalAssigned) * 100)
-  //       : 0,
-  //   ringColor: "#FC6B57",
-  //   bgColor: "#CDD5E2",
-  //   pieData:
-  //     assignmentData.totalAssigned > 0
-  //       ? [
-  //           {
-  //             value: Math.round(
-  //               (assignmentData.totalPending / assignmentData.totalAssigned) * 100
-  //             ),
-  //           },
-  //           {
-  //             value:
-  //               100 -
-  //               Math.round(
-  //                 (assignmentData.totalPending / assignmentData.totalAssigned) * 100
-  //               ),
-  //           },
-  //         ]
-  //       : [{ value: 0 }, { value: 100 }],
-  // },
-];
+          : [{ value: 0 }, { value: 100 }],
+    },
+  ];
 
 
 
@@ -828,8 +761,8 @@ const cards = [
   const tableData = isSearchActive
     ? searchedAssignments
     : isFilterActive
-    ? filteredAssignments
-    : selectedStudentAssignments;
+      ? filteredAssignments
+      : selectedStudentAssignments;
   const totalPages = Math.ceil(tableData.length / itemsPerPage);
 
   // Get current items for display
@@ -895,8 +828,8 @@ const cards = [
                 idx === 0
                   ? "bg-gradient-to-b from-white to-[#F6FCFF] dark:from-[#343434] dark:to-[#343434]"
                   : idx === 1
-                  ? "bg-gradient-to-b from-white to-[#F6FFFF] dark:from-[#343434] dark:to-[#343434]"
-                  : "bg-gradient-to-b from-white to-[#F8F6FF] dark:from-[#343434] dark:to-[#343434]";
+                    ? "bg-gradient-to-b from-white to-[#F6FFFF] dark:from-[#343434] dark:to-[#343434]"
+                    : "bg-gradient-to-b from-white to-[#F8F6FF] dark:from-[#343434] dark:to-[#343434]";
 
               return (
                 <div
@@ -1023,11 +956,10 @@ const cards = [
                     return (
                       <tr
                         key={assignmentItem._id}
-                        className={`text-[10px] ${
-                          index % 2 === 0
+                        className={`text-[10px] ${index % 2 === 0
                             ? "bg-[#fff] dark:bg-[#2C2C2C]"
                             : "bg-[#F8F8F8] dark:bg-[#303030]"
-                        }`}
+                          }`}
                       >
                         <td className="px-3 py-3 break-words text-[12px]">
                           {assignmentItem.assignmentId}
@@ -1111,14 +1043,6 @@ const cards = [
           onPageChange={setCurrentPage}
         />
       </div>
-
-      {/*filterform  */}
-      {/* <FilterModal
-        isOpen={isFilterModalOpen}
-        onClose={() => setIsFilterModalOpen(false)}
-        onApplyFilters={handleApplyFilters}
-        // users={activeTab === "regular" ? scheduledClasses : completedClasses}
-      /> */}
       <Modal
         isOpen={isFilterModalOpen}
         onRequestClose={() => setIsFilterModalOpen(false)}

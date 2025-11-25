@@ -151,54 +151,6 @@ interface GroupedAssignment {
   assignments: AssignmentQuestion[];
 }
 
-interface IAssignmentCreate {
-  studentId?: string;
-  studentName: string;
-  sessionClassType: string;
-  questionName: string;
-  questionType: string;
-  typeofQuestion: string;
-  title: string;
-  assignmentName: string;
-  assignedTeacher: string;
-  assignedTeacherId: string;
-  assignmentType: {
-    type:
-      | "quiz"
-      | "writing"
-      | "reading"
-      | "image identification"
-      | "word match";
-    name?: string;
-  };
-  chooseType: boolean;
-  trueorfalseType: boolean;
-  question: string;
-  hasOptions: boolean;
-  options: {
-    optionOne?: string;
-    optionTwo?: string;
-    optionThree?: string;
-    optionFour?: string;
-  };
-  audioFile?: string | Buffer | Uint8Array;
-  uploadFile?: string | Buffer | Uint8Array;
-  status: string;
-  createdDate: Date;
-  createdBy: string;
-  updatedDate: Date;
-  updatedBy: string;
-  level: string;
-  courses: string;
-  assignedDate?: Date;
-  dueDate?: Date;
-  answer: string;
-  answerValidation: string;
-  assignmentStatus: string;
-  commends?: string;
-  score: number;
-  rating: string;
-}
 
 const RegularStudents = () => {
   const router = useRouter();

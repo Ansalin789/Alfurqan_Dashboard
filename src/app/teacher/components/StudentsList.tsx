@@ -1,11 +1,8 @@
 "use client";
-import BaseLayout from "@/components/BaseLayout";
 import React, { useState, useEffect } from "react";
-
 import axios from "axios";
 import RegularStudents from "../ui/allstudents/RegularStudents/page";
 import GroupStudents from "../ui/allstudents/GroupStudents/page";
-import TeacherHeader from "./TeacherHeader";
 import Link from "next/link";
 
 // Import the interfaces

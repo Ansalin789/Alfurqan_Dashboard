@@ -562,15 +562,13 @@ function Analytics() {
         {headers.map((h, idx) => (
           <th
             key={h.label}
-            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] whitespace-nowrap ${
-              h.width
-            } ${
-              idx === 0
+            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] whitespace-nowrap ${h.width
+              } ${idx === 0
                 ? "sticky left-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
                 : idx === headers.length - 1
-                ? "sticky right-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
-                : ""
-            }`}
+                  ? "sticky right-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                  : ""
+              }`}
           >
             {h.label}
           </th>
@@ -590,9 +588,8 @@ function Analytics() {
               <button
                 type="button"
                 onClick={() => setActiveView("students")}
-                className={`bg-gradient-to-b from-white to-[#F6FAFF] text-left dark:from-[#343434] dark:to-[#2A2A2A] ${
-                  activeView === "students" ? "border-[1px]" : ""
-                } border-[#576CBC] rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex items-center justify-between focus:outline-none`}
+                className={`bg-gradient-to-b from-white to-[#F6FAFF] text-left dark:from-[#343434] dark:to-[#2A2A2A] ${activeView === "students" ? "border-[1px]" : ""
+                  } border-[#576CBC] rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex items-center justify-between focus:outline-none`}
               >
                 <div className="flex flex-col justify-center">
                   <h3 className="text-sm font-medium text-[#0f172a] mb-4 dark:text-[#fff]">
@@ -618,9 +615,8 @@ function Analytics() {
               <button
                 type="button"
                 onClick={() => setActiveView("classes")}
-                className={`bg-gradient-to-b from-white to-[#F6FAFF] text-left dark:from-[#343434] dark:to-[#2A2A2A] ${
-                  activeView === "classes" ? "border-[1px]" : ""
-                } border-[#576CBC] rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex justify-between items-center focus:outline-none`}
+                className={`bg-gradient-to-b from-white to-[#F6FAFF] text-left dark:from-[#343434] dark:to-[#2A2A2A] ${activeView === "classes" ? "border-[1px]" : ""
+                  } border-[#576CBC] rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex justify-between items-center focus:outline-none`}
               >
                 <div className="flex flex-col justify-center">
                   <h3 className="text-sm font-medium text-[#0f172a] dark:text-[#fff] mb-4">
@@ -646,9 +642,8 @@ function Analytics() {
               <button
                 type="button"
                 onClick={() => setActiveView("earnings")}
-                className={`bg-gradient-to-b from-white to-[#F6FAFF] text-left dark:from-[#343434] dark:to-[#2A2A2A] ${
-                  activeView === "earnings" ? "border-[1px]" : ""
-                } border-[#576CBC] rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex justify-between items-center focus:outline-none`}
+                className={`bg-gradient-to-b from-white to-[#F6FAFF] text-left dark:from-[#343434] dark:to-[#2A2A2A] ${activeView === "earnings" ? "border-[1px]" : ""
+                  } border-[#576CBC] rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex justify-between items-center focus:outline-none`}
               >
                 <div className="flex flex-col justify-center">
                   <h3 className="text-sm font-medium text-[#0f172a] dark:text-[#fff] mb-4">
@@ -695,8 +690,7 @@ function Analytics() {
                 <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                   <span className="text-left -ml-60 ">
                     {activeView === "students" &&
-                      `Showing ${filteredStudents.slice(0, 10).length} of ${
-                        filteredStudents.length
+                      `Showing ${filteredStudents.slice(0, 10).length} of ${filteredStudents.length
                       }`}
                     {activeView === "classes" &&
                       `Showing ${currentItems.length} of ${filteredClasses.length}`}
@@ -753,12 +747,12 @@ function Analytics() {
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
                             {schedule.studentDetails.student?.createdDate
                               ? new Date(
-                                  schedule.studentDetails.student.createdDate
-                                ).toLocaleDateString("en-US", {
-                                  month: "short",
-                                  day: "2-digit",
-                                  year: "numeric",
-                                })
+                                schedule.studentDetails.student.createdDate
+                              ).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "2-digit",
+                                year: "numeric",
+                              })
                               : "-"}
                           </td>
 
@@ -771,13 +765,12 @@ function Analytics() {
                           <td className="px-3 py-2 text-left">
                             <span
                               className={`px-2.5 py-1 rounded-lg text-[11px] inline-block font-semibold
-      ${
-        schedule.studentDetails.student?.status === "Active"
-          ? "text-[#0A8F40] bg-[#E8F5E9]"
-          : schedule.studentDetails.student?.status === "Inactive"
-          ? "text-[#B91C1C] bg-[#FEE2E2]"
-          : "text-gray-600 bg-gray-200 dark:bg-[#4F4F4F]" // default/unknown
-      }`}
+      ${schedule.studentDetails.student?.status === "Active"
+                                  ? "text-[#0A8F40] bg-[#E8F5E9]"
+                                  : schedule.studentDetails.student?.status === "Inactive"
+                                    ? "text-[#B91C1C] bg-[#FEE2E2]"
+                                    : "text-gray-600 bg-gray-200 dark:bg-[#4F4F4F]" // default/unknown
+                                }`}
                             >
                               {schedule.studentDetails.student?.status || "-"}
                             </span>

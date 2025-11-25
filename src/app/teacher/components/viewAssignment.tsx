@@ -412,7 +412,6 @@ export const ImageQuestionCard = ({
   rating,
   assignmentStatus,
 }: ImageQuestionCardProps) => {
-  const isCorrect = selectedAnswer === correctAnswer;
   const imageSrc = useMemo(() => {
     return imageUrl.startsWith("data:image")
       ? imageUrl

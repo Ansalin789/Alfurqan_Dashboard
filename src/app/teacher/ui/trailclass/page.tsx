@@ -1,13 +1,9 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Timer, ChevronDown, LogOut } from "lucide-react";
-import { JitsiMeeting } from "@jitsi/react-sdk";
 import BaseLayout from "@/components/BaseLayout";
 import axios from "axios";
-import Link from "next/link";
 import NextTrailSession from "../../components/NextTrailSession";
 import TeacherHeader from "../../components/TeacherHeader";
-import { useSearchParams } from "next/navigation";
 
 interface Student {
   studentId: string;
@@ -16,7 +12,6 @@ interface Student {
   studentEmail: string;
   email: string;
   phonenumber: string;
-
   city: string;
   country: string;
   trailId: string;
@@ -676,29 +671,6 @@ function LiveClass() {
     }
   };
 
-  const StarRating = ({
-    value,
-    onChange,
-  }: {
-    value: number;
-    onChange: (rating: number) => void;
-  }) => {
-    return (
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            key={star}
-            className={`cursor-pointer text-xl ${
-              star <= value ? "text-yellow-400" : "text-gray-300"
-            }`}
-            onClick={() => onChange(star)}
-          >
-            ★
-          </button>
-        ))}
-      </div>
-    );
-  };
   useEffect(() => {
     let timeoutId: number | undefined;
     if (showPopup) {
@@ -710,92 +682,13 @@ function LiveClass() {
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [showPopup]);
-  const handleSubmit = async () => {
-    // Create request body
-    const feedbackData = {
-      student: {
-        studentId: classData?.student.studentId,
-        studentFirstName: classData?.student.studentFirstName,
-        studentLastName: classData?.student.studentLastName,
-        studentEmail: classData?.student.studentEmail,
-      },
-      teacher: {
-        teacherId: classData?.teacher.teacherId,
-        teacherName: classData?.teacher.teacherName,
-        teacherEmail: classData?.teacher.teacherEmail,
-      },
-      classDay: classData?.classDay[0],
-      preferedTeacher: classData?.preferedTeacher,
-      course: {
-        courseId: "course123",
-        courseName: "Math 101",
-      },
-      studentsRating: {
-        classUnderstanding: ratings[0],
-        engagement: ratings[1],
-        homeworkCompletion: ratings[2],
-      },
-      startDate: classData?.startDate,
-      endDate: classData?.endDate,
-      startTime: classData?.startTime[0],
-      endTime: classData?.endTime[0],
-      feedbackmessage: feedback,
-      createdDate: new Date().toISOString(),
-      createdBy: "User",
-      lastUpdatedDate: new Date().toISOString(),
-      lastUpdatedBy: "User",
-    };
-
-    try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("TeacherAuthToken")
-          : null;
-
-      if (!token) {
-        console.error("❌ AdminAuthToken not found");
-        return;
-      }
-      const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/feedback",
-        feedbackData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.status === 201 || response.status === 200) {
-        setShowPopup(true);
-        setTimeout(() => setShowPopup(false), 3000);
-      } else {
-        console.log("Failed to submit feedback. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error submitting feedback:", error);
-      console.log("Error submitting feedback. Please try again.");
-    }
-  };
-
   const attendanceRef = useRef(attendance);
   useEffect(() => {
     attendanceRef.current = attendance;
   }, [attendance]);
-
-  const handleStartSession = () => {
-    setIsFormData(false);
-  };
-  const categories = [
-    "Listening Ability",
-    "Reading Ability",
-    " Overall Performance",
-  ];
   const [timeRemaining, setTimeRemaining] = useState("");
   useEffect(() => {
     if (!classData) return;
-
     const updateRemainingTime = () => {
       const now = new Date();
 

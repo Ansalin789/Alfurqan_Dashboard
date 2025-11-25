@@ -47,7 +47,6 @@ const LiveMeeting = () => {
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const params = useSearchParams();
   const meetingId = params.get("id");
-  const router = useRouter();
   const [redirectTo, setRedirectTo] = useState<string | null>(null);
   const startTimeRef = useRef<string>("");
 

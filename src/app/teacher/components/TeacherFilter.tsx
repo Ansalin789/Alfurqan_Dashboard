@@ -12,19 +12,6 @@ import { IoMdClose } from "react-icons/io";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
 
-interface Teacher {
-  attendee: string;
-  teacherId: string;
-  teacherName: string;
-  teacherEmail: string;
-}
-
-interface Participant {
-  studentId: string;
-  studentName: string;
-  studentEmail: string;
-}
-
 interface Meeting {
   _id: string;
   meetingName: string;
@@ -87,12 +74,6 @@ interface MeetingResponse {
   meetings: Meeting[];
 }
 
-interface Supervisor {
-  supervisorId: string;
-  supervisorName: string;
-  supervisorEmail?: string;
-}
-
 interface Attendance {
   studentId: string;
   name: string;
@@ -100,22 +81,16 @@ interface Attendance {
 }
 
 const TeacherFilter = () => {
-  const router = useRouter();
-
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-
   const [activeTab, setActiveTab] = useState("upcoming");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
-
   const [upcomingClasses, setUpcomingClasses] = useState<Meeting[]>([]);
   const [completedData, setCompletedData] = useState<Meeting[]>([]);
   const [filteredMeetings, setFilteredMeetings] = useState<Meeting[]>([]);
-  const [attendance, setAttendance] = useState<Attendance[]>([]);
 
   // Filter modal state
   const [showMeetingFilterModal, setShowMeetingFilterModal] = useState(false);
@@ -163,15 +138,7 @@ const TeacherFilter = () => {
         );
 
         const meetings = response.data.meetings;
-        const now = new Date();
 
-        // Helper to get end time as Date
-        const getEndDate = (meeting: Meeting) => {
-          const date = new Date(meeting.selectedDate);
-          const [endH, endM] = meeting.endTime.split(":").map(Number);
-          date.setHours(endH, endM, 0, 0);
-          return date;
-        };
 
         // Only show as upcoming if end time is in the future and not completed
         const upcoming = meetings.filter((m) =>
@@ -297,41 +264,6 @@ const TeacherFilter = () => {
     setShowMeetingFilterModal(false);
   };
 
-  const isStartMeetingNow = (dateStr: string, start: string, end: string) => {
-    const now = new Date();
-    const date = new Date(dateStr);
-    const [startH, startM] = start.split(":").map(Number);
-    const [endH, endM] = end.split(":").map(Number);
-    const startTime = new Date(date);
-    startTime.setHours(startH, startM, 0, 0);
-    const endTime = new Date(date);
-    endTime.setHours(endH, endM, 0, 0);
-    return now >= startTime && now <= endTime;
-  };
-
-  const getMeetingStatusClass = (status: string) => {
-    switch (status) {
-      case "Scheduled":
-        return "bg-[#F0FDF4] text-[#377E36]";
-      case "Rescheduled":
-        return "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white";
-      case "Completed":
-        return "bg-[#F0FDF4] text-[#377E36]";
-      default:
-        return "bg-gray-200 text-gray-700";
-    }
-  };
-
-  const handleViewDetails = (meetingId: string) => {
-    const meeting = filteredMeetings.find((m) => m._id === meetingId);
-    if (meeting) {
-      setSelectedMeetingDetails(meeting);
-      setIsMeetingDetailsModalOpen(true);
-    } else {
-      console.error("Meeting not found:", meetingId);
-    }
-  };
-
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredMeetings.slice(
@@ -349,10 +281,8 @@ const TeacherFilter = () => {
       console.error("Meeting ID is missing");
       return;
     }
-
     const teacherId = localStorage.getItem("TeacherPortalId");
     const token = localStorage.getItem("TeacherAuthToken");
-
     if (!token || !teacherId) {
       console.error("Missing token or teacher ID");
       setFailed(true);
@@ -366,9 +296,7 @@ const TeacherFilter = () => {
       startTime: rescheduleTime,
       description: rescheduleReason,
     };
-
     console.log("Sending payload:", payload);
-
     try {
       const response = await axios.put(
         `https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${meetingId}`,
@@ -380,7 +308,6 @@ const TeacherFilter = () => {
           },
         }
       );
-
       console.log("Meeting rescheduled successfully:", response.data);
       setSuccess(true);
       setIsRescheduleModalOpen(false);
@@ -390,7 +317,6 @@ const TeacherFilter = () => {
       setFailedMessage("Failed to reschedule the meeting. Please try again.");
     }
   }
-
   return (
     <>
       <div className="flex space-x-6 mt-4 px-4 py-2 rounded-md">
@@ -421,30 +347,6 @@ const TeacherFilter = () => {
           )}
         </button>
       </div>
-
-      {/* <div className="w-full h-[610px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-2"> */}
-      {/* <div className="flex justify-between items-center px-4 py-2">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Search className="w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by keyword"
-              className="bg-transparent outline-none text-[15px] w-52 py-1"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
-          </div>
-          <div
-            className="flex items-center gap-2 text-[14px] text-gray-400 cursor-pointer"
-            onClick={() => setShowMeetingFilterModal(true)}
-          >
-            <MdTune className="w-4 h-4" />
-            <span>Filter</span>
-          </div>
-          <div className="text-[14px]">
-            Showing {currentItems.length} of {filteredMeetings.length}
-          </div>
-        </div> */}
 
       <div className="mt-2">
         <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
@@ -761,35 +663,6 @@ const TeacherFilter = () => {
                 />
               </div>
             </div>
-
-            {/* Attendance */}
-            {/* <div className="mb-6 rounded-xl overflow-hidden dark:bg-[#343434] text-white border ">
-              <div className="flex justify-between items-center bg-[#576CBC] text-white px-6 py-3 text-sm font-semibold">
-                <span>Name</span>
-                <span>Attendance</span>
-              </div>
-              <div className="divide-y max-h-40 overflow-y-auto text-sm">
-                {attendance && attendance.length > 0 ? (
-                  attendance.map((student) => (
-                    <div
-                      key={student.studentId}
-                      className="flex justify-between items-center px-4 py-2"
-                    >
-                      <span className="text-[#4F46E5]">{student.name}</span>
-                      <span
-                        className={`text-lg ${
-                          student.joined ? "text-green-600" : "text-red-500"
-                        }`}
-                      >
-                        {student.joined ? "✔" : "✘"}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <div>No attendance data available.</div>
-                )}
-              </div>
-            </div> */}
           </div>
         </div>
       )}

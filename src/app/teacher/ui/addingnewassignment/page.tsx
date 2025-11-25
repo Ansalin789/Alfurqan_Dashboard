@@ -16,46 +16,6 @@ type AssignmentType =
   | "word match"
   | "reading comprehension";
 
-interface AssignmentFormData {
-  studentId: string;
-  studentName: string;
-  sessionClassType: string;
-  assignedTeacher: string;
-  assignedTeacherId: string;
-  assignments: AssignmentItem[];
-}
-
-interface AssignmentItem {
-  assignmentName: string;
-  assignmentType: { type: AssignmentType };
-  questionName: string;
-  questionType: string;
-  typeofQuestion: string;
-  title: string;
-  question: string;
-  hasOptions: boolean;
-  options?: {
-    optionOne: string;
-    optionTwo: string;
-    optionThree: string;
-    optionFour: string;
-  };
-  createdDate: string;
-  dueDate: string;
-  createdBy: string;
-  updatedBy: string;
-  level: string;
-  courses: string;
-  status: string;
-  assignmentStatus: string;
-  answer: string;
-  answerValidation: string;
-  audioFile?: File;
-  uploadFile?: File;
-  chooseType: boolean;
-  trueorfalseType: boolean;
-}
-
 interface Assignment {
   name: string;
   type: AssignmentType;
@@ -194,28 +154,6 @@ const NewAssignment = () => {
   const [noOptions, setNoOptions] = useState(false);
   const [answerText, setAnswerText] = useState("");
 
-  // Utility function to convert File/Blob to Buffer
-  const fileToBuffer = async (file: File): Promise<Buffer> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (reader.result) {
-          const arrayBuffer = reader.result as ArrayBuffer;
-          const buffer = Buffer.from(new Uint8Array(arrayBuffer));
-          resolve(buffer);
-        } else {
-          reject(new Error("File reading failed"));
-        }
-      };
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(file);
-    });
-  };
-
-  // Alternative if you're not using Node.js Buffer in frontend
-  const fileToArrayBuffer = async (file: File): Promise<ArrayBuffer> => {
-    return file.arrayBuffer();
-  };
 
   // Update the handleAddAssignment function
   const handleAddAssignment = () => {
@@ -400,36 +338,7 @@ const NewAssignment = () => {
     setAnswerText("");
     setSelectedAnswer("");
   }, [assignmentType]);
-  const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mediaRecorder = new MediaRecorder(stream);
-    mediaRecorderRef.current = mediaRecorder;
-    audioChunks.current = [];
 
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        audioChunks.current.push(event.data);
-      }
-    };
-
-    mediaRecorder.onstop = () => {
-      const audioBlob = new Blob(audioChunks.current, { type: "audio/webm" });
-      const url = URL.createObjectURL(audioBlob);
-
-      setAudioURL(url);
-      setUploadedFileURL(url);
-      setUploadedFileName("Recorded Audio.webm");
-      setUploadedFileType("audio/webm");
-    };
-
-    mediaRecorder.start();
-    setIsRecording(true);
-  };
-
-  const stopRecording = () => {
-    mediaRecorderRef.current?.stop();
-    setIsRecording(false);
-  };
 
   // In the component, update the handleFileUpload to handle images separately:
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -485,16 +394,6 @@ const NewAssignment = () => {
     null
   );
 
-  // File to Base64 converter function
-  const convertToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   const handleDeleteFile = () => {
     setAudioURL(null);
     setUploadedFileName(null);
@@ -540,16 +439,7 @@ const NewAssignment = () => {
         `assignments[${index}][hasOptions]`,
         hasOptions.toString()
       );
-      // if (item.imageURL && item.imageName) {
-      //   const imageBlob = await fetch(item.imageURL).then((res) => res.blob());
-      //   formData.append(
-      //     `assignments[${index}][imageFile]`,
-      //     imageBlob,
-      //     item.imageName
-      //   );
-      // }
 
-      // Handle options for image identification
       if (
         (item.type === "image identification" || item.type === "word match") &&
         item.options
@@ -881,19 +771,6 @@ const NewAssignment = () => {
             />
             {!audioURL && !uploadedFileURL && (
               <div className="absolute bottom-2 right-2 flex gap-2 dark:text-[#fff]">
-                {/* <button
-                  type="button"
-                  className={`p-2 bg-gray-200 rounded-full border border-gray-300 flex items-center justify-center dark:border-[#343434] dark:text-[#fff] ${isRecording ? "bg-red-200" : ""
-                    }`}
-                  title={isRecording ? "Stop Recording" : "Record"}
-                  onClick={isRecording ? stopRecording : startRecording}
-                >
-                  <FaMicrophone
-                    className={`text-xl ${isRecording ? "text-red-600" : "text-gray-700"
-                      }`}
-                  />
-                </button> */}
-                {/* File upload button - shown when no file is uploaded */}
                 {!uploadedFileURL && (
                   <label className="p-2 bg-gray-200 rounded-full border border-gray-300 flex items-center justify-center cursor-pointer">
                     <input
@@ -1062,25 +939,6 @@ const NewAssignment = () => {
                 </div>
               </div>
             )}
-
-          {/* Answer Validation Section */}
-          {/* {(assignmentType === "reading" || assignmentType === "writing") && (
-            <div className="mb-4">
-              <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                Answer
-              </label>
-              <div className="p-3 bg-gray-100 dark:bg-[#343434] rounded-lg">
-                <p className="whitespace-pre-wrap dark:text-[#fff]">
-                  {answerText}
-                </p>
-                {answerText && (
-                  <div className="mt-2 text-right">
-                    <span className="text-green-600">✓ Answer Provided</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )} */}
         </div>
         {/* Right Panel (updated UI) */}
         <div className="flex flex-col justify-between w-full md:w-1/2 bg-white rounded-2xl p-6 shadow-md dark:bg-[#3B3B3B] dark:border dark:border-[#484f5b]">

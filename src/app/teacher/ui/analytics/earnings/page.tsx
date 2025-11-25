@@ -54,7 +54,6 @@ interface Schedule {
 }
 
 const Earnings = () => {
-  const router = useRouter();
   const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<
     Schedule[]
   >([]);

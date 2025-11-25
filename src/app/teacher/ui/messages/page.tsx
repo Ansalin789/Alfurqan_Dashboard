@@ -12,7 +12,6 @@ import { Bell } from "lucide-react";
 import TeacherHeader from "../../components/TeacherHeader";
 import { getSocket } from "@/app/utils/socket";
 
-type ChatUser = IUser | IStudent;
 
 // Define your interfaces
 interface IMessage {
@@ -109,20 +108,7 @@ const Message = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
  const [academicCoaches, setAcademicCoaches] = useState<IUser[]>([]);
   const [userStatus, setUserStatus] = useState<string>("inactive");
-  // const fetchUsersByRole = async (role: string): Promise<IUser[]> => {
-  //   try {
-  //     const response = await axios.get<{ users: IUser[] }>(
-  //       "https://api.blackstoneinfomaticstech.com/users",
-  //       {
-  //         params: { role },
-  //       }
-  //     );
-  //     return response.data.users;
-  //   } catch (err) {
-  //     console.error(`❌ Failed to fetch users for role ${role}:`, err);
-  //     return [];
-  //   }
-  // };
+  
   let userId: string | null = null;
 
   if (typeof window !== "undefined") {

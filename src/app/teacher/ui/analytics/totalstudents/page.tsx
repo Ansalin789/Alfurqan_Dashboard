@@ -313,20 +313,6 @@ const Totalstudents = () => {
                         />
                       </div>
 
-                      {/* Level */}
-                      {/* <div>
-                        <label className="text-sm block mb-1">Level</label>
-                        <input
-                          type="text"
-                          className="w-full p-2 border rounded bg-transparent dark:bg-[#343434]"
-                          placeholder="e.g. Beginner"
-                          value={filters.level}
-                          onChange={(e) =>
-                            setFilters((s) => ({ ...s, level: e.target.value }))
-                          }
-                        />
-                      </div> */}
-
                       {/* Date range */}
                       <div className="grid grid-cols-2 gap-3">
                         <div>
