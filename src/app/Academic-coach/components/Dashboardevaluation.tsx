@@ -19,7 +19,6 @@ const StudentEvaluation = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch data from API
     const academicId = localStorage.getItem("AcademicCoachPortalId");
     console.log("academicId>>", academicId);
      const token =

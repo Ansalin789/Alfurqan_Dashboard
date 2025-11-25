@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import BaseLayout1 from "@/components/BaseLayout1";
 import moment from "moment";
-import { CalendarDays, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import AcademicHeader from "../../components/academicHeader";
 import { FaClock } from "react-icons/fa";
 import { BsFillCalendar2WeekFill } from "react-icons/bs";
@@ -15,8 +15,8 @@ interface Event {
   end: string;
   description: string;
   date: string;
-  studentName:string,
-  studentEmail:string,
+  studentName: string,
+  studentEmail: string,
 }
 
 const SchedulePage = () => {
@@ -48,15 +48,15 @@ const SchedulePage = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("dataaa",data);
+        console.log("dataaa", data);
         const mappedEvents = data.academicCoach.map((item: any) => ({
           id: item._id,
           title: item.subject,
           start: item.scheduledFrom,
           end: item.scheduledTo,
           description: item.description,
-          studentName:item.student.name,
-          studentEmail:item.student.email,
+          studentName: item.student.name,
+          studentEmail: item.student.email,
           date: moment(item.scheduledStartDate).format("YYYY-MM-DD"),
         }));
         setEvents(mappedEvents);
@@ -139,14 +139,12 @@ const SchedulePage = () => {
   const WeeklyView = () => {
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
-    // Get start and end of current week based on currentDate
     const startOfWeek = moment(currentDate).startOf("week");
     const endOfWeek = moment(currentDate).endOf("week");
 
-    // Create an array of days in the week with their dates
     const daysInWeek = [];
     let currentDay = startOfWeek.clone();
-    
+
     while (currentDay <= endOfWeek) {
       daysInWeek.push({
         name: currentDay.format("dddd"),
@@ -156,13 +154,11 @@ const SchedulePage = () => {
       currentDay = currentDay.clone().add(1, 'days');
     }
 
-    // Filter events for current week
     const weekEvents = events.filter((event) => {
       const eventDate = moment(event.date);
       return eventDate >= startOfWeek && eventDate <= endOfWeek;
     });
 
-    // Group events by day
     const eventsByDay = weekEvents.reduce((acc, event) => {
       const day = moment(event.date).format("dddd");
       if (!acc[day]) {
@@ -194,32 +190,29 @@ const SchedulePage = () => {
               <div key={dayInfo.name} className="flex flex-col">
                 <button
                   onClick={() => handleDayClick(dayInfo.name)}
-                  className={`w-full p-4 rounded-xl cursor-pointer transition-all duration-200 ${
-                    isSelected
+                  className={`w-full p-4 rounded-xl cursor-pointer transition-all duration-200 ${isSelected
                       ? "dark:bg-[#414141] bg-[#f7f7f7] dark:text-white text-black"
                       : dayEvents.length > 0
-                      ? "dark:bg-[#414141] bg-[#f7f7f7] hover:shadow-lg text-black"
-                      : "bg-[#f7f7f7] dark:bg-[#414141] text-black"
-                  }`}
+                        ? "dark:bg-[#414141] bg-[#f7f7f7] hover:shadow-lg text-black"
+                        : "bg-[#f7f7f7] dark:bg-[#414141] text-black"
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div>
                         <div
-                          className={`text-base font-semibold ${
-                            isSelected
+                          className={`text-base font-semibold ${isSelected
                               ? "dark:text-white text-black"
                               : "text-gray-800 dark:text-white"
-                          }`}
+                            }`}
                         >
                           {dayInfo.name}
                         </div>
                         <div
-                          className={`text-[10px] ${
-                            isSelected
+                          className={`text-[10px] ${isSelected
                               ? "bg:text-white/80"
                               : "text-gray-500 dark:text-gray-400"
-                          }`}
+                            }`}
                         >
                           {dayInfo.formattedDate}
                         </div>
@@ -227,11 +220,10 @@ const SchedulePage = () => {
                     </div>
                     {dayEvents.length > 0 && (
                       <div
-                        className={`text-[10px] px-3 py-1 rounded-lg ${
-                          isSelected
+                        className={`text-[10px] px-3 py-1 rounded-lg ${isSelected
                             ? "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]"
                             : "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]"
-                        }`}
+                          }`}
                       >
                         {dayEvents.length}{" "}
                         {dayEvents.length === 1 ? "Event" : "Events"}
@@ -316,11 +308,11 @@ const SchedulePage = () => {
     const handleDayClick = (date: Date, day: number) => {
       const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`;
       const dayEvents = getEventsForDate(date);
-      
+
       if (dayEvents.length > 0) {
         setOpenDropdown(openDropdown === dateKey ? null : dateKey);
       }
-      
+
       handleDateClick(date);
     };
 
@@ -347,7 +339,6 @@ const SchedulePage = () => {
             const hasEvents = dayEvents.length > 0;
             const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`;
             const isDropdownOpen = openDropdown === dateKey;
-            // Calculate column index (0-6) - grid naturally places items in columns
             const columnIndex = i % 7;
             const isRightSide = columnIndex >= 4;
 
@@ -355,18 +346,16 @@ const SchedulePage = () => {
               <div key={i} className="relative calendar-dropdown-container">
                 <button
                   onClick={() => handleDayClick(date, day)}
-                  className={`min-h-[80px] w-full rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${
-                    hasEvents
+                  className={`min-h-[80px] w-full rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${hasEvents
                       ? "border border-[#576cbc] text-[#576cbc] bg-[#576cbc]/10"
                       : isToday(day)
-                      ? "bg-[#27176518] text-white"
-                      : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"
-                  }`}
+                        ? "bg-[#27176518] text-white"
+                        : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"
+                    }`}
                 >
                   <div
-                    className={`font-semibold ${
-                      isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""
-                    }`}
+                    className={`font-semibold ${isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""
+                      }`}
                   >
                     {day}
                   </div>
@@ -376,7 +365,7 @@ const SchedulePage = () => {
                     </div>
                   )}
                 </button>
-                
+
                 {isDropdownOpen && hasEvents && (
                   <div className={`absolute top-full ${isRightSide ? 'right-0' : 'left-0'} mt-1 z-50 w-40 bg-white dark:bg-[#343434] rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 p-3`}>
                     <div className="text-[10px] font-semibold mb-2 text-gray-700 dark:text-gray-300">
@@ -391,13 +380,6 @@ const SchedulePage = () => {
                           <div className="text-[11px] font-semibold text-[#576cbc] dark:text-[#576cbc]">
                             {event.title}
                           </div>
-                          {/* <div className="flex items-center gap-1 text-[9px] text-gray-600 dark:text-gray-300 mt-1">
-                            <Clock size={10} />
-                            {moment(event.start, 'HH:mm').format("h:mm A")} - {moment(event.end, 'HH:mm').format("h:mm A")}
-                          </div>
-                          <div className="text-[9px] text-gray-500 dark:text-gray-400 mt-1">
-                            {event.studentName}
-                          </div> */}
                         </div>
                       ))}
                     </div>
@@ -416,7 +398,6 @@ const SchedulePage = () => {
       <AcademicHeader currentSection="Calendar" />
       <div className="p-2">
         <div className="mx-auto gap-4 flex flex-col lg:flex-row overflow-hidden min-h-[630px]">
-          {/* Calendar Component */}
           <div className="w-full lg:w-2/3 p-4 md:p-6 bg-white dark:bg-[#343434] shadow-md rounded-xl">
             <div className="flex items-center justify-between mb-4">
               <div className="flex space-x-4 text-sm font-medium">
@@ -424,11 +405,10 @@ const SchedulePage = () => {
                   <button
                     key={tab}
                     onClick={() => setActiveView(tab)}
-                    className={`capitalize ${
-                      activeView === tab
+                    className={`capitalize ${activeView === tab
                         ? "text-[#576cbc] border-b-2 border-[#576cbc]"
                         : "text-gray-400"
-                    } pb-1`}
+                      } pb-1`}
                   >
                     {tab}
                   </button>
@@ -499,7 +479,7 @@ const SchedulePage = () => {
                         </div>
 
                         <p className="text-[11px] font-light text-[#333] dark:text-[#fff] mt-2">
-                          {item.studentName || ""} 
+                          {item.studentName || ""}
                         </p>
                       </div>
                     );

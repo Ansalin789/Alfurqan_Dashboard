@@ -238,7 +238,6 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
     }
   }, [form.country, countries]);
 
-  // 🔹 Load cities when state changes
   useEffect(() => {
     if (form.country && form.state) {
       const selectedCountry = countries.find((c) => c.name === form.country);
@@ -250,7 +249,6 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
           selectedState.isoCode
         );
 
-        // 🔥 Deduplicate cities by name
         const uniqueCities = Array.from(
           new Map(allCities.map((city) => [city.name, city])).values()
         );
@@ -312,7 +310,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
           if (time.startTime && time.endTime) {
             const start = new Date(`2023-01-01T${time.startTime}`);
             const end = new Date(`2023-01-01T${time.endTime}`);
-            const diff = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // Convert to hours
+            const diff = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
             totalHours += diff;
           }
         });

@@ -67,7 +67,6 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
   const tabs = ["All", "Quran", "Arabic", "Islamic"] as const;
   type Tab = (typeof tabs)[number];
 
-  // Compute tomorrow's date in local time to disable today in the date picker
   const formatLocalDateYYYYMMDD = (date: Date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -93,15 +92,6 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
             ? localStorage.getItem("AcademicCoachAuthToken")
             : null;
         const url = `https://api.blackstoneinfomaticstech.com/alstudents`;
-
-        // const params: Record<string, string> = {
-        //   academicCoachId: Id ?? "",
-        // };
-
-        // if (activeTab !== "All") {
-        //   params.teacherGroup = `${activeTab} Studies`;
-        //   console.log('inserted', activeTab);
-        // }
 
         const response = await axios.get(url, {
           headers: {
@@ -176,7 +166,6 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
     
-      // 🧩 Validation
       if (!meetingTitle || !selectedDate || !startTime || !endTime) {
         alert("Please fill all required fields!");
         return;
@@ -205,7 +194,6 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
       const formattedDate = new Date(selectedDate).toISOString();
       const createdDate = new Date().toISOString();
     
-      // ✅ Combine all selected participants (typed)
       const participants = [
         ...selectedTeacherUsers.map((u) => ({
           participantId: u._id,
@@ -253,14 +241,13 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
         participants,
         description,
         status: "Active",
-        duration: "", // optional — add your duration logic if any
+        duration: "", 
         createdDate,
         createdBy: organizerName || "System",
       };
     
       console.log("🧾 Final Payload:", formattedPayload);
     
-      // 🚀 API call
       try {
         const token = localStorage.getItem("AcademicCoachAuthToken");
         if (!token) {

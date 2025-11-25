@@ -38,7 +38,6 @@ const Page = () => {
           </button>
         </div>
 
-        {/* Render full pages here based on tab */}
         <div className="mt-4">
           {activeTab === "evaluation" && <Evaluation />}
           {activeTab === "trial" && <TrailSection />}

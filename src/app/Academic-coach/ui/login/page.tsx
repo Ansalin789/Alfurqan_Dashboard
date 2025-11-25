@@ -1,10 +1,8 @@
 "use client";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
-import { GrApple } from "react-icons/gr";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  GoogleLogin,
   CredentialResponse,
   GoogleOAuthProvider,
   useGoogleLogin,
@@ -241,7 +239,7 @@ const SignIn: React.FC = () => {
       }
     );
 
-    return response.data; // contains email, name, picture, etc.
+    return response.data;
   } catch (err) {
     console.error("Failed to fetch Google user:", err);
     return null;
@@ -508,7 +506,6 @@ const SignIn: React.FC = () => {
 
         {/* Right Section */}
         <div className="relative w-full lg:w-1/2 h-96 lg:h-screen overflow-hidden order-1 lg:order-2">
-          {/* Background Image */}
           <Image
             src="/assets/images/Frame 2147226048.svg"
             alt="right-bg"
@@ -518,13 +515,10 @@ const SignIn: React.FC = () => {
             className="w-full h-full object-cover absolute inset-0"
           />
 
-          {/* Black overlay */}
           <div className="absolute inset-0 bg-black/25"></div>
 
-          {/* Content */}
           <div className="relative z-10 flex flex-col justify-between w-full h-full px-4 sm:px-6 lg:px-12 py-6 sm:py-8">
 
-            {/* TOP CARD - Responsive */}
             <div className="bg-white rounded-xl p-4 sm:p-6 w-full max-w-sm sm:max-w-md lg:max-w-[635px] mx-auto shadow-2xl mt-8 sm:mt-16 lg:mt-32">
               <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-6">
                 <div className="flex-1 text-left w-full">
@@ -551,7 +545,6 @@ const SignIn: React.FC = () => {
               </div>
             </div>
 
-            {/* BOTTOM SECTION - Responsive */}
             <div className="text-center text-white mx-auto mb-8 sm:mb-12 mt-4 sm:mt-0">
               <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-2">Academic Coach Dashboard</h2>
 

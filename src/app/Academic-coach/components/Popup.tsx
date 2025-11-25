@@ -13,7 +13,7 @@ interface PopupProps {
   isOpen: boolean;
   onRequestClose: () => void;
   user: User | null;
-  isEditMode: boolean; // Add this line
+  isEditMode: boolean; 
 
   onSave: (user: User) => void;
 }

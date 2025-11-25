@@ -11,10 +11,6 @@ import AcademicHeader from "../../components/academicHeader"
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
 
-interface ClassScheduleResponse {
-  totalCount: number
-  students: ClassSchedule[]
-}
 interface CalendarControlsProps {
   activeView: "monthly" | "weekly" | "daily";
   handleTabSwitch: (view: "monthly" | "weekly" | "daily") => void;
@@ -71,58 +67,57 @@ interface Course {
 }
 
 const TeachersSchedule = () => {
-  
-// Generate time slots from 00:00 to 23:30 (30 min steps)
-const generateTimeSlots = () => {
-  const slots: string[] = [];
-  let start = moment("00:00", "HH:mm");
 
-  for (let i = 0; i < 48; i++) {
-    slots.push(start.format("HH:mm"));
-    start.add(30, "minutes");
-  }
-  return slots;
-};
+  const generateTimeSlots = () => {
+    const slots: string[] = [];
+    let start = moment("00:00", "HH:mm");
 
-const timeSlots = generateTimeSlots();
+    for (let i = 0; i < 48; i++) {
+      slots.push(start.format("HH:mm"));
+      start.add(30, "minutes");
+    }
+    return slots;
+  };
 
-const handleFromTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-  const value = e.target.value;
-  const fromMoment = moment(value, "HH:mm");
-  const toMoment = fromMoment.clone().add(30, "minutes");
+  const timeSlots = generateTimeSlots();
 
-  setFormData((prev) => ({
-    ...prev,
-    fromTime: value,
-    toTime: toMoment.format("HH:mm"),
-  }));
-};
+  const handleFromTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    const fromMoment = moment(value, "HH:mm");
+    const toMoment = fromMoment.clone().add(30, "minutes");
+
+    setFormData((prev) => ({
+      ...prev,
+      fromTime: value,
+      toTime: toMoment.format("HH:mm"),
+    }));
+  };
   const [activeView, setActiveView] = useState<"monthly" | "weekly" | "daily">("monthly")
   const [currentDate, setCurrentDate] = useState(new Date())
   const [meetings, setMeetings] = useState<ClassSchedule[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  
+
 
   const Search = useSearchParams()
   const teacherId = Search.get("_id")
+  const sendteacher = Search.get("teacherId");
   const [rescheduleDate, setRescheduleDate] = useState("")
-    const [success, setSucces] = useState(false);
-    const [failed, setFailed] = useState(false);
-    const [failedMessage, setFailedMessage] = useState("");
- const [formData, setFormData] = useState({
-  date: moment().format("YYYY-MM-DD"),
-  fromTime: moment().format("HH:mm"),
-  toTime: moment().add(30, "minutes").format("HH:mm"), // ⬅️ 30 mins, not 1 hour
-  comment: "",
-  meetingId: "",
-  applyToAll: false,
-});
+  const [success, setSucces] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [failedMessage, setFailedMessage] = useState("");
+  const [formData, setFormData] = useState({
+    date: moment().format("YYYY-MM-DD"),
+    fromTime: moment().format("HH:mm"),
+    toTime: moment().add(30, "minutes").format("HH:mm"),
+    comment: "",
+    meetingId: "",
+    applyToAll: false,
+  });
 
 
-const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily"];
+  const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily"];
 
-  // Sync rescheduleDate with formData.date
   useEffect(() => {
     setRescheduleDate(formData.date)
   }, [formData.date])
@@ -153,7 +148,7 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
           console.error("❌ AcademicCoachAuthToken not found")
           return
         }
-        
+
         const response = await axios.get(
           `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${teacherId}`,
           {
@@ -177,16 +172,14 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
           )
           setMeetings(sortedMeetings)
 
-          // Initialize with today's date
           const today = new Date()
           setSelectedDate(today)
 
-          // Set form data with today's date as default
           const todayFormatted = moment(today).format("YYYY-MM-DD")
           setFormData({
             date: todayFormatted,
             fromTime: moment().format("HH:mm"),
-  toTime: moment().add(30, "minutes").format("HH:mm"), // ⬅️ 30 mins, not 1 hour
+            toTime: moment().add(30, "minutes").format("HH:mm"),
             comment: "",
             meetingId: "",
             applyToAll: false,
@@ -232,45 +225,41 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
     }
   };
 
-  // Handle tab switching with proper state updates
   const handleTabSwitch = (newView: "monthly" | "weekly" | "daily") => {
-     if (activeView !== newView) {
-    setActiveView(newView)
+    if (activeView !== newView) {
+      setActiveView(newView)
 
-    // Reset selected date and update form data based on current view
-    const today = new Date()
-    setSelectedDate(today)
+      const today = new Date()
+      setSelectedDate(today)
 
-    // Update current date for the new view
-    setCurrentDate(today)
+      setCurrentDate(today)
 
-    // Check if there are meetings for today and update form accordingly
-    const todayMeetings = getMeetingsForDate(today)
-    const todayFormatted = moment(today).format("YYYY-MM-DD")
+      const todayMeetings = getMeetingsForDate(today)
+      const todayFormatted = moment(today).format("YYYY-MM-DD")
 
-    if (todayMeetings.length > 0) {
-      const firstMeeting = todayMeetings[0]
-      setFormData({
-        date: todayFormatted,
-        fromTime: firstMeeting.startTime?.[0] || moment().format("HH:mm"),
-toTime: firstMeeting.endTime?.[0] || moment().add(30, "minutes").format("HH:mm"),
-        comment: "",
-        meetingId: firstMeeting._id,
-        applyToAll: false,
-      })
-    } else {
-      setFormData({
-        date: todayFormatted,
-        fromTime: moment().format("HH:mm"),
-  toTime: moment().add(30, "minutes").format("HH:mm"), // ⬅️ 30 mins, not 1 hour
-        comment: "",
-        meetingId: "",
-        applyToAll: false,
-      })
+      if (todayMeetings.length > 0) {
+        const firstMeeting = todayMeetings[0]
+        setFormData({
+          date: todayFormatted,
+          fromTime: firstMeeting.startTime?.[0] || moment().format("HH:mm"),
+          toTime: firstMeeting.endTime?.[0] || moment().add(30, "minutes").format("HH:mm"),
+          comment: "",
+          meetingId: firstMeeting._id,
+          applyToAll: false,
+        })
+      } else {
+        setFormData({
+          date: todayFormatted,
+          fromTime: moment().format("HH:mm"),
+          toTime: moment().add(30, "minutes").format("HH:mm"),
+          comment: "",
+          meetingId: "",
+          applyToAll: false,
+        })
+      }
+
+      setRescheduleDate(todayFormatted)
     }
-
-    setRescheduleDate(todayFormatted)
-     }
   }
 
   const getMeetingTypeColor = (meetingName: string) => {
@@ -290,7 +279,7 @@ toTime: firstMeeting.endTime?.[0] || moment().add(30, "minutes").format("HH:mm")
     return firstDay.getDay()
   }
 
- 
+
 
   const isToday = (day: number) => {
     const today = new Date()
@@ -328,7 +317,7 @@ toTime: firstMeeting.endTime?.[0] || moment().add(30, "minutes").format("HH:mm")
       setFormData({
         date: dateFormatted,
         fromTime: firstMeeting.startTime?.[0] || moment().format("HH:mm"),
-toTime: firstMeeting.endTime?.[0] || moment().add(30, "minutes").format("HH:mm"),
+        toTime: firstMeeting.endTime?.[0] || moment().add(30, "minutes").format("HH:mm"),
         comment: "",
         meetingId: firstMeeting._id,
         applyToAll: false,
@@ -353,102 +342,100 @@ toTime: firstMeeting.endTime?.[0] || moment().add(30, "minutes").format("HH:mm")
 
     try {
       const token = localStorage.getItem("AcademicCoachAuthToken")
-      if (!token){ 
+      if (!token) {
         throw new Error("No auth token found")
-    }
-       if (!formData.meetingId){ 
+      }
+      if (!formData.meetingId) {
         throw new Error("No meeting ID provided");
-    }
-        const meetingToReschedule = meetings.find((m) => m._id === formData.meetingId)
-        if (!meetingToReschedule) {
-          throw new Error("Meeting not found")
-        }
+      }
+      const meetingToReschedule = meetings.find((m) => m._id === formData.meetingId)
+      if (!meetingToReschedule) {
+        throw new Error("Meeting not found")
+      }
 
-        // const formattedStartDate = moment(rescheduleDate).format("YYYY-MM-DD")
-        // const formattedEndDate = moment(rescheduleDate).format("YYYY-MM-DD")
-        const classDayName = moment(rescheduleDate).format("dddd")
+      const classDayName = moment(rescheduleDate).format("dddd")
 
-        const payload = {
-          _id: meetingToReschedule._id,
-          teacher: meetingToReschedule.teacher,
-          student: meetingToReschedule.student,
-          classDay: [{ value: classDayName, label: classDayName }],
-          classLink: meetingToReschedule.classLink,
-          course: meetingToReschedule.course,
-          package: meetingToReschedule.package,
-          sessionClassType: meetingToReschedule.sessionClassType || "REGULARCLASS",
-          sessionStarttime: "",
-          sessionsEndtime: "",
-          startTime: [{ value: formData.fromTime, label: formData.fromTime }],
-          endTime: [{ value: formData.toTime, label: formData.toTime }],
-          totalHourse: 0,
-          startDate: rescheduleDate,
-          endDate: rescheduleDate,
-          scheduleStatus: "Reschedule",
-          studentAttendee: "absent",
-          teacherAttendee: "absent",
-          status: "Active",
-          comment: formData.comment || "",
-          createdBy: meetingToReschedule.createdBy || "teacher",
-          createdDate: meetingToReschedule.createdDate || new Date().toISOString(),
-          lastUpdatedDate: new Date().toISOString(),
-        }
-    // Log the payload before sending
-    console.log("PUT Request Payload:", payload)
-    console.log("PUT Request URL:", `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`)
-       const response= await axios.put(
-          `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`,
-          payload,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
+      const payload = {
+        _id: meetingToReschedule._id,
+        teacher: meetingToReschedule.teacher,
+        student: meetingToReschedule.student,
+        classDay: [{ value: classDayName, label: classDayName }],
+        classLink: meetingToReschedule.classLink,
+        course: meetingToReschedule.course,
+        package: meetingToReschedule.package,
+        sessionClassType: meetingToReschedule.sessionClassType || "REGULARCLASS",
+        sessionStarttime: "",
+        sessionsEndtime: "",
+        startTime: [{ value: formData.fromTime, label: formData.fromTime }],
+        endTime: [{ value: formData.toTime, label: formData.toTime }],
+        totalHourse: 0,
+        startDate: rescheduleDate,
+        endDate: rescheduleDate,
+        scheduleStatus: "Reschedule",
+        studentAttendee: "absent",
+        teacherAttendee: "absent",
+        status: "Active",
+        comment: formData.comment || "",
+        createdBy: meetingToReschedule.createdBy || "teacher",
+        createdDate: meetingToReschedule.createdDate || new Date().toISOString(),
+        lastUpdatedDate: new Date().toISOString(),
+      }
+      console.log("PUT Request Payload:", payload)
+      console.log("PUT Request URL:", `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`)
+      const response = await axios.put(
+        `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
-        )
-            // Log the response
-    console.log("PUT Response:", response)
-    console.log("PUT Response Status:", response.status)
-    console.log("PUT Response Data:", response.data)
-        if ([200, 201].includes(response.status)) {
+        },
+      )
+      console.log("PUT Response:", response)
+      console.log("PUT Response Status:", response.status)
+      console.log("PUT Response Data:", response.data)
+      if ([200, 201].includes(response.status)) {
         setSucces(true);
-        setFormData( {date: moment().format("YYYY-MM-DD"),
-    fromTime: moment().format("HH:mm"),
-    toTime: moment().add(30, "minutes").format("HH:mm"),
-    comment: "",
-    meetingId: "",
-    applyToAll: false,});
+        setFormData({
+          date: moment().format("YYYY-MM-DD"),
+          fromTime: moment().format("HH:mm"),
+          toTime: moment().add(30, "minutes").format("HH:mm"),
+          comment: "",
+          meetingId: "",
+          applyToAll: false,
+        });
       }
 
-        const refreshResponse = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${meetingToReschedule.teacher.teacherId}`,
-          { headers: { Authorization: `Bearer ${token}` } },
-        )
+      const refreshResponse = await axios.get(
+        `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${meetingToReschedule.teacher.teacherId}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      )
 
-        setMeetings(refreshResponse.data?.classSchedule ?? refreshResponse.data?.students ?? [])
+      setMeetings(refreshResponse.data?.classSchedule ?? refreshResponse.data?.students ?? [])
+    }
+    catch (err) {
+      const error = err as AxiosError;
+
+      const status = error.response?.status;
+      if (Number(status === 400)) {
+        console.log("please >");
+        setFailedMessage("Please check the form inputs.");
+        setFailed(true);
+      } else if (status === 401) {
+        setFailedMessage("Please login again.");
+        setFailed(true);
+      } else if (status === 403) {
+        setFailedMessage("You don't have permission to perform this action.");
+        setFailed(true);
+      } else if (status === 500) {
+        setFailedMessage("Server error");
+        setFailed(true);
+      } else {
+        setFailed(true);
+        console.error(`Unexpected error: ${status}`);
       }
-     catch (err) {
-           const error = err as AxiosError;
-     
-           const status = error.response?.status;
-           if (Number(status === 400)) {
-             console.log("please >");
-             setFailedMessage("Please check the form inputs.");
-             setFailed(true);
-           } else if (status === 401) {
-             setFailedMessage("Please login again.");
-             setFailed(true);
-           } else if (status === 403) {
-             setFailedMessage("You don't have permission to perform this action.");
-             setFailed(true);
-           } else if (status === 500) {
-             setFailedMessage("Server error");
-             setFailed(true);
-           } else {
-             setFailed(true);
-             console.error(`Unexpected error: ${status}`);
-           }
-         }
+    }
   }
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -458,69 +445,66 @@ toTime: firstMeeting.endTime?.[0] || moment().add(30, "minutes").format("HH:mm")
     }))
   }
 
-const CalendarControls = ({
-  activeView,
-  handleTabSwitch,
-  currentDate,
-  handlePrevMonth,
-  handleNextMonth,
-  formatMonthYear,
-}: CalendarControlsProps) => {
-  // Determine the correct navigation handlers based on active view
-  const getNavigationHandlers = () => {
-    switch (activeView) {
-      case "weekly":
-        return {
-          prev: () => setCurrentDate(moment(currentDate).subtract(1, 'week').toDate()),
-          next: () => setCurrentDate(moment(currentDate).add(1, 'week').toDate())
-        };
-      case "daily":
-        return {
-          prev: () => setCurrentDate(moment(currentDate).subtract(1, 'day').toDate()),
-          next: () => setCurrentDate(moment(currentDate).add(1, 'day').toDate())
-        };
-      default: // monthly
-        return {
-          prev: handlePrevMonth,
-          next: handleNextMonth
-        };
-    }
-  };
+  const CalendarControls = ({
+    activeView,
+    handleTabSwitch,
+    currentDate,
+    handlePrevMonth,
+    handleNextMonth,
+    formatMonthYear,
+  }: CalendarControlsProps) => {
+    const getNavigationHandlers = () => {
+      switch (activeView) {
+        case "weekly":
+          return {
+            prev: () => setCurrentDate(moment(currentDate).subtract(1, 'week').toDate()),
+            next: () => setCurrentDate(moment(currentDate).add(1, 'week').toDate())
+          };
+        case "daily":
+          return {
+            prev: () => setCurrentDate(moment(currentDate).subtract(1, 'day').toDate()),
+            next: () => setCurrentDate(moment(currentDate).add(1, 'day').toDate())
+          };
+        default:
+          return {
+            prev: handlePrevMonth,
+            next: handleNextMonth
+          };
+      }
+    };
 
-  const { prev, next } = getNavigationHandlers();
-// Generate time slots from 00:00 to 23:30 (30 min steps)
-const generateTimeSlots = () => {
-  const slots: string[] = [];
-  let start = moment("00:00", "HH:mm");
+    const { prev, next } = getNavigationHandlers();
+    const generateTimeSlots = () => {
+      const slots: string[] = [];
+      let start = moment("00:00", "HH:mm");
 
-  for (let i = 0; i < 48; i++) {
-    slots.push(start.format("HH:mm"));
-    start.add(30, "minutes");
-  }
-  return slots;
-};
+      for (let i = 0; i < 48; i++) {
+        slots.push(start.format("HH:mm"));
+        start.add(30, "minutes");
+      }
+      return slots;
+    };
 
 
 
 
-  return (
-    <div className="flex items-center justify-between mb-4">
-      <div className="flex space-x-4 text-sm font-medium">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => handleTabSwitch(tab)}
-            className={`capitalize ${
-              activeView === tab
-                ? "text-[#576cbc] border-b-2 border-[#576cbc]"
-                : "text-gray-400 hover:text-[#576cbc]"
-            } pb-1 transition-colors duration-200`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
- <div className="flex items-center gap-2">
+    return (
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex space-x-4 text-sm font-medium">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => handleTabSwitch(tab)}
+              className={`capitalize ${activeView === tab
+                  ? "text-[#576cbc] border-b-2 border-[#576cbc]"
+                  : "text-gray-400 hover:text-[#576cbc]"
+                } pb-1 transition-colors duration-200`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
           <button
             onClick={handlePrev}
             className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
@@ -535,9 +519,9 @@ const generateTimeSlots = () => {
             &gt;
           </button>
         </div>
-    </div>
-  );
-};
+      </div>
+    );
+  };
 
   const WeeklyView = () => {
     const [selectedDay, setSelectedDay] = useState<string | null>(null)
@@ -577,7 +561,7 @@ const generateTimeSlots = () => {
 
     return (
       <div className="space-y-4">
-       
+
         <div className="h-[540px] md:h-[540px] sm:h-[400px] overflow-y-scroll scrollbar-none">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm md:text-[16px] font-semibold">
@@ -596,28 +580,25 @@ const generateTimeSlots = () => {
                 <div key={day} className="flex flex-col">
                   <button
                     onClick={() => handleDayClick(day)}
-                    className={`w-full p-3 md:p-4 rounded-xl cursor-pointer transition-all duration-200 ${
-                      isSelected
+                    className={`w-full p-3 md:p-4 rounded-xl cursor-pointer transition-all duration-200 ${isSelected
                         ? "dark:bg-[#414141] bg-[#f7f7f7] dark:text-white text-black"
                         : dayMeetings.length > 0
                           ? "dark:bg-[#414141] bg-[#f7f7f7] shadow-md hover:shadow-lg text-black"
                           : "bg-[#f7f7f7] dark:bg-[#414141] text-black"
-                    } ${isPast ? "opacity-60" : ""}`}
+                      } ${isPast ? "opacity-60" : ""}`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div>
                           <div
-                            className={`text-sm md:text-base font-semibold ${
-                              isSelected ? "dark:text-white text-black" : "text-gray-800 dark:text-white"
-                            }`}
+                            className={`text-sm md:text-base font-semibold ${isSelected ? "dark:text-white text-black" : "text-gray-800 dark:text-white"
+                              }`}
                           >
                             {day}
                           </div>
                           <div
-                            className={`text-[9px] md:text-[10px] ${
-                              isSelected ? "bg:text-white/80" : "text-gray-500 dark:text-gray-400"
-                            }`}
+                            className={`text-[9px] md:text-[10px] ${isSelected ? "bg:text-white/80" : "text-gray-500 dark:text-gray-400"
+                              }`}
                           >
                             {moment(dayDate).format("MMMM D, YYYY")}
                           </div>
@@ -625,11 +606,10 @@ const generateTimeSlots = () => {
                       </div>
                       {dayMeetings.length > 0 && (
                         <div
-                          className={`text-[9px] md:text-[10px] px-2 md:px-3 py-1 rounded-lg ${
-                            isSelected
+                          className={`text-[9px] md:text-[10px] px-2 md:px-3 py-1 rounded-lg ${isSelected
                               ? "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]"
                               : "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]"
-                          }`}
+                            }`}
                         >
                           {dayMeetings.length} {dayMeetings.length === 1 ? "Meeting" : "Meetings"}
                         </div>
@@ -678,7 +658,6 @@ const generateTimeSlots = () => {
   }
 
   const DailyView = () => {
-    // Update daily view when currentDate changes
     useEffect(() => {
       handleDateClick(currentDate)
     }, [currentDate])
@@ -688,7 +667,7 @@ const generateTimeSlots = () => {
 
     return (
       <div className="space-y-4">
-    
+
         <div className="h-[500px] md:h-[600px] overflow-y-scroll scrollbar-none">
           <div className="mb-4">
             <h3 className="text-sm md:text-[16px] font-semibold">{moment(currentDate).format("dddd, MMMM D, YYYY")}</h3>
@@ -700,9 +679,8 @@ const generateTimeSlots = () => {
               return (
                 <div
                   key={meeting._id}
-                  className={`p-3 md:p-4 text-gray-500 mb-2 dark:bg-[#414141] bg-gray-100 rounded-xl dark:text-[#fff] ${
-                    isPast ? "opacity-70" : ""
-                  }`}
+                  className={`p-3 md:p-4 text-gray-500 mb-2 dark:bg-[#414141] bg-gray-100 rounded-xl dark:text-[#fff] ${isPast ? "opacity-70" : ""
+                    }`}
                 >
                   <div className="flex justify-between items-start">
                     <div className={`text-xs md:text-sm font-semibold ${colors.text}`}>{meeting.course.courseName}</div>
@@ -736,7 +714,7 @@ const generateTimeSlots = () => {
 
     return (
       <div className="space-y-4">
-     
+
 
         <div className="grid grid-cols-7 gap-1 md:gap-2 text-center text-xs md:text-sm font-medium text-gray-500 mb-2 dark:bg-[#414141] bg-gray-100 rounded-xl p-2 md:p-3 dark:text-[#fff]">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
@@ -744,8 +722,8 @@ const generateTimeSlots = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-1 md:gap-2 text-xs md:text-sm h-[350px] md:h-[455px] overflow-scroll scrollbar-none">
-          {totalDays.map((day, i : number) => {
+        <div className="grid grid-cols-7 px-2 gap-1 md:gap-2 text-xs md:text-sm h-[350px] md:h-[455px] overflow-scroll scrollbar-none">
+          {totalDays.map((day, i: number) => {
             if (day === null) {
               return <div key={i} className="min-h-[50px] md:min-h-[80px] bg-transparent" />
             }
@@ -765,19 +743,17 @@ const generateTimeSlots = () => {
               <button
                 key={i}
                 onClick={() => handleDateClick(date)}
-                className={`min-h-[50px] md:min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${
-                  hasMeetings
+                className={`min-h-[50px] md:min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${hasMeetings
                     ? `${colors?.border} ${colors?.text} ${colors?.bg} border text-[9px] md:text-[10px]`
                     : isToday(day)
                       ? "bg-[#27176518] text-white"
                       : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"
-                } ${isSelected ? "ring-1 md:ring-2 ring-[#576cbc]" : ""} ${isPast ? "opacity-50" : ""}`}
+                  } ${isSelected ? "ring-1 md:ring-2 ring-[#576cbc]" : ""} ${isPast ? "opacity-50" : ""}`}
                 disabled={isPast}
               >
                 <div
-                  className={`font-semibold text-xs md:text-sm ${
-                    isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""
-                  }`}
+                  className={`font-semibold text-xs md:text-sm ${isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""
+                    }`}
                 >
                   {day}
                 </div>
@@ -801,60 +777,55 @@ const generateTimeSlots = () => {
 
   return (
     <BaseLayout1>
-      <AcademicHeader currentSection="Reschedule Calendar" showBackButton={true} />
+      <AcademicHeader currentSection="Reschedule Calendar" showBackButton={true} showBackPath={`teacherDetails?teacherId=${sendteacher}`}/>
       <div className="p-2">
         <div className="mx-auto gap-4 flex flex-col lg:flex-row overflow-hidden min-h-[630px]">
-          {/* Left Side - Calendar View */}
           <div className="w-full lg:w-2/3 p-4 md:p-6 bg-white dark:bg-[#343434] shadow-md rounded-xl">
-          <div className="flex items-center justify-between mb-4">
-  {/* Tabs (left aligned) */}
-  <div className="flex space-x-4 text-sm font-medium">
-    {tabs.map((tab) => (
-      <button
-        key={tab}
-        onClick={() => setActiveView(tab)}
-        className={`capitalize ${
-          activeView === tab
-            ? "text-[#576cbc] border-b-2 border-[#576cbc]"
-            : "text-gray-400 hover:text-[#576cbc]"
-        } pb-1 transition-colors duration-200`}
-      >
-        {tab}
-      </button>
-    ))}
-  </div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex space-x-4 text-sm font-medium">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveView(tab)}
+                    className={`capitalize ${activeView === tab
+                        ? "text-[#576cbc] border-b-2 border-[#576cbc]"
+                        : "text-gray-400 hover:text-[#576cbc]"
+                      } pb-1 transition-colors duration-200`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
 
-  {/* Date Controls (right aligned) */}
-  <div className="flex items-center gap-2 justify-end">
-    <button
-      onClick={handlePrev}
-      className="py-[2px] px-3 rounded-md bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
-    >
-      &lt;
-    </button>
-    <h2 className="text-sm md:text-base font-semibold text-gray-800 dark:text-white whitespace-nowrap">
-      {getFormattedLabel()}
-    </h2>
-    <button
-      onClick={handleNext}
-      className="py-[2px] px-3 rounded-md bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
-    >
-      &gt;
-    </button>
-  </div>
-</div>
+              <div className="flex items-center gap-2 justify-end">
+                <button
+                  onClick={handlePrev}
+                  className="py-[2px] px-3 rounded-md bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
+                >
+                  &lt;
+                </button>
+                <h2 className="text-sm md:text-base font-semibold text-gray-800 dark:text-white whitespace-nowrap">
+                  {getFormattedLabel()}
+                </h2>
+                <button
+                  onClick={handleNext}
+                  className="py-[2px] px-3 rounded-md bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
+                >
+                  &gt;
+                </button>
+              </div>
+            </div>
 
             {activeView === "monthly" && <MonthlyView />}
             {activeView === "weekly" && <WeeklyView />}
             {activeView === "daily" && <DailyView />}
           </div>
 
-          {/* Right Side - Form */}
           <div className="w-full lg:w-1/3 bg-white dark:bg-[#343434] shadow-md rounded-xl flex flex-col min-h-[500px] lg:h-[700px]">
             <div className="p-4 md:p-6">
               <div className="mb-4 md:mb-6">
                 <h3 className="text-base md:text-base font-semibold text-gray-800 dark:text-white">
-                 Add New Schedule
+                  Add New Schedule
                 </h3>
               </div>
 
@@ -866,8 +837,9 @@ const generateTimeSlots = () => {
                   <input
                     type="date"
                     value={rescheduleDate}
-                    onChange={(e) => {const date = e.target.value 
-                        setRescheduleDate(date);
+                    onChange={(e) => {
+                      const date = e.target.value
+                      setRescheduleDate(date);
                     }}
                     min={moment().format("YYYY-MM-DD")}
                     className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
@@ -880,33 +852,28 @@ const generateTimeSlots = () => {
                       From Time
                     </label>
                     <select
-  name="fromTime"
-  value={formData.fromTime}
-  onChange={handleFromTimeChange}
-  className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
->
-  <option value="">Select Time</option>
-  {timeSlots.map((slot:any) => (
-    <option key={slot} value={slot}>
-      {slot}
-    </option>
-  ))}
-</select>
-                    {/* <input
-                     name="fromTime"
-  value={formData.fromTime}
-  onChange={handleFromTimeChange}
+                      name="fromTime"
+                      value={formData.fromTime}
+                      onChange={handleFromTimeChange}
                       className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                    /> */}
+                    >
+                      <option value="">Select Time</option>
+                      {timeSlots.map((slot: any) => (
+                        <option key={slot} value={slot}>
+                          {slot}
+                        </option>
+                      ))}
+                    </select>
+
                   </div>
                   <div>
-                    <label  htmlFor="gcuyc" className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label htmlFor="gcuyc" className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       To Time
                     </label>
                     <input
-                       name="toTime"
-  value={formData.toTime}
-  readOnly
+                      name="toTime"
+                      value={formData.toTime}
+                      readOnly
                       className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -920,7 +887,7 @@ const generateTimeSlots = () => {
                     onChange={(e) => handleInputChange("comment", e.target.value)}
                     rows={4}
                     className="w-full h-[90px] md:h-[110px] px-3 py-2 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent resize-none"
-                   
+
                   />
                 </div>
               </div>
@@ -934,7 +901,7 @@ const generateTimeSlots = () => {
                 <button
                   type="submit"
                   onClick={handleFormSubmit}
-                   className="px-3 py-1 text-lg bg-[#576CBC] text-white rounded hover:bg-[#4459A9]"
+                  className="px-3 py-1 text-lg bg-[#576CBC] text-white rounded hover:bg-[#4459A9]"
                 >
                   Submit
                 </button>
@@ -943,11 +910,11 @@ const generateTimeSlots = () => {
           </div>
         </div>
         {success && (
-        <SuccessPopup onClose={() => setSucces(false)} title="Class Rescheduled" />
-      )}
-      {failed &&  (
-        <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
-      )}
+          <SuccessPopup onClose={() => setSucces(false)} title="Class Rescheduled" />
+        )}
+        {failed && (
+          <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
+        )}
       </div>
     </BaseLayout1>
   )

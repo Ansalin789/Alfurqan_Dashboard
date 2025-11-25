@@ -9,7 +9,6 @@ import { io } from "socket.io-client";
 import { CgAttachment } from "react-icons/cg";
 import AcademicHeader from "../../components/academicHeader";
 
-// Define your interfaces
 interface IMessage {
   _id: string;
   messages: string;
@@ -45,7 +44,6 @@ interface IUser {
   lastSeen?: string;
 }
 
-// New interfaces for student data
 interface IStudentInfo {
   studentId: string;
   studentEmail: string;
@@ -106,7 +104,6 @@ const Message = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<any>(null);
 
-  // Get user data from localStorage on client side only
   useEffect(() => {
     setIsClient(true);
     const name = localStorage.getItem("AcademicCoachPortalName");
@@ -115,7 +112,6 @@ const Message = () => {
     setUserId(id);
   }, []);
 
-  // Separate function to fetch students
   const fetchStudents = async (): Promise<IUser[]> => {
     try {
       const token = localStorage.getItem("AcademicCoachAuthToken");
@@ -135,7 +131,6 @@ const Message = () => {
         }
       );
 
-      // Transform the student data to match IUser interface
       return response.data.students.map((student) => ({
         _id: student._id,
         userName: student.username,
@@ -158,7 +153,6 @@ const Message = () => {
         return [];
       }
 
-      // Handle STUDENT role separately
       if (role === "STUDENT") {
         return fetchStudents();
       }
@@ -180,31 +174,28 @@ const Message = () => {
     }
   };
 
-  // Filter users based on search query
   const filteredUsers = (
     activeTab === "teachers"
       ? teachers
       : activeTab === "admin"
-      ? admin
-      : activeTab === "all"
-      ? [...admin, ...students, ...teachers, ...supervisors]
-      : activeTab === "supervisor"
-      ? supervisors
-      : students
+        ? admin
+        : activeTab === "all"
+          ? [...admin, ...students, ...teachers, ...supervisors]
+          : activeTab === "supervisor"
+            ? supervisors
+            : students
   ).filter(
     (user) =>
       user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Handle message selection
   const handleUserClick = (user: IUser) => {
     setSelectedUser(user);
     setMessages([]);
     fetchMessages(user._id);
   };
 
-  // Fetch messages from API
   const fetchMessages = async (receiverId: string) => {
     try {
       const token = localStorage.getItem("AcademicCoachAuthToken");
@@ -213,7 +204,7 @@ const Message = () => {
         console.error("❌ Auth token or user ID not found");
         return;
       }
-      
+
       const { data } = await axios.get<IMessageResponse>(
         `https://api.blackstoneinfomaticstech.com/realtimemessage/${userId}/${receiverId}`,
         {
@@ -226,7 +217,6 @@ const Message = () => {
       const fetchedMessages = data?.data;
       setMessages(fetchedMessages);
 
-      // Count unread messages in all groups
       const allMessages = fetchedMessages.flatMap((group) => group.messages);
       const unreadCount = allMessages.filter((m) => !m.isRead).length;
       setMessageCount(unreadCount);
@@ -241,10 +231,9 @@ const Message = () => {
     }
   }, [messages]);
 
-  // Initialize socket connection
   useEffect(() => {
     if (!userId) return;
-    
+
     if (!socketRef.current) {
       socketRef.current = io("https://api.blackstoneinfomaticstech.com", {
         transports: ["websocket"],
@@ -268,7 +257,6 @@ const Message = () => {
       });
     }
 
-    // Handle incoming messages
     const handleNewMessage = (newMessage: IMessage) => {
       const isForCurrentChat =
         (newMessage.senderId === userId &&
@@ -276,12 +264,10 @@ const Message = () => {
         (newMessage.senderId === selectedUser?._id &&
           newMessage.receiverId === userId);
 
-      // Always update message count for unread messages
       if (newMessage.receiverId === userId && !newMessage.isRead) {
         setMessageCount((prev) => prev + 1);
       }
 
-      // Only update messages if it's for the current chat
       if (isForCurrentChat) {
         setMessages((prev) => {
           const dateKey = new Date(newMessage.createdDate)
@@ -317,7 +303,7 @@ const Message = () => {
     };
 
     socketRef.current.on("newmessage", handleNewMessage);
-    
+
     const fetchAllUsers = async () => {
       try {
         const [teachersData, adminsData, studentData, supervisorsData] = await Promise.all([
@@ -336,7 +322,7 @@ const Message = () => {
     };
 
     fetchAllUsers();
-    
+
     return () => {
       socketRef.current?.off("newmessage", handleNewMessage);
     };
@@ -371,7 +357,6 @@ const Message = () => {
       return acc;
     }, {} as Record<string, IMessage[]>);
 
-  // Handle sending messages
   const handleSendMessage = async () => {
     if (!selectedUser || !messageText.trim() || !userId) return;
 
@@ -491,7 +476,6 @@ const Message = () => {
         <AcademicHeader currentSection="Message" />
         <div className="py-3 px-5">
           <div className="flex flex-col md:flex-row gap-4 h-[85vh]">
-            {/* Loading state */}
             <div className="w-full md:w-[350px] bg-[#fff] dark:bg-[#343434] p-4 rounded-[12px] shadow-md flex flex-col">
               <div className="animate-pulse">
                 <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4"></div>
@@ -510,7 +494,6 @@ const Message = () => {
       <AcademicHeader currentSection="Message" />
       <div className="py-3 px-5">
         <div className="flex flex-col md:flex-row gap-4 h-[85vh]">
-          {/* Left Panel */}
           <div className="w-full md:w-[350px] bg-[#fff] dark:bg-[#343434] dark:text-[#fff] p-4 rounded-[12px] shadow-md flex flex-col">
             <div className="flex items-center space-x-3 p-2">
               <div>
@@ -537,7 +520,6 @@ const Message = () => {
               </div>
             </div>
 
-            {/* Search Bar */}
             <div className="relative mt-2 mb-3">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <FiSearch className="text-gray-400 h-[18px] w-[18px] dark:border" />
@@ -551,70 +533,62 @@ const Message = () => {
               />
             </div>
 
-            {/* Tabs */}
             <div className="flex border-b dark:border-[#505050]">
               <button
-                className={`px-2 py-1.5 text-[13px] ${
-                  activeTab === "all"
+                className={`px-2 py-1.5 text-[13px] ${activeTab === "all"
                     ? "text-[#576CBC] border-b-2 border-[#576CBC] font-medium"
                     : "text-[#777777] dark:text-[#7C7C7C] font-normal"
-                }`}
+                  }`}
                 onClick={() => setActiveTab("all")}
               >
                 All
               </button>
               <button
-                className={`px-2 py-1.5 text-[13px] ${
-                  activeTab === "admin"
+                className={`px-2 py-1.5 text-[13px] ${activeTab === "admin"
                     ? "text-[#576CBC] border-b-2 border-[#576CBC] font-medium"
                     : "text-[#777777] dark:text-[#7C7C7C] font-normal"
-                }`}
+                  }`}
                 onClick={() => setActiveTab("admin")}
               >
                 Admin
               </button>
               <button
-                className={`px-2 py-1.5 text-[13px] ${
-                  activeTab === "students"
+                className={`px-2 py-1.5 text-[13px] ${activeTab === "students"
                     ? "text-[#576CBC] border-b-2 border-[#576CBC] font-medium"
                     : "text-[#777777] dark:text-[#7C7C7C] font-normal"
-                }`}
+                  }`}
                 onClick={() => setActiveTab("students")}
               >
                 Students
               </button>
               <button
-                className={`px-2 py-1.5 text-[13px] ${
-                  activeTab === "teachers"
+                className={`px-2 py-1.5 text-[13px] ${activeTab === "teachers"
                     ? "text-[#576CBC] border-b-2 border-[#576CBC] font-medium"
                     : "text-[#777777] dark:text-[#7C7C7C] font-normal"
-                }`}
+                  }`}
                 onClick={() => setActiveTab("teachers")}
               >
                 Teachers
               </button>
               <button
-                className={`px-2 py-1.5 text-[13px] ${
-                  activeTab === "supervisor"
+                className={`px-2 py-1.5 text-[13px] ${activeTab === "supervisor"
                     ? "text-[#576CBC] border-b-2 border-[#576CBC] font-medium"
                     : "text-[#777777] dark:text-[#7C7C7C] font-normal"
-                }`}
+                  }`}
                 onClick={() => setActiveTab("supervisor")}
               >
                 Supervisor
               </button>
             </div>
-            
-            {/* User List */}
+
             <div className="mt-2 flex-1 overflow-y-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
               {filteredUsers.map((user) => (
                 <button
                   key={user._id}
-                  className={`flex items-center border-b-2 dark:border-b-[#504c4c] justify-between w-full p-2 cursor-pointer ${
-                    selectedUser?._id === user._id
+                  className={`flex items-center border-b-2 dark:border-b-[#504c4c] justify-between w-full p-2 cursor-pointer ${selectedUser?._id === user._id
                       ? "bg-[#f0efef] dark:bg-[#3c3c3c] rounded"
                       : "hover:bg-[#f0efef] dark:hover:bg-[#3c3c3c] hover:rounded"
-                  }`}
+                    }`}
                   onClick={() => handleUserClick(user)}
                 >
                   <div className="flex space-x-2 items-center">
@@ -646,8 +620,7 @@ const Message = () => {
               ))}
             </div>
           </div>
-          
-          {/* Chat Panel */}
+
           <div className="w-full md:flex-1 bg-white dark:bg-[#2c2c2c] dark:text-[#fff] rounded-lg shadow-md flex flex-col overflow-hidden">
             {selectedUser ? (
               <>
@@ -702,18 +675,16 @@ const Message = () => {
                             .map((msg) => (
                               <div
                                 key={msg._id}
-                                className={`flex flex-col mb-3 ${
-                                  msg.senderId === userId
+                                className={`flex flex-col mb-3 ${msg.senderId === userId
                                     ? "items-end"
                                     : "items-start"
-                                }`}
+                                  }`}
                               >
                                 <div
-                                  className={`p-2 rounded-lg max-w-[80%] ${
-                                    msg.senderId === userId
+                                  className={`p-2 rounded-lg max-w-[80%] ${msg.senderId === userId
                                       ? "bg-[#576CBC] text-[#FFFFFF]"
                                       : "bg-[#F1F1F1] dark:bg-[#444] text-[#010E30] dark:text-[#FFFFFF]"
-                                  }`}
+                                    }`}
                                 >
                                   <p className="text-xs">{msg.messages}</p>
                                   <div className="flex items-center justify-end mt-1 space-x-1">
@@ -764,11 +735,10 @@ const Message = () => {
                     <button
                       onClick={handleSendMessage}
                       disabled={!messageText.trim()}
-                      className={`p-1 rounded-lg flex items-center ${
-                        messageText.trim()
+                      className={`p-1 rounded-lg flex items-center ${messageText.trim()
                           ? "bg-[#576CBC] text-white"
                           : "bg-gray-200 dark:bg-[#505050] text-gray-400 cursor-not-allowed"
-                      }`}
+                        }`}
                     >
                       <FaTelegramPlane size={14} />
                     </button>
