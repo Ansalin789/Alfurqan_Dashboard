@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 type Props = {
   readonly onClose: () => void;

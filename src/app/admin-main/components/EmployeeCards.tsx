@@ -6,7 +6,6 @@ import Image from "next/image";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useRouter } from "next/navigation";
 import Modal from "react-modal";
-import { headers } from "next/headers";
 
 interface Teacher {
   _id: string;
@@ -159,9 +158,6 @@ const EmployeeCards: React.FC = () => {
                 />
               </div>
               <div className="flex px-4">
-                {/* <button className={`border p-2 rounded-lg shadow flex items-center mx-4 bg-[#223857] text-white`} onClick={openModal}>
-                  <FaPlus className="mr-2" /> Add new
-                </button> */}
                 <select className="border rounded-lg p-2 shadow text-[12px]">
                   <option>Duration: Last month</option>
                   <option>Duration: Last week</option>
@@ -306,7 +302,6 @@ const EmployeeCards: React.FC = () => {
             </button>
           </div>
         </div>
-              
       </Modal>
     </>
   );

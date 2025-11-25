@@ -5,12 +5,6 @@ import { Doughnut } from "react-chartjs-2";
 import type { TooltipItem } from 'chart.js';
 
 const InvoicesDueByDays = () => {
-  const STATUS_COLORS = [
-    { name: "Completed", color: "#B6C6F5" },
-    { name: "Scheduled", color: "#6CA8F7" },
-    { name: "No Response", color: "#A7D3F5" },
-    { name: "Cancelled", color: "#C6E2F9" },
-  ];
   const COLORS = ["#AFC0FF", "#78A1DB", "#9FD0FF", "#B9DDFF"];
   const [dueData, setDueData] = useState({
     range_0_10: 0,

@@ -43,11 +43,26 @@ export default function TeachersStudents() {
 
       const data = await res.json();
       if (data.success) {
-        setTeachers(data.data);
+        // Clean the data to ensure no duplicates or missing IDs
+        const cleanedTeachers = data.data.map((teacher: TeacherAPI, index: number) => ({
+          ...teacher,
+          // Ensure every teacher has a unique ID
+          _id: teacher._id || `temp-id-${index}-${Date.now()}`,
+        }));
+        setTeachers(cleanedTeachers);
       }
     } catch (err) {
       console.error("Failed to fetch teachers:", err);
     }
+  };
+
+  // Function to generate a stable key for each teacher
+  const getTeacherKey = (teacher: TeacherAPI, index: number) => {
+    if (teacher._id && teacher._id !== 'undefined') {
+      return teacher._id;
+    }
+    // Fallback to index + timestamp if no valid ID
+    return `teacher-${index}-${Date.now()}`;
   };
 
   return (
@@ -59,7 +74,10 @@ export default function TeachersStudents() {
 
       <div className="max-h-40 overflow-y-auto pr-2">
         {teachers.map((teacher, index) => (
-          <div key={teacher._id} className="flex items-center py-[2px] my-1">
+          <div 
+            key={getTeacherKey(teacher, index)} 
+            className="flex items-center py-[2px] my-1"
+          >
             <div className="w-5 flex-shrink-0">
               <div
                 className={`w-3 h-3 rounded-full ${

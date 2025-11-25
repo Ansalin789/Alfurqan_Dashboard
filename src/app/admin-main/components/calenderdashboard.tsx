@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import axios from 'axios';
 import './Calendaradmin.css';
 import { useRouter } from 'next/navigation';
 
@@ -24,15 +23,8 @@ interface Meeting {
   _id: string;
   meetingName: string;
   selectedDate: string;
-  meetingStatus: string;
-  description: string;
   startTime: string;
   endTime: string;
-  status: string;
-  createdDate: string;
-  createdBy: string;
-  updatedDate: string;
-  updatedBy: string;
   teachers: Teacher[][];
 }
 
@@ -46,7 +38,7 @@ interface MeetingsResponse {
 
 const Academic: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
-  const [value, setValue] = useState<Date>(new Date());
+  const [value] = useState<Date>(new Date());
   const router = useRouter();
 
   useEffect(() => {
@@ -70,26 +62,57 @@ const Academic: React.FC = () => {
         },
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data: MeetingsResponse = await response.json();
+      
+      if (!data?.data?.meetings) {
+        console.warn("No meetings data found in response");
+        setEvents([]);
+        return;
+      }
 
-      const mappedEvents: Event[] = data.data.meetings.map((item) => {
-        const start = new Date(item.selectedDate);
-        start.setHours(Number(item.startTime.split(":")[0]), Number(item.startTime.split(":")[1]));
+      const mappedEvents: Event[] = data.data.meetings
+        .filter((item) => {
+          if (!item.startTime || !item.endTime || !item.selectedDate) {
+            console.warn("Skipping meeting with missing time data");
+            return false;
+          }
+          return true;
+        })
+        .map((item) => {
+          try {
+            const start = new Date(item.selectedDate);
+            const [startHours, startMinutes] = item.startTime.split(":").map(Number);
+            start.setHours(startHours, startMinutes);
 
-        const end = new Date(item.selectedDate);
-        end.setHours(Number(item.endTime.split(":")[0]), Number(item.endTime.split(":")[1]));
+            const end = new Date(item.selectedDate);
+            const [endHours, endMinutes] = item.endTime.split(":").map(Number);
+            end.setHours(endHours, endMinutes);
 
-        return {
-          title: item.meetingName,
-          start,
-          end,
-        };
-      });
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+              console.warn("Invalid date for meeting");
+              return null;
+            }
+
+            return {
+              title: item.meetingName || 'Untitled Meeting',
+              start,
+              end,
+            };
+          } catch (error) {
+            console.error("Error processing meeting");
+            return null;
+          }
+        })
+        .filter((event): event is Event => event !== null);
 
       setEvents(mappedEvents);
-      console.log("📅 Fetched Events: ", mappedEvents);
     } catch (error) {
-      console.error("❌ Failed to fetch meetings", error);
+      console.error("Failed to fetch meetings");
+      setEvents([]);
     }
   };
 
@@ -107,7 +130,7 @@ const Academic: React.FC = () => {
   return (
     <div className="dark:bg-[#343434] w-full rounded-xl h-[280px]">
       <Calendar
-        onChange={(newValue) => setValue(newValue as Date)}
+        onChange={() => {}} // Empty function since we don't need the functionality
         value={value}
         navigationLabel={({ date }) =>
           `${date.toLocaleString("default", { month: "long" }).toUpperCase()}, ${date.getFullYear()}`

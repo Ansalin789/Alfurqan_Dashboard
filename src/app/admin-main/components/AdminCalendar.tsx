@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import moment from "moment";
-import { CalendarDays, Clock } from "lucide-react";
+import {  Clock } from "lucide-react";
 import AdminHeader from "./AdminHeader";
 import { FaClock } from "react-icons/fa";
 import { BsFillCalendar2WeekFill } from "react-icons/bs";
@@ -26,10 +26,6 @@ interface Event {
   meetingStatus?: string;
   teachers?: Teacher[];
 }
-
-type FlattenedMeeting = Omit<Event, "teachers"> & {
-  teachers: Teacher[];
-};
 
 const AdminCalendar = () => {
   const [activeView, setActiveView] = useState<"monthly" | "weekly" | "daily">("monthly");
@@ -379,11 +375,11 @@ const fetchMeetings = async () => {
           {/* List Schedule */}
           <div className="w-full lg:w-1/3 bg-white dark:bg-[#343434] shadow-md rounded-xl flex flex-col min-h-[630px] lg:h-[630px]">
             <div className="p-4 md:p-6">
-              <h2 className="text-[16px] font-semibold mb-4">List Schedule</h2>
+              <h2 className="text-[18px] font-semibold">List Schedule</h2>
               {isLoading ? (
                 <div className="text-center py-4">Loading meetings...</div>
               ) : eventsForSelectedDate.length > 0 ? (
-                <div className="space-y-3 md:space-y-4 h-[550px] overflow-scroll scrollbar-none">
+                <div className="space-y-3 md:space-y-4">
                   {eventsForSelectedDate.map((item, index) => {
                     const textColors = ["text-[#d77277]","text-[#72B0D7]","text-[#BF63B3]","text-[#BFBC63]","text-[#BF8C63]","text-[#6EBF63]"];
                     const currentTextColor = textColors[index % textColors.length];

@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { MoreHorizontal } from "lucide-react";
-import Image from "next/image"; // ✅ Correct Import
+
 
 import {
   PieChart,
@@ -9,20 +8,12 @@ import {
   Cell,
   BarChart,
   Bar,
-  XAxis,
   Tooltip,
   ResponsiveContainer,
   TooltipProps,
 } from "recharts";
 
-type TeacherAPI = {
-  _id: string;
-  teacherName: string;
-  teacherEmail: string;
-  studentCount: number;
-  maleCount: number;
-  femaleCount: number;
-};
+
 
 interface CourseBar {
   name: string;
@@ -36,22 +27,6 @@ interface TotalTrailclassData {
   color: string;
 }
 
-interface TrialClassData {
-  evaluation: {
-    _id: string | null;
-    totalCount: number;
-    maleCount: number;
-    femaleCount: number;
-    completedCount: number;
-    pendingCount: number;
-    inprogressCount: number;
-    studentNotJointCount: number;
-  };
-  students: number;
-}
-
-
-//Total trail class
 
 const STATUS_COLORS = [
   { name: "Completed", color: "#B6C6F5" },
@@ -192,7 +167,6 @@ const TotalScheduledChart = () => {
   );
 };
 
-// Student -Status
 
 const CustomTooltip: React.FC<TooltipProps<number, string>> = ({
   active,
@@ -506,12 +480,9 @@ const PreferredTeachersCard = () => {
   );
 };
 
-
-//Trail by Teachers
-
 const TrialByTeachers = () => {
   const [teachers, setTeachers] = useState<
-    { teacherName: string; trialClassCount: number; joinedStudentsCount: number; _id: string }[]
+    { teacherName: string; studentCount: number; joined: number; _id: string }[]
   >([]);
 
   useEffect(() => {
@@ -566,16 +537,16 @@ const TrialByTeachers = () => {
             {teachers.map((teacher, idx) => (
               <tr
                 key={teacher._id}
-                className="border-b dark:border-b-[#535252] h-1"
+                className="border-b dark:border-b-[#535252]"
               >
                 <td className="px-4 py-2 text-[#010E30] dark:text-[#fff] text-[10px]">
                   {teacher.teacherName}
                 </td>
                 <td className="px-4 py-2 text-[#010E30] dark:text-[#fff] text-[10px]">
-                  {teacher.trialClassCount ?? 0}
+                  {teacher.studentCount ?? 0}
                 </td>
                 <td className="px-4 py-2 text-[#010E30] dark:text-[#fff] text-[10px]">
-                  {teacher.joinedStudentsCount ?? 0}
+                  {teacher.studentCount ?? 0}
                 </td>
               </tr>
             ))}
