@@ -160,7 +160,12 @@ const UpcomingClasses: React.FC = () => {
                     <span>{classItem.time}</span>
                   </div> */}
                   <h4 className={`text-[14px] font-medium ${currentTextColor}`}>
-                    {classItem.title}
+                     {(() => {
+                            const val = classItem.title;
+                            return val
+                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                              : "-";
+                          })()}
                   </h4>
                 </div>
               </div>
