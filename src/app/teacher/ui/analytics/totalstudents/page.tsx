@@ -437,7 +437,13 @@ const Totalstudents = () => {
 
                           {/* Class Type */}
                           <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                            {student.studentDetails.classType || "-"}
+                              {(() => {
+                            const val = student.studentDetails.classType
+                            return val
+                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                              : "-";
+                          })()}
+                          
                           </td>
 
                           {/* Joined Date */}

@@ -1152,14 +1152,20 @@ const TeacherDetails = () => {
                     </td>
                     <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                       {timeDisplay}
-                    </td>
-                    <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                      {classType}
-                    </td>
-                    <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                      <span
-                        className={`font-semibold px-3 py-1 rounded-md text-[10px] inline-block text-center min-w-[120px] ${status === "Scheduled"
-                            ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
+                  </td>
+                  <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                        {(() => {
+                            const val = classType
+                            return val
+                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                              : "-";
+                          })()}
+                  </td>
+                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                    <span
+                      className={`font-semibold px-3 py-1 rounded-md text-[10px] inline-block text-center min-w-[120px] ${
+                          status === "Scheduled"
+                          ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
                             : status === "Rescheduled" || status === "Reschedulerequested"
                               ? "bg-[#E4E4E4] text-[#000] dark:bg-[#555] dark:text-[#fff]"
                               : status === "Completed"

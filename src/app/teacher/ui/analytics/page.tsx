@@ -740,7 +740,12 @@ function Analytics() {
 
                           {/* Class Type */}
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
-                            {schedule.studentDetails.classType || "-"}
+                               {(() => {
+                            const val = schedule.studentDetails.classType
+                            return val
+                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                              : "-";
+                          })()}
                           </td>
 
                           {/* Joined Date */}

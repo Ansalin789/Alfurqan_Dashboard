@@ -651,43 +651,50 @@ const ScheduledClasses = () => {
                       ? item.trialclass?.meetingStatus || item.scheduleStatus
                       : item.scheduleStatus;
 
-                    return (
-                      <tr
-                        key={item._id}
-                        className={`text-[12px] justify-center ${index % 2 === 0
-                            ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                            : "bg-[#F8F8F8] dark:bg-[#303030]"
-                          }`}
-                      >
-                        <td className="px-3 py-2 text-[10px] text-left w-[200px] break-words whitespace-normal">
-                          {isTrial ? item.trialclass?.trialId || item.classId : item.classId || "N/A"}
-                        </td>
-                        <td className="text-[#3D8FDE] px-3 py-2 text-left w-[180px] break-words whitespace-normal">
-                          {studentName || "N/A"}
-                        </td>
-                        <td className="px-3 py-2 text-left w-[170px] break-words whitespace-normal">
-                          {courseName || "N/A"}
-                        </td>
-                        <td className="px-3 py-2 text-left w-[170px] break-words whitespace-normal">
-                          {classType || "N/A"}
-                        </td>
-                        <td className="px-3 py-2 text-left w-[170px] break-words whitespace-normal">
-                          {formattedDate}
-                        </td>
-                        <td className="px-3 py-2 text-left w-[170px] break-words whitespace-normal">
-                          {timeDisplay}
-                        </td>
-                        <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-xs w-[200px] break-words whitespace-normal">
-                          <span
-                            className={`inline-block text-center rounded-md font-semibold text-[11px] px-3 py-1
-      ${status === "Scheduled"
-                                ? "bg-green-100 text-green-800 dark:bg-green-800/20"
-                                : status === "Rescheduled" || status === "Reschedulerequested"
-                                  ? "bg-gray-200 text-gray-800 dark:bg-gray-500/20"
-                                  : status === "BothAbsent"
-                                    ? "bg-red-100 text-red-700 dark:bg-red-700/20"
-                                    : "bg-gray-300 text-gray-600 dark:bg-gray-500/20"
-                              }
+      return (
+        <tr
+          key={item._id}
+          className={`text-[12px] justify-center ${
+            index % 2 === 0
+              ? "bg-[#fff] dark:bg-[#2C2C2C]"
+              : "bg-[#F8F8F8] dark:bg-[#303030]"
+          }`}
+        >
+          <td className="px-3 py-2 text-[10px] text-left w-[200px] break-words whitespace-normal">
+            {isTrial ? item.trialclass?.trialId || item.classId : item.classId || "N/A"}
+          </td>
+          <td className="text-[#3D8FDE] px-3 py-2 text-left w-[180px] break-words whitespace-normal">
+            {studentName || "N/A"}
+          </td>
+          <td className="px-3 py-2 text-left w-[170px] break-words whitespace-normal">
+            {courseName || "N/A"}
+          </td>
+          <td className="px-3 py-2 text-left w-[170px] break-words whitespace-normal">
+               {(() => {
+                            const val = classType
+                            return val
+                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                              : "-";
+                          })()}
+          </td>
+          <td className="px-3 py-2 text-left w-[170px] break-words whitespace-normal">
+            {formattedDate}
+          </td>
+          <td className="px-3 py-2 text-left w-[170px] break-words whitespace-normal">
+            {timeDisplay}
+          </td>
+          <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-xs w-[200px] break-words whitespace-normal">
+  <span
+    className={`inline-block text-center rounded-md font-semibold text-[11px] px-3 py-1
+      ${
+        status === "Scheduled"
+          ? "bg-green-100 text-green-800 dark:bg-green-800/20"
+          : status === "Rescheduled" || status === "Reschedulerequested"
+          ? "bg-gray-200 text-gray-800 dark:bg-gray-500/20"
+          : status === "BothAbsent"
+          ? "bg-red-100 text-red-700 dark:bg-red-700/20"
+          : "bg-gray-300 text-gray-600 dark:bg-gray-500/20"
+      }
     `}
                           >
                             {status}

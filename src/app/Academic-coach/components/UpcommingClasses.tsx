@@ -154,7 +154,12 @@ const UpcomingClasses: React.FC = () => {
                 {/* Card */}
                 <div className="bg-[#f4f4f4] dark:bg-[#404040] rounded-md p-2 w-full shadow-sm ml-4">
                   <h4 className={`text-[14px] font-medium ${currentTextColor}`}>
-                    {classItem.title}
+                     {(() => {
+                            const val = classItem.title;
+                            return val
+                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                              : "-";
+                          })()}
                   </h4>
                 </div>
               </div>
