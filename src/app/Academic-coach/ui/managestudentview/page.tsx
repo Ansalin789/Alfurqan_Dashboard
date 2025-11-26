@@ -1006,7 +1006,12 @@ useEffect(() => {
                 <div className="flex justify-between">
                   <span className="text-white text-[14px]">Class Type</span>
                   <span className="text-[#DADADACC] text-[14px]">
-                    {data?.studentEvaluationDetails?.classType}
+                     {(() => {
+                            const val = data?.studentEvaluationDetails?.classType
+                            return val
+                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                              : "-";
+                          })()}
                   </span>
                 </div>
               </div>
