@@ -627,7 +627,8 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
                 >
                   <option value="">Select Time</option>
                   {timeOptions.map((time) => (
-                    <option key={`to-${time}`} value={time}>
+                    <option key={`to-${time}`} value={time}
+                  disabled={time === formData.preferedShiftFrom}>
                       {time}
                     </option>
                   ))}
@@ -704,7 +705,7 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
                   name="profileImage"
                   accept="image/png, image/jpeg, image/jpg"
                   onChange={handleFileChange}
-                  className="w-full text-[10px] bg-[#343434] border border-[#5C5C5C] rounded-lg px-4 py-2"
+                  className="w-full text-[10px] dark:bg-[#343434] border dark:border-[#5C5C5C] rounded-lg px-4 py-2"
                 />
                 <p className="text-[8px] text-gray-400 mt-1">
                   Allowed formats: JPG, PNG &nbsp; | &nbsp;  Max size: 2MB
@@ -757,7 +758,7 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800 disabled:opacity-50"
+                className="px-6 py-2  text-sm bg-[#576CBC] text-white rounded-lg hover:bg-[#4459A9] disabled:opacity-50"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Saving..." : "Save"}
