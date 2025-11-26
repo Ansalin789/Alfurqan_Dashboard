@@ -85,8 +85,6 @@ export default function AcademicHeader({
   const [studentListWrite, setStudentListWrite] = useState(true); // For Assign Group Class - Default true
   const [teacherRescheduleWrite, setTeacherRescheduleWrite] = useState(true); // For Assign Group Class - Default true
 
-  //roleAccessuseEffect
-
   useEffect(() => {
     const roleAccessRaw = localStorage.getItem("AcademicRolePermission");
     if (roleAccessRaw) {
@@ -98,8 +96,7 @@ export default function AcademicHeader({
         console.log("🔐 Dashboard write:", modules?.dashboard?.write);
         console.log("🔐 Leave write:", modules?.leave);
 
-        // Only apply restrictions if admin has explicitly set them
-        // Default is true (full access) unless admin sets to false
+
         setDashboardWrite(modules?.dashboard?.write !== false);
         setLeaveWrite(modules?.leave !== false);
         setTrailWrite(modules?.trailmanagement?.write !== false);
@@ -108,13 +105,10 @@ export default function AcademicHeader({
         setTeacherRescheduleWrite(modules?.manageteachers?.write !== false);
       } catch (error) {
         console.error("❌ Invalid AcademicRolePermission JSON", error);
-        // Keep default true values if JSON parsing fails
       }
     }
-    // If no roleAccessRaw exists, keep the default true values
   }, []);
 
-  // Fetch old notifications
   const userId =
     typeof window !== "undefined"
       ? localStorage.getItem("AcademicCoachPortalId")
@@ -156,7 +150,6 @@ export default function AcademicHeader({
     };
     fetchNotifications();
   }, []);
-  // Mark as Seen
   const handleNotificationClick = async (notificationId: string) => {
     try {
       const token =
@@ -198,7 +191,6 @@ export default function AcademicHeader({
   };
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
-  // Close dropdown if clicked outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !(menuRef.current as any).contains(e.target)) {
@@ -211,7 +203,6 @@ export default function AcademicHeader({
 
   const handleLogOut = async () => {
     try {
-      // Call your signout API
       const token =
         typeof window !== "undefined"
           ? localStorage.getItem("AcademicCoachAuthToken")
@@ -226,20 +217,16 @@ export default function AcademicHeader({
         }
       );
 
-      // Clear token/session
       localStorage.removeItem("AcademicCoachAuthToken");
 
-      // Redirect to login page
       router.push("/Academic-coach/ui/login");
     } catch (err) {
       console.error("Logout failed:", err);
 
-      // Still clear and redirect (safe fallback)
       localStorage.removeItem("AcademicCoachAuthToken");
       router.push("/Academic-coach/ui/login");
     }
   };
-  // Real-time notifications with Socket.IO
   useEffect(() => {
     const socket = getSocket(userId ?? "");
 

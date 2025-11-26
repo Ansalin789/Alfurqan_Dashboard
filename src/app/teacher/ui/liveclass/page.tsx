@@ -1,11 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-
 import { JitsiMeeting } from "@jitsi/react-sdk";
 import axios from "axios";
-
-
 import { useSearchParams, useRouter } from "next/navigation";
 
 interface Student {
@@ -58,10 +55,7 @@ interface ClassData {
   lastUpdatedDate: string;
   __v: number;
 }
-interface ApiResponse {
-  totalCount: number;
-  classSchedule: ClassData;
-}
+
 interface Attendance {
   id: string | null;
   studentId: string;
@@ -82,13 +76,12 @@ export default function LiveClass() {
   const [roomName, setRoomName] = useState("");
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const params = useSearchParams();
-  const router = useRouter();
   const [editableLevel, setEditableLevel] = useState(
     classData?.student.level || ""
   );
 
   const startTimeRef = useRef<string>("");
- const userInfo = useMemo(
+  const userInfo = useMemo(
     () => ({
       displayName: `${classData?.teacher?.teacherName} | ID : ${classData?.teacher?.teacherId}`,
       email: `${classData?.teacher?.teacherEmail}`,
@@ -165,9 +158,9 @@ export default function LiveClass() {
 
     fetchClassData();
   }, []);
- const updateAttendance = async (data: any) => {
+  const updateAttendance = async (data: any) => {
     try {
-     const token =
+      const token =
         typeof window !== "undefined"
           ? localStorage.getItem("TeacherAuthToken")
           : null;
@@ -194,56 +187,56 @@ export default function LiveClass() {
       return null;
     }
   };
- const handleJoinCall = async () => {
-  const now = new Date();
-  const sessionStartTime = now.toTimeString().slice(0, 5);
-  console.log("Joined at:", sessionStartTime);
+  const handleJoinCall = async () => {
+    const now = new Date();
+    const sessionStartTime = now.toTimeString().slice(0, 5);
+    console.log("Joined at:", sessionStartTime);
 
-  if (classData?.sessionClassType === 'GROUPCLASS') {
-    await fetch(
-      `https://api.blackstoneinfomaticstech.com/groupclassschedule/bulkupdate/${classData.classLink}`,
-      {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          teacher: { teacherSessionStart: sessionStartTime }
-        })
-      }
-    );
-  } else {
-    await updateAttendance({
-      teacherSessionStart: sessionStartTime,
-    });
-  }
-};
+    if (classData?.sessionClassType === 'GROUPCLASS') {
+      await fetch(
+        `https://api.blackstoneinfomaticstech.com/groupclassschedule/bulkupdate/${classData.classLink}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            teacher: { teacherSessionStart: sessionStartTime }
+          })
+        }
+      );
+    } else {
+      await updateAttendance({
+        teacherSessionStart: sessionStartTime,
+      });
+    }
+  };
 
- const handleEndCall = async () => {
-  const now = new Date();
-  const sessionEndTime = now.toTimeString().slice(0, 5);
-  console.log("Left at:", sessionEndTime);
+  const handleEndCall = async () => {
+    const now = new Date();
+    const sessionEndTime = now.toTimeString().slice(0, 5);
+    console.log("Left at:", sessionEndTime);
 
-  let res;
+    let res;
 
-  if (classData?.sessionClassType === 'GROUPCLASS') {
-    res = await fetch(
-      `https://api.blackstoneinfomaticstech.com/groupclassschedule/bulkupdate/${classData.classLink}`,
-      {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          teacher: { teacherSessionEnd: sessionEndTime }
-        })
-      }
-    );
-  } else {
-    res = await updateAttendance({
-      teacherSessionEnd: sessionEndTime,
-    });
-  }
-  if (res && (res.status === 200)) {
-    setShowFeedback(true);
-  }
-};
+    if (classData?.sessionClassType === 'GROUPCLASS') {
+      res = await fetch(
+        `https://api.blackstoneinfomaticstech.com/groupclassschedule/bulkupdate/${classData.classLink}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            teacher: { teacherSessionEnd: sessionEndTime }
+          })
+        }
+      );
+    } else {
+      res = await updateAttendance({
+        teacherSessionEnd: sessionEndTime,
+      });
+    }
+    if (res && (res.status === 200)) {
+      setShowFeedback(true);
+    }
+  };
 
 
   const StarRating = ({
@@ -258,9 +251,8 @@ export default function LiveClass() {
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
-            className={`cursor-pointer text-xl ${
-              star <= value ? "text-[#FAAB3C]" : "text-gray-300"
-            }`}
+            className={`cursor-pointer text-xl ${star <= value ? "text-[#FAAB3C]" : "text-gray-300"
+              }`}
             onClick={() => onChange(star)}
           >
             ★
@@ -346,7 +338,7 @@ export default function LiveClass() {
 
       if (response.status === 201 || response.status === 200) {
         setShowPopup(true);
-        setTimeout(() =>{ setShowPopup(false)} , 3000);
+        setTimeout(() => { setShowPopup(false) }, 3000);
       } else {
         console.log("Failed to submit feedback. Please try again.");
       }
@@ -369,396 +361,378 @@ export default function LiveClass() {
   ];
 
   return (
-      <div className="flex h-screen">
-        <div className="flex flex-col w-full min-h-screen px-4 sm:px-6 md:px-8">
-          {/* Page Content */}
-          <div className="flex flex-col lg:flex-row gap-6 flex-1 w-full max-w-screen-xl mx-auto py-0">
-            <div className="flex-1 overflow-auto">
-              {showPopup && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-                  <div className="bg-white rounded-xl shadow-lg w-[90%] max-w-md px-6 py-8 text-center relative">
-                    <div className="flex justify-center items-center w-14 h-14 mx-auto bg-green-100 rounded-full mb-4">
-                      <svg
-                        className="w-7 h-7 text-green-600"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-1">
-                      Feedback Added
-                    </h2>
-                    <p className="text-gray-500 mb-6">
-                      Your feedback added successfully!
-                    </p>
-                    <button
-                      onClick={() => setShowPopup(false)}
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg transition duration-200"
+    <div className="flex h-screen">
+      <div className="flex flex-col w-full min-h-screen px-4 sm:px-6 md:px-8">
+        {/* Page Content */}
+        <div className="flex flex-col lg:flex-row gap-6 flex-1 w-full max-w-screen-xl mx-auto py-0">
+          <div className="flex-1 overflow-auto">
+            {showPopup && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+                <div className="bg-white rounded-xl shadow-lg w-[90%] max-w-md px-6 py-8 text-center relative">
+                  <div className="flex justify-center items-center w-14 h-14 mx-auto bg-green-100 rounded-full mb-4">
+                    <svg
+                      className="w-7 h-7 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      viewBox="0 0 24 24"
                     >
-                      Close
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-1">
+                    Feedback Added
+                  </h2>
+                  <p className="text-gray-500 mb-6">
+                    Your feedback added successfully!
+                  </p>
+                  <button
+                    onClick={() => setShowPopup(false)}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg transition duration-200"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {showFeedback ? (
+              <div className="flex flex-col xl:flex-row gap-4 items-stretch justify-center px-4 py-6 w-full">
+                <div className="fixed top-17 right-4 z-[9999] bg-blue-100 text-blue-800 text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg shadow border border-blue-400">
+                  ℹ️ Once feedback done, class will be closed completely
+                </div>
+                <div className="flex flex-col xl:flex-row gap-6 items-stretch justify-center px-6 py-8 w-full">
+                  {/* Student Info Card */}
+                  <div className="bg-white dark:bg-[#3B3B3B] rounded-2xl shadow flex flex-col w-full xl:w-1/2">
+                    <img
+                      src="/assets/images/tajweedmasterclass2.png"
+                      alt="Tajweed"
+                      className="w-full h-48 object-cover rounded-t-2xl"
+                    />
+                    <div className="p-6">
+                      <h3 className="text-lg font-semibold dark:text-[#FFF] text-center text-[#111827] mb-1">
+                        {classData?.student.course}
+                      </h3>
+                      <p className="text-sm text-center text-[#959595] mb-5">
+                        {classData?.sessionClassType}
+                      </p>
+
+                      <h4 className="text-sm font-semibold text-[#010E30]  dark:text-[#FFF] mb-4">
+                        Class details
+                      </h4>
+                      <div className="text-sm text-[#010E30]/90  dark:text-[#FFF] space-y-2">
+                        <div className="flex justify-between">
+                          <span>Student Name</span>
+                          <span className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
+                            {" "}
+                            {classData?.student.studentFirstName}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Student ID</span>
+                          <span className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
+                            {classData?.student.studentId}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Course</span>
+                          <span className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
+                            {classData?.course.courseName}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <span>Time</span>
+                          <p className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
+                            {classData?.startTime[0]} to{" "}
+                            {classData?.endTime[0]}
+                          </p>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Day</span>
+                          <span className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
+                            {classData?.classDay}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Date</span>
+                          <p className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
+                            {" "}
+                            {classData?.classDay} -{" "}
+                            {new Date(
+                              classData?.startDate ?? "2022-01-01"
+                            ).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Student Performance Card */}
+                  <div className=" rounded-2xl flex-col w-full xl:w-1/2 p-6 text-[#010E30] dark:text-[#FFFFFF]">
+                    <h3 className="text-lg font-semibold mb-6">
+                      Student Performance
+                    </h3>
+
+                    {categories.map((category, index) => (
+                      <div key={category} className="mb-4">
+                        <p className="text-base font-medium text-gray-700 mb-1 dark:text-white">
+                          {category}
+                        </p>
+                        <StarRating
+                          value={ratings[index]}
+                          onChange={(rating) => {
+                            const newRatings = [...ratings];
+                            newRatings[index] = rating;
+                            setRatings(newRatings);
+                          }}
+                        />
+                      </div>
+                    ))}
+                    <div className="mt-4">
+                      <label htmlFor="ytcyuc" className="text-sm font-medium text-[#010E30] dark:text-white mb-2 block">
+                        Student Current Level:
+                      </label>
+                      <input
+                        type="text"
+                        value={editableLevel}
+                        onChange={(e) => setEditableLevel(e.target.value)}
+                        className=" w-14 h-8 px-3 py-2  rounded-md text-sm bg-[#576CBC]  text-white dark:text-white"
+                      />
+                    </div>
+                    <div className="mt-6">
+                      <h4 className="text-sm font-medium mb-2 text-[#010E30] dark:text-[#FFFFFF]">
+                        Additional feedback
+                      </h4>
+                      <textarea
+                        className="w-full h-28 bg-transparent text-xs p-3 border border-[#D1D5DB] rounded-lg placeholder-gray-400 resize-none"
+                        placeholder="Type your feedback here..."
+                        value={feedback}
+                        onChange={(e) => setFeedback(e.target.value)}
+                      />
+                    </div>
+
+                    <button
+                      className="mt-4 self-end bg-[#4754DC] hover:bg-[#3B44B0] text-white text-sm font-medium px-6 py-2 rounded-lg transition"
+                      onClick={handleSubmit}
+                    >
+                      Submit
                     </button>
                   </div>
                 </div>
-              )}
-
-              {showFeedback ? (
-                <div className="flex flex-col xl:flex-row gap-4 items-stretch justify-center px-4 py-6 w-full">
-                  <div className="fixed top-17 right-4 z-[9999] bg-blue-100 text-blue-800 text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg shadow border border-blue-400">
-                  ℹ️ Once feedback done, class will be closed completely
-                </div>
-                  <div className="flex flex-col xl:flex-row gap-6 items-stretch justify-center px-6 py-8 w-full">
-                    {/* Student Info Card */}
-                    <div className="bg-white dark:bg-[#3B3B3B] rounded-2xl shadow flex flex-col w-full xl:w-1/2">
-                      <img
-                        src="/assets/images/tajweedmasterclass2.png"
-                        alt="Tajweed"
-                        className="w-full h-48 object-cover rounded-t-2xl"
-                      />
-                      <div className="p-6">
-                        <h3 className="text-lg font-semibold dark:text-[#FFF] text-center text-[#111827] mb-1">
-                          {classData?.student.course}
-                        </h3>
-                        <p className="text-sm text-center text-[#959595] mb-5">
-                          {classData?.sessionClassType}
-                        </p>
-
-                        <h4 className="text-sm font-semibold text-[#010E30]  dark:text-[#FFF] mb-4">
-                          Class details
-                        </h4>
-                        <div className="text-sm text-[#010E30]/90  dark:text-[#FFF] space-y-2">
-                          <div className="flex justify-between">
-                            <span>Student Name</span>
-                            <span className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
-                              {" "}
-                              {classData?.student.studentFirstName}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Student ID</span>
-                            <span className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
-                              {classData?.student.studentId}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Course</span>
-                            <span className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
-                              {classData?.course.courseName}
-                            </span>
-                          </div>
-
-                          <div className="flex justify-between">
-                            <span>Time</span>
-                            <p className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
-                              {classData?.startTime[0]} to{" "}
-                              {classData?.endTime[0]}
-                            </p>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Day</span>
-                            <span className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
-                              {classData?.classDay}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Date</span>
-                            <p className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
-                              {" "}
-                              {classData?.classDay} -{" "}
-                              {new Date(
-                                classData?.startDate ?? "2022-01-01"
-                              ).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Student Performance Card */}
-                    <div className=" rounded-2xl flex-col w-full xl:w-1/2 p-6 text-[#010E30] dark:text-[#FFFFFF]">
-                      <h3 className="text-lg font-semibold mb-6">
-                        Student Performance
-                      </h3>
-
-                      {categories.map((category, index) => (
-                        <div key={category} className="mb-4">
-                          <p className="text-base font-medium text-gray-700 mb-1 dark:text-white">
-                            {category}
-                          </p>
-                          <StarRating
-                            value={ratings[index]}
-                            onChange={(rating) => {
-                              const newRatings = [...ratings];
-                              newRatings[index] = rating;
-                              setRatings(newRatings);
-                            }}
-                          />
-                        </div>
-                      ))}
-                      <div className="mt-4">
-                        <label htmlFor="ytcyuc" className="text-sm font-medium text-[#010E30] dark:text-white mb-2 block">
-                          Student Current Level:
-                        </label>
-                        <input
-                          type="text"
-                          value={editableLevel}
-                          onChange={(e) => setEditableLevel(e.target.value)}
-                          className=" w-14 h-8 px-3 py-2  rounded-md text-sm bg-[#576CBC]  text-white dark:text-white"
-                        />
-                      </div>
-                      <div className="mt-6">
-                        <h4 className="text-sm font-medium mb-2 text-[#010E30] dark:text-[#FFFFFF]">
-                          Additional feedback
-                        </h4>
-                        <textarea
-                          className="w-full h-28 bg-transparent text-xs p-3 border border-[#D1D5DB] rounded-lg placeholder-gray-400 resize-none"
-                          placeholder="Type your feedback here..."
-                          value={feedback}
-                          onChange={(e) => setFeedback(e.target.value)}
-                        />
-                      </div>
-
-                      <button
-                        className="mt-4 self-end bg-[#4754DC] hover:bg-[#3B44B0] text-white text-sm font-medium px-6 py-2 rounded-lg transition"
-                        onClick={handleSubmit}
-                      >
-                        Submit
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-1 sm:p-2 relative w-full flex flex-col flex-1 h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] xl:h-[85vh]">
-                  {/* Student Info */}
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="mt-2">
-                        { classData?.sessionClassType === 'REGULARCLASS' ?
-                         <h2 className="text-lg font-medium">
+              </div>
+            ) : (
+              <div className="p-1 sm:p-2 relative w-full flex flex-col flex-1 h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] xl:h-[85vh]">
+                {/* Student Info */}
+                <div className="flex justify-between items-start mb-4">
+                  <div className="mt-2">
+                    {classData?.sessionClassType === 'REGULARCLASS' ?
+                      <h2 className="text-lg font-medium">
                         {classData?.student.studentFirstName}{" "}
                         {classData?.student.studentLastName}
-                        </h2>
-                         : 
-                          <h2 className="text-lg font-medium">
-                            {classData?.sessionClassType}
-                          </h2>
-                     }
-                      <span className="text-sm  text-gray-500">
-                        {classData?.course.courseName}
-                      </span>
-                    </div>
-
-                    <div className="ml-auto w-64">
-                      <label
-                        htmlFor="attendance-select"
-                        className="block text-sm font-semibold mb-1"
-                      >
-                        Attendance
-                      </label>
-                      <select
-                        id="attendance-select"
-                        className="w-full border text-xs p-2 rounded dark:text-gray-500"
-                      >
-                        {attendance.map((s) => {
-                          let statusLabel = "❌ Not Joined";
-
-                          if (s.joined) {
-                            statusLabel = s.leaveTime
-                              ? `🚪 Left at ${s.leaveTime}`
-                              : `✅ Joined at ${s.joinTime}`;
-                          }
-
-                          return (
-                            <option key={s.studentId} value={s.studentId}>
-                              {s.name} – {statusLabel}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
+                      </h2>
+                      :
+                      <h2 className="text-lg font-medium">
+                        {classData?.sessionClassType}
+                      </h2>
+                    }
+                    <span className="text-sm  text-gray-500">
+                      {classData?.course.courseName}
+                    </span>
                   </div>
 
-                  {/* Jitsi Video Box */}
-                  <div className="flex-1 min-w-0 w-full h-[50vh] md:h-[60vh] rounded-md overflow-hidden shadow-inner border border-gray-300">
-                    {roomName && (
-                      <JitsiMeeting
-                        roomName={roomName}
-                         userInfo={userInfo}
-                        domain="meet.blackstoneinfomaticstech.com"
-                        configOverwrite={{
-                          startWithAudioMuted: false,
-                          startWithVideoMuted: false,
-                          toolbarButtons: [
-                            "microphone",
-                            "camera",
-                            "closedcaptions",
-                            "desktop",
-                            "fullscreen",
-                            "fodeviceselection",
-                            "hangup",
-                            "profile",
-                            "chat",
-                            "settings",
-                            "raisehand",
-                            "videoquality",
-                            "filmstrip",
-                            "shortcuts",
-                            "tileview",
-                            "recording",
-                          ],
-                        }}
-                        onApiReady={(externalApi) => {
-                          type ParticipantLog = {
-                            id: string;
-                            name?: string;
-                            studentId?: string;
-                            startCallTime: string;
-                            endCallTime?: string;
-                          };
+                  <div className="ml-auto w-64">
+                    <label
+                      htmlFor="attendance-select"
+                      className="block text-sm font-semibold mb-1"
+                    >
+                      Attendance
+                    </label>
+                    <select
+                      id="attendance-select"
+                      className="w-full border text-xs p-2 rounded dark:text-gray-500"
+                    >
+                      {attendance.map((s) => {
+                        let statusLabel = "❌ Not Joined";
 
-                          const participantList: ParticipantLog[] = [];
+                        if (s.joined) {
+                          statusLabel = s.leaveTime
+                            ? `🚪 Left at ${s.leaveTime}`
+                            : `✅ Joined at ${s.joinTime}`;
+                        }
 
-                          // ✅ Handle Participant Joined
-                          externalApi.addListener(
-                            "participantJoined",
-                            (event: { id: string; displayName?: string }) => {
-                              const joinTime = new Date().toLocaleTimeString(
-                                [],
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: false,
-                                }
-                              );
+                        return (
+                          <option key={s.studentId} value={s.studentId}>
+                            {s.name} – {statusLabel}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                </div>
 
-                              const parts = event.displayName?.split("| ID :");
-                              const name = parts?.[0]?.trim() ?? "Unknown";
-                              const studentId = parts?.[1]?.trim() ?? "N/A";
-
-                              console.log("🟢 New participant joined:", {
-                                name,
-                                studentId,
-                              });
-
-                              const updated = attendanceRef.current.map((a) =>
-                                a.studentId === studentId
-                                  ? {
-                                      ...a,
-                                      id: event.id,
-                                      joined: true,
-                                      joinTime: joinTime,
-                                      startTime: joinTime,
-                                    }
-                                  : a
-                              );
-                              setAttendance(updated);
-                              console.log(updated);
-                            }
-                          );
-
-                          // 🔴 Handle Participant Left
-                          externalApi.addListener(
-                            "participantLeft",
-                            (event: { id: string }) => {
-                              const leaveTime = new Date().toLocaleTimeString(
-                                [],
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: false,
-                                }
-                              );
-
-                              const participant = attendanceRef.current.find(
-                                (p) => p.id === event.id
-                              );
-
-                              if (participant) {
-                                setAttendance((prev) =>
-                                  prev.map((a) =>
-                                    a.id === event.id ? { ...a, leaveTime } : a
-                                  )
-                                );
-                                console.log(
-                                  `🔴 ${participant.name} left at ${leaveTime}`
-                                );
-                              } else {
-                                console.warn(
-                                  `❗ Participant with id ${event.id} not found in attendance.`
-                                );
+                {/* Jitsi Video Box */}
+                <div className="flex-1 min-w-0 w-full h-[50vh] md:h-[60vh] rounded-md overflow-hidden shadow-inner border border-gray-300">
+                  {roomName && (
+                    <JitsiMeeting
+                      roomName={roomName}
+                      userInfo={userInfo}
+                      domain="meet.blackstoneinfomaticstech.com"
+                      configOverwrite={{
+                        startWithAudioMuted: false,
+                        startWithVideoMuted: false,
+                        toolbarButtons: [
+                          "microphone",
+                          "camera",
+                          "closedcaptions",
+                          "desktop",
+                          "fullscreen",
+                          "fodeviceselection",
+                          "hangup",
+                          "profile",
+                          "chat",
+                          "settings",
+                          "raisehand",
+                          "videoquality",
+                          "filmstrip",
+                          "shortcuts",
+                          "tileview",
+                          "recording",
+                        ],
+                      }}
+                      onApiReady={(externalApi) => {
+                        type ParticipantLog = {
+                          id: string;
+                          name?: string;
+                          studentId?: string;
+                          startCallTime: string;
+                          endCallTime?: string;
+                        };
+                        // ✅ Handle Participant Joined
+                        externalApi.addListener(
+                          "participantJoined",
+                          (event: { id: string; displayName?: string }) => {
+                            const joinTime = new Date().toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
                               }
+                            );
+                            const parts = event.displayName?.split("| ID :");
+                            const name = parts?.[0]?.trim() ?? "Unknown";
+                            const studentId = parts?.[1]?.trim() ?? "N/A";
+                            console.log("🟢 New participant joined:", {
+                              name,
+                              studentId,
+                            });
+                            const updated = attendanceRef.current.map((a) =>
+                              a.studentId === studentId
+                                ? {
+                                  ...a,
+                                  id: event.id,
+                                  joined: true,
+                                  joinTime: joinTime,
+                                  startTime: joinTime,
+                                }
+                                : a
+                            );
+                            setAttendance(updated);
+                            console.log(updated);
+                          }
+                        );
+                        // 🔴 Handle Participant Left
+                        externalApi.addListener(
+                          "participantLeft",
+                          (event: { id: string }) => {
+                            const leaveTime = new Date().toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                              }
+                            );
+                            const participant = attendanceRef.current.find(
+                              (p) => p.id === event.id
+                            );
+                            if (participant) {
+                              setAttendance((prev) =>
+                                prev.map((a) =>
+                                  a.id === event.id ? { ...a, leaveTime } : a
+                                )
+                              );
+                              console.log(
+                                `🔴 ${participant.name} left at ${leaveTime}`
+                              );
+                            } else {
+                              console.warn(
+                                `❗ Participant with id ${event.id} not found in attendance.`
+                              );
                             }
-                          );
-
-                          // 🎥 Host/Teacher Joined
+                          }
+                        );
+                        // 🎥 Host/Teacher Joined
                         externalApi.addListener("videoConferenceJoined", async () => {
-  // 1. Store teacher join time
-  const startCallTime = new Date().toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-  startTimeRef.current = startCallTime;
-
-  console.log("✅ Teacher joined, call started at", startCallTime);
-
-  // 2. Mark teacher as joined (if you're tracking them in state/backend)
-  handleJoinCall(); // your existing attendance update logic
-
-  // 3. Get already-present participants (likely students who joined before teacher)
-  const existingParticipants = externalApi.getParticipantsInfo();
-
-  console.log("🎯 Checking existing participants:", existingParticipants);
-
-  existingParticipants.forEach((participant: any) => {
-    const parts = participant.displayName?.split("| ID :");
-    const name = parts?.[0]?.trim() ?? "Unknown";
-    const studentId = parts?.[1]?.trim() ?? "N/A";
-
-    console.log("👀 Already present:", { name, studentId });
-
-    // 4. Mark only presence; don’t overwrite joinTime
-    setAttendance((prev) =>
-      prev.map((a) =>
-        a.studentId === studentId && !a.joined
-          ? {
-              ...a,
-              id: participant.participantId,
-              joined: true,
-              joinTime: a.joinTime || "", // don't overwrite if already set
-            }
-          : a
-      )
-    );
-  });
-});
-
-                          externalApi.addListener("videoConferenceLeft", () => {
-                            handleEndCall();
+                          // 1. Store teacher join time
+                          const startCallTime = new Date().toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
                           });
-                        }}
-                        getIFrameRef={(iframeRef) => {
-                          iframeRef.style.border = "0px";
-                          iframeRef.style.height = "100%";
-                          iframeRef.style.width = "100%";
-                        }}
-                      />
-                    )}
-                  </div>
-                  <div className="mt-3 bg-blue-100 text-yellow-900 dark:bg-blue-900 dark:text-yellow-100 px-4 py-2 text-center rounded shadow text-sm font-medium border border-blue-300 dark:border-blue-700">
+                          startTimeRef.current = startCallTime;
+                          console.log("✅ Teacher joined, call started at", startCallTime);
+                          // 2. Mark teacher as joined (if you're tracking them in state/backend)
+                          handleJoinCall(); // your existing attendance update logic
+                          // 3. Get already-present participants (likely students who joined before teacher)
+                          const existingParticipants = externalApi.getParticipantsInfo();
+                          console.log("🎯 Checking existing participants:", existingParticipants);
+                          existingParticipants.forEach((participant: any) => {
+                            const parts = participant.displayName?.split("| ID :");
+                            const name = parts?.[0]?.trim() ?? "Unknown";
+                            const studentId = parts?.[1]?.trim() ?? "N/A";
+                            console.log("👀 Already present:", { name, studentId });
+                            // 4. Mark only presence; don’t overwrite joinTime
+                            setAttendance((prev) =>
+                              prev.map((a) =>
+                                a.studentId === studentId && !a.joined
+                                  ? {
+                                    ...a,
+                                    id: participant.participantId,
+                                    joined: true,
+                                    joinTime: a.joinTime || "", // don't overwrite if already set
+                                  }
+                                  : a
+                              )
+                            );
+                          });
+                        });
+                        externalApi.addListener("videoConferenceLeft", () => {
+                          handleEndCall();
+                        });
+                      }}
+                      getIFrameRef={(iframeRef) => {
+                        iframeRef.style.border = "0px";
+                        iframeRef.style.height = "100%";
+                        iframeRef.style.width = "100%";
+                      }}
+                    />
+                  )}
+                </div>
+                <div className="mt-3 bg-blue-100 text-yellow-900 dark:bg-blue-900 dark:text-yellow-100 px-4 py-2 text-center rounded shadow text-sm font-medium border border-blue-300 dark:border-blue-700">
                   ⚠ Please don’t switch the tab or leave this page. The video
                   call will end.
                 </div>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+    </div>
   );
 }

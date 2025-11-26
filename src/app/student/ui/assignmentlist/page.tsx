@@ -5,8 +5,6 @@ import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import {  useSearchParams } from "next/navigation";
-import BaseLayout from "@/components/BaseLayout";
-import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import Pagination from "@/components/Pagination";
 import BaseLayout2 from "@/components/BaseLayout2";
 import StudentHeader from "../../components/StudentHeader";

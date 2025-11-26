@@ -48,7 +48,6 @@ const UpcomingTable = () => {
   const [loading, setLoading] = useState(true);
 
   const [upcomingClasses, setUpcomingClasses] = useState<ClassData[]>([]);
-  const [completedClasses, setCompletedClasses] = useState<ClassData[]>([]);
   useEffect(() => {
     const fetchClasses = async () => {
       try {
@@ -105,7 +104,6 @@ const UpcomingTable = () => {
               new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
           );
         setUpcomingClasses(upcoming);
-        setCompletedClasses(completed);
         console.log("upcomoinig class",upcoming);
         console.log("completed clasees",completed);
       } catch (error) {

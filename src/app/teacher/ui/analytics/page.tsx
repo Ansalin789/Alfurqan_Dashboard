@@ -562,15 +562,13 @@ function Analytics() {
         {headers.map((h, idx) => (
           <th
             key={h.label}
-            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] whitespace-nowrap ${
-              h.width
-            } ${
-              idx === 0
+            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] whitespace-nowrap ${h.width
+              } ${idx === 0
                 ? "sticky left-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
                 : idx === headers.length - 1
-                ? "sticky right-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
-                : ""
-            }`}
+                  ? "sticky right-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                  : ""
+              }`}
           >
             {h.label}
           </th>
@@ -590,9 +588,8 @@ function Analytics() {
               <button
                 type="button"
                 onClick={() => setActiveView("students")}
-                className={`bg-gradient-to-b from-white to-[#F6FAFF] text-left dark:from-[#343434] dark:to-[#2A2A2A] ${
-                  activeView === "students" ? "border-[1px]" : ""
-                } border-[#576CBC] rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex items-center justify-between focus:outline-none`}
+                className={`bg-gradient-to-b from-white to-[#F6FAFF] text-left dark:from-[#343434] dark:to-[#2A2A2A] ${activeView === "students" ? "border-[1px]" : ""
+                  } border-[#576CBC] rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex items-center justify-between focus:outline-none`}
               >
                 <div className="flex flex-col justify-center">
                   <h3 className="text-sm font-medium text-[#0f172a] mb-4 dark:text-[#fff]">
@@ -618,9 +615,8 @@ function Analytics() {
               <button
                 type="button"
                 onClick={() => setActiveView("classes")}
-                className={`bg-gradient-to-b from-white to-[#F6FAFF] text-left dark:from-[#343434] dark:to-[#2A2A2A] ${
-                  activeView === "classes" ? "border-[1px]" : ""
-                } border-[#576CBC] rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex justify-between items-center focus:outline-none`}
+                className={`bg-gradient-to-b from-white to-[#F6FAFF] text-left dark:from-[#343434] dark:to-[#2A2A2A] ${activeView === "classes" ? "border-[1px]" : ""
+                  } border-[#576CBC] rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex justify-between items-center focus:outline-none`}
               >
                 <div className="flex flex-col justify-center">
                   <h3 className="text-sm font-medium text-[#0f172a] dark:text-[#fff] mb-4">
@@ -646,9 +642,8 @@ function Analytics() {
               <button
                 type="button"
                 onClick={() => setActiveView("earnings")}
-                className={`bg-gradient-to-b from-white to-[#F6FAFF] text-left dark:from-[#343434] dark:to-[#2A2A2A] ${
-                  activeView === "earnings" ? "border-[1px]" : ""
-                } border-[#576CBC] rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex justify-between items-center focus:outline-none`}
+                className={`bg-gradient-to-b from-white to-[#F6FAFF] text-left dark:from-[#343434] dark:to-[#2A2A2A] ${activeView === "earnings" ? "border-[1px]" : ""
+                  } border-[#576CBC] rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex justify-between items-center focus:outline-none`}
               >
                 <div className="flex flex-col justify-center">
                   <h3 className="text-sm font-medium text-[#0f172a] dark:text-[#fff] mb-4">
@@ -695,8 +690,7 @@ function Analytics() {
                 <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                   <span className="text-left -ml-60 ">
                     {activeView === "students" &&
-                      `Showing ${filteredStudents.slice(0, 10).length} of ${
-                        filteredStudents.length
+                      `Showing ${filteredStudents.slice(0, 10).length} of ${filteredStudents.length
                       }`}
                     {activeView === "classes" &&
                       `Showing ${currentItems.length} of ${filteredClasses.length}`}
@@ -746,24 +740,24 @@ function Analytics() {
 
                           {/* Class Type */}
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
-                               {(() => {
-                            const val = schedule.studentDetails.classType
-                            return val
-                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
-                              : "-";
-                          })()}
+                            {(() => {
+                              const val = schedule.studentDetails.classType
+                              return val
+                                ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                                : "-";
+                            })()}
                           </td>
 
                           {/* Joined Date */}
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
                             {schedule.studentDetails.student?.createdDate
                               ? new Date(
-                                  schedule.studentDetails.student.createdDate
-                                ).toLocaleDateString("en-US", {
-                                  month: "short",
-                                  day: "2-digit",
-                                  year: "numeric",
-                                })
+                                schedule.studentDetails.student.createdDate
+                              ).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "2-digit",
+                                year: "numeric",
+                              })
                               : "-"}
                           </td>
 
@@ -776,13 +770,12 @@ function Analytics() {
                           <td className="px-3 py-2 text-left">
                             <span
                               className={`px-2.5 py-1 rounded-lg text-[11px] inline-block font-semibold
-      ${
-        schedule.studentDetails.student?.status === "Active"
-          ? "text-[#0A8F40] bg-[#E8F5E9]"
-          : schedule.studentDetails.student?.status === "Inactive"
-          ? "text-[#B91C1C] bg-[#FEE2E2]"
-          : "text-gray-600 bg-gray-200 dark:bg-[#4F4F4F]" // default/unknown
-      }`}
+      ${schedule.studentDetails.student?.status === "Active"
+                                  ? "text-[#0A8F40] bg-[#E8F5E9]"
+                                  : schedule.studentDetails.student?.status === "Inactive"
+                                    ? "text-[#B91C1C] bg-[#FEE2E2]"
+                                    : "text-gray-600 bg-gray-200 dark:bg-[#4F4F4F]" // default/unknown
+                                }`}
                             >
                               {schedule.studentDetails.student?.status || "-"}
                             </span>
@@ -936,7 +929,7 @@ function Analytics() {
 
             <div className="flex justify-end">
               <button
-                className=" mt-4 text-[#576CBC] border border-[#576CBC] bg-[#fff] rounded-md px-4 py-2 text-sm font-medium hover:bg-[#dbe2f3] transition duration-200 dark:bg-[#2E3343]"
+                className=" mt-4 text-[12px] text-[#576CBC] border border-[#576CBC] bg-[#fff] rounded-md px-3 py-1 font-medium hover:bg-[#dbe2f3] transition duration-200 dark:bg-[#2E3343]"
                 onClick={() => {
                   if (activeView === "students") {
                     router.push("/teacher/ui/analytics/totalstudents");
@@ -967,7 +960,7 @@ function Analytics() {
                   &times;
                 </button>
 
-                <h2 className="text-lg font-semibold mb-5 dark:text-white">
+                <h2 className="text-[16px] font-semibold mb-5 dark:text-white">
                   Filter by
                 </h2>
 
@@ -977,7 +970,7 @@ function Analytics() {
                     Course Name
                   </label>
                   <select
-                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] text-gray-400"
+                    className="w-full px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] text-gray-400"
                     value={filters.courseName}
                     onChange={(e) =>
                       setFilters({ ...filters, courseName: e.target.value })
@@ -1000,7 +993,7 @@ function Analytics() {
                     Student Name
                   </label>
                   <select
-                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] text-gray-400"
+                    className="w-full px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] text-gray-400"
                     value={filters.studentName}
                     onChange={(e) =>
                       setFilters({ ...filters, studentName: e.target.value })
@@ -1023,7 +1016,7 @@ function Analytics() {
                     Class Type
                   </label>
                   <select
-                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] text-gray-400"
+                    className="w-full px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] text-gray-400"
                     value={filters.classType}
                     onChange={(e) =>
                       setFilters({ ...filters, classType: e.target.value })
@@ -1044,7 +1037,7 @@ function Analytics() {
                 <div className="mb-4">
                   <label
                     htmlFor="timimg"
-                    className="block text-sm text-gray-700 mb-1 dark:text-white"
+                    className="block text-sm mb-1 dark:text-[#D6D6D6]"
                   >
                     Timing
                   </label>
@@ -1054,7 +1047,7 @@ function Analytics() {
                       setFilters({ ...filters, time: e.target.value })
                     }
                     type="time"
-                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-400 placeholder:opacity-60"
+                    className="w-full mb-4 py-2 border dark:border-[#5c5c5c] dark:bg-[#343434] dark:text-white rounded p-1 text-xs  [&::-webkit-calendar-picker-indicator]:dark:invert"
                     placeholder="Select Time"
                   />
                 </div>
@@ -1067,7 +1060,7 @@ function Analytics() {
                   <div className="flex gap-2">
                     <input
                       type="date"
-                      className="w-1/2 px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] placeholder:text-gray-400 placeholder:opacity-80"
+                      className="w-1/2 px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] placeholder:text-gray-400 placeholder:opacity-80 [&::-webkit-calendar-picker-indicator]:dark:invert"
                       value={filters.fromDate}
                       onChange={(e) =>
                         setFilters({ ...filters, fromDate: e.target.value })
@@ -1076,7 +1069,7 @@ function Analytics() {
                     />
                     <input
                       type="date"
-                      className="w-1/2 px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] placeholder:text-gray-600 "
+                      className="w-1/2 px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] placeholder:text-gray-600 [&::-webkit-calendar-picker-indicator]:dark:invert"
                       value={filters.toDate}
                       onChange={(e) =>
                         setFilters({ ...filters, toDate: e.target.value })
@@ -1090,13 +1083,13 @@ function Analytics() {
                 <div className="flex justify-end gap-3">
                   <button
                     onClick={handleResetFilters}
-                    className="px-4 py-2 rounded-md border border-[#576CBC] text-[#576CBC] font-medium hover:bg-[#EEF1FF] dark:hover:bg-[#343434]"
+                    className="px-3 py-1 text-[12px] rounded-md border border-[#576CBC] text-[#576CBC] font-medium hover:bg-[#EEF1FF] dark:hover:bg-[#343434]"
                   >
                     Reset
                   </button>
                   <button
                     onClick={handleApplyFilters}
-                    className="px-4 py-2 rounded-md bg-[#576CBC] text-white font-medium hover:bg-[#455bb1]"
+                    className="px-3 py-1 text-[12px] rounded-md bg-[#576CBC] text-white font-medium hover:bg-[#455bb1]"
                   >
                     Apply
                   </button>

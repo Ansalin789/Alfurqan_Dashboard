@@ -363,7 +363,7 @@ const Page = () => {
   const [toDate, setToDate] = useState("");
   const [deductionDays, setDeductionDays] = useState(""); // Optional
 
-  const filteredEmployees = employees.filter(
+  const filteredEmployees = (employees ?? []).filter(
     (emp) =>
       (!filterOtherEmployeeRole ||
         emp.role.includes(filterOtherEmployeeRole)) &&
@@ -374,6 +374,7 @@ const Page = () => {
       (emp.userName.toLowerCase().includes(searchQuery1.toLowerCase()) ||
         emp.email.toLowerCase().includes(searchQuery1.toLowerCase()))
   );
+
   const totalEmployeePages = Math.ceil(filteredEmployees.length / itemsPerPage);
   const startEmployeeIndex = (currentPage - 1) * itemsPerPage;
   const endEmployeeIndex = startEmployeeIndex + itemsPerPage;
@@ -454,11 +455,14 @@ const Page = () => {
 
     // Fetch teacher gender count
     axios
-      .get<GenderResponse>("https://api.blackstoneinfomaticstech.com/teacher/gendercount", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      .get<GenderResponse>(
+        "https://api.blackstoneinfomaticstech.com/teacher/gendercount",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
       .then((response) => {
         const res = response.data;
         const chartData: GenderChartData[] = [
@@ -639,9 +643,12 @@ const Page = () => {
           : null;
       if (!token) return;
       try {
-        const res = await axios.get("https://api.blackstoneinfomaticstech.com/leaverequest/card", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(
+          "https://api.blackstoneinfomaticstech.com/leaverequest/card",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setLeaveCard(res.data);
       } catch (err) {
         console.error("Error fetching leave card summary", err);
@@ -665,7 +672,7 @@ const Page = () => {
           (a, b) =>
             new Date(b.fromDate).getTime() - new Date(a.fromDate).getTime()
         );
-    
+
         setLeaveRequests(sortedData);
       } catch (err) {
         console.error("Error fetching leave summary list", err);
@@ -906,7 +913,7 @@ const Page = () => {
             leaveStatus: "APPROVED",
             approvedDays: Number(approvedDays),
             deductionDays: Number(deductionDays) || 0,
-            approvedName: "Admin"
+            approvedName: "Admin",
           }),
         }
       );
@@ -968,8 +975,14 @@ const Page = () => {
     );
   }
 
-  const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
-    const isDark = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
+  const CustomTooltip = ({
+    active,
+    payload,
+    label,
+  }: TooltipProps<any, any>) => {
+    const isDark =
+      typeof window !== "undefined" &&
+      document.documentElement.classList.contains("dark");
     if (active && payload && payload.length) {
       return (
         <div
@@ -979,11 +992,24 @@ const Page = () => {
               : "bg-white text-[#22223b] border-gray-200"
           }`}
         >
-          <div className={`font-normal ${isDark ? 'text-white' : 'text-[#22223b]'}`}>{payload[0].payload.name}</div>
+          <div
+            className={`font-normal ${
+              isDark ? "text-white" : "text-[#22223b]"
+            }`}
+          >
+            {payload[0].payload.name}
+          </div>
           <div>
             {payload.map((entry: any, idx: number) => (
-              <div key={idx} className={isDark ? 'text-white text-[10px]' : 'text-[#22223b] text-[10px]'}>
-                {entry.payload.value} 
+              <div
+                key={idx}
+                className={
+                  isDark
+                    ? "text-white text-[10px]"
+                    : "text-[#22223b] text-[10px]"
+                }
+              >
+                {entry.payload.value}
               </div>
             ))}
           </div>
@@ -1006,12 +1032,23 @@ const Page = () => {
     scaledValue: maxEmployeeValue ? (d.value / maxEmployeeValue) * 100 : 0,
   }));
 
+  const malePercentage = genderData.find((g) => g.name === "Male")?.value || 0;
+  const femalePercentage =
+    genderData.find((g) => g.name === "Female")?.value || 0;
+
+  const total = malePercentage + femalePercentage;
+  // total percentage = 100
+
+  // convert percentage → count
+  const maleCount = Math.round((malePercentage / 1000) * total);
+  const femaleCount = Math.round((femalePercentage / 1000) * total);
+
   return (
     <BaseLayout4>
-<AdminHeader 
-  currentSection="Employees" 
-  employeeActiveTab={activeTab} // Pass the activeTab state from your page
-/>
+      <AdminHeader
+        currentSection="Employees"
+        employeeActiveTab={activeTab} // Pass the activeTab state from your page
+      />
       <div className="h-full w-full p-2 md:mr-10 scrollbar-none">
         <div className="max-w-7xl w-full mx-auto scrollbar-none">
           {/* Tab Navigation */}
@@ -1100,16 +1137,16 @@ const Page = () => {
                                 tick={false}
                               />
                               <YAxis hide domain={[0, 100]} />
-                              <Tooltip content={<CustomTooltip />} cursor={{ fill: "transparent" }} />
+                              <Tooltip
+                                content={<CustomTooltip />}
+                                cursor={{ fill: "transparent" }}
+                              />
                               <Bar
                                 dataKey="scaledValue"
                                 radius={[10, 10, 10, 10]}
                               >
                                 {normalizedBarData.map((entry) => (
-                                  <Cell
-                                    key={entry.name}
-                                    fill={entry.color}
-                                  />
+                                  <Cell key={entry.name} fill={entry.color} />
                                 ))}
                               </Bar>
                             </BarChart>
@@ -1119,12 +1156,13 @@ const Page = () => {
                     </div>
 
                     {/* Gender Chart (Teachers section) */}
-                    <div className="bg-[#FFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[312px] h-[280px] flex flex-col items-center justify-between relative">
-                      <h2 className="text-[16px] font-semibold text-[#0B0F19] dark:text-white self-start">
+                    <div className="bg-[#FFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[312px] flex flex-col">
+                      <h2 className="text-[14px] font-semibold text-gray-900 dark:text-white">
                         Gender
                       </h2>
+
                       {/* Chart */}
-                      <div className="relative flex items-center justify-center w-full h-[170px]">
+                      <div className="relative flex items-center justify-center -ml-2 mt-2">
                         <PieChart width={150} height={150}>
                           {/* Male Segment */}
                           {(() => {
@@ -1137,8 +1175,10 @@ const Page = () => {
                             const total = male + female;
                             const percent =
                               total > 0 ? Math.round((male / total) * 100) : 0;
+
                             const startAngle = -90;
                             const endAngle = -90 + (male / (total || 1)) * 360;
+
                             const pos = getPieLabelPosition(
                               75,
                               75,
@@ -1147,6 +1187,7 @@ const Page = () => {
                               startAngle,
                               endAngle
                             );
+
                             return (
                               <>
                                 <Pie
@@ -1163,13 +1204,14 @@ const Page = () => {
                                   label={false}
                                   labelLine={false}
                                 />
+
                                 {male > 0 && (
                                   <text
                                     x={pos.x}
                                     y={pos.y}
                                     textAnchor="middle"
                                     dominantBaseline="middle"
-                                    fontSize="14px"
+                                    fontSize="12px"
                                     fontWeight="bold"
                                     fill="#fff"
                                   >
@@ -1179,6 +1221,7 @@ const Page = () => {
                               </>
                             );
                           })()}
+
                           {/* Female Segment */}
                           {(() => {
                             const male =
@@ -1192,9 +1235,11 @@ const Page = () => {
                               total > 0
                                 ? Math.round((female / total) * 100)
                                 : 0;
+
                             const startAngle =
                               -90 + (male / (total || 1)) * 360;
                             const endAngle = 270;
+
                             const pos = getPieLabelPosition(
                               75,
                               75,
@@ -1203,6 +1248,7 @@ const Page = () => {
                               startAngle,
                               endAngle
                             );
+
                             return (
                               <>
                                 <Pie
@@ -1219,13 +1265,14 @@ const Page = () => {
                                   label={false}
                                   labelLine={false}
                                 />
+
                                 {female > 0 && (
                                   <text
                                     x={pos.x}
                                     y={pos.y}
                                     textAnchor="middle"
                                     dominantBaseline="middle"
-                                    fontSize="13px"
+                                    fontSize="12px"
                                     fontWeight="bold"
                                     fill="#fff"
                                   >
@@ -1235,6 +1282,7 @@ const Page = () => {
                               </>
                             );
                           })()}
+
                           {/* Outline */}
                           {(() => {
                             const male =
@@ -1243,9 +1291,11 @@ const Page = () => {
                             const female =
                               genderData.find((g) => g.name === "Female")
                                 ?.value || 0;
-                            const total = male + female;
+
                             const startAngle = -90;
-                            const endAngle = -90 + (male / (total || 1)) * 360;
+                            const endAngle =
+                              -90 + (male / (male + female || 1)) * 360;
+
                             return (
                               <Pie
                                 data={[{ name: "Male", value: male }]}
@@ -1263,38 +1313,37 @@ const Page = () => {
                           })()}
                         </PieChart>
                       </div>
-                      <div className="grid grid-cols-2 gap-1 w-full mt-10">
-                        {/* Legend for Male and Female */}
-                        <div className="flex flex-col items-center text-start">
+
+                      {/* Legend */}
+                      {/* Legend */}
+                      <div className="grid grid-cols-2 w-full mt-8 place-items-center">
+                        <div className="flex flex-col items-center">
                           <div className="flex items-center gap-[3px]">
                             <div
                               className="w-[12px] h-[12px] rounded-[2px]"
                               style={{ backgroundColor: COLORS[0] }}
                             ></div>
-                            <span className="text-[10px] font-semibold text-[#010E30] dark:text-white">
+                            <span className="text-[10px] font-medium text-[#010E30] dark:text-white">
                               Male
                             </span>
                           </div>
                           <div className="text-[10px] font-medium mt-[2px] text-[#010E30] dark:text-white/70">
-                            {formatPercentageValue(
-                              genderData.find((g) => g.name === "Male")?.value
-                            )}
+                            {maleCount}
                           </div>
                         </div>
-                        <div className="flex flex-col items-center text-start">
+
+                        <div className="flex flex-col items-center">
                           <div className="flex items-center gap-[3px]">
                             <div
                               className="w-[12px] h-[12px] rounded-[2px]"
                               style={{ backgroundColor: COLORS[1] }}
                             ></div>
-                            <span className="text-[10px] font-semibold text-[#010E30] dark:text-white">
+                            <span className="text-[10px] font-medium text-[#010E30] dark:text-white">
                               Female
                             </span>
                           </div>
                           <div className="text-[10px] font-medium mt-[2px] text-[#010E30] dark:text-white/70">
-                            {formatPercentageValue(
-                              genderData.find((g) => g.name === "Female")?.value
-                            )}
+                            {femaleCount}
                           </div>
                         </div>
                       </div>
@@ -1382,7 +1431,6 @@ const Page = () => {
                                   Filter by
                                 </h2>
                                 <div className="flex flex-col gap-3">
-                                  
                                   <label className="text-sm font-medium text-gray-700 dark:text-[#fff] mt-2">
                                     Name
                                   </label>
@@ -1406,9 +1454,15 @@ const Page = () => {
                                     }
                                   >
                                     <option value="">Select Course</option>
-                                    <option value="Quran Teacher">Quran Teacher</option>
-                                    <option value="Arabic Teacher">Arabic Teacher</option>
-                                    <option value="Islamic Teacher">Islamic Teacher</option>
+                                    <option value="Quran Teacher">
+                                      Quran Teacher
+                                    </option>
+                                    <option value="Arabic Teacher">
+                                      Arabic Teacher
+                                    </option>
+                                    <option value="Islamic Teacher">
+                                      Islamic Teacher
+                                    </option>
                                   </select>
                                 </div>
                                 <div className="flex gap-3 mt-6">
@@ -1562,7 +1616,12 @@ const Page = () => {
                             <div className="flex flex-col justify-center gap-2 px-5 mt-2">
                               <button
                                 className="text-[12px] border border-[#576CBC] text-[#576CBC] dark:text-[#fff] px-2 py-1 rounded-lg"
-                                onClick={() => handlePortalAccess(teacher.userName, teacher.password)}
+                                onClick={() =>
+                                  handlePortalAccess(
+                                    teacher.userName,
+                                    teacher.password
+                                  )
+                                }
                                 disabled={!dashboardRead}
                               >
                                 Portal Access
@@ -1634,13 +1693,16 @@ const Page = () => {
                                 tick={false}
                               />
                               <YAxis hide domain={[0, 100]} />
-                              <Tooltip content={<CustomTooltip />} cursor={{ fill: "transparent" }} />
-                              <Bar dataKey="scaledValue" radius={[10, 10, 10, 10]}>
+                              <Tooltip
+                                content={<CustomTooltip />}
+                                cursor={{ fill: "transparent" }}
+                              />
+                              <Bar
+                                dataKey="scaledValue"
+                                radius={[10, 10, 10, 10]}
+                              >
                                 {normalizedChartData.map((entry) => (
-                                  <Cell
-                                    key={entry.name}
-                                    fill={entry.color}
-                                  />
+                                  <Cell key={entry.name} fill={entry.color} />
                                 ))}
                               </Bar>
                             </BarChart>
@@ -1900,7 +1962,9 @@ const Page = () => {
                           {/* Filter Button (opens your filter popup) */}
                           <button
                             className="flex items-center gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                            onClick={() => setShowOtherEmployeesFilterForm(true)}
+                            onClick={() =>
+                              setShowOtherEmployeesFilterForm(true)
+                            }
                           >
                             <MdTune className="w-4 h-4" />
                             <span>Filter</span>
@@ -2050,7 +2114,12 @@ const Page = () => {
                               <div className="flex flex-col justify-center gap-2 px-5 mt-2">
                                 <button
                                   className="text-[12px] border border-[#576CBC] text-[#576CBC] dark:text-[#fff] px-2 py-1 rounded-lg"
-                                  onClick={() => handlePortalAccessforemployee(employee.userName, employee.password)}
+                                  onClick={() =>
+                                    handlePortalAccessforemployee(
+                                      employee.userName,
+                                      employee.password
+                                    )
+                                  }
                                   disabled={!dashboardRead}
                                 >
                                   Portal Access
@@ -2213,8 +2282,10 @@ const Page = () => {
                     </div>
                     <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400 mr-20">
                       <span className="text-left">
-                        Showing {(filteredLeaveRequests?.length ?? 0) === 0 ? 0 : 1} to{" "}
-                        {filteredLeaveRequests?.length ?? 0} of {filteredLeaveRequests?.length ?? 0}
+                        Showing{" "}
+                        {(filteredLeaveRequests?.length ?? 0) === 0 ? 0 : 1} to{" "}
+                        {filteredLeaveRequests?.length ?? 0} of{" "}
+                        {filteredLeaveRequests?.length ?? 0}
                       </span>
                     </div>
                   </div>
@@ -2797,7 +2868,9 @@ const Page = () => {
                                 className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm w-full"
                                 value={
                                   leaveFilterFrom
-                                    ? leaveFilterFrom.toISOString().split("T")[0]
+                                    ? leaveFilterFrom
+                                        .toISOString()
+                                        .split("T")[0]
                                     : ""
                                 }
                                 onChange={(e) =>

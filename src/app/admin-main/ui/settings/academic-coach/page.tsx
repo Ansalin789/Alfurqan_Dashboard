@@ -36,7 +36,7 @@ const AcademiccoachModuleAccess = () => {
 
   const modules = [
     "Dashboard",
-    "Trail Management",
+    "Trial Management",
     "Manage Students",
     "Manage Teachers",
     "Schedule",

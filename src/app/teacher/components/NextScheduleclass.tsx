@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { AiOutlineClockCircle } from "react-icons/ai";
 import { FaUser } from "react-icons/fa";
-import { useRouter } from "next/navigation";
 import axios from "axios";
 import { MdDateRange } from "react-icons/md";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -38,7 +37,6 @@ interface ClassData {
 }
 
 const NextScheduledClass = () => {
-  const router = useRouter();
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isClassOngoing, setIsClassOngoing] = useState(false);
@@ -58,7 +56,6 @@ const NextScheduledClass = () => {
         setLoading(false);
         return;
       }
-
       const response = await axios.get(
         "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
         {
@@ -68,9 +65,7 @@ const NextScheduledClass = () => {
           },
         }
       );
-
       const now = new Date();
-
       const upcoming = response.data.classSchedule
         .map((item: ClassData) => {
           const startDate = new Date(item.startDate);
@@ -78,11 +73,9 @@ const NextScheduledClass = () => {
             .split(":")
             .map(Number);
           startDate.setHours(startHour, startMin, 0, 0);
-
           const endDate = new Date(item.startDate);
           const [endHour, endMin] = item.endTime[0].split(":").map(Number);
           endDate.setHours(endHour, endMin, 0, 0);
-
           return { ...item, classStart: startDate, classEnd: endDate };
         })
         .filter((item: ClassData) => item.classEnd! > now)
@@ -96,40 +89,6 @@ const NextScheduledClass = () => {
       console.error("Failed to fetch scheduled class:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const triggerHandleEndCall = async () => {
-    try {
-      const token = localStorage.getItem("TeacherAuthToken");
-      if (!token || !classData?._id) return;
-
-      const payload = { sessionId: classData._id };
-
-      const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/classSession/triggerEnd",
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      console.log("✅ Session marked completed:", response.data);
-      setClassData((prev) =>
-        prev ? { ...prev, sessionStatus: "Completed" } : prev
-      );
-      setHasClassEnded(true);
-
-      setTimeout(() => {
-        fetchClassData();
-      }, 1500); // delay ensures backend update
-    } catch (err: any) {
-      console.error(
-        "❌ Error calling handleEndCall:",
-        err?.response?.data || err.message
-      );
     }
   };
 
@@ -226,8 +185,6 @@ const NextScheduledClass = () => {
     return () => clearInterval(interval);
   }, [classData]);
 
-  const formatTime = (num: number) => (num < 10 ? `0${num}` : num);
-
   const handleJoinClass = () => {
     if (!classData?.classLink) return;
 
@@ -239,10 +196,6 @@ const NextScheduledClass = () => {
 
    window.open(`/teacher/ui/liveclass?id=${classData._id}`, "_blank");
   };
-
-  const progress =
-    ((time.hours * 3600 + time.minutes * 60 + time.seconds) / (5 * 60 * 60)) *
-    100;
 
   if (loading)
     return (

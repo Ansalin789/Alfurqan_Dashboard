@@ -5,7 +5,6 @@ import axios, { AxiosError } from "axios";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdTune, MdFormatListBulleted } from "react-icons/md";
 import { Search } from "lucide-react";
-import { IoMdList } from "react-icons/io";
 import { useRouter } from "next/navigation";
 import Pagination from "@/components/Pagination";
 import { AnimatePresence, motion } from "framer-motion";
@@ -209,7 +208,6 @@ const GroupStudents = () => {
     level: "",
     groupId: "",
   });
-  const [openGroupId, setOpenGroupId] = useState<string | null>(null);
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
   // Add these to your existing state declarations
   const [showFilterModal, setShowFilterModal] = useState(false);

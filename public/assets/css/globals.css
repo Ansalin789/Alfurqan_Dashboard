@@ -652,3 +652,16 @@ body {
 .relative:hover label {
   opacity: 1;
 }
+
+
+@keyframes fadeIn {
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+.input {
+  @apply border border-gray-300 rounded px-3 py-2 w-full text-sm;
+}

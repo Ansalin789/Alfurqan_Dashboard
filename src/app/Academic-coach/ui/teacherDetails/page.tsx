@@ -11,113 +11,11 @@ import { MdTune } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import Modal from "react-modal";
 import AcademicHeader from "../../components/academicHeader";
-interface StudentDetails {
-  studentDetails: {
-    _id: string;
-    username: string;
-    password: string;
-    role: string;
-    status: string;
-    createdDate: string;
-    createdBy: string;
-    updatedDate: string;
-    __v: number;
-    student: {
-      studentId: string;
-      studentEmail: string;
-      studentPhone: number;
-      course: string;
-      package: string;
-      city: string;
-      country: string;
-      gender: string;
-    };
-  };
-  studentEvaluationDetails: {
-    _id: string;
-    academicCoachId: string;
-    teacher: {
-      teacherName: string;
-    };
-    student: {
-      studentId: string;
-      studentFirstName: string;
-      studentLastName: string;
-      studentEmail: string;
-      studentGender: string;
-      studentPhone: number;
-      studentCity: string;
-      studentCountry: string;
-      studentCountryCode: string;
-      learningInterest: string;
-      numberOfStudents: number;
-      preferredTeacher: string;
-      preferredFromTime: string;
-      preferredToTime: string;
-      timeZone: string;
-      referralSource: string;
-      preferredDate: string;
-      evaluationStatus: string;
-      status: string;
-      createdDate: string;
-      createdBy: string;
-    };
-    classDay: string[];
-    startTime: string[];
-    endTime: string[];
-    isLanguageLevel: boolean;
-    languageLevel: string;
-    isReadingLevel: boolean;
-    readingLevel: string;
-    isGrammarLevel: boolean;
-    grammarLevel: string;
-    hours: number;
-    subscription: {
-      subscriptionId: string;
-      subscriptionName: string;
-      subscriptionPricePerHr: number;
-      subscriptionDays: number;
-      subscriptionStartDate: string;
-      subscriptionEndDate: string;
-    };
-    planTotalPrice: number;
-    classStartDate: string;
-    classEndDate: string;
-    classStartTime: string;
-    classEndTime: string;
-    accomplishmentTime: string;
-    studentRate: number;
-    gardianName: string;
-    gardianEmail: string;
-    gardianPhone: string;
-    gardianCity: string;
-    gardianCountry: string;
-    gardianTimeZone: string;
-    gardianLanguage: string;
-    assignedTeacher: string;
-    assignedTeacherId: string;
-    assignedTeacherEmail: string;
-    studentStatus: string;
-    classStatus: string;
-    comments: string;
-    trialClassStatus: string;
-    invoiceStatus: string;
-    paymentLink: string;
-    paymentStatus: string;
-    status: string;
-    createdDate: string;
-    createdBy: string;
-    updatedDate: string;
-    updatedBy: string;
-    expectedFinishingDate: number;
-    __v: number;
-    teacherStatus: string;
-  };
-}
 
 interface ClassSchedule {
   _id: string;
   student: {
+    id:string;
     studentId: string;
     studentFirstName: string;
     studentLastName: string;
@@ -165,6 +63,7 @@ interface TrialClass {
     email: string;
   };
   student: {
+    studentRegisterId:string;
     studentId: string;
     name: string;
     email: string;
@@ -236,7 +135,7 @@ const TeacherDetails = () => {
     professionalExperience: IProfessionalExperience[];
     skills: string;
     status: string;
-    createdDate: string; // ISO date string
+    createdDate: string;
     createdBy: string;
     __v: number;
   }
@@ -255,6 +154,7 @@ const TeacherDetails = () => {
     students: Student[];
   }
   interface StudentInfo {
+    _id: string;
     fullName: string;
     courseName: string;
     studentId: string;
@@ -291,7 +191,6 @@ const TeacherDetails = () => {
   const [isCompletedDetailsModalOpen, setIsCompletedDetailsModalOpen] = useState(false);
   const [selectedCompletedClass, setSelectedCompletedClass] = useState<ClassSchedule | null>(null);
 
-  //Rolebyaccess
   useEffect(() => {
     const roleAccessRaw = localStorage.getItem("AcademicRolePermission");
     if (roleAccessRaw) {
@@ -299,21 +198,20 @@ const TeacherDetails = () => {
         const roleAccess = JSON.parse(roleAccessRaw);
         const modules = roleAccess?.academicmodules || roleAccess;
 
-        setTeacherRescheduleWrite(modules?.manageteachers?.write === true); // ✅ already present
+        setTeacherRescheduleWrite(modules?.manageteachers?.write === true);
       } catch (error) {
         console.error("Invalid AcademicRolePermission JSON", error);
       }
     }
   }, []);
 
-  const search = useSearchParams();
   const toggleDropdown = (index: number) => {
     setActiveDropdown(activeDropdown === index ? null : index);
   };
 
   const handleReschedule = (_id: string) => {
     console.log("Navigating to reschedule page");
-    router.push(`manageteachers?id=${_id}`);
+    router.push(`manageteachers?id=${_id}&teacherId=${teacherId}`);
 
     setTimeout(() => {
       setActiveDropdown(null);
@@ -325,7 +223,6 @@ const TeacherDetails = () => {
     setIsCompletedDetailsModalOpen(true);
   };
 
-  // Calculate total pages based on active tab
   const totalPages =
     activeTab === "scheduled"
       ? Math.ceil(scheduledClasses.length / itemsPerPage)
@@ -437,7 +334,6 @@ const TeacherDetails = () => {
       const data = await res.json();
       console.log("API Response:", data);
 
-      // Process regular classes
       const regularClasses = (data.classSchedule || []).map((cls: ClassSchedule) => ({
         ...cls,
         isTrial: false
@@ -445,7 +341,6 @@ const TeacherDetails = () => {
 
       console.log("Processed Regular Classes:", regularClasses);
 
-      // Process trial classes
       let trialClasses: ClassSchedule[] = [];
 
       if (Array.isArray(data.trialclasses)) {
@@ -455,7 +350,7 @@ const TeacherDetails = () => {
           _id: trialClass._id || trialClass.trialId || "",
           classLink: trialClass.meetingLink || "",
           classDay: trialClass.scheduledStartDate ? [trialClass.scheduledStartDate] : [],
-          package: "", // Trial classes may not have package
+          package: "",
           startDate: trialClass.scheduledStartDate || "",
           endDate: trialClass.scheduledEndDate || "",
           startTime: [trialClass.scheduledFrom || ""],
@@ -471,11 +366,12 @@ const TeacherDetails = () => {
           sessionClassType: "TRIALCLASS",
 
           student: {
+            id : trialClass.student.studentRegisterId || "",
             studentId: trialClass.student?.studentId || "N/A",
             studentFirstName: trialClass.student?.name?.split(" ")[0] || "Trial",
             studentLastName: trialClass.student?.name?.split(" ").slice(1).join(" ") || "Student",
             studentEmail: trialClass.student?.email || "",
-            gender: "", // No gender in trial
+            gender: "",
           },
 
           teacher: {
@@ -498,55 +394,52 @@ const TeacherDetails = () => {
         console.log("No trial classes found or incorrect format.");
       }
 
-      // Combine both types
       const allClasses = [...regularClasses, ...trialClasses];
       console.log("All Classes Combined:", allClasses);
-    
-    // Sort by date in ascending order (oldest first)
+
       return allClasses.sort((a: ClassSchedule, b: ClassSchedule) => {
         const dateA = a.isTrial ? a.trialclass?.scheduledStartDate || a.startDate : a.startDate;
         const dateB = b.isTrial ? b.trialclass?.scheduledStartDate || b.startDate : b.startDate;
         return new Date(dateA).getTime() - new Date(dateB).getTime();
-    });
-  } catch (err) {
-    console.error("Failed to fetch class schedule", err);
-    return [];
-  }
-};
-
-  // 👇 Separate function to get unique students
- const getUniqueStudentsFromSchedule = (
-  schedule: ClassSchedule[]
-): StudentInfo[] => {
-  const studentSet = new Set<string>();
-  const studentInfoArray: StudentInfo[] = [];
-
-  schedule.forEach((item: ClassSchedule) => {
-    if (item.student && item.student.studentId) { // Add check for studentId
-      const fullName = item.student.studentFirstName || "";
-      const courseName = item.course?.courseName || "";
-      const studentId = item.student.studentId;
-
-      if (!studentSet.has(studentId)) {
-        studentSet.add(studentId);
-        studentInfoArray.push({ fullName, courseName, studentId });
-      }
+      });
+    } catch (err) {
+      console.error("Failed to fetch class schedule", err);
+      return [];
     }
-  });
+  };
 
-  return studentInfoArray;
-};
+  const getUniqueStudentsFromSchedule = (
+    schedule: ClassSchedule[]
+  ): StudentInfo[] => {
+    const studentSet = new Set<string>();
+    const studentInfoArray: StudentInfo[] = [];
 
-  // 👇 Fetch class schedule and set Scheduled/Completed classes
+    schedule.forEach((item: ClassSchedule) => {
+      if (item.student && item.student.studentId) {
+        const fullName = item.student.studentFirstName || "";
+        const courseName = item.course?.courseName || "";
+        const studentId = item.student.studentId;
+        const _id = item.student.id ?? '';
+
+        if (!studentSet.has(studentId)) {
+          studentSet.add(studentId);
+          studentInfoArray.push({ fullName, courseName, studentId, _id });
+        }
+      }
+    });
+
+    return studentInfoArray;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       const schedule = await fetchClassSchedule();
       setClassScheduleData(schedule);
 
       setScheduledClasses(
-        schedule.filter((c) =>  c.scheduleStatus === "Scheduled" ||
-              c.scheduleStatus === "Rescheduled" ||
-              c.scheduleStatus === "Reschedulerequested")
+        schedule.filter((c) => c.scheduleStatus === "Scheduled" ||
+          c.scheduleStatus === "Rescheduled" ||
+          c.scheduleStatus === "Reschedulerequested")
       );
       setCompletedClasses(
         schedule.filter((c) => c.scheduleStatus === "Completed" || c.scheduleStatus === "BothAbsent" || c.scheduleStatus === "TeacherAbsent" || c.scheduleStatus === "StudentAbsent")
@@ -566,7 +459,7 @@ const TeacherDetails = () => {
     const dataToPaginate =
       activeTab === "scheduled" ? scheduledClasses : completedClasses;
 
-    const totalItems = dataToPaginate.length; // total count
+    const totalItems = dataToPaginate.length;
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -580,7 +473,7 @@ const TeacherDetails = () => {
     itemsPerPage,
   ]);
 
-  // 👇 Fetch unique students separately
+
   useEffect(() => {
     if (classScheduleData.length > 0) {
       const uniqueStudents = getUniqueStudentsFromSchedule(classScheduleData);
@@ -593,8 +486,8 @@ const TeacherDetails = () => {
       filteredUsers.length > 0
         ? filteredUsers
         : activeTab === "scheduled"
-        ? scheduledClasses
-        : completedClasses;
+          ? scheduledClasses
+          : completedClasses;
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -609,7 +502,6 @@ const TeacherDetails = () => {
     itemsPerPage,
   ]);
 
-  // Reset filters/search when switching tabs
   useEffect(() => {
     setFilteredUsers([]);
     setSearchQuery("");
@@ -619,12 +511,11 @@ const TeacherDetails = () => {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
 
-    // Choose the correct data source based on the active tab
     const currentUsers =
       activeTab === "scheduled" ? scheduledClasses : completedClasses;
 
     if (!query.trim()) {
-      setFilteredUsers(currentUsers); // Show all if search is empty
+      setFilteredUsers(currentUsers);
       setCurrentPage(1);
       return;
     }
@@ -633,45 +524,39 @@ const TeacherDetails = () => {
 
     const filtered = currentUsers.filter((user) => {
       const isTrial = user.isTrial;
-      
-      // Get student name - handle trial classes
+
       const studentName = isTrial
-        ? user.trialclass?.student?.name?.toLowerCase() || 
-          `${user.student?.studentFirstName || ""} ${user.student?.studentLastName || ""}`.toLowerCase()
+        ? user.trialclass?.student?.name?.toLowerCase() ||
+        `${user.student?.studentFirstName || ""} ${user.student?.studentLastName || ""}`.toLowerCase()
         : `${user.student?.studentFirstName || ""} ${user.student?.studentLastName || ""}`.toLowerCase();
 
-      // Get course name
       const courseName = isTrial
         ? user.trialclass?.course?.courseName?.toLowerCase() || user.course?.courseName?.toLowerCase()
         : user.course?.courseName?.toLowerCase();
 
-      // Get class type
       const classType = (user.sessionClassType || user.classType || "").toLowerCase();
 
-      // Get status
       const status = isTrial
         ? user.trialclass?.meetingStatus?.toLowerCase() || user.scheduleStatus?.toLowerCase()
         : user.scheduleStatus?.toLowerCase();
 
-      // Get date for search
-      const classDate = isTrial ? 
-        (user.trialclass?.scheduledStartDate || user.startDate) : 
+      const classDate = isTrial ?
+        (user.trialclass?.scheduledStartDate || user.startDate) :
         user.startDate;
       const dateObj = classDate ? new Date(classDate) : null;
       const dateReadable = dateObj
         ? dateObj.toLocaleDateString("en-US", {
-            month: "short",
-            day: "2-digit",
-            year: "numeric",
-          }).toLowerCase()
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        }).toLowerCase()
         : "";
 
-      // Get time for search
-      const startTime = isTrial ? 
-        (user.trialclass?.scheduledFrom || user.startTime?.[0]) : 
+      const startTime = isTrial ?
+        (user.trialclass?.scheduledFrom || user.startTime?.[0]) :
         user.startTime?.[0];
-      const endTime = isTrial ? 
-        (user.trialclass?.scheduledTo || user.endTime?.[0]) : 
+      const endTime = isTrial ?
+        (user.trialclass?.scheduledTo || user.endTime?.[0]) :
         user.endTime?.[0];
       const timing = `${startTime || ""} - ${endTime || ""}`.toLowerCase();
 
@@ -691,7 +576,7 @@ const TeacherDetails = () => {
     });
 
     setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset to first page
+    setCurrentPage(1);
   };
 
   const FilterModal = ({
@@ -759,7 +644,6 @@ const TeacherDetails = () => {
             </div>
 
             <div className="space-y-4">
-              {/* Student Name */}
               <div>
                 <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                   Student Name
@@ -773,8 +657,6 @@ const TeacherDetails = () => {
                   className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 />
               </div>
-
-              {/* Course */}
               <div>
                 <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                   Course
@@ -792,8 +674,6 @@ const TeacherDetails = () => {
                   <option value="ISLAMIC STUDIES">Islamic Studies</option>
                 </select>
               </div>
-
-              {/* Date */}
               <div>
                 <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6] ">
                   Date
@@ -807,8 +687,6 @@ const TeacherDetails = () => {
                   className="w-full px-3 py-2 border rounded text-sm dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] dark:[color-scheme:dark]"
                 />
               </div>
-
-              {/* Time */}
               <div>
                 <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                   Time
@@ -822,8 +700,6 @@ const TeacherDetails = () => {
                   className="w-full px-3 py-2 border rounded text-sm dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] dark:[color-scheme:dark]"
                 />
               </div>
-
-              {/* Class Type */}
               <div>
                 <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                   Class Type
@@ -838,11 +714,9 @@ const TeacherDetails = () => {
                   <option value="">Select Class Type</option>
                   <option value="Online">Regular</option>
                   <option value="Offline">Group</option>
-                  <option value="Offline">Trail</option>
+                  <option value="Offline">Trial</option>
                 </select>
               </div>
-
-              {/* Status */}
               <div>
                 <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                   Status
@@ -860,8 +734,6 @@ const TeacherDetails = () => {
                   <option value="RESCHEDULED">Rescheduled</option>
                 </select>
               </div>
-
-              {/* Buttons */}
               <div className="flex justify-between items-center pt-4 ">
                 <button
                   onClick={handleReset}
@@ -881,9 +753,8 @@ const TeacherDetails = () => {
                     ).filter((user) => {
                       return (
                         (!filters.studentName ||
-                          `${user.student?.studentFirstName ?? ""} ${
-                            user.student?.studentLastName ?? ""
-                          }`
+                          `${user.student?.studentFirstName ?? ""} ${user.student?.studentLastName ?? ""
+                            }`
                             .toLowerCase()
                             .includes(filters.studentName.toLowerCase())) &&
                         (!filters.course ||
@@ -892,16 +763,16 @@ const TeacherDetails = () => {
                             .includes(filters.course.toLowerCase())) &&
                         (!filters.Date ||
                           new Date(user.startDate).toLocaleDateString() ===
-                            new Date(filters.Date).toLocaleDateString()) &&
+                          new Date(filters.Date).toLocaleDateString()) &&
                         (!filters.Time ||
                           (user.startTime &&
                             user.startTime.includes(filters.Time))) &&
                         (!filters.classType ||
                           user.sessionClassType?.toLowerCase() ===
-                            filters.classType.toLowerCase()) &&
+                          filters.classType.toLowerCase()) &&
                         (!filters.status ||
                           user.scheduleStatus?.toLowerCase() ===
-                            filters.status.toLowerCase())
+                          filters.status.toLowerCase())
                       );
                     }).length
                   }{" "}
@@ -914,8 +785,6 @@ const TeacherDetails = () => {
       </Modal>
     );
   };
-
-  // Add filter handling function
   const handleApplyFilters = (filters: {
     studentName: string;
     course: string;
@@ -925,7 +794,7 @@ const TeacherDetails = () => {
     status: string;
   }) => {
     const formatDate = (date: Date | string) =>
-      new Date(date).toISOString().split("T")[0]; // 'yyyy-mm-dd'
+      new Date(date).toISOString().split("T")[0];
 
     let filtered =
       activeTab === "scheduled" ? [...scheduledClasses] : [...completedClasses];
@@ -934,10 +803,10 @@ const TeacherDetails = () => {
       filtered = filtered.filter((user) => {
         const isTrial = user.isTrial;
         const studentName = isTrial
-          ? user.trialclass?.student?.name?.toLowerCase() || 
-            `${user.student?.studentFirstName || ""} ${user.student?.studentLastName || ""}`.toLowerCase()
+          ? user.trialclass?.student?.name?.toLowerCase() ||
+          `${user.student?.studentFirstName || ""} ${user.student?.studentLastName || ""}`.toLowerCase()
           : `${user.student?.studentFirstName ?? ""} ${user.student?.studentLastName ?? ""}`.toLowerCase();
-        
+
         return studentName.includes(filters.studentName.toLowerCase());
       });
     }
@@ -945,8 +814,8 @@ const TeacherDetails = () => {
     if (filters.Date) {
       filtered = filtered.filter((user) => {
         const isTrial = user.isTrial;
-        const classDate = isTrial ? 
-          (user.trialclass?.scheduledStartDate || user.startDate) : 
+        const classDate = isTrial ?
+          (user.trialclass?.scheduledStartDate || user.startDate) :
           user.startDate;
         return formatDate(classDate) === filters.Date;
       });
@@ -965,8 +834,8 @@ const TeacherDetails = () => {
     if (filters.Time) {
       filtered = filtered.filter((user) => {
         const isTrial = user.isTrial;
-        const startTime = isTrial ? 
-          (user.trialclass?.scheduledFrom || user.startTime?.[0]) : 
+        const startTime = isTrial ?
+          (user.trialclass?.scheduledFrom || user.startTime?.[0]) :
           user.startTime?.[0];
         return startTime?.includes(filters.Time);
       });
@@ -990,19 +859,18 @@ const TeacherDetails = () => {
     }
 
     setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset to first page
+    setCurrentPage(1);
   };
 
-  // Calculate totalItems for use in JSX
   const totalItems =
     activeTab === "scheduled"
       ? scheduledClasses.length
       : completedClasses.length;
 
-const handleViewDetails = (_id: string) => {
-  localStorage.setItem("studentManageID", _id);
-  router.push(`managestudentview?id=${_id}`);
-};
+  const handleViewDetails = (_id: string) => {
+    localStorage.setItem("studentManageID", _id);
+    router.push(`managestudentview?id=${_id}`);
+  };
   return (
     <BaseLayout1>
       <AcademicHeader
@@ -1011,32 +879,27 @@ const handleViewDetails = (_id: string) => {
         showBackPath="/Academic-coach/ui/manageteacher"
       />
       <div className="p-2 mx-auto w-full">
-        {/* Main Container */}
         <div className="flex gap-x-5 w-full">
-          {/* Left Profile Card */}
           <div className="rounded-xl flex items-center p-6 w-[633px] h-[247px] border bg-[#5e6578] text-white ">
-              {/* Profile Section */}
-  <div className="flex flex-col items-center w-1/3 px-4 text-center">
-  <div className="relative mb-1 w-[160px] h-[160px]">
-  <Image
-    src="/assets/images/student-portfolio.svg"
-    alt="Profile"
-    fill
-    className="rounded-full object-cover"
-  />
-</div>
+            <div className="flex flex-col items-center w-1/3 px-4 text-center">
+              <div className="relative mb-1 w-[160px] h-[160px]">
+                <Image
+                  src="/assets/images/student-portfolio.svg"
+                  alt="Profile"
+                  fill
+                  className="rounded-full object-cover"
+                />
+              </div>
 
-    <h2 className="text-lg font-semibold text-white break-words mb-1">
-      {teachers?.candidateFirstName}
-    </h2>
-    <p className="text-[11px] text-[#C9C9C9] break-words word-wrap w-[200px] px-2">
-      {teachers?.candidateEmail}
-    </p>
-  </div>
+              <h2 className="text-lg font-semibold text-white break-words mb-1">
+                {teachers?.candidateFirstName}
+              </h2>
+              <p className="text-[11px] text-[#C9C9C9] break-words word-wrap w-[200px] px-2">
+                {teachers?.candidateEmail}
+              </p>
+            </div>
 
-  {/* Divider */}
             <div className="w-px bg-gray-300 h-[150px] mx-10" />
-     {/* Personal Info */}
             <div className="w-2/3">
               <h3 className="text-[16px] font-semibold mb-4 text-[#ffff]">
                 Personal Info
@@ -1070,9 +933,7 @@ const handleViewDetails = (_id: string) => {
             </div>
           </div>
 
-          {/* Right Section */}
           <div className="rounded-xl w-full h-[220px] flex justify-between p-3 border dark:bg-[#252525] -mt-3 ">
-            {/* Left Side - Performance and Attendance */}
             <div className="grid grid-cols-1 gap-3 w-full h-[247px]">
               {[
                 {
@@ -1102,57 +963,53 @@ const handleViewDetails = (_id: string) => {
               ))}
             </div>
 
-            {/* Right Side - Students List */}
-            {/* Right Side - Students List */}
           </div>
-  <div className="bg-white dark:bg-[#2f2f2f] rounded-2xl p-4 w-full h-[247px] flex flex-col gap-y-4 scrollbar-none">
-  <div className="flex justify-between items-center">
-    <h2 className="text-[14px] font-semibold text-[#111827] dark:text-white">
-      Students List
-    </h2>
-    <span className="bg-[#576CBC] text-white text-[12px] font-semibold rounded-md px-2 py-1">
-      {studentInfoList.length}
-    </span>
-  </div>
+          <div className="bg-white dark:bg-[#2f2f2f] rounded-2xl p-4 w-full h-[247px] flex flex-col gap-y-4 scrollbar-none">
+            <div className="flex justify-between items-center">
+              <h2 className="text-[14px] font-semibold text-[#111827] dark:text-white">
+                Students List
+              </h2>
+              <span className="bg-[#576CBC] text-white text-[12px] font-semibold rounded-md px-2 py-1">
+                {studentInfoList.length}
+              </span>
+            </div>
 
-  {/* Students List */}
-  <ul className="space-y-3 overflow-y-auto max-h-[180px] scrollbar-none">
-    {studentInfoList.map((student, index) => (
-      <li
-        key={index}
-        className="flex items-center justify-between border-b pb-2 border-gray-200 dark:border-gray-700"
-      >
-        <div className="flex items-center space-x-3">
-          <div className="w-6 h-6 rounded-full bg-[#ffff] flex items-center justify-center font-bold text-[10px]">
-            <img
-              src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-              alt="avatar"
-              className="w-6 h-6 rounded-full object-cover"
-            />
+            <ul className="space-y-3 overflow-y-auto max-h-[180px] scrollbar-none">
+              {studentInfoList.map((student, index) => (
+                <li
+                  key={index}
+                  className="flex items-center justify-between border-b pb-2 border-gray-200 dark:border-gray-700"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-6 h-6 rounded-full bg-[#ffff] flex items-center justify-center font-bold text-[10px]">
+                      <img
+                        src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                        alt="avatar"
+                        className="w-6 h-6 rounded-full object-cover"
+                      />
+                    </div>
+                    <span
+                      className="text-[12px] font-medium text-[#111827] dark:text-white cursor-pointer hover:underline"
+                      onClick={() => handleViewDetails(student._id)}
+                    >
+                      {student.fullName}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-[#576CBC] font-medium whitespace-nowrap">
+                    {student.courseName || ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
-          <span 
-            className="text-[12px] font-medium text-[#111827] dark:text-white cursor-pointer hover:underline"
-            onClick={() => handleViewDetails(student.studentId)}
-          >
-            {student.fullName}
-          </span>
         </div>
-        <span className="text-[11px] text-[#576CBC] font-medium whitespace-nowrap">
-          {student.courseName || ""}
-        </span>
-      </li>
-    ))}
-  </ul>
-</div>
-        </div>
-        
+
         <div className="flex space-x-6  px-4 py-2 rounded-md">
           <button
-            className={`relative text-[14px] transition font-medium ${
-              activeTab === "scheduled"
+            className={`relative text-[14px] transition font-medium ${activeTab === "scheduled"
                 ? "text-[#576CBC] font-semibold"
                 : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-            }`}
+              }`}
             onClick={() => {
               setActiveTab("scheduled");
               setCurrentPage(1);
@@ -1165,11 +1022,10 @@ const handleViewDetails = (_id: string) => {
           </button>
 
           <button
-            className={`relative text-[14px] transition font-medium ${
-              activeTab === "completed"
+            className={`relative text-[14px] transition font-medium ${activeTab === "completed"
                 ? "text-[#576CBC] font-semibold"
                 : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-            }`}
+              }`}
             onClick={() => {
               setActiveTab("completed");
               setCurrentPage(1);
@@ -1198,7 +1054,6 @@ const handleViewDetails = (_id: string) => {
               className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
               onClick={() => setIsFilterModalOpen(true)}
             >
-              {/* <BsFilterLeft /> */}
               <MdTune className="w-4 h-4" />
               <span>Filter</span>
             </div>
@@ -1210,7 +1065,6 @@ const handleViewDetails = (_id: string) => {
             </div>
           </div>
 
-          {/* Table */}
           <table
             className="table-auto xw-full"
             style={{ width: "100%", tableLayout: "fixed" }}
@@ -1243,68 +1097,60 @@ const handleViewDetails = (_id: string) => {
             <tbody className="bg-white dark:bg-[#343434] dark:divide-gray-600">
               {paginatedData.map((item, index) => {
                 const isTrial = item.isTrial;
-                
-                // Get the appropriate date
-                const classDate = isTrial ? 
-                  (item.trialclass?.scheduledStartDate || item.startDate) : 
+
+                const classDate = isTrial ?
+                  (item.trialclass?.scheduledStartDate || item.startDate) :
                   item.startDate;
-                
-                // Format the date
+
                 const dateObj = classDate ? new Date(classDate) : null;
                 const formattedDate = dateObj
                   ? dateObj.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "2-digit",
-                      year: "numeric",
-                    })
+                    month: "short",
+                    day: "2-digit",
+                    year: "numeric",
+                  })
                   : "N/A";
 
-                // Get time - prioritize trial class time if available
-                const startTime = isTrial ? 
-                  (item.trialclass?.scheduledFrom || item.startTime?.[0]) : 
+                const startTime = isTrial ?
+                  (item.trialclass?.scheduledFrom || item.startTime?.[0]) :
                   item.startTime?.[0];
-                const endTime = isTrial ? 
-                  (item.trialclass?.scheduledTo || item.endTime?.[0]) : 
+                const endTime = isTrial ?
+                  (item.trialclass?.scheduledTo || item.endTime?.[0]) :
                   item.endTime?.[0];
                 const timeDisplay = startTime && endTime ? `${startTime} - ${endTime}` : "N/A";
 
-                // Get student name - handle trial classes
                 const studentName = isTrial
                   ? item.trialclass?.student?.name?.split(" ")[0] || item.student?.studentFirstName || "Trial Student"
                   : item.student?.studentFirstName || "N/A";
 
-                // Get course name
                 const courseName = isTrial
                   ? item.trialclass?.course?.courseName || item.course?.courseName
                   : item.course?.courseName;
 
-                // Get class type
                 const classType = item.sessionClassType || item.classType || "N/A";
 
-                // Get status
                 const status = isTrial
                   ? item.trialclass?.meetingStatus || item.scheduleStatus
                   : item.scheduleStatus;
 
                 return (
-                <tr
-                  key={item._id}
-                  className={`text-[12px] ${
-                    index % 2 === 0
-                      ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                      : "bg-[#F8F8F8] dark:bg-[#303030]"
-                  }`}
-                >
-                  <td className="px-3 py-3 text-[#3D8FDE] font-medium text-left">
+                  <tr
+                    key={item._id}
+                    className={`text-[12px] ${index % 2 === 0
+                        ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                        : "bg-[#F8F8F8] dark:bg-[#303030]"
+                      }`}
+                  >
+                    <td className="px-3 py-3 text-[#3D8FDE] font-medium text-left">
                       {studentName}
-                  </td>
-                  <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                    </td>
+                    <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                       {courseName || "N/A"}
-                  </td>
-                  <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                    </td>
+                    <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                       {formattedDate}
-                  </td>
-                  <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                    </td>
+                    <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                       {timeDisplay}
                   </td>
                   <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
@@ -1321,90 +1167,87 @@ const handleViewDetails = (_id: string) => {
                           status === "Scheduled"
                           ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
                             : status === "Rescheduled" || status === "Reschedulerequested"
-                          ? "bg-[#E4E4E4] text-[#000] dark:bg-[#555] dark:text-[#fff]"
-                            : status === "Completed"
-                            ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
-                            : "bg-[#FDECEC] dark:bg-[#D3464533] text-[#D34645]"
-                      }`}
-                    >
+                              ? "bg-[#E4E4E4] text-[#000] dark:bg-[#555] dark:text-[#fff]"
+                              : status === "Completed"
+                                ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
+                                : "bg-[#FDECEC] dark:bg-[#D3464533] text-[#D34645]"
+                          }`}
+                      >
                         {status}
-                    </span>
-                  </td>
-             {(
-               <td
-                 className="py-1 text-center relative w-[90px] min-w-[90px] max-w-[90px]"
-                 ref={dropdownRef}
-               >
-                 <button
-                   onClick={() => toggleDropdown(index)}
-                   className={`$${
-                     (activeTab === "scheduled" && ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
-                     activeTab === "completed"
-                       ? "cursor-pointer"
-                       : "cursor-default"
-                   }`}
-                   disabled={
-                     !((activeTab === "scheduled" && ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
-                       activeTab === "completed")
-                   }
-                 >
-                   <MoreVertical
-                     className={`w-4 h-4 ${
-                       (activeTab === "scheduled" && ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
-                       activeTab === "completed"
-                         ? "text-slate-600 dark:text-[#FDFDFD]"
-                         : "text-gray-400 dark:text-gray-600 opacity-50"
-                     }`}
-                   />
-                 </button>
+                      </span>
+                    </td>
+                    {(
+                      <td
+                        className="py-1 text-center relative w-[90px] min-w-[90px] max-w-[90px]"
+                        ref={dropdownRef}
+                      >
+                        <button
+                          onClick={() => toggleDropdown(index)}
+                          className={`$${(activeTab === "scheduled" && ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
+                              activeTab === "completed"
+                              ? "cursor-pointer"
+                              : "cursor-default"
+                            }`}
+                          disabled={
+                            !((activeTab === "scheduled" && ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
+                              activeTab === "completed")
+                          }
+                        >
+                          <MoreVertical
+                            className={`w-4 h-4 ${(activeTab === "scheduled" && ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
+                                activeTab === "completed"
+                                ? "text-slate-600 dark:text-[#FDFDFD]"
+                                : "text-gray-400 dark:text-gray-600 opacity-50"
+                              }`}
+                          />
+                        </button>
 
-                 {activeDropdown === index && (
-                   <div
-                     className="py-1 bg-white rounded-md shadow-lg daerk absolute right-0 top-6 z-20 w-32 min-w-[120px] max-w-[160px]  dark:bg-[#252525]"
-                     style={{ minWidth: "120px" }}
-                   >
-                     {activeTab === "completed" ? (
-                       <button
-                         className="w-full text-left px-4 py-2 text-[12px] text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
-                         onClick={() => {
-                           handleViewCompletedDetails(item);
-                           setActiveDropdown(null);
-                         }}
-                       >
-                         View Details
-                       </button>
-                     ) : (
-                       ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus) && (
-                         <button
-                           className={`w-full text-left px-4 py-2 text-[12px] ${
-                             teacherRescheduleWrite
-                               ? "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
-                               : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444] cursor-not-allowed"
-                           }`}
-                           onClick={
-                             teacherRescheduleWrite ? () => handleReschedule(item._id) : undefined
-                           }
-                           disabled={!teacherRescheduleWrite}
-                         >
-                           Reschedule
-                         </button>
-                       )
-                     )}
-                     <button
-                       onClick={() => setActiveDropdown(null)}
-                       className="w-full text-left px-4 py-2 text-red-600"
-                     >
-                       Cancel
-                     </button>
-                   </div>
-                 )}
-               </td>
-             )}
-      </tr>
+                        {activeDropdown === index && (
+                          <div
+                            className="py-1 bg-white rounded-md shadow-lg daerk absolute right-0 top-6 z-20 w-32 min-w-[120px] max-w-[160px]  dark:bg-[#252525]"
+                            style={{ minWidth: "120px" }}
+                          >
+                            {activeTab === "completed" ? (
+                              <button
+                                className="w-full text-left px-4 py-2 text-[12px] text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
+                                onClick={() => {
+                                  handleViewCompletedDetails(item);
+                                  setActiveDropdown(null);
+                                }}
+                              >
+                                View Details
+                              </button>
+                            ) : (
+                              ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus) && (
+                                <button
+                                  className={`w-full text-left px-4 py-2 text-[12px] ${teacherRescheduleWrite
+                                      ? "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
+                                      : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444] cursor-not-allowed"
+                                    }`}
+                                  onClick={
+                                    teacherRescheduleWrite ? () => handleReschedule(item._id) : undefined
+                                  }
+                                  disabled={!teacherRescheduleWrite}
+                                >
+                                  Reschedule
+                                </button>
+                              )
+                            )}
+                            <button
+                              onClick={() => setActiveDropdown(null)}
+                              className="w-full text-left px-4 py-2 text-red-600"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    )}
+                  </tr>
                 );
               })}
-  </tbody>
-</table>
+            </tbody>
+          </table>
         </div>
         <Pagination
           currentPage={currentPage}

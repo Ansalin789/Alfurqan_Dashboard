@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
 import { useSearchParams } from "next/navigation";
-import BaseLayout from "@/components/BaseLayout";
 import Link from "next/link";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -55,7 +54,6 @@ interface Meeting {
 }
 
 const LiveMeeting = () => {
-  const [startTime, setStartTime] = useState<string>("");
   const [meetingData, setMeetingData] = useState<Meeting | null>(null);
   const [roomName, setRoomName] = useState("");
   const [attendance, setAttendance] = useState<Attendance[]>([]);
@@ -343,7 +341,6 @@ const LiveMeeting = () => {
                             }
                           );
                           startTimeRef.current = startCallTime;
-                          setStartTime(startCallTime);
                         });
                         externalApi.addListener("videoConferenceLeft", () => {
                           handleEndCall();

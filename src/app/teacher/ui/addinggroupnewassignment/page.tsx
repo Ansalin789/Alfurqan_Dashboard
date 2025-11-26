@@ -7,46 +7,6 @@ import { useSearchParams } from "next/navigation";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
 
-interface AssignmentFormData {
-  studentId: string;
-  studentName: string;
-  sessionClassType: string;
-  assignedTeacher: string;
-  assignedTeacherId: string;
-  assignments: AssignmentItem[];
-}
-
-interface AssignmentItem {
-  assignmentName: string;
-  assignmentType: { type: string };
-  questionName: string;
-  questionType: string;
-  typeofQuestion: string;
-  title: string;
-  question: string;
-  hasOptions: boolean;
-  options?: {
-    optionOne: string;
-    optionTwo: string;
-    optionThree: string;
-    optionFour: string;
-  };
-  createdDate: string;
-  dueDate: string;
-  createdBy: string;
-  updatedBy: string;
-  level: string;
-  courses: string;
-  status: string;
-  assignmentStatus: string;
-  answer: string;
-  answerValidation: string;
-  audioFile?: File;
-  uploadFile?: File;
-  chooseType: boolean;
-  trueorfalseType: boolean;
-}
-
 interface Assignment {
   name: string;
   type: string;
@@ -96,7 +56,6 @@ const NewAssignment = () => {
   const [assignedDate, setAssignedDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [comment, setComment] = useState("");
-
   const [sessionClassType, setSessionClassType] = useState("");
   const [assignedTeacher, setAssignedTeacher] = useState("");
   const [assignedTeacherId, setAssignedTeacherId] = useState("");
@@ -115,13 +74,11 @@ const NewAssignment = () => {
     const assignedDate = searchParams?.get("assignedDate") || "";
     const dueDate = searchParams?.get("dueDate") || "";
     const comment = searchParams?.get("comment") || "";
-
     const sessionClassType = searchParams?.get("sessionClassType") || "";
     const assignedTeacher = searchParams?.get("assignedTeacher") || "";
     const assignedTeacherId = searchParams?.get("assignedTeacherId") || "";
     const course = searchParams?.get("course") || "";
     const level = searchParams?.get("level") || "";
-
     const studentIdParam = searchParams?.get("studentId");
     const studentNameParam = searchParams?.get("studentName");
     const studentsParam = searchParams?.get("students");
@@ -157,7 +114,6 @@ const NewAssignment = () => {
     setLevel(level);
   }, [searchParams]);
   const [hasOptions, setHasOptions] = useState<boolean>(true); // default true
-
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -168,12 +124,10 @@ const NewAssignment = () => {
   const [uploadedFileURL, setUploadedFileURL] = useState<string | null>(null);
   const [uploadedFileType, setUploadedFileType] = useState<string | null>(null);
   type OptionKey = "a" | "b" | "c" | "d";
-
   interface Option {
     text: string;
     isCorrect: boolean;
   }
-
   const [options, setOptions] = useState<Record<OptionKey, Option>>({
     a: { text: "", isCorrect: false },
     b: { text: "", isCorrect: false },
@@ -183,7 +137,6 @@ const NewAssignment = () => {
 
   // For true/false type
   const [questionName, setQuestionName] = useState("");
-
   const [trueFalseAnswer, setTrueFalseAnswer] = useState<boolean | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
   const [typedQuestion, setTypedQuestion] = useState("");
@@ -195,12 +148,6 @@ const NewAssignment = () => {
   ); // or "truefalse"
   const [noOptions, setNoOptions] = useState(false);
   const [answerText, setAnswerText] = useState("");
-
-  // Utility function to convert File/Blob to ArrayBuffer (browser safe)
-  const fileToBuffer = async (file: File): Promise<ArrayBuffer> => {
-    // Use file.arrayBuffer() which works in browsers
-    return file.arrayBuffer();
-  };
 
   // Add delete handler for group page
   const handleDeleteQuestion = (indexToDelete: number) => {
@@ -388,36 +335,6 @@ const NewAssignment = () => {
     setAnswerText("");
     setSelectedAnswer("");
   }, [assignmentType]);
-  const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mediaRecorder = new MediaRecorder(stream);
-    mediaRecorderRef.current = mediaRecorder;
-    audioChunks.current = [];
-
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        audioChunks.current.push(event.data);
-      }
-    };
-
-    mediaRecorder.onstop = () => {
-      const audioBlob = new Blob(audioChunks.current, { type: "audio/webm" });
-      const url = URL.createObjectURL(audioBlob);
-
-      setAudioURL(url);
-      setUploadedFileURL(url);
-      setUploadedFileName("Recorded Audio.webm");
-      setUploadedFileType("audio/webm");
-    };
-
-    mediaRecorder.start();
-    setIsRecording(true);
-  };
-
-  const stopRecording = () => {
-    mediaRecorderRef.current?.stop();
-    setIsRecording(false);
-  };
 
   // In the component, update the handleFileUpload to handle images separately:
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -472,16 +389,6 @@ const NewAssignment = () => {
   const [audioFileBuffer, setAudioFileBuffer] = useState<ArrayBuffer | null>(
     null
   );
-
-  // File to Base64 converter function
-  const convertToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
 
   const handleDeleteFile = () => {
     setAudioURL(null);
@@ -876,18 +783,6 @@ const NewAssignment = () => {
             />
             {!audioURL && !uploadedFileURL && (
               <div className="absolute bottom-2 right-2 flex gap-2 dark:text-[#fff]">
-                {/* <button
-                  type="button"
-                  className={`p-2 bg-gray-200 rounded-full border border-gray-300 flex items-center justify-center dark:border-[#343434] dark:text-[#fff] ${isRecording ? "bg-red-200" : ""
-                    }`}
-                  title={isRecording ? "Stop Recording" : "Record"}
-                  onClick={isRecording ? stopRecording : startRecording}
-                >
-                  <FaMicrophone
-                    className={`text-xl ${isRecording ? "text-red-600" : "text-gray-700"
-                      }`}
-                  />
-                </button> */}
                 {/* File upload button - shown when no file is uploaded */}
                 {!uploadedFileURL && (
                   <label className="p-2 bg-gray-200 rounded-full border border-gray-300 flex items-center justify-center cursor-pointer">

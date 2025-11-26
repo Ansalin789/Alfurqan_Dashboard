@@ -97,14 +97,10 @@ const Subjectcard: React.FC = () => {
     presentCount: 0,
     totalDuration: 0,
   });
-  const [courseName, setCourseName] = useState<string>("");
-  const [maxDuration, setMaxDuration] = useState<number | undefined>(undefined); // No default value
-  const [maxClasses, setMaxClasses] = useState<number | undefined>(undefined); // No default value
-
   useEffect(() => {
     const storedCourseName = localStorage.getItem("StudentcourseName"); // Check the casing
     if (storedCourseName) {
-      setCourseName(storedCourseName);
+      console.log(storedCourseName);
     } else {
       console.warn("⚠️ No courseName found in localStorage");
     }
@@ -138,9 +134,7 @@ const Subjectcard: React.FC = () => {
           totalDuration: Number(response.data.totalDuration) || 0,
         });
 
-        // Set maximum values based on current totals
-        setMaxDuration(Number(response.data.totalDuration)); // Set maxDuration to current totalDuration
-        setMaxClasses(Number(response.data.totalClasses)); // Set maxClasses to current totalClasses
+      
 
       } catch (error) {
         console.error("❌ Error fetching dashboard counts:", error);

@@ -190,7 +190,7 @@ const ManageStudentView = () => {
   const dropdownRef = useRef<HTMLTableCellElement | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const [searchText, setSearchText] = useState("");
-  const [studentListWrite, setStudentListWrite] = useState(false); // For Assign Group Class
+  const [studentListWrite, setStudentListWrite] = useState(false);
   const [studentStats, setStudentStats] = useState<StudentStats | null>(null);
 
   //Rolebyaccess
@@ -219,10 +219,7 @@ const ManageStudentView = () => {
       ? completedClasses
       : unscheduledClasses;
 
-  // Calculate total pages once, outside useEffect
   const totalPages = Math.ceil(dataToShow.length / itemsPerPage);
-
-  //search
 
   const handleSearch = (query: string) => {
     setSearchText(query);
@@ -241,7 +238,7 @@ const ManageStudentView = () => {
 
       const time = `${item.startTime?.[0] || ""} - ${item.endTime?.[0] || ""}`;
       const status = item.scheduleStatus || "";
-      const classType = "Group Class"; // static in your code
+      const classType = "Group Class"; 
 
       const combinedText =
         `${studentFullName} ${course} ${date} ${time} ${status} ${classType}`.toLowerCase();
@@ -288,12 +285,10 @@ const ManageStudentView = () => {
     setPaginatedData(paginated);
   }, [dataToShow, currentPage, searchText]);
 
-  // Optional: reset page to 1 when tab changes
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab]);
 
-  //Student data gettingby ID
   useEffect(() => {
     const fetchData = async () => {
       const token =
@@ -349,10 +344,6 @@ useEffect(() => {
     fetchStudentStats();
   }
 }, []);
-
-
-
-  //Classschedule against the studentId
 
   useEffect(() => {
     const studentId =
@@ -512,7 +503,6 @@ useEffect(() => {
             </div>
 
             <div className="space-y-4">
-              {/* Student Name */}
               <div>
                 <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                   Student Name
@@ -526,8 +516,6 @@ useEffect(() => {
                   className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 />
               </div>
-
-              {/* Course */}
               <div>
                 <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                   Course
@@ -545,8 +533,6 @@ useEffect(() => {
                   <option value="ISLAMIC STUDIES">Islamic Studies</option>
                 </select>
               </div>
-
-              {/* Date */}
               <div>
                 <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                   Date
@@ -560,8 +546,6 @@ useEffect(() => {
                   className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 />
               </div>
-
-              {/* Time */}
               <div>
                 <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                   Time
@@ -575,8 +559,6 @@ useEffect(() => {
                   className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 />
               </div>
-
-              {/* Class Type */}
               <div>
                 <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                   Class Type
@@ -591,11 +573,9 @@ useEffect(() => {
                   <option value="">Select Class Type</option>
                   <option value="REGULAR">Regular Class</option>
                   <option value="GROUP">Group Class</option>
-                  <option value="TRAIL">Trail Class</option>
+                  <option value="TRAIL">Trial Class</option>
                 </select>
               </div>
-
-              {/* Status */}
               <div>
                 <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                   Status
@@ -613,8 +593,6 @@ useEffect(() => {
                   <option value="RESCHEDULED">Rescheduled</option>
                 </select>
               </div>
-
-              {/* Buttons */}
               <div className="flex justify-between items-center pt-4 ">
                 <button
                   onClick={handleReset}
@@ -667,7 +645,6 @@ useEffect(() => {
     );
   };
 
-  // Add filter handling function
   const handleApplyFilters = (filters: {
     studentName: string;
     course: string;
@@ -677,7 +654,7 @@ useEffect(() => {
     status: string;
   }) => {
     const formatDate = (date: Date | string) =>
-      new Date(date).toISOString().split("T")[0]; // 'yyyy-mm-dd'
+      new Date(date).toISOString().split("T")[0];
 
     let filtered =
       activeTab === "scheduled" ? [...scheduledClasses] : [...completedClasses];
@@ -727,7 +704,7 @@ useEffect(() => {
     }
 
     setPaginatedData(filtered);
-    setCurrentPage(1); // Reset to first page
+    setCurrentPage(1); 
   };
 
   const CompletedClassDetailsModal = ({
@@ -750,16 +727,13 @@ useEffect(() => {
 >
   <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-lg w-[580px] relative max-h-[80vh] overflow-y-auto border-2 border-gray-200 dark:border-[#404040] scrollbar-none shadow-xl dark:shadow-2xl">
 
-    {/* Header */}
     <div className="flex justify-between items-center mb-6 sticky top-0 bg-white dark:bg-[#1a1a1a] ">
       <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
         Class Details
       </h2>
     </div>
 
-    {/* Form Fields */}
     <div className="space-y-4">
-      {/* Row 1: Student Name & Course */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
@@ -785,7 +759,6 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Row 2: Start Date & End Date */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
@@ -819,7 +792,6 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Row 3: Start Time & End Time */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
@@ -845,7 +817,6 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Row 4: Teacher Name & Class Type */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
@@ -871,7 +842,6 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Row 5: Package & Status */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
@@ -897,7 +867,6 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Full Width: Class Days */}
       <div>
         <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
           Class Days
@@ -912,7 +881,6 @@ useEffect(() => {
 
     </div>
 
-    {/* Action Buttons */}
     <div className="flex justify-end space-x-3 pt-4 sticky bottom-0 bg-white dark:bg-[#1a1a1a] pb-3 border-t border-gray-200 dark:border-[#404040]">
       <button
         onClick={onClose}
@@ -959,11 +927,8 @@ useEffect(() => {
           showBackPath="managestudents"
         />
 
-        {/* Top section */}
         <div className="flex flex-col lg:flex-row gap-6 mb-6">
-          {/* Profile Card */}
           <div className="w-[560px] h-[246px] bg-[#5E6578] rounded-lg text-white p-4 sm:p-6 flex flex-col sm:flex-row items-center sm:items-start">
-            {/* Profile Image + Name */}
             <div className="flex flex-col items-center sm:pr-6 sm:border-r border-white/30">
             <div className="w-[150px] h-[150px] rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
   <img
@@ -1018,7 +983,6 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* Performance Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
             <Card
               title="Performance"
@@ -1037,13 +1001,11 @@ useEffect(() => {
             />
             <Card
               title="Total Reward Points"
-              value="500" // TODO: bind if your API adds rewardPoints
+              value="500"
               description="95% Progressive than Last Month"
             />
           </div>
         </div>
-
-        {/* Tabs and Table Section */}
 
         <div className="flex space-x-6  px-4 py-2 rounded-md">
           <button
@@ -1115,7 +1077,6 @@ useEffect(() => {
               className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
               onClick={() => setIsFilterModalOpen(true)}
             >
-              {/* <BsFilterLeft /> */}
               <MdTune className="w-4 h-4" />
               <span>Filter</span>
             </div>
@@ -1127,7 +1088,6 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* Table */}
           <table
             className="table-auto xw-full"
             style={{ width: "100%", tableLayout: "fixed" }}
@@ -1235,7 +1195,6 @@ useEffect(() => {
                       />
                     </button>
 
-                    {/* Show dropdown when activeDropdown is set and appropriate for the tab/status */}
                     {activeDropdown === index && 
                      ((activeTab === "scheduled" && 
                        ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
@@ -1247,7 +1206,6 @@ useEffect(() => {
                       >
                         <div className="py-1">
                           {activeTab === "completed" ? (
-                            // For completed classes, show View Details option
                             <button
                               className="w-full text-left px-4 py-2 text-[12px] text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
                               onClick={() => {
@@ -1258,7 +1216,6 @@ useEffect(() => {
                               View Details
                             </button>
                           ) : (
-                            // For scheduled/unscheduled classes, show Reschedule/Schedule option
                             <button
                               className={`w-full text-left px-4 py-2 text-[12px] ${
                                 studentListWrite
@@ -1304,7 +1261,6 @@ useEffect(() => {
         />
       </div>
 
-      {/*filterform  */}
       <FilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
@@ -1317,8 +1273,6 @@ useEffect(() => {
             : unscheduledClasses
         }
       />
-
-      {/* Completed Class Details Modal */}
       <CompletedClassDetailsModal
         isOpen={isCompletedDetailsModalOpen}
         onClose={() => setIsCompletedDetailsModalOpen(false)}

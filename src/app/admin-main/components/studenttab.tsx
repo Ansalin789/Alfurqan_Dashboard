@@ -1,12 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { buildStyles, CircularProgressbar } from "react-circular-progressbar";
-import StudentsRecord from "./studentcourseprogress";
 import axios from "axios";
 import { MdTune } from "react-icons/md";
 import { PieChart, Pie, Cell } from "recharts";
 import { useRouter } from "next/navigation";
-import { BsThreeDotsVertical } from "react-icons/bs";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.blackstoneinfomaticstech.com";
 
@@ -54,13 +51,6 @@ interface ClassSchedule {
   };
 }
 
-
-// type Stats = {
-//   level: number;
-//   totalAttendance: number;
-//   totalClasses: number;
-//   totalduration: number;
-// };
 
 interface StudentResponse {
   students: StudentItem[];
@@ -232,7 +222,6 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
     "Assessments",
   ];
   const [classData, setClassData] = useState<ClassSchedule[]>([]);
-  // const [stats, setStats] = useState<Stats | null>(null);
   const [coursesData, setCoursesData] = useState<CourseRow[]>([]);
 
   const [transactions, setTransactions] = useState<PaymentRow[]>([]);
@@ -250,11 +239,6 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5; // Define itemsPerPage only once
-  const handleLogin = (studentId: string, courseName: string) => {
-    localStorage.setItem("StudentPortalId", studentId);
-    localStorage.setItem("StudentCourseName", courseName);
-
-  };
 
   const [dashboardCounts, setDashboardCounts] = useState({
     totalLevel: 0,
@@ -267,14 +251,14 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
   const [maxClasses, setMaxClasses] = useState<number | undefined>(undefined); // No default value
 
 
-  const [paymentHistory, setPaymentHistory] = useState<PaymentDetail[]>([]); // State to hold payment history
+  const [paymentHistory, setPaymentHistory] = useState<PaymentDetail[]>([]);
 
-  // New state variables for Courses, Payment History, and Assignments
-  const [searchCourse, setSearchCourse] = useState(""); // For course search
-  const [searchPayment, setSearchPayment] = useState(""); // For payment search
-  const [searchAssignment, setSearchAssignment] = useState(""); // For assignment search
 
-  const [applicationStudentId, setApplicationStudentId] = useState<string | null>(null); // New state for ALFST-XXX ID
+  const [searchCourse, setSearchCourse] = useState("");
+  const [searchPayment, setSearchPayment] = useState("");
+  const [searchAssignment, setSearchAssignment] = useState("");
+
+  const [applicationStudentId, setApplicationStudentId] = useState<string | null>(null);
 
   const [courseFilters, setCourseFilters] = useState({
     courseName: "",
@@ -283,8 +267,8 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
     status: "",
   });
 
-  const [isCourseFilterModalOpen, setIsCourseFilterModalOpen] = useState(false); // For Courses tab filter modal
-  const [isAssignmentFilterModalOpen, setIsAssignmentFilterModalOpen] = useState(false); // For Assignments tab filter modal
+  const [isCourseFilterModalOpen, setIsCourseFilterModalOpen] = useState(false);
+  const [isAssignmentFilterModalOpen, setIsAssignmentFilterModalOpen] = useState(false); 
 
 
   useEffect(() => {
@@ -294,7 +278,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
         const token = localStorage.getItem("AdminAuthToken");
        
         if (!token || !studentId || !courseName) {
-          console.error("❌ studentId or courseName missing in localStorage or props"); // Modified message
+          console.error("❌ studentId or courseName missing in localStorage or props"); 
           return;
         }
  
@@ -315,9 +299,9 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
           totalDuration: Number(response.data.totalDuration) || 0,
         });
 
-        // Set maximum values based on current totals
-        setMaxDuration(Number(response.data.totalDuration)); // Set maxDuration to current totalDuration
-        setMaxClasses(Number(response.data.totalClasses)); // Set maxClasses to current totalClasses
+
+        setMaxDuration(Number(response.data.totalDuration));
+        setMaxClasses(Number(response.data.totalClasses)); 
 
       } catch (error) {
         console.error("❌ Error fetching dashboard counts:", error);
@@ -325,7 +309,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
     };
  
     fetchData();
-  }, [studentId, courseName]); // Add studentId as a dependency
+  }, [studentId, courseName]); 
  
 
   const data = [
@@ -347,27 +331,27 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
 
     {
       title: "Total Classes",
-      value: `${Math.floor(dashboardCounts.totalClasses)}`, // No % sign here
-      percentage: maxClasses ? Math.max(0, Math.min(100, Math.floor((dashboardCounts.totalClasses / maxClasses) * 100))) : 0, // Calculate percentage
+      value: `${Math.floor(dashboardCounts.totalClasses)}`,
+      percentage: maxClasses ? Math.max(0, Math.min(100, Math.floor((dashboardCounts.totalClasses / maxClasses) * 100))) : 0,
       ringColor: "#8B93D2",
       bgColor: "#E7EFF2",
     },
     {
       title: "Duration",
       value: `${Math.floor(dashboardCounts.totalDuration)} Hr`,
-      percentage: maxDuration ? Math.max(0, Math.floor((dashboardCounts.totalDuration / maxDuration) * 100)) : 0, // Calculate percentage
+      percentage: maxDuration ? Math.max(0, Math.floor((dashboardCounts.totalDuration / maxDuration) * 100)) : 0,
       ringColor: "#B690D5",
       bgColor: "#E7EFF2",
     },
   ];
-  ////////////////courses///////////////////
+
   useEffect(() => {
     if (typeof window !== "undefined" && studentId) {
       const token = localStorage.getItem("AdminAuthToken");
       if (token) {
         fetchStudentDetails(token, studentId);
       } else {
-        console.log("No auth token found for fetchStudentDetails."); // Modified message
+        console.log("No auth token found for fetchStudentDetails.");
       }
     }
   }, [studentId]);
@@ -384,9 +368,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
           },
         }
       );
-      // Removed console.log("Student Details API response (alstudents):", response.data);
 
-      // Fetch class schedule to get courseId
       const classScheduleRes = await fetch(
         `${API_BASE_URL}/classShedule/students?studentId=${studentId}`,
         {
@@ -397,11 +379,10 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
         }
       );
       const classScheduleData = await classScheduleRes.json();
-      // Removed console.log("Class Schedule API response (classShedule):", classScheduleData);
-      // const firstClass = classScheduleData.classSchedule?.[0]; // No longer needed
 
-      const studentDetailsFromAlstudents = response.data.studentDetails; // Renamed for clarity
-      setApplicationStudentId(studentDetailsFromAlstudents.student.studentId); // Set the application-specific studentId
+
+      const studentDetailsFromAlstudents = response.data.studentDetails;
+      setApplicationStudentId(studentDetailsFromAlstudents.student.studentId);
 
       const allCourses: CourseRow[] = (classScheduleData.classSchedule || []).map((classItem: ClassSchedule) => {
         return {
@@ -419,10 +400,6 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
     }
   };
 
-
-
-
-  ////////////////classdata////////////////////
   useEffect(() => {
     if (typeof window !== "undefined" && studentId) {
       const token = localStorage.getItem("AdminAuthToken");
@@ -447,7 +424,6 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
       );
 
       const data = await res.json();
-      // Removed console.log("Raw Class Schedule API response:", data); // Removed log
       const sortedClassData = data.classSchedule.sort((a: ClassSchedule, b: ClassSchedule) => {
         return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
       });
@@ -473,38 +449,31 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
       status: "Re-Scheduled",
     },
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  // Filtered class data based on search
+
   const filteredClassData = classData.filter((row) => {
     const search = searchClass.toLowerCase();
     const formattedDate = new Date(row.startDate).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "2-digit",
-    }).toLowerCase(); // Format date for comparison
+    }).toLowerCase();
 
     const matchesSearch =
-      row._id.toLowerCase().includes(search) || // Match Class ID
-      row.teacher.teacherName.toLowerCase().includes(search) || // Match Teacher Name
-      row.course.courseName.toLowerCase().includes(search) || // Match Course Name
-      formattedDate.includes(search) || // Match Date
-      row.startTime[0].includes(search); // Match Start Time
-
-    // Add additional filtering logic based on meetingFilters if needed
-
-    return matchesSearch; // Return true if any match is found
+      row._id.toLowerCase().includes(search) || 
+      row.teacher.teacherName.toLowerCase().includes(search) || 
+      row.course.courseName.toLowerCase().includes(search) || 
+      formattedDate.includes(search) ||
+      row.startTime[0].includes(search); 
+    return matchesSearch; 
   });
 
-  // Pagination logic
-  const totalPages = Math.ceil(filteredClassData.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const displayedItemsCount = filteredClassData.length;
 
-  // Calculate the display range
   const startItem = displayedItemsCount === 0 ? 0 : indexOfFirstItem + 1;
   const endItem = Math.min(indexOfLastItem, displayedItemsCount);
 
-  // Calculate paginated assignments
   const paginatedClassData = filteredClassData.slice(
     indexOfFirstItem,
     indexOfLastItem
@@ -521,15 +490,6 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
     indexOfFirstItem,
     indexOfLastItem
   );
-
-  const donutColors = [
-    "#7DB5CB",
-    "#9AD7D6",
-    "#8B93D2",
-    "#B48BD2",
-  ];
-
-
   const handleViewDetails = (studentId : string) => {
     router.push(`/admin-main/ui/studentclass?studentId=${studentId}`);
   };
@@ -544,11 +504,8 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
   const [error, setError] = useState<string | null>(null);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const router = useRouter();
-  const [backendScore, setBackendScore] = useState<number | null>(null);
-  const [showFilter, setShowFilter] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
 
-  // Filter state variables
   const [filters, setFilters] = useState({
     assignmentName: "",
     course: "",
@@ -558,19 +515,9 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
     dueDateFrom: "",
     dueDateTo: "",
     status: "",
-    classType: "" // Added classType to filters state
+    classType: "" 
   });
-
-  // Get unique values for filter options
-  const getUniqueCourses = () => {
-    const values = assignments.map(assignment => assignment.course).filter(Boolean) as string[];
-    return Array.from(new Set(values));
-  };
  
-  const getUniqueLevels = () => {
-    const values = assignments.map(assignment => assignment.level).filter(Boolean) as string[];
-    return Array.from(new Set(values));
-  };
 
   // Map assignment status for display and filtering
   const mapStatus = (status?: string) => {
@@ -700,8 +647,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
   // Apply filters to the appropriate tab
   const filteredPendingAssignments = filterAssignments(pendingAssignments);
   const filteredCompletedAssignments = filterAssignments(completedAssignments);
-  const studentsToDisplay = activeTab === "Pending" ? filteredPendingAssignments : filteredCompletedAssignments;
-
+ 
   const toggleDropdown = (id: string) => {
     setOpenDropdownId((prev) => (prev === id ? null : id));
   };
@@ -740,9 +686,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
     });
   };
 
-  const applyFilters = () => {
-    setShowFilter(false);
-  };
+
 
   // Fetch payment history
 useEffect(() => {
@@ -817,7 +761,7 @@ useEffect(() => {
     setIsFilterModalOpen(false); // Close the modal
   };
 
-  // Filtered data for Courses
+
   const filteredCourseData = coursesData.filter((course) => {
     const searchTerm = searchCourse.toLowerCase();
     const formattedDate = new Date(course.date).toLocaleDateString("en-US", {
@@ -1046,9 +990,6 @@ useEffect(() => {
     <option value="Quran">Quran</option>
     <option value="Arabic">Arabic</option>
     <option value="Islamic Studies ">Islamic Studies </option>
-   
- 
-   
   </select>
 </div>
 
@@ -1462,7 +1403,6 @@ useEffect(() => {
               />
               <div
                 className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
-                // onClick={() => setIsFilterModalOpen(true)}
               >
                 <MdTune className="w-4 h-4" />
 

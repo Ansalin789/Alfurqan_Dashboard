@@ -34,11 +34,9 @@ const NextEvaluationClass = () => {
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [todaysClasses, setTodaysClasses] = useState<UpcomingClass[]>([]);
   const [currentClassIndex, setCurrentClassIndex] = useState(0);
-  // const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch all upcoming classes
   useEffect(() => {
     const fetchNextEvaluationClass = async () => {
       try {
@@ -73,7 +71,7 @@ const NextEvaluationClass = () => {
         const upcoming = response.data
           .filter((item: UpcomingClass) => {
             const classStartDate = new Date(item.scheduledStartDate);
-            return classStartDate > now; // keep only future classes (any date)
+            return classStartDate > now; 
           })
           .sort((a: UpcomingClass, b: UpcomingClass) => {
             return (
@@ -82,7 +80,6 @@ const NextEvaluationClass = () => {
             );
           });
 
-        // Only keep the single next upcoming class
         setTodaysClasses(upcoming.slice(0, 1));
         setCurrentClassIndex(0);
       } catch (err) {

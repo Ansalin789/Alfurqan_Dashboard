@@ -8,15 +8,12 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import Pagination from "@/components/Pagination";
 import Modal from "react-modal";
-import { FaEye } from "react-icons/fa";
 import { getSocket } from "@/app/utils/socket";
-
-
 
 interface ClassData {
   isTrial: boolean;
   classType: string;
-  classId:string;
+  classId: string;
   trialclass: any;
   _id: string;
   classDay: string[]; // ISO date strings
@@ -153,7 +150,6 @@ const ScheduledClasses = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredClasses, setFilteredClasses] = useState<ClassData[]>([]);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-
   const [activeTab, setActiveTab] = useState("upcoming");
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -174,196 +170,178 @@ const ScheduledClasses = () => {
     Modal.setAppElement("body");
   }, []);
 
-const fetchClasses = async () => {
-  try {
-    const teacherId = localStorage.getItem("TeacherPortalId");
-    const token = localStorage.getItem("TeacherAuthToken");
+  const fetchClasses = async () => {
+    try {
+      const teacherId = localStorage.getItem("TeacherPortalId");
+      const token = localStorage.getItem("TeacherAuthToken");
 
-    console.log("Fetching classes...");
-    console.log("Teacher ID:", teacherId);
-    console.log("Auth Token Present:", !!token);
+      console.log("Fetching classes...");
+      console.log("Teacher ID:", teacherId);
+      console.log("Auth Token Present:", !!token);
 
-    if (!token || !teacherId) {
-      console.warn("Missing token or teacher ID.");
-      return;
-    }
-
-    const response = await axios.get<ApiResponse>(
-      "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
-      {
-        params: { teacherId },
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+      if (!token || !teacherId) {
+        console.warn("Missing token or teacher ID.");
+        return;
       }
-    );
 
-    console.log("API Response:", response.data);
+      const response = await axios.get<ApiResponse>(
+        "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
+        {
+          params: { teacherId },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    // Process regular classes
-    const regularClasses = response.data.classSchedule.map(cls => ({
-      ...cls,
-      isTrial: false
-    }));
+      console.log("API Response:", response.data);
 
-    console.log("Processed Regular Classes:", regularClasses);
+      // Process regular classes
+      const regularClasses = response.data.classSchedule.map(cls => ({
+        ...cls,
+        isTrial: false
+      }));
 
-   
+      console.log("Processed Regular Classes:", regularClasses);
 
-// Process trial classes
-let trialClasses: ClassData[] = [];
+      // Process trial classes
+      let trialClasses: ClassData[] = [];
 
-if (Array.isArray(response.data.trialclasses)) {
-  console.log("Raw Trial Classes Data:", response.data.trialclasses);
+      if (Array.isArray(response.data.trialclasses)) {
+        console.log("Raw Trial Classes Data:", response.data.trialclasses);
 
-  trialClasses = response.data.trialclasses.map((trialClass) => ({
-    _id: trialClass._id || trialClass.trialId || "",
-    classId : "",
-    classLink: trialClass.meetingLink || "",
-    classDay: trialClass.scheduledStartDate ? [trialClass.scheduledStartDate] : [],
-    package: "", // Trial classes may not have package
-    totalHourse: 0.5,
-    startDate: trialClass.scheduledStartDate || "",
-    endDate: trialClass.scheduledEndDate || "",
-    startTime: [trialClass.scheduledFrom || ""],
-    endTime: [trialClass.scheduledTo || ""],
-    scheduleStatus: trialClass.meetingStatus || "Scheduled",
-    classhour: "0.5",
-    currency: "$",
-    amount: "0",
-    earnings: 0,
-    isSalaryProcessed: false,
-    status: "Active",
-    createdDate: trialClass.createdDate || "",
-    createdBy: trialClass.createdBy || "System",
-    lastUpdatedDate: trialClass.lastUpdatedDate || "",
-    lastUpdatedBy: trialClass.lastUpdatedBy || "",
-    __v: trialClass.__v || 0,
+        trialClasses = response.data.trialclasses.map((trialClass) => ({
+          _id: trialClass._id || trialClass.trialId || "",
+          classId: "",
+          classLink: trialClass.meetingLink || "",
+          classDay: trialClass.scheduledStartDate ? [trialClass.scheduledStartDate] : [],
+          package: "", // Trial classes may not have package
+          totalHourse: 0.5,
+          startDate: trialClass.scheduledStartDate || "",
+          endDate: trialClass.scheduledEndDate || "",
+          startTime: [trialClass.scheduledFrom || ""],
+          endTime: [trialClass.scheduledTo || ""],
+          scheduleStatus: trialClass.meetingStatus || "Scheduled",
+          classhour: "0.5",
+          currency: "$",
+          amount: "0",
+          earnings: 0,
+          isSalaryProcessed: false,
+          status: "Active",
+          createdDate: trialClass.createdDate || "",
+          createdBy: trialClass.createdBy || "System",
+          lastUpdatedDate: trialClass.lastUpdatedDate || "",
+          lastUpdatedBy: trialClass.lastUpdatedBy || "",
+          __v: trialClass.__v || 0,
 
-    sessionClassType: "TRIALCLASS",
-    classType: trialClass.classType || "OneToOne",
-    sessionStarttime: trialClass.scheduledFrom || "",
-    sessionsEndtime: trialClass.scheduledTo || "",
-    sessionStatus: trialClass.meetingStatus === "Completed" ? "Completed" : "NotCompleted",
+          sessionClassType: "TRIALCLASS",
+          classType: trialClass.classType || "OneToOne",
+          sessionStarttime: trialClass.scheduledFrom || "",
+          sessionsEndtime: trialClass.scheduledTo || "",
+          sessionStatus: trialClass.meetingStatus === "Completed" ? "Completed" : "NotCompleted",
 
-    student: {
-      studentId: trialClass.student?.studentId || "N/A",
-      studentFirstName: trialClass.student?.name?.split(" ")[0] || "Trial",
-      studentLastName: trialClass.student?.name?.split(" ").slice(1).join(" ") || "Student",
-      studentEmail: trialClass.student?.email || "",
-      gender: "", // No gender in trial
-      level: "", // No level in trial
-      studnetSessionStart: [], // Provide empty array to match ClassData type
-      studnetSessionEnd: [],   // Provide empty array to match ClassData type
-    },
+          student: {
+            studentId: trialClass.student?.studentId || "N/A",
+            studentFirstName: trialClass.student?.name?.split(" ")[0] || "Trial",
+            studentLastName: trialClass.student?.name?.split(" ").slice(1).join(" ") || "Student",
+            studentEmail: trialClass.student?.email || "",
+            gender: "", // No gender in trial
+            level: "", // No level in trial
+            studnetSessionStart: [], // Provide empty array to match ClassData type
+            studnetSessionEnd: [],   // Provide empty array to match ClassData type
+          },
 
-    teacher: {
-      teacherId: trialClass.teacher?.teacherId || "",
-      teacherName: trialClass.teacher?.name || "",
-      teacherEmail: trialClass.teacher?.email || "",
-      teacherSessionStart: null,
-      teacherSessionEnd: null,
-    },
+          teacher: {
+            teacherId: trialClass.teacher?.teacherId || "",
+            teacherName: trialClass.teacher?.name || "",
+            teacherEmail: trialClass.teacher?.email || "",
+            teacherSessionStart: null,
+            teacherSessionEnd: null,
+          },
 
-    course: {
-      courseId: trialClass.course?.courseId || "",
-      courseName: trialClass.course?.courseName || "",
-    },
+          course: {
+            courseId: trialClass.course?.courseId || "",
+            courseName: trialClass.course?.courseName || "",
+          },
 
-    alfstudent: {
-      _id: "",
-      username: "",
-      password: "",
-      sessionClassType: "",
-      role: "",
-      level: "",
-      status: "",
-      createdDate: "",
-      createdBy: "",
-      updatedDate: "",
-      __v: 0,
-      student: {
-        studentId: "",
-        studentEmail: "",
-        studentPhone: 0,
-        course: "",
-        package: "",
-        city: "",
-        country: "",
-        gender: "",
-      },
-    },
+          alfstudent: {
+            _id: "",
+            username: "",
+            password: "",
+            sessionClassType: "",
+            role: "",
+            level: "",
+            status: "",
+            createdDate: "",
+            createdBy: "",
+            updatedDate: "",
+            __v: 0,
+            student: {
+              studentId: "",
+              studentEmail: "",
+              studentPhone: 0,
+              course: "",
+              package: "",
+              city: "",
+              country: "",
+              gender: "",
+            },
+          },
 
-    teacherAttendee: "",
-    studentAttendee: "",
-    isTrial: true,
-    trialclass: trialClass,
-  }));
+          teacherAttendee: "",
+          studentAttendee: "",
+          isTrial: true,
+          trialclass: trialClass,
+        }));
 
-  console.log("Processed Trial Classes:", trialClasses);
-} else {
-  console.log("No trial classes found or incorrect format.");
-}
+        console.log("Processed Trial Classes:", trialClasses);
+      } else {
+        console.log("No trial classes found or incorrect format.");
+      }
 
+      // Combine both types
+      const allClasses = [...regularClasses, ...trialClasses];
+      console.log("All Classes Combined:", allClasses);
 
+      // Filter completed classes
+      const now = new Date();
 
-    // Combine both types
-    const allClasses = [...regularClasses, ...trialClasses];
-    console.log("All Classes Combined:", allClasses);
+      const completed = allClasses
+        .filter(cls => {
+          const endDate = new Date(cls.endDate);
+          return (
+            ["Completed", "BothAbsent", "StudentAbsent", "TeacherAbsent"].includes(cls.scheduleStatus) &&
+            endDate < now
+          );
+        })
+        .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()); // descending
 
-    // Filter upcoming classes
-    // const upcoming = allClasses.filter(cls =>
-    //   ["Scheduled", "Rescheduled", "Reschedulerequested", "BothAbsent", "StudentAbsent", "TeacherAbsent"].includes(cls.scheduleStatus)
-    // );
+      const upcoming = allClasses
+        .filter(cls => {
+          const endDate = new Date(cls.endDate);
+          return (
+            ["Scheduled", "Rescheduled", "Reschedulerequested"].includes(cls.scheduleStatus) &&
+            endDate >= now
+          );
+        })
+        .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()); // descending
 
-    // console.log("Upcoming Classes:", upcoming);
+      console.log("Upcoming Classes:", upcoming);
+      console.log("Completed Classes:", completed);
+      setUpcomingClasses(upcoming);
+      setCompletedData(completed);
+      setFilteredClasses(activeTab === "upcoming" ? upcoming : completed);
+      console.log("Class data successfully set to state.");
+    } catch (error) {
+      console.error("Error fetching class data:", error);
+    }
+  };
 
-    // Filter completed classes
-    const now = new Date();
-
-   const completed = allClasses
-  .filter(cls => {
-    const endDate = new Date(cls.endDate);
-    return (
-      ["Completed", "BothAbsent", "StudentAbsent", "TeacherAbsent"].includes(cls.scheduleStatus) &&
-      endDate < now
-    );
-  })
-  .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()); // descending
-  
-
-const upcoming = allClasses
-  .filter(cls => {
-    const endDate = new Date(cls.endDate);
-    return (
-      ["Scheduled", "Rescheduled", "Reschedulerequested"].includes(cls.scheduleStatus) &&
-      endDate >= now
-    );
-  })
-  .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()); // descending
-
-
-console.log("Upcoming Classes:", upcoming);
-    
-    console.log("Completed Classes:", completed);
-
-    setUpcomingClasses(upcoming);
-    setCompletedData(completed);
-    setFilteredClasses(activeTab === "upcoming" ? upcoming : completed);
-
-    console.log("Class data successfully set to state.");
-  } catch (error) {
-    console.error("Error fetching class data:", error);
-  }
-};
-
-// Add this useEffect to load data on component mount
-useEffect(() => {
-  fetchClasses();
-}, []);
-
-
+  // Add this useEffect to load data on component mount
+  useEffect(() => {
+    fetchClasses();
+  }, []);
 
   useEffect(() => {
     const userId =
@@ -404,7 +382,7 @@ useEffect(() => {
     const lowerQuery = query.toLowerCase();
 
     const filtered = dataToShow.filter((item) => {
-      const isTrial = item.classType === "Trail class" || (item as any).isTrial;
+      const isTrial = item.classType === "Trial class" || (item as any).isTrial;
 
       // Date fields as shown in UI
       const classDate = isTrial
@@ -414,12 +392,12 @@ useEffect(() => {
       const dateIso = classDate ? classDate.slice(0, 10).toLowerCase() : ""; // YYYY-MM-DD
       const dateReadable = dateObj
         ? dateObj
-            .toLocaleDateString("en-US", {
-              month: "short",
-              day: "2-digit",
-              year: "numeric",
-            })
-            .toLowerCase()
+          .toLocaleDateString("en-US", {
+            month: "short",
+            day: "2-digit",
+            year: "numeric",
+          })
+          .toLowerCase()
         : "";
 
       // Timing as shown in UI
@@ -488,7 +466,7 @@ useEffect(() => {
       );
     }
 
-  
+
     if (filters.scheduleStatus) {
       filtered = filtered.filter(
         (c) =>
@@ -550,11 +528,10 @@ useEffect(() => {
           <div className="flex space-x-6 px-4 py-2 rounded-md">
             <button
               onClick={() => setActiveTab("upcoming")}
-              className={`relative text-[15px] transition font-medium ${
-                activeTab === "upcoming"
+              className={`relative text-[15px] transition font-medium ${activeTab === "upcoming"
                   ? "text-[#576CBC] font-semibold"
                   : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-              }`}
+                }`}
             >
               Scheduled ({upcomingClasses.length})
               {activeTab === "upcoming" && (
@@ -563,11 +540,10 @@ useEffect(() => {
             </button>
             <button
               onClick={() => setActiveTab("completed")}
-              className={`relative text-[15px] transition font-medium ${
-                activeTab === "completed"
+              className={`relative text-[15px] transition font-medium ${activeTab === "completed"
                   ? "text-[#576CBC] font-semibold"
                   : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-              }`}
+                }`}
             >
               Completed ({completedData.length})
               {activeTab === "completed" && (
@@ -578,29 +554,29 @@ useEffect(() => {
 
           <div className="mt-2">
             <div className=" w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg justify-between  flex flex-col md:flex-row items-start md:items-center px-4 relative gap-4 md:gap-0">
-                        <div className="flex-1 flex items-center gap-2 text-sm text-gray-500 justify-start px-4">
-                          <Search className="w-5 h-5 text-gray-400" />
-                          <input
-                            type="text"
-                            placeholder="Search by Student name"
-                            value={searchQuery}
-                            onChange={(e) => handleSearch(e.target.value)}
-                            className="w-full text-sm outline-none bg-transparent placeholder-gray-400"
-                          />
-                        </div>
-                        <button
-                          onClick={() => setIsFilterModalOpen(true)}
-                          className="flex-1 flex items-center gap-2 text-sm text-gray-400 cursor-pointer justify-start border-y-0 border-l-2 border-r-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4"
-                        >
-                          <MdTune className="w-5 h-5" />
-                          <span>Filter</span>
-                        </button>
-                        <div className="flex-1 flex items-center text-sm  px-4 text-gray-500 justify-start">
-                          <span>
-                            Showing {currentItems.length} Of {filteredClasses.length}
-                          </span>
-                        </div>
-                      </div>
+              <div className="flex-1 flex items-center gap-2 text-sm text-gray-500 justify-start px-4">
+                <Search className="w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by Student name"
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="w-full text-sm outline-none bg-transparent placeholder-gray-400"
+                />
+              </div>
+              <button
+                onClick={() => setIsFilterModalOpen(true)}
+                className="flex-1 flex items-center gap-2 text-sm text-gray-400 cursor-pointer justify-start border-y-0 border-l-2 border-r-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4"
+              >
+                <MdTune className="w-5 h-5" />
+                <span>Filter</span>
+              </button>
+              <div className="flex-1 flex items-center text-sm  px-4 text-gray-500 justify-start">
+                <span>
+                  Showing {currentItems.length} Of {filteredClasses.length}
+                </span>
+              </div>
+            </div>
           </div>
 
           <div className="overflow-x-auto scrollbar-none">
@@ -620,83 +596,60 @@ useEffect(() => {
                   <th className="text-left px-4 py-3 font-normal">Action</th>
                 </tr>
               </thead>
-              {/* <thead>
-                <tr>
-                  {[
-                    "Class ID",
-                    "Student Name",
-                    "Course",
-                    "Class Type",
-                    "Date",
-                    "Time",
-                    "Status",
-                    "Action",
-                  ].map((col) => (
-                    <th
-                      key={col}
-                      className="px-4 py-3.5 text-center font-light border border-[#4C6993] bg-[#4C6993] text-white dark:bg-[#6087C0]"
-                    >
-                      {col}
-                    </th>
-                  ))}
-                </tr>
-              </thead> */}
+              <tbody>
+                {currentItems.length > 0 ? (
+                  currentItems.map((item, index) => {
+                    const isTrial = item.classType === "Trial class" || item.isTrial;
 
+                    // Get the appropriate date
+                    const classDate = isTrial ?
+                      (item.trialclass?.scheduledStartDate || item.startDate) :
+                      item.startDate;
 
-<tbody>
-  {currentItems.length > 0 ? (
-    currentItems.map((item, index) => {
-      const isTrial = item.classType === "Trail class" || item.isTrial;
-      
-      // Get the appropriate date
-      const classDate = isTrial ? 
-        (item.trialclass?.scheduledStartDate || item.startDate) : 
-        item.startDate;
-      
-      // Format the date
-      const dateObj = classDate ? new Date(classDate) : null;
-      const formattedDate = dateObj
-        ? dateObj.toLocaleDateString("en-US", {
-            month: "short",
-            day: "2-digit",
-            year: "numeric",
-          })
-        : "N/A";
+                    // Format the date
+                    const dateObj = classDate ? new Date(classDate) : null;
+                    const formattedDate = dateObj
+                      ? dateObj.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "2-digit",
+                        year: "numeric",
+                      })
+                      : "N/A";
 
-      // Get time - prioritize trial class time if available
-      const startTime = isTrial ? 
-        (item.trialclass?.scheduledFrom || item.startTime?.[0]) : 
-        item.startTime?.[0];
-      const endTime = isTrial ? 
-        (item.trialclass?.scheduledTo || item.endTime?.[0]) : 
-        item.endTime?.[0];
-      const timeDisplay = startTime && endTime ? `${startTime} - ${endTime}` : "N/A";
+                    // Get time - prioritize trial class time if available
+                    const startTime = isTrial ?
+                      (item.trialclass?.scheduledFrom || item.startTime?.[0]) :
+                      item.startTime?.[0];
+                    const endTime = isTrial ?
+                      (item.trialclass?.scheduledTo || item.endTime?.[0]) :
+                      item.endTime?.[0];
+                    const timeDisplay = startTime && endTime ? `${startTime} - ${endTime}` : "N/A";
 
-const hideLastNameStatuses = [
-  "Scheduled",
-  "Rescheduled",
-  "Reschedulerequested",
-  "BothAbsent",
-  "StudentAbsent",
-  "TeacherAbsent",
-];
+                    const hideLastNameStatuses = [
+                      "Scheduled",
+                      "Rescheduled",
+                      "Reschedulerequested",
+                      "BothAbsent",
+                      "StudentAbsent",
+                      "TeacherAbsent",
+                    ];
 
-const studentName =
-  isTrial || hideLastNameStatuses.includes(item.scheduleStatus)
-    ? item.student?.studentFirstName || item.trialclass?.student?.name?.split(" ")[0] || "Student"
-    : `${item.student?.studentFirstName || ""} ${item.student?.studentLastName || ""}`.trim();
-       
-    const classType = item .sessionClassType || item.classType || "N/A";
+                    const studentName =
+                      isTrial || hideLastNameStatuses.includes(item.scheduleStatus)
+                        ? item.student?.studentFirstName || item.trialclass?.student?.name?.split(" ")[0] || "Student"
+                        : `${item.student?.studentFirstName || ""} ${item.student?.studentLastName || ""}`.trim();
 
-      // Get course name
-      const courseName = isTrial
-        ? item.trialclass?.course?.courseName || item.course?.courseName
-        : item.course?.courseName;
+                    const classType = item.sessionClassType || item.classType || "N/A";
 
-      // Get status
-      const status = isTrial
-        ? item.trialclass?.meetingStatus || item.scheduleStatus
-        : item.scheduleStatus;
+                    // Get course name
+                    const courseName = isTrial
+                      ? item.trialclass?.course?.courseName || item.course?.courseName
+                      : item.course?.courseName;
+
+                    // Get status
+                    const status = isTrial
+                      ? item.trialclass?.meetingStatus || item.scheduleStatus
+                      : item.scheduleStatus;
 
       return (
         <tr
@@ -743,53 +696,53 @@ const studentName =
           : "bg-gray-300 text-gray-600 dark:bg-gray-500/20"
       }
     `}
-  >
-    {status}
-  </span>
-</td>
+                          >
+                            {status}
+                          </span>
+                        </td>
 
-        <td className="px-3 py-2 relative w-[10px] break-words whitespace-normal">
-          <div className="relative inline-block text-left">
-            <button
-              onClick={() =>
-                setOpenDropdownId(openDropdownId === item._id ? null : item._id)
-              }
-              className="p-2 rounded-md"
-            >
-              <MoreVertical className="w-4 h-4 text-slate-600 dark:text-white" />
-            </button>
+                        <td className="px-3 py-2 relative w-[10px] break-words whitespace-normal">
+                          <div className="relative inline-block text-left">
+                            <button
+                              onClick={() =>
+                                setOpenDropdownId(openDropdownId === item._id ? null : item._id)
+                              }
+                              className="p-2 rounded-md"
+                            >
+                              <MoreVertical className="w-4 h-4 text-slate-600 dark:text-white" />
+                            </button>
 
-            {activeTab !== "completed" && openDropdownId === item._id && (
-              <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-[#2C2C2C] shadow-lg ring-1 ring-black ring-opacity-5">
-                <div className="py-1 text-sm text-gray-700 dark:text-white">
-                  <button
-                    onClick={() => handleRescheduleRedirect(item._id)}
-                    className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-[#404040]"
-                  >
-                    Reschedule
-                  </button>
-                  <button
-                    onClick={() => setOpenDropdownId(null)}
-                    className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 dark:hover:bg-[#404040]"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </td>
-      </tr>
-    );
-  })
-    ) : (
-    <tr>
-      <td colSpan={7} className="text-center py-4 text-gray-500">
-        No classes found
-      </td>
-    </tr>
-  )}
-</tbody>
+                            {activeTab !== "completed" && openDropdownId === item._id && (
+                              <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-[#2C2C2C] shadow-lg ring-1 ring-black ring-opacity-5">
+                                <div className="py-1 text-sm text-gray-700 dark:text-white">
+                                  <button
+                                    onClick={() => handleRescheduleRedirect(item._id)}
+                                    className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-[#404040]"
+                                  >
+                                    Reschedule
+                                  </button>
+                                  <button
+                                    onClick={() => setOpenDropdownId(null)}
+                                    className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 dark:hover:bg-[#404040]"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="text-center py-4 text-gray-500">
+                      No classes found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
             </table>
           </div>
 
@@ -807,10 +760,16 @@ const studentName =
       <Modal
         isOpen={isFilterModalOpen}
         onRequestClose={() => setIsFilterModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white  dark:bg-[#343434] w-[650px] "
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white dark:bg-[#252525] w-[650px] "
         overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-40"
       >
         <div>
+          <button
+              className="absolute top-2 right-3 text-gray-400 text-xl"
+              onClick={() => setIsFilterModalOpen(false)}
+            >
+              &times;
+            </button>
           <h2 className="text-[16px] font-semibold mb-6 text-[#2D2D2D] dark:text-white">
             Filter by
           </h2>
@@ -821,7 +780,7 @@ const studentName =
                 Student
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-whited text-[#5C5C5C] dark:border-[#5C5C5C]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs dark:bg-[#343434] dark:text-whited dark:border-[#5C5C5C]"
                 value={filters.studentName}
                 onChange={(e) =>
                   setFilters({ ...filters, studentName: e.target.value })
@@ -840,7 +799,7 @@ const studentName =
                 Course
               </label>
               <select
-                className="w-full px-3 py-2 border text-[#5C5C5C] border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                className="w-full px-3 py-2 border text-[#5C5C5C] border-gray-300 rounded-lg text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
                 value={filters.courseName}
                 onChange={(e) =>
                   setFilters({ ...filters, courseName: e.target.value })
@@ -859,11 +818,10 @@ const studentName =
               </label>
               <input
                 type="date"
-                className="w-full px-3 py-2 border rounded-lg text-sm 
+                className="w-full px-3 py-2 border rounded-lg text-xs 
               text-[#5C5C5C] dark:text-white 
                bg-white dark:bg-[#343434] 
-               border-gray-300 dark:border-[#5C5C5C]
-               [&::-webkit-calendar-picker-indicator]:dark:invert"
+               border-gray-300 dark:border-[#5C5C5C] dark:[color-scheme:dark]"
                 value={filters.fromDate}
                 onChange={(e) =>
                   setFilters({ ...filters, fromDate: e.target.value })
@@ -877,11 +835,10 @@ const studentName =
               </label>
               <input
                 type="date"
-                className="w-full px-3 py-2 border rounded-lg text-sm 
+                className="w-full px-3 py-2 border rounded-lg text-xs 
               text-[#5C5C5C] dark:text-white 
                bg-white dark:bg-[#343434] 
-               border-gray-300 dark:border-[#5C5C5C]
-               [&::-webkit-calendar-picker-indicator]:dark:invert"
+               border-gray-300 dark:border-[#5C5C5C] dark:[color-scheme:dark]"
                 value={filters.toDate}
                 onChange={(e) =>
                   setFilters({ ...filters, toDate: e.target.value })
@@ -893,7 +850,7 @@ const studentName =
                 Status
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] text-[#5C5C5C] dark:text-white dark:border-[#5C5C5C]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs dark:bg-[#343434] text-[#5C5C5C] dark:text-white dark:border-[#5C5C5C]"
                 value={filters.scheduleStatus}
                 onChange={(e) =>
                   setFilters({ ...filters, scheduleStatus: e.target.value })
@@ -909,7 +866,7 @@ const studentName =
           <div className="flex justify-end gap-3">
             <button
               onClick={handleResetFilters}
-              className="px-5 py-2 border border-[#576CBC] text-[#576CBC] bg-white rounded-lg text-sm font-medium hover:bg-[#f6f8ff]"
+              className="px-3 py-1 text-[12px] rounded-md border border-[#576CBC] text-[#576CBC] font-medium hover:bg-[#EEF1FF] dark:hover:bg-[#343434]"
             >
               Reset
             </button>
@@ -918,9 +875,9 @@ const studentName =
                 handleApplyFilters();
                 setIsFilterModalOpen(false);
               }}
-              className="px-5 py-2 bg-[#576CBC] text-white rounded-lg text-sm font-medium hover:bg-[#475ab1]"
+              className="px-3 text-[12px] py-1 bg-[#576CBC] text-white rounded-md font-medium hover:bg-[#475ab1]"
             >
-              Show {filteredClasses.length} results
+              Apply
             </button>
           </div>
         </div>

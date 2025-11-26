@@ -13,10 +13,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import StudentHeader from "../../components/StudentHeader";
 
-interface ClassScheduleResponse {
-  totalCount: number;
-  students: ClassSchedule[];
-}
+
 interface ClassSchedule {
   _v: { __v: any };
   student: Student;

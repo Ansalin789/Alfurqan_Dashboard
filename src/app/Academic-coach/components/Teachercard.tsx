@@ -55,11 +55,7 @@ const Teacherscard: React.FC = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("AcademicCoachAuthToken");
-        // if (!token) {
-        //   setError("No auth token found.");
-        //   setLoading(false);
-        //   return;
-        // }
+
         const res = await fetch(`https://api.blackstoneinfomaticstech.com/dashboard/ac/teachersattendance`,
           {
             headers: {
@@ -80,7 +76,6 @@ const Teacherscard: React.FC = () => {
     fetchData();
   }, []);
 
-  // Pie Chart Breakdown: Male vs Female teachers
   const pieData: PieChartData[] = attendanceData
     ? [
         {

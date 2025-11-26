@@ -1,13 +1,9 @@
 "use client";
-
-import React, { useEffect, useRef, useState } from "react";
-import BaseLayout4 from "@/components/BaseLayout4";
-import { Bell, Sun, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import Modal from "react-modal";
-import DashboardClasses from "./schedule";
 
 export interface StudentClassData {
   _id: string;
@@ -112,9 +108,7 @@ const upcomingData = classData
   const teacherNames = Array.from(
     new Set(classData.map((c) => c.teacher?.teacherName).filter(Boolean))
   );
-  const classTypes = Array.from(
-    new Set(classData.map((c) => c.sessionClassType).filter(Boolean))
-  );
+
 
   useEffect(() => {
     const fetchClassData = async (token: string) => {

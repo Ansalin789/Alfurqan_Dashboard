@@ -238,7 +238,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                 value={form.fromDate}
                 onChange={handleChange}
                 type="date"
-                className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
+                className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C] [&::-webkit-calendar-picker-indicator]:dark:invert"
               />
             </div>
 
@@ -254,7 +254,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                 value={form.toDate}
                 onChange={handleChange}
                 type="date"
-                className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
+                className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C] [&::-webkit-calendar-picker-indicator]:dark:invert"
               />
             </div>
           </div>

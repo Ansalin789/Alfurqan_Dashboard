@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Modal from "react-modal";
-import { FaSyncAlt, FaPlus, FaEdit, FaEllipsisV } from "react-icons/fa";
+import { FaEllipsisV } from "react-icons/fa";
 import BaseLayout1 from "@/components/BaseLayout1";
 import { useRouter } from "next/navigation";
 import AddEvaluationModal from "@/components/Academic/AddEvaluationModel";
@@ -14,23 +14,7 @@ import Pagination from "@/components/Pagination";
 import { getSocket } from "@/app/utils/socket";
 import moment from "moment";
 
-// Define interfaces for the API response structure
-interface Student {
-  learningInterest: string; // Replace with the exact type if known
-  studentId: string;
-  studentFirstName: string;
-  studentLastName: string;
-  studentPhone: number;
-  studentCountry: string;
-  preferredTeacher: string;
-  preferredFromTime: string;
-  preferredToTime: string;
-  classStatus?: string;
-  status?: string;
-  trialClassStatus: string;
-  studentStatus: string;
-  prefferedDate: string;
-}
+
 interface ClassPayload {
   academicCoachId: string;
   student: {
@@ -102,20 +86,8 @@ interface ClassPayload {
   updatedDate: Date;
   updatedBy: string;
 }
-interface EvaluationItem {
-  paymentLink: string;
-  _id: string;
-  student: Student;
-  trialClassStatus: string;
-  assignedTeacher: string;
-  paymentStatus: string;
-}
 
-interface ApiResponse {
-  evaluation: EvaluationItem[];
-}
 
-// Define the transformed user structure
 interface TransformedUser {
   _id: string;
   trialId: string;
@@ -123,9 +95,9 @@ interface TransformedUser {
   studentFirstName: string;
   studentLastName: string;
   number: string;
-  prefferedDate: string; // Optional if not always present
+  prefferedDate: string;
   country: string;
-  course: string; // Assuming this corresponds to `learningInterest`
+  course: string;
   preferredTeacher: string;
   time: string;
   classStatus?: string;
@@ -134,7 +106,7 @@ interface TransformedUser {
   paymentStatus: string;
   assignedTeacher: string;
   paymentLink: string;
-  studentStatus: string; // Optional if not always present
+  studentStatus: string;
 }
 
 export interface IMeeting {
@@ -205,13 +177,10 @@ const getAllUsers = async (): Promise<{
       },
     });
 
-    // Add debug log for raw API response
     console.log("Raw API Response:", response.data.evaluation);
 
-    // Transform API data to match TransformedUser interface
     const transformedData: TransformedUser[] = response.data.evaluation.map(
       (item: any) => {
-        // Debug log for each item's studentStatus
         console.log("Item studentStatus before transform:", item.studentStatus);
         return {
           _id: item._id,
@@ -238,7 +207,6 @@ const getAllUsers = async (): Promise<{
       }
     );
 
-    // Debug log for transformed data
     console.log("Transformed Data:", transformedData);
 
     return {
@@ -256,7 +224,6 @@ const getAllUsers = async (): Promise<{
   }
 };
 
-// Move FilterModal outside of the TrailManagement component
 const FilterModal = ({
   isOpen,
   onClose,
@@ -431,11 +398,10 @@ const TrailSection = () => {
   const [filteredUsers, setFilteredUsers] = useState<TransformedUser[]>([]);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchText, setSearchText] = useState("");
   const [meetings, setMeetings] = useState<IMeeting[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
+
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState<any>(null);
   const [trialClassStatus, setTrialClassStatus] = useState("");
@@ -471,10 +437,10 @@ const TrailSection = () => {
         setLoading(false);
       }
     };
-  
+
     fetchMeetings();
   }, []);
-  
+
   // Function to handle editable field changes
   const handleEditableFieldChange = (field: string, value: string) => {
     setEditableData((prev) => ({
@@ -494,32 +460,32 @@ const TrailSection = () => {
 
       const socket = getSocket(academicId);
       const position =
-  formData.student.learningInterest === "Islamic Studies"
-    ? "Islamic Teacher"
-    : `${formData.student.learningInterest} Teacher`;
-    console.log("📤 Sending academicTrailClassTeacherListRequest");
-    console.log("📤 Sending with payload:", {
-      startDate: formData.student.preferredDate,
-      from: formData.student.preferredFromTime,
-      to: formData.student.preferredToTime,
-      position :position,
-    });
+        formData.student.learningInterest === "Islamic Studies"
+          ? "Islamic Teacher"
+          : `${formData.student.learningInterest} Teacher`;
+      console.log("📤 Sending academicTrailClassTeacherListRequest");
+      console.log("📤 Sending with payload:", {
+        startDate: formData.student.preferredDate,
+        from: formData.student.preferredFromTime,
+        to: formData.student.preferredToTime,
+        position: position,
+      });
       const calculatedToTime = moment(time, "HH:mm")
         .add(30, "minutes")
         .format("HH:mm");
-        console.log("📤 Sending with payload:", {
-          requestId: academicId,
+      console.log("📤 Sending with payload:", {
+        requestId: academicId,
         startDate: date,
         from: time,
         to: calculatedToTime,
-        position :position,
+        position: position,
       });
       socket.emit("academicTrailClassTeacherListRequest", {
         requestId: academicId,
         startDate: date,
         from: time,
         to: calculatedToTime,
-        position :position,
+        position: position,
       });
 
       const handleResponse = (data: Record<string, string>) => {
@@ -566,11 +532,11 @@ const TrailSection = () => {
 
   // Save changes and trigger email in one step
   const handleSaveChanges = async () => {
-        try {
+    try {
       const token = localStorage.getItem("AcademicCoachAuthToken");
       if (!token) return alert("Token missing!");
       if (!formData?._id) return alert("No evaluationId found!");
- 
+
       const effectiveDate = editableData.changeDate || formData?.student.preferredDate;
       const effectiveTime = editableData.changeTime || formData?.student.preferredFromTime;
 
@@ -579,18 +545,18 @@ const TrailSection = () => {
           "Please select Change Date, Change Time and Available Teacher."
         );
       }
- 
+
       // 🔹 Find teacher info
       const selectedTeacher = availableTeachers.find(
         (t) => t.teacherId === editableData.availableTeacher
       );
-  
+
       // 🔹 Compute time range (30 min duration)
       const changeFromTime = editableData.changeTime || formData?.student.preferredFromTime;
       const changeToTime = moment(changeFromTime, "HH:mm")
         .add(30, "minutes")
         .format("HH:mm");
-  
+
       // 🔹 Build payload that backend expects (for Zoom scheduling)
       const payload = {
         teacher: {
@@ -607,7 +573,7 @@ const TrailSection = () => {
         preferredTrialToTime: changeToTime,
       };
       console.log("📤 Sending payload to backend:", payload);
-  
+
       // 🔹 Send update request
       const response = await axios.put(
         `https://api.blackstoneinfomaticstech.com/evaluation/${formData._id}`,
@@ -619,9 +585,9 @@ const TrailSection = () => {
           },
         }
       );
-  
+
       console.log("✅ Backend response:", response.data);
-  
+
       if (response.status === 200 || response.status === 204) {
         alert("✅ Changes saved. Zoom schedule update & email will be triggered.");
 
@@ -630,11 +596,11 @@ const TrailSection = () => {
           prev.map((u) =>
             u._id === formData._id
               ? {
-                  ...u,
-                  assignedTeacher: selectedTeacher?.teacherName || u.assignedTeacher,
-                  time: changeFromTime,
-                  prefferedDate: editableData.changeDate || u.prefferedDate,
-                }
+                ...u,
+                assignedTeacher: selectedTeacher?.teacherName || u.assignedTeacher,
+                time: changeFromTime,
+                prefferedDate: editableData.changeDate || u.prefferedDate,
+              }
               : u
           )
         );
@@ -642,11 +608,11 @@ const TrailSection = () => {
           prev.map((u) =>
             u._id === formData._id
               ? {
-                  ...u,
-                  assignedTeacher: selectedTeacher?.teacherName || u.assignedTeacher,
-                  time: changeFromTime,
-                  prefferedDate: editableData.changeDate || u.prefferedDate,
-                }
+                ...u,
+                assignedTeacher: selectedTeacher?.teacherName || u.assignedTeacher,
+                time: changeFromTime,
+                prefferedDate: editableData.changeDate || u.prefferedDate,
+              }
               : u
           )
         );
@@ -672,8 +638,8 @@ const TrailSection = () => {
       alert("❌ Failed to save changes. Please try again.");
     }
   };
-  
-  
+
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -716,12 +682,12 @@ const TrailSection = () => {
           prev.map((user) =>
             user.studentId === student.studentId
               ? {
-                  ...user,
-                  paymentStatus: classPayload.paymentStatus ?? "NOT JOINED",
-                  trialClassStatus:
-                    classPayload.trialClassStatus ?? "NOT COMPLETED",
-                  studentStatus: classPayload.studentStatus ?? "NOT JOINED",
-                }
+                ...user,
+                paymentStatus: classPayload.paymentStatus ?? "NOT JOINED",
+                trialClassStatus:
+                  classPayload.trialClassStatus ?? "NOT COMPLETED",
+                studentStatus: classPayload.studentStatus ?? "NOT JOINED",
+              }
               : user
           )
         );
@@ -729,12 +695,12 @@ const TrailSection = () => {
           prev.map((user) =>
             user.studentId === student.studentId
               ? {
-                  ...user,
-                  paymentStatus: classPayload.paymentStatus ?? "NOT JOINED",
-                  trialClassStatus:
-                    classPayload.trialClassStatus ?? "NOT COMPLETED",
-                  studentStatus: classPayload.studentStatus ?? "NOT JOINED",
-                }
+                ...user,
+                paymentStatus: classPayload.paymentStatus ?? "NOT JOINED",
+                trialClassStatus:
+                  classPayload.trialClassStatus ?? "NOT COMPLETED",
+                studentStatus: classPayload.studentStatus ?? "NOT JOINED",
+              }
               : user
           )
         );
@@ -1464,8 +1430,6 @@ const TrailSection = () => {
                     <MdTune className="w-4 h-4" />
                     <span>Filter</span>
                   </div>
-                  {/* Modal */}
-                  {/* FilterModal is rendered below, so no need for inline modal JSX here */}
                   <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                     <span className="text-left -ml-60 ">
                       Showing {currentItems.length} of {users.length}
@@ -1493,13 +1457,12 @@ const TrailSection = () => {
                         ].map((header, index) => (
                           <th
                             key={header.label}
-                            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] whitespace-nowrap ${header.width} ${
-                              index === 0
+                            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] whitespace-nowrap ${header.width} ${index === 0
                                 ? "sticky left-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
                                 : index === 12
-                                ? "sticky right-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
-                                : ""
-                            }`}
+                                  ? "sticky right-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                                  : ""
+                              }`}
                           >
                             {header.label}
                           </th>
@@ -1511,17 +1474,15 @@ const TrailSection = () => {
                         currentItems.map((item, index) => (
                           <tr
                             key={item.trialId}
-                            className={`text-[12px] ${
-                              index % 2 === 0
+                            className={`text-[12px] ${index % 2 === 0
                                 ? "bg-[#fff] dark:bg-[#2C2C2C] "
                                 : "bg-[#F8F8F8] dark:bg-[#303030]"
-                            }`}
+                              }`}
                           >
-                            <td className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[18%] sticky left-0 z-10 ${
-                              index % 2 === 0
+                            <td className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[18%] sticky left-0 z-10 ${index % 2 === 0
                                 ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                 : "bg-[#F8F8F8] dark:bg-[#303030]"
-                            }`}>
+                              }`}>
                               {item.trialId}
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[14%]">
@@ -1536,19 +1497,19 @@ const TrailSection = () => {
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.course}
                             </td>
-                           
+
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[8%]">
                               {(() => {
-                                 const meeting = getMeetingForUser(item);
-                                 return meeting
+                                const meeting = getMeetingForUser(item);
+                                return meeting
                                   ? `${meeting.scheduledFrom || ''}${meeting.scheduledTo ? ' - ' + meeting.scheduledTo : ''}`
                                   : item.time;
                               })()}
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {(() => {
-                                 const meeting = getMeetingForUser(item);
-                                 return meeting
+                                const meeting = getMeetingForUser(item);
+                                return meeting
                                   ? (meeting.scheduledStartDate ? new Date(meeting.scheduledStartDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "")
                                   : (item.prefferedDate ? new Date(item.prefferedDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "");
                               })()}
@@ -1558,37 +1519,35 @@ const TrailSection = () => {
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[12%]">
                               {(() => {
-                                 const meeting = getMeetingForUser(item);
-                                 const name = meeting && meeting.teacher && meeting.teacher.name
-                                    ? meeting.teacher.name
-                                    : item.assignedTeacher;
-                                 return name && name.length > 0
-                                    ? name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()
-                                    : name;
+                                const meeting = getMeetingForUser(item);
+                                const name = meeting && meeting.teacher && meeting.teacher.name
+                                  ? meeting.teacher.name
+                                  : item.assignedTeacher;
+                                return name && name.length > 0
+                                  ? name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()
+                                  : name;
                               })()}
                             </td>
-                            
+
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[12%]">
                               <span
-                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
-                                  item.trialClassStatus === "COMPLETED"
+                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${item.trialClassStatus === "COMPLETED"
                                     ? "bg-[#ECFDF3] text-[#377E36] px-2 dark:bg-[#377E3633]"
                                     : item.trialClassStatus === "INPROGRESS"
-                                    ? " bg-[#FDECEC] text-[#D34645]  px-3 dark:bg-[#D3464533]"
-                                    : "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
-                                }`}
+                                      ? " bg-[#FDECEC] text-[#D34645]  px-3 dark:bg-[#D3464533]"
+                                      : "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
+                                  }`}
                               >
                                 {item.trialClassStatus === "COMPLETED"
                                   ? "COMPLETED"
                                   : item.trialClassStatus === "INPROGRESS"
-                                  ? "IN PROGRESS"
-                                  : "PENDING"}
+                                    ? "IN PROGRESS"
+                                    : "PENDING"}
                               </span>
                             </td>
 
                             <td className="px-3 py-2 text-[11px] text-[#010E30E5] dark:text-[#FDFDFD] whitespace-nowrap w-[12%]">
                               {(() => {
-                                // Debug log for table display
                                 console.log("Table display studentStatus:", {
                                   original: item.studentStatus,
                                   upperCase: item.studentStatus?.toUpperCase(),
@@ -1604,18 +1563,17 @@ const TrailSection = () => {
                                 });
                                 return (
                                   <span
-                                    className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
-                                      item.studentStatus?.toUpperCase() ===
-                                      "JOINED"
+                                    className={`px-1 text-[10px] text-center py-[3px] rounded-md ${item.studentStatus?.toUpperCase() ===
+                                        "JOINED"
                                         ? "bg-[#ECFDF3] text-[#377E36] px-6 dark:bg-[#377E3633]"
                                         : item.studentStatus?.toUpperCase() ===
                                           "WAITING"
-                                        ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
-                                        : item.studentStatus?.toUpperCase() ===
-                                          "PENDING"
-                                        ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
-                                        : "bg-[#FDECEC] text-[#D34645] px-3 dark:bg-[#D3464533]"
-                                    }`}
+                                          ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
+                                          : item.studentStatus?.toUpperCase() ===
+                                            "PENDING"
+                                            ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
+                                            : "bg-[#FDECEC] text-[#D34645] px-3 dark:bg-[#D3464533]"
+                                      }`}
                                   >
                                     {item.studentStatus?.toUpperCase() ||
                                       "PENDING"}
@@ -1626,59 +1584,66 @@ const TrailSection = () => {
 
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD]  w-[12%] whitespace-nowrap">
                               <span
-                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
-                                  item.paymentStatus === "PAID"
+                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${item.paymentStatus === "PAID"
                                     ? "bg-[#ECFDF3] text-[#377E36] px-5 dark:bg-[#377E3633]"
                                     : item.paymentStatus === "FAILED"
-                                    ? "bg-[#FDECEC] text-[#D34645] px-3 dark:bg-[#D3464533]"
-                                    : "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]" // for Pending or other statuses
-                                }`}
+                                      ? "bg-[#FDECEC] text-[#D34645] px-3 dark:bg-[#D3464533]"
+                                      : "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]" // for Pending or other statuses
+                                  }`}
                               >
                                 {item.paymentStatus ?? "PAID"}
                               </span>
                             </td>
-                            <td className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[7%] sticky right-0 z-10 ${
-                              index % 2 === 0
-                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
-                            }`}>
+                            <td
+                              className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[7%] sticky right-0 z-10 ${index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                }`}
+                            >
                               <div className="relative inline-block text-left">
-                              <button
+                                <button
+                                  disabled={item.trialClassStatus === "COMPLETED"}
                                   onClick={() =>
                                     setOpenActionMenuForId((prev) =>
                                       prev === item._id ? null : item._id
                                     )
                                   }
-                                className="hover:cursor-pointer text-center p-2"
-                              >
-                                <FaEllipsisV
-                                  size={14}
-                                  className="text-[#5F6368] dark:text-white"
-                                />
-                              </button>
-                                {openActionMenuForId === item._id && (
-                                  <div className="absolute right-0 mt-2 w-28 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-20 dark:bg-[#2E2E2E]">
-                                    <div className="py-1">
-                                      <button
-                                        className="block w-full px-3 py-2 text-left text-[11px] text-[#010E30E5] hover:bg-gray-100 dark:text-white dark:hover:bg-[#3A3A3A]"
-                                        onClick={() => {
-                                          handleClick(item._id.toString());
-                                          setOpenActionMenuForId(null);
-                                        }}
-                                      >
-                                        Edit
-                                      </button>
-                                      <button
-                                        className="block w-full px-3 py-2 text-left text-[11px] text-[#D34645] hover:bg-gray-100 dark:hover:bg-[#3A3A3A]"
-                                        onClick={() => setOpenActionMenuForId(null)}
-                                      >
-                                        Cancel
-                                      </button>
-                                    </div>
-                                  </div>
-                                )}
+                                  className={`text-center p-2 ${item.trialClassStatus === "COMPLETED"
+                                    ? "opacity-40 cursor-not-allowed"
+                                    : "hover:cursor-pointer"
+                                    }`}
+                                >
+                                  <FaEllipsisV
+                                    size={12}
+                                    className={`${item.trialClassStatus === "COMPLETED"
+                                      ? "text-gray-400"
+                                      : "text-[#5F6368] dark:text-white"
+                                      }`}
+                                  />
+                                </button>
                               </div>
                             </td>
+                            {openActionMenuForId === item._id && item.trialClassStatus !== "COMPLETED" && (
+                              <div className="absolute right-16 mt-10 w-28 -ml-10 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-30 dark:bg-[#2E2E2E]">
+                                <div className="py-1">
+                                  <button
+                                    className="block w-full px-3 py-2 text-left text-[11px] text-[#010E30E5] hover:bg-gray-100 dark:text-white dark:hover:bg-[#3A3A3A]"
+                                    onClick={() => {
+                                      handleClick(item._id.toString());
+                                      setOpenActionMenuForId(null);
+                                    }}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    className="block w-full px-3 py-2 text-left text-[11px] text-[#D34645] hover:bg-gray-100 dark:hover:bg-[#3A3A3A]"
+                                    onClick={() => setOpenActionMenuForId(null)}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </tr>
                         ))
                       ) : (
@@ -1743,7 +1708,6 @@ const TrailSection = () => {
             </div>
 
             <form className="grid grid-cols-2  gap-5">
-              {/** First Name */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   First name
@@ -1755,7 +1719,6 @@ const TrailSection = () => {
                   className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C] "
                 />
               </div>
-              {/** Last Name */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Last name
@@ -1767,7 +1730,6 @@ const TrailSection = () => {
                   className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 />
               </div>
-              {/** Email */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Email
@@ -1779,7 +1741,6 @@ const TrailSection = () => {
                   className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C] "
                 />
               </div>
-              {/** Phone Number */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Phone number
@@ -1791,7 +1752,6 @@ const TrailSection = () => {
                   className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 />
               </div>
-              {/** Country */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Country
@@ -1803,7 +1763,6 @@ const TrailSection = () => {
                   className="w-full p-2 border border-gray-300 rounded text-[10px] mt-2  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 />
               </div>
-              {/** City */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   City
@@ -1816,7 +1775,6 @@ const TrailSection = () => {
                 />
               </div>
 
-              {/** time zone */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Time Zone
@@ -1828,7 +1786,6 @@ const TrailSection = () => {
                   className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 />
               </div>
-              {/** Trail ID */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Trial ID
@@ -1840,7 +1797,6 @@ const TrailSection = () => {
                   className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C] "
                 />
               </div>
-              {/** Course */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Course
@@ -1852,7 +1808,6 @@ const TrailSection = () => {
                   className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 />
               </div>
-              {/** Preferred Teacher */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Preferred Teacher
@@ -1864,7 +1819,6 @@ const TrailSection = () => {
                   className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 />
               </div>
-              {/** Level */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Level
@@ -1876,7 +1830,6 @@ const TrailSection = () => {
                   className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 />
               </div>
-              {/** Original Preferred Date */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Original Preferred Date
@@ -1887,16 +1840,15 @@ const TrailSection = () => {
                     editableData.changeDate
                       ? editableData.changeDate
                       : formData?.student.preferredDate
-                      ? new Date(formData.student.preferredDate)
+                        ? new Date(formData.student.preferredDate)
                           .toISOString()
                           .split("T")[0]
-                      : ""
+                        : ""
                   }
                   onChange={(e) => handleDateChange(e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 />
               </div>
-              {/** Original Preferred Time */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Original Preferred Time
@@ -1912,7 +1864,6 @@ const TrailSection = () => {
                 />
               </div>
 
-              {/** Preferred Hours */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Preferred Hours
@@ -1925,32 +1876,31 @@ const TrailSection = () => {
                 />
               </div>
 
-              {/** Change Assigned Teacher */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Change Assigned Teacher
                 </label>
                 <select
-  className="w-full p-2 border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-  value={
-    editableData.availableTeacher
-      ? editableData.availableTeacher
-      : formData?.assignedTeacherId || "" // <-- make sure this is the teacher ID
-  }
-  onChange={(e) => handleEditableFieldChange('availableTeacher', e.target.value)}
-  disabled={isLoadingTeachers}
->
-  <option value="">Select Teacher</option>
-  {isLoadingTeachers ? (
-    <option disabled>🔍 Searching...</option>
-  ) : (
-    availableTeachers.map((teacher) => (
-      <option key={teacher.teacherId} value={teacher.teacherId}>
-        {teacher.teacherName}
-      </option>
-    ))
-  )}
-</select>
+                  className="w-full p-2 border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  value={
+                    editableData.availableTeacher
+                      ? editableData.availableTeacher
+                      : formData?.assignedTeacherId || ""
+                  }
+                  onChange={(e) => handleEditableFieldChange('availableTeacher', e.target.value)}
+                  disabled={isLoadingTeachers}
+                >
+                  <option value="">Select Teacher</option>
+                  {isLoadingTeachers ? (
+                    <option disabled>🔍 Searching...</option>
+                  ) : (
+                    availableTeachers.map((teacher) => (
+                      <option key={teacher.teacherId} value={teacher.teacherId}>
+                        {teacher.teacherName}
+                      </option>
+                    ))
+                  )}
+                </select>
 
                 {isLoadingTeachers && (
                   <div className="text-xs text-blue-500 mt-1 flex items-center gap-1">
@@ -1965,9 +1915,8 @@ const TrailSection = () => {
                 )}
               </div>
 
-              {/** Original Assigned Teacher */} <div> <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]"> Original Assigned Teacher </label> <input value={formData?.assignedTeacher || ""} disabled readOnly className="w-full p-2 border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]" /> </div>
+              <div> <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]"> Original Assigned Teacher </label> <input value={formData?.assignedTeacher || ""} disabled readOnly className="w-full p-2 border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]" /> </div>
 
-              {/** Preferred Package */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Preferred Package
@@ -1979,7 +1928,6 @@ const TrailSection = () => {
                   className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 />
               </div>
-              {/** Guardian Name */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Guardian Name
@@ -1991,7 +1939,6 @@ const TrailSection = () => {
                   className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 />
               </div>
-              {/** Guardian Email */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Guardian Email
@@ -2003,7 +1950,6 @@ const TrailSection = () => {
                   className="w-full p-2 border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 />
               </div>
-              {/** Guardian Phone */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Guardian Phone Number
@@ -2015,7 +1961,6 @@ const TrailSection = () => {
                   className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 />
               </div>
-              {/** Student Status */}
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
                   Student Status
@@ -2033,22 +1978,6 @@ const TrailSection = () => {
                   {trialClassStatus || "PENDING"}
                 </div>
               </div>
-
-              {/** Evaluation Status */}
-
-              {/** Comment (full width) */}
-              {/* <div className="col-span-2">
-                <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
-                  Comment
-                </label>
-                <textarea
-                  value={formData?.comments || ""}
-                  className="w-full p-2  border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                  placeholder="Write your comment here..."
-                  rows={5}
-                />
-              </div> */}
-              {/** Buttons (full width) */}
               <div className="col-span-2 flex justify-end gap-2 ">
                 <button
                   type="button"
@@ -2056,10 +1985,10 @@ const TrailSection = () => {
                   className=" bg-[#576CBC1A] text-[#576CBC] px-5 py-2 rounded-lg hover:shadow-lg transition-all duration-300 text-sm font-medium border border-[#576CBC1A] hover:bg-[#576CBC33] hover:text-[#576CBC] dark:hover:bg-[#576CBC33] dark:hover:text-[#576CBC]"
                 >
                   Cancel
-                  </button>
-                {( (editableData.availableTeacher || formData?.assignedTeacherId) &&
+                </button>
+                {((editableData.availableTeacher || formData?.assignedTeacherId) &&
                   ((editableData.changeDate || formData?.student.preferredDate) &&
-                   (editableData.changeTime || formData?.student.preferredFromTime))
+                    (editableData.changeTime || formData?.student.preferredFromTime))
                 ) && (
                     <button
                       type="button"
@@ -2069,13 +1998,6 @@ const TrailSection = () => {
                       Save & Send Email
                     </button>
                   )}
-                {/* <button
-                  type="submit"
-                  onClick={() => updateClick(formData?._id)}
-                  className="bg-[#576CBC] text-white px-5 py-2 rounded-lg hover:shadow-lg transition-all duration-300 text-sm font-medium"
-                >
-                  Save
-                </button> */}
               </div>
             </form>
           </div>

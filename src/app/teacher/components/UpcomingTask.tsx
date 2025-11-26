@@ -15,8 +15,6 @@ const UpcomingTasks: React.FC = () => {
   const [classes, setClasses] = useState<ClassEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-
   const classTypeStyles: Record<string, { dot: string; text: string }> = {
     REGULARCLASS: { dot: 'bg-[#d77277]', text: 'text-[#d77277]' }, 
     GROUPCLASS: { dot: 'bg-[#72B0D7]', text: 'text-[#72B0D7]' },   

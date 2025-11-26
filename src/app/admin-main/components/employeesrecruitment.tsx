@@ -249,29 +249,9 @@ const ApplicantsList: React.FC = () => {
   const positions = Array.from(new Set(applicants.map(a => a.positionApplied).filter(Boolean)));
   const statuses = Array.from(new Set(applicants.map(a => a.applicationStatus).filter(Boolean)));
 
-  // Filtering logic for applicants
-  // const filteredApplicants = applicants.filter(applicant => {
-  //   const nameMatch = filterName === "" ||
-  //     applicant.candidateFirstName.toLowerCase().includes(filterName.toLowerCase()) ||
-  //     applicant.candidateLastName.toLowerCase().includes(filterName.toLowerCase());
-  //   const positionMatch = filterPosition === "" || applicant.positionApplied === filterPosition;
-  //   const statusMatch = filterStatus === "" || applicant.applicationStatus === filterStatus;
-  //   const fromDateMatch = !filterDateFrom || new Date(applicant.applicationDate) >= filterDateFrom;
-  //   const toDateMatch = !filterDateTo || new Date(applicant.applicationDate) <= filterDateTo;
-  //   // Search bar keyword filter
-  //   const search = searchQuery.trim().toLowerCase();
-  //   const keywordMatch =
-  //     search === "" ||
-  //     applicant.candidateFirstName.toLowerCase().includes(search) ||
-  //     applicant.candidateLastName.toLowerCase().includes(search) ||
-  //     applicant.candidateEmail.toLowerCase().includes(search) ||
-  //     (applicant.positionApplied || "").toLowerCase().includes(search) ||
-  //     (applicant.applicationStatus || "").toLowerCase().includes(search);
-  //   return nameMatch && positionMatch && statusMatch && fromDateMatch && toDateMatch && keywordMatch;
-  // });
+
 
   const itemsPerPage = 6;
-  const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentApplicants = filteredApplicants.slice(startIndex, endIndex);

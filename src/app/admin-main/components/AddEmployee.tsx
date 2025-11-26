@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { Country, State, City, ICountry, ICity } from "country-state-city";
 
 interface EmployeeFormData {
@@ -50,7 +49,6 @@ interface AddEmployeeProps {
 }
 
 const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
-  const router = useRouter();
   const [formData, setFormData] = useState<EmployeeFormData>({
     firstName: "",
     lastName: "",
@@ -77,9 +75,9 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
     designation: "",
     department: "",
     preferedWorkingHours: 8,
-    preferedShiftFrom: "09:00 AM",
-    preferedShiftTo: "09:00 PM",
-    comments: "",
+    preferedShiftFrom: "09:00",
+    preferedShiftTo: "17:00",
+    comments: "", // Make sure this is initialized as empty string, not null
     profileImage: null,
     applicationDate: new Date().toISOString(),
     currency: "USD",
@@ -139,6 +137,7 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
     if (!formData.phoneNumber) newErrors.phoneNumber = "Phone number is required";
     if (!formData.designation) newErrors.designation = "Designation is required";
     if (!formData.department) newErrors.department = "Department is required";
+    if (!formData.comments.trim()) newErrors.comments = "Comments are required"; // Add comments validation
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -152,20 +151,6 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
       ...prev,
       [name]: value,
     }));
-  };
-
-  const formatTime = (value: string): string => {
-    if (!value) return "";
-    const [hour, minute] = value.split(":");
-    const h = parseInt(hour, 10);
-    const formattedHour = h.toString().padStart(2, "0");
-    return `${formattedHour}:${minute}`;
-  };
-
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    const formatted = formatTime(value);
-    setFormData((prev) => ({ ...prev, [name]: formatted }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -182,13 +167,23 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
       }
 
       const formPayload = new FormData();
+      
+      // Add all fields individually to ensure proper formatting
       Object.entries(formData).forEach(([key, value]) => {
         if (Array.isArray(value)) {
           formPayload.append(key, JSON.stringify(value));
         } else if (value !== null && value !== undefined) {
-          formPayload.append(key, value.toString());
+          // Ensure comments field is always sent as string, even if empty
+          if (key === 'comments') {
+            formPayload.append(key, value.toString() || ''); // Always send comments
+          } else {
+            formPayload.append(key, value.toString());
+          }
         }
       });
+
+      // Debug: log what we're sending
+      console.log("Form data being sent:", Object.fromEntries(formPayload));
 
       await axios.post(
         "https://api.blackstoneinfomaticstech.com/otheremployee",
@@ -204,9 +199,13 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
       alert("Employee added successfully!");
       onSuccess?.();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding employee:", error);
-      alert("Error adding employee. Please try again.");
+      if (error.response) {
+        alert(`Error: ${error.response.data?.message || 'Failed to add employee'}`);
+      } else {
+        alert("Error adding employee. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -257,205 +256,6 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
     });
   };
 
-  const renderFormField = (
-    field: {
-      label: string;
-      name: keyof EmployeeFormData;
-      type: string;
-      full?: boolean;
-      options?: string[];
-    },
-    index: number
-  ) => {
-    const fieldValue = formData[field.name];
-    const error = errors[field.name];
-
-    if (field.type === "checkbox-group" && field.options) {
-      const valueArray = Array.isArray(fieldValue) 
-        ? fieldValue 
-        : typeof fieldValue === 'string' 
-          ? [fieldValue] 
-          : [];
-
-      return (
-        <div key={index} className={`flex flex-col ${field.full ? "col-span-2" : ""}`}>
-          <label className="text-xs font-medium dark:text-[#FFFFFF] text-gray-700 mb-1 block">
-            {field.label}
-          </label>
-          <div className="flex flex-wrap gap-3">
-            {field.options.map((option) => (
-              <label key={option} className="flex items-center space-x-2 text-xs">
-                <input
-                  type="checkbox"
-                  checked={valueArray.includes(option)}
-                  onChange={() => handleCheckboxChange(option)}
-                  className="rounded border-gray-300 dark:text-[#FFFFFF] text-blue-600 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
-                />
-                <span className="dark:text-gray-300">{option}</span>
-              </label>
-            ))}
-          </div>
-          {error && (
-            <p className="text-red-500 text-xs mt-1">{error as string}</p>
-          )}
-        </div>
-      );
-    }
-
-    return (
-      <div key={index} className={`flex flex-col ${field.full ? "col-span-2" : ""}`}>
-        <label className="text-xs font-medium text-gray-700 dark:text-[#FFFFFF] mb-1">
-          {field.label}
-        </label>
-        {field.type === "file" ? (
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="w-full text-xs bg-gray-100 dark:text-[#FFFFFF] dark:bg-[#5C5C5C] border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2"
-          />
-        ) : field.type === "time" ? (
-          <input
-            type="time"
-            name={field.name}
-            onChange={handleTimeChange}
-            className="w-full bg-gray-100 dark:text-[#FFFFFF] border dark:bg-[#5C5C5C] border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-xs"
-          />
-        ) : field.type === "date" ? (
-          <input
-            type="date"
-            name={field.name}
-            value={fieldValue as string}
-            onChange={handleChange}
-            className="w-full bg-gray-100 dark:bg-[#5C5C5C] border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-xs text-gray-900 dark:text-gray-100 [color-scheme:light dark]"
-          />
-        ) : field.type === "select" && field.options ? (
-          <select
-            name={field.name}
-            value={fieldValue as string}
-            onChange={handleChange}
-            className="w-full bg-gray-100 border dark:bg-[#5C5C5C] border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-xs text-gray-900 dark:text-gray-100"
-          >
-            <option value="">Select {field.label}</option>
-            {field.options.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        ) : field.type === "textarea" ? (
-          <textarea
-            name={field.name}
-            value={fieldValue as string}
-            onChange={handleChange}
-            className="w-full bg-gray-100 dark:bg-[#5C5C5C] border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-xs text-gray-900 dark:text-gray-100"
-            rows={3}
-          />
-        ) : (
-          <input
-            type={field.type}
-            name={field.name}
-            value={fieldValue as string | number}
-            onChange={handleChange}
-            className="w-full bg-gray-100 dark:bg-[#5C5C5C] border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-xs text-gray-900 dark:text-gray-100"
-          />
-        )}
-        {error && (
-          <p className="text-red-500 text-xs mt-1">{error as string}</p>
-        )}
-      </div>
-    );
-  };
-
-  const formFields: {
-    label: string;
-    name: keyof EmployeeFormData;
-    type: string;
-    full?: boolean;
-    options?: string[];
-  }[] = [
-    { label: "First name", name: "firstName", type: "text" },
-    { label: "Last name", name: "lastName", type: "text" },
-    { label: "Email", name: "email", type: "email" },
-    { label: "Phone number", name: "phoneNumber", type: "number" },
-    { label: "Nationality", name: "nationality", type: "text" },
-    { label: "Date of Birth", name: "dateOfBirth", type: "date" },
-    { label: "Country", name: "country", type: "text" },
-    { label: "City", name: "city", type: "text" },
-    { label: "Gender", name: "gender", type: "text" },
-    {
-      label: "Residential Address",
-      name: "residentialAddress",
-      type: "text",
-      full: true,
-    },
-    {
-      label: "Highest Qualification",
-      name: "higherQualification",
-      type: "text",
-    },
-    {
-      label: "University/Institute Name",
-      name: "universityName",
-      type: "text",
-    },
-    { label: "Previous Job Title", name: "previousJob", type: "text" },
-    { label: "Experience (in years)", name: "experience", type: "text" },
-    { label: "Bank Name", name: "bankName", type: "text" },
-    { label: "Account Number", name: "accountNumber", type: "number" },
-    { label: "Bank Code", name: "bankCode", type: "text", full: true },
-    { label: "Passport Number", name: "passportNumber", type: "text" },
-    {
-      label: "Emergency Contact Number",
-      name: "emergencyContactNumber",
-      type: "number",
-    },
-    {
-      label: "Relationship with Employee",
-      name: "relationshipWithEmployee",
-      type: "text",
-    },
-    { label: "Address", name: "address", type: "text", full: true },
-    { label: "Designation", name: "designation", type: "select" ,options: ["SUPERVISOR", "ACADEMICCOACH"] },
-    { label: "Department", name: "department", type: "text"  },
-    {
-      label: "Preferred Working Hours",
-      name: "preferedWorkingHours",
-      type: "number",
-    },
-    { label: "Preferred Shift From", name: "preferedShiftFrom", type: "time" },
-    { label: "Preferred Shift To", name: "preferedShiftTo", type: "time" },
-    {
-      label: "Languages Known",
-      name: "languagesKnown",
-      type: "text",
-      full: true,
-    },
-    { label: "Currency", name: "currency", type: "select" , options: ["USD", "EUR", "INR", "AED"] },
-    { label: "Expected Salary", name: "expectedSalary", type: "number" },
-    {
-      label: "Preferred Working Days",
-      name: "preferedWorkingDays",
-      type: "checkbox-group",
-      options: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ],
-      full: true,
-    },
-    { label: "Profile Image", name: "profileImage", type: "file", full: true },
-    {
-      label: "Additional Comments",
-      name: "comments",
-      type: "textarea",
-      full: true,
-    },
-  ];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center overflow-auto">
@@ -588,33 +388,31 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
                 >
                   <option value="">Select City</option>
                   {cities.map(city => (
-                    <option key={city.name} value={city.name}>
+                    <option 
+                      key={`${city.name}-${city.stateCode}-${city.countryCode}`} 
+                      value={city.name}
+                    >
                       {city.name}
                     </option>
                   ))}
                 </select>
               </div>
               <div>
-  <label
-    htmlFor="gender"
-    className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]"
-  >
-    Gender
-  </label>
-
-  <select
-    name="gender"
-    value={formData.gender}
-    onChange={handleChange}
-    className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-  >
-    <option value="">Select Gender</option>
-    <option value="Male">Male</option>
-    <option value="Female">Female</option>
-    <option value="Other">Other</option>
-  </select>
-</div>
-
+                <label htmlFor="gender" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Gender
+                </label>
+                <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
               <div>
                 <label htmlFor="residentialAddress" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
                   Residential Address
@@ -770,11 +568,9 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
                   className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                 >
                   <option value="">Select Designation</option>
-                  <option value="ADMIN">ADMIN</option>
                   <option value="SUPERVISOR">SUPERVISOR</option>
                   <option value="ACADEMICCOACH">ACADEMIC COACH</option>
                   <option value="TEACHER">TEACHER</option>
-
                 </select>
               </div>
               <div>
@@ -806,38 +602,37 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
                   Preferred Shift From
                 </label>
                 <select
-  name="preferedShiftTo"
-  value={formData.preferedShiftTo}
-  onChange={handleChange}
-  className="w-full dark:bg-[#343434] border border-gray-300 dark:border-[#5c5c5c] rounded-lg px-4 py-2 text-xs text-gray-900 dark:text-gray-100"
->
-  <option value="">Select Time</option>
-  {timeOptions.map((time) => (
-    <option key={time} value={time}>
-      {time}
-    </option>
-  ))}
-</select>
-
+                  name="preferedShiftFrom"
+                  value={formData.preferedShiftFrom}
+                  onChange={handleChange}
+                  className="w-full dark:bg-[#343434] border border-gray-300 dark:border-[#5c5c5c] rounded-lg px-4 py-2 text-xs text-gray-900 dark:text-gray-100"
+                >
+                  <option value="">Select Time</option>
+                  {timeOptions.map((time) => (
+                    <option key={`from-${time}`} value={time}>
+                      {time}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label htmlFor="preferedShiftTo" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
                   Preferred Shift To
                 </label>
                 <select
-  name="preferedShiftTo"
-  value={formData.preferedShiftTo}
-  onChange={handleChange}
-  className="w-full dark:bg-[#343434] border border-gray-300 dark:border-[#5C5C5C] rounded-lg px-4 py-2 text-xs text-gray-900 dark:text-gray-100"
->
-  <option value="">Select Time</option>
-  {timeOptions.map((time) => (
-    <option key={time} value={time}>
-      {time}
-    </option>
-  ))}
-</select>
-
+                  name="preferedShiftTo"
+                  value={formData.preferedShiftTo}
+                  onChange={handleChange}
+                  className="w-full dark:bg-[#343434] border border-gray-300 dark:border-[#5C5C5C] rounded-lg px-4 py-2 text-xs text-gray-900 dark:text-gray-100"
+                >
+                  <option value="">Select Time</option>
+                  {timeOptions.map((time) => (
+                    <option key={`to-${time}`} value={time}
+                  disabled={time === formData.preferedShiftFrom}>
+                      {time}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label htmlFor="languagesKnown" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
@@ -846,12 +641,12 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
                 <input
                   type="text"
                   name="languagesKnown"
-                  value={formData.languagesKnown.join(", ")} // Join the array for display
+                  value={formData.languagesKnown.join(", ")}
                   onChange={(e) => {
                       const value = e.target.value;
                       setFormData((prev) => ({
                           ...prev,
-                          languagesKnown: value ? value.split(",").map(lang => lang.trim()) : [], // Split into array
+                          languagesKnown: value ? value.split(",").map(lang => lang.trim()) : [],
                       }));
                   }}
                   className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
@@ -875,66 +670,50 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
                 </select>
               </div>
               <div>
-  <label
-    htmlFor="expectedSalary"
-    className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]"
-  >
-    Expected Salary
-  </label>
-
-  <div className="flex gap-2">
-    {/* Currency Dropdown */}
-    <select
-      name="salaryCurrency"
-      value={formData.currency}
-      onChange={handleChange}
-      className="border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-    >
-      <option value="USD"> $</option>
-      <option value="INR"> ₹</option>
-      <option value="EUR"> €</option>
-      <option value="GBP"> £</option>
-      <option value="AED"> د.إ</option>
-    </select>
-
-    {/* Salary Amount */}
-    <input
-      type="number"
-      name="expectedSalary"
-      value={formData.expectedSalary}
-      onChange={handleChange}
-      placeholder="Enter amount"
-      className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-    />
-  </div>
-</div>
-
-              
-<div>
-  <label
-    htmlFor="profileImage"
-    className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]"
-  >
-    Profile Image
-  </label>
-
-  <input
-    type="file"
-    name="profileImage"
-    accept="image/png, image/jpeg, image/jpg"
-    onChange={handleFileChange}
-    className="w-full text-[10px] bg-[#343434] border border-[#5C5C5C] rounded-lg px-4 py-2"
-  />
-
-  <p className="text-[8px] text-gray-400 mt-1">
-    Allowed formats: JPG, PNG &nbsp; | &nbsp;  Max size: 2MB
-  </p>
-
-  {imageError && (
-    <p className="text-[10px] text-red-500 mt-1">{imageError}</p>
-  )}
-</div>
-
+                <label htmlFor="expectedSalary" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Expected Salary
+                </label>
+                <div className="flex gap-2">
+                  <select
+                    name="currency"
+                    value={formData.currency}
+                    onChange={handleChange}
+                    className="border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  >
+                    <option value="USD"> $</option>
+                    <option value="INR"> ₹</option>
+                    <option value="EUR"> €</option>
+                    <option value="GBP"> £</option>
+                    <option value="AED"> د.إ</option>
+                  </select>
+                  <input
+                    type="number"
+                    name="expectedSalary"
+                    value={formData.expectedSalary}
+                    onChange={handleChange}
+                    placeholder="Enter amount"
+                    className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="profileImage" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
+                  Profile Image
+                </label>
+                <input
+                  type="file"
+                  name="profileImage"
+                  accept="image/png, image/jpeg, image/jpg"
+                  onChange={handleFileChange}
+                  className="w-full text-[10px] dark:bg-[#343434] border dark:border-[#5C5C5C] rounded-lg px-4 py-2"
+                />
+                <p className="text-[8px] text-gray-400 mt-1">
+                  Allowed formats: JPG, PNG &nbsp; | &nbsp;  Max size: 2MB
+                </p>
+                {imageError && (
+                  <p className="text-[10px] text-red-500 mt-1">{imageError}</p>
+                )}
+              </div>
               <div>
                 <label htmlFor="preferedWorkingDays" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
                   Preferred Working Days
@@ -955,14 +734,17 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
               </div>
               <div>
                 <label htmlFor="comments" className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]">
-                  Additional Comments
+                  Additional Comments *
                 </label>
                 <textarea
                   name="comments"
                   value={formData.comments}
                   onChange={handleChange}
                   className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  placeholder="Enter comments here..."
+                  required
                 />
+                {errors.comments && <p className="text-red-500 text-xs mt-1">{errors.comments}</p>}
               </div>
             </div>
             <div className="flex justify-end space-x-3 mt-6">
@@ -976,7 +758,7 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800 disabled:opacity-50"
+                className="px-6 py-2  text-sm bg-[#576CBC] text-white rounded-lg hover:bg-[#4459A9] disabled:opacity-50"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Saving..." : "Save"}

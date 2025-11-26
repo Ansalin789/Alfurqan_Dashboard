@@ -1,13 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-
 import { useTheme } from "@/context/ThemeContext";
 import { Bell, CalendarDays, Moon, Sun, User, X } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
 import axios from "axios";
-import { getSocket } from "@/app/utils/socket";
 import AddPackage from "./AddPackage";
 import AddMeeting from "./AddMeeting";
 import AddExpenses from "./AddExpenses";
@@ -74,10 +72,6 @@ export default function AdminHeader({
     typeof window !== "undefined"
       ? localStorage.getItem("AdminPortalId")
       : null;
-
-  const filteredNotifications = notifications.filter(
-    (n) => n.notificationStatus === activeTab
-  );
 
   const handleNotificationClick = async (notificationId: string) => {
     try {
@@ -189,7 +183,7 @@ useEffect(() => {
         return "👨‍💼";
       case "PACKAGE_UPDATE":
         return "📦";
-      case "ADMIN_MEETING_SCHEDULED":
+      case "MEETING_REMINDER":
         return "📅";
       case "EXPENSE_ALERT":
         return "💰";
@@ -206,23 +200,6 @@ useEffect(() => {
     case "STUDENT_NOTIFICATION":
       router.push('evaluations');
       break;
-
-    case "ADMIN_MEETING_SCHEDULED":
-      router.push('meeting');
-      break;
-
-    // case "ADMIN_NOTIFICATION":
-    //   router.push(`/admin/alerts/${senderId}`);
-    //   break;
-
-    // case "REQUEST_RESCHEDULE_TEACHER":
-    //   router.push(`/Academic-coach/ui/teacherDetails?teacherId=${senderId}`);
-    //   break;
-
-    //   case "REQUEST_RESCHEDULE_STUDENT":
-    //   router.push(`managestudentview?id=${senderId}`);
-    //   break;
-
 
     default:
       console.warn("Unknown notification type:", notificationType);

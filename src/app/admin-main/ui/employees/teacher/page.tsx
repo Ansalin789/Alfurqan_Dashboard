@@ -282,7 +282,9 @@ const Teacher = () => {
   const [users, setUsers] = useState<User>();
   const [scheduledclass, setScheduledClass] = useState<ScheduledClass[]>([]);
   const [wages, setWages] = useState<WageData[]>([]);
-  const [wagesResponse, setWagesResponse] = useState<WagesResponse | null>(null);
+  const [wagesResponse, setWagesResponse] = useState<WagesResponse | null>(
+    null
+  );
   const [editingWageId, setEditingWageId] = useState<string | null>(null);
   const [editingRate, setEditingRate] = useState<string>("");
   const [editingDuration, setEditingDuration] = useState<string>("");
@@ -334,7 +336,11 @@ const Teacher = () => {
       const searchFields = [row.monthName, row.currentYear];
 
       let matchesFilters = true;
-      if (filters.month && row.monthly && row.monthly.month.toString() !== filters.month) {
+      if (
+        filters.month &&
+        row.monthly &&
+        row.monthly.month.toString() !== filters.month
+      ) {
         matchesFilters = false;
       }
       if (filters.year && row.currentYear.toString() !== filters.year) {
@@ -344,9 +350,9 @@ const Teacher = () => {
       const matchesSearch = searchFields.some((field) =>
         field
           ? field
-            .toString()
-            .toLowerCase()
-            .includes(searchEarnings.toLowerCase())
+              .toString()
+              .toLowerCase()
+              .includes(searchEarnings.toLowerCase())
           : false
       );
 
@@ -354,8 +360,18 @@ const Teacher = () => {
     })
     .sort((a, b) => {
       const monthOrder = [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
       ];
 
       return (
@@ -364,8 +380,8 @@ const Teacher = () => {
       );
     });
 
-
-  const [teacherOverview, setTeacherOverview] = useState<TeacherOverview | null>(null);
+  const [teacherOverview, setTeacherOverview] =
+    useState<TeacherOverview | null>(null);
   const [salaryWages, setSalaryWages] = useState<SalaryWageRecord[]>([]);
 
   const [earningsPage, setEarningsPage] = useState(1);
@@ -414,7 +430,11 @@ const Teacher = () => {
     setEditingWageId(wageId);
     setEditingRate(currentRate);
   };
-  const handleSaveRate = async (wageId: string, rate?: string, hoursMins?: string) => {
+  const handleSaveRate = async (
+    wageId: string,
+    rate?: string,
+    hoursMins?: string
+  ) => {
     try {
       const token = localStorage.getItem("AdminAuthToken");
       if (!token) {
@@ -428,7 +448,7 @@ const Teacher = () => {
       console.log("HoursMins:", hoursMins);
 
       // Step 2: Find wage to update
-      const wageToUpdate = wages.find(wage => wage._id === wageId);
+      const wageToUpdate = wages.find((wage) => wage._id === wageId);
       if (!wageToUpdate) {
         console.warn("⚠️ Wage not found for ID:", wageId);
         return;
@@ -465,12 +485,9 @@ const Teacher = () => {
       console.log("✅ API Response:", response.data);
 
       // Step 5: Update local state
-      setWages(prevWages =>
-        prevWages.map(wage =>
-          wage._id === wageId ? updatedWage : wage
-        )
+      setWages((prevWages) =>
+        prevWages.map((wage) => (wage._id === wageId ? updatedWage : wage))
       );
-
     } catch (error: any) {
       // Step 6: Show detailed error
       console.error("❌ Error updating wage rate:", error.message || error);
@@ -479,7 +496,6 @@ const Teacher = () => {
       }
     }
   };
-
 
   const handleCancelEdit = () => {
     setEditingWageId(null);
@@ -582,7 +598,7 @@ const Teacher = () => {
         `https://api.blackstoneinfomaticstech.com/empwages`,
         {
           params: {
-            employeeId: employeeId
+            employeeId: employeeId,
           },
           headers: {
             "Content-Type": "application/json",
@@ -750,16 +766,28 @@ const Teacher = () => {
     ];
 
     let matchesFilters = true;
-    if (filters.studentName && student && `${student.studentFirstName} ${student.studentLastName}` !== filters.studentName) {
+    if (
+      filters.studentName &&
+      student &&
+      `${student.studentFirstName} ${student.studentLastName}` !==
+        filters.studentName
+    ) {
       matchesFilters = false;
     }
-    if (filters.country && student && student.studentCountry !== filters.country) {
+    if (
+      filters.country &&
+      student &&
+      student.studentCountry !== filters.country
+    ) {
       matchesFilters = false;
     }
-    if (filters.subject && student && student.learningInterest !== filters.subject) {
+    if (
+      filters.subject &&
+      student &&
+      student.learningInterest !== filters.subject
+    ) {
       matchesFilters = false;
     }
-
 
     const matchesSearch = searchFields.some((field) =>
       field
@@ -785,18 +813,30 @@ const Teacher = () => {
 
     let matchesFilters = true;
 
-    if (filters.studentName && `${event.student.studentFirstName} ${event.student.studentLastName}` !== filters.studentName) {
+    if (
+      filters.studentName &&
+      `${event.student.studentFirstName} ${event.student.studentLastName}` !==
+        filters.studentName
+    ) {
       matchesFilters = false;
     }
-    if (filters.classType && event.sessionClassType.toLowerCase() !== filters.classType.toLowerCase()) {
+    if (
+      filters.classType &&
+      event.sessionClassType.toLowerCase() !== filters.classType.toLowerCase()
+    ) {
       matchesFilters = false;
     }
-    if (filters.status && event.scheduleStatus.toLowerCase() !== filters.status.toLowerCase()) {
+    if (
+      filters.status &&
+      event.scheduleStatus.toLowerCase() !== filters.status.toLowerCase()
+    ) {
       matchesFilters = false;
     }
     if (filters.dateRange) {
       const startDate = new Date(event.startDate);
-      const from = filters.dateRange.from ? new Date(filters.dateRange.from) : null;
+      const from = filters.dateRange.from
+        ? new Date(filters.dateRange.from)
+        : null;
       const to = filters.dateRange.to ? new Date(filters.dateRange.to) : null;
       if (from && startDate < from) {
         matchesFilters = false;
@@ -809,9 +849,9 @@ const Teacher = () => {
     const matchesSearch = searchFields.some((field) =>
       field
         ? field
-          .toString()
-          .toLowerCase()
-          .includes(searchScheduledClass.toLowerCase())
+            .toString()
+            .toLowerCase()
+            .includes(searchScheduledClass.toLowerCase())
         : false
     );
     return matchesSearch && matchesFilters;
@@ -841,14 +881,22 @@ const Teacher = () => {
     // Status filter
     let matchesStatus = true;
     if (filters.status && filters.status.length > 0) {
-      matchesStatus = item.paymentStatus.toLowerCase() === filters.status.toLowerCase();
+      matchesStatus =
+        item.paymentStatus.toLowerCase() === filters.status.toLowerCase();
     }
     // Date range filter
     let matchesDate = true;
-    if (filters.paymentDate && (filters.paymentDate.from || filters.paymentDate.to)) {
+    if (
+      filters.paymentDate &&
+      (filters.paymentDate.from || filters.paymentDate.to)
+    ) {
       const itemDate = new Date(item.createdDate);
-      const from = filters.paymentDate.from ? new Date(filters.paymentDate.from) : null;
-      const to = filters.paymentDate.to ? new Date(filters.paymentDate.to) : null;
+      const from = filters.paymentDate.from
+        ? new Date(filters.paymentDate.from)
+        : null;
+      const to = filters.paymentDate.to
+        ? new Date(filters.paymentDate.to)
+        : null;
       if (from && itemDate < from) matchesDate = false;
       if (to && itemDate > to) matchesDate = false;
     }
@@ -858,26 +906,37 @@ const Teacher = () => {
   // Filtered Wages
   const filteredWages = Array.isArray(wages)
     ? wages.filter((item) => {
-      const searchFields = [
-        item.classType?.className || "",
-        item.classType?.rate || "",
-        item.classType?.currency || "",
-      ];
+        const searchFields = [
+          item.classType?.className || "",
+          item.classType?.rate || "",
+          item.classType?.currency || "",
+        ];
 
-      let matchesFilters = true;
-      if (filters.className && item.classType && !item.classType.className.toLowerCase().includes(filters.className.toLowerCase())) {
-        matchesFilters = false;
-      }
-      if (filters.currency && item.classType && item.classType.currency.toLowerCase() !== filters.currency.toLowerCase()) {
-        matchesFilters = false;
-      }
+        let matchesFilters = true;
+        if (
+          filters.className &&
+          item.classType &&
+          !item.classType.className
+            .toLowerCase()
+            .includes(filters.className.toLowerCase())
+        ) {
+          matchesFilters = false;
+        }
+        if (
+          filters.currency &&
+          item.classType &&
+          item.classType.currency.toLowerCase() !==
+            filters.currency.toLowerCase()
+        ) {
+          matchesFilters = false;
+        }
 
-      const matchesSearch = searchFields.some((field) =>
-        field.toString().toLowerCase().includes(searchWages.toLowerCase())
-      );
+        const matchesSearch = searchFields.some((field) =>
+          field.toString().toLowerCase().includes(searchWages.toLowerCase())
+        );
 
-      return matchesSearch && matchesFilters;
-    })
+        return matchesSearch && matchesFilters;
+      })
     : [];
 
   // Filtered Working Hours
@@ -903,12 +962,32 @@ const Teacher = () => {
     const matchesSearch = searchFields.some((field) =>
       field
         ? field
-          .toString()
-          .toLowerCase()
-          .includes(searchWorkingHours.toLowerCase())
+            .toString()
+            .toLowerCase()
+            .includes(searchWorkingHours.toLowerCase())
         : false
     );
     return matchesSearch && matchesFilters;
+  });
+
+  const groupedWorkingHours = Object.values(
+    filteredWorkingHours.reduce((acc, item) => {
+      acc[item.day] = item; // Only the last entry per day
+      return acc;
+    }, {} as Record<string, any>)
+  );
+  const weekOrder = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+
+  const sortedWorkingHours = groupedWorkingHours.sort((a, b) => {
+    return weekOrder.indexOf(a.day) - weekOrder.indexOf(b.day);
   });
 
   const [wagesPage, setWagesPage] = useState(1);
@@ -953,71 +1032,126 @@ const Teacher = () => {
     .map((subject) => ({ value: subject!, label: subject! }));
 
   const studentslistFilterFields: FilterField[] = [
-    { name: 'studentName', label: 'Student Name', type: 'select', options: studentNameOptions },
-    { name: 'country', label: 'Country', type: 'select', options: countryOptions },
-    { name: 'subject', label: 'Subject', type: 'select', options: subjectOptions },
+    {
+      name: "studentName",
+      label: "Student Name",
+      type: "select",
+      options: studentNameOptions,
+    },
+    {
+      name: "country",
+      label: "Country",
+      type: "select",
+      options: countryOptions,
+    },
+    {
+      name: "subject",
+      label: "Subject",
+      type: "select",
+      options: subjectOptions,
+    },
   ];
 
   const scheduledClassFilterFields: FilterField[] = [
-    { name: 'studentName', label: 'Student Name', type: 'select', options: scheduleStudentNameOptions },
     {
-      name: 'classType', label: 'Class Type', type: 'select', options: [
-        { value: 'trial', label: 'Trial' },
-        { value: 'regular', label: 'Regular' },
-      ]
+      name: "studentName",
+      label: "Student Name",
+      type: "select",
+      options: scheduleStudentNameOptions,
     },
-    { name: 'status', label: 'Status', type: 'select', options: scheduleStatusOptions },
-    { name: 'dateRange', label: 'Date', type: 'date-range' },
+    {
+      name: "classType",
+      label: "Class Type",
+      type: "select",
+      options: [
+        { value: "trial", label: "Trial" },
+        { value: "regular", label: "Regular" },
+      ],
+    },
+    {
+      name: "status",
+      label: "Status",
+      type: "select",
+      options: scheduleStatusOptions,
+    },
+    { name: "dateRange", label: "Date", type: "date-range" },
   ];
 
   const earningsFilterFields: FilterField[] = [
-    { name: 'month', label: 'Month', type: 'select', options: Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString(), label: new Date(0, i).toLocaleString('default', { month: 'long' }) })) },
-    { name: 'year', label: 'Year', type: 'text' },
+    {
+      name: "month",
+      label: "Month",
+      type: "select",
+      options: Array.from({ length: 12 }, (_, i) => ({
+        value: (i + 1).toString(),
+        label: new Date(0, i).toLocaleString("default", { month: "long" }),
+      })),
+    },
+    { name: "year", label: "Year", type: "text" },
   ];
 
   const paymentsFilterFields: FilterField[] = [
-    { name: 'paymentDate', label: 'Payment Date', type: 'date-range' },
+    { name: "paymentDate", label: "Payment Date", type: "date-range" },
     {
-      name: 'status', label: 'Status', type: 'select', options: [
-        { value: 'paid', label: 'Paid' },
-        { value: 'pending', label: 'Pending' },
-      ]
+      name: "status",
+      label: "Status",
+      type: "select",
+      options: [
+        { value: "paid", label: "Paid" },
+        { value: "pending", label: "Pending" },
+      ],
     },
   ];
 
   const wagesFilterFields: FilterField[] = [
-    { name: 'className', label: 'Class Name', type: 'text' },
+    { name: "className", label: "Class Name", type: "text" },
     {
-      name: 'currency', label: 'Currency', type: 'select', options: [
-        { value: 'usd', label: 'USD' },
-        { value: 'eur', label: 'EUR' },
-      ]
+      name: "currency",
+      label: "Currency",
+      type: "select",
+      options: [
+        { value: "usd", label: "USD" },
+        { value: "eur", label: "EUR" },
+      ],
     },
   ];
 
   const workingHoursFilterFields: FilterField[] = [
-    { name: 'day', label: 'Day', type: 'select', options: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => ({ value: d.toLowerCase(), label: d })) },
-    { name: 'date', label: 'Date', type: 'date-range' },
+    {
+      name: "day",
+      label: "Day",
+      type: "select",
+      options: [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+      ].map((d) => ({ value: d.toLowerCase(), label: d })),
+    },
+    { name: "date", label: "Date", type: "date-range" },
   ];
 
   const getFilterFieldsForTab = (tab: string) => {
     switch (tab) {
-      case 'Students List':
+      case "Students List":
         return studentslistFilterFields;
-      case 'Scheduled Class':
+      case "Scheduled Class":
         return scheduledClassFilterFields;
-      case 'Earnings':
+      case "Earnings":
         return earningsFilterFields;
-      case 'Payments':
+      case "Payments":
         return paymentsFilterFields;
-      case 'Wages':
+      case "Wages":
         return wagesFilterFields;
-      case 'Working Hours':
+      case "Working Hours":
         return workingHoursFilterFields;
       default:
         return [];
     }
-  }
+  };
 
   const formatClassName = (name: string) => {
     if (!name) return "-";
@@ -1026,18 +1160,19 @@ const Teacher = () => {
     let cleaned = name.replace(/\s+/g, "");
 
     // Fix common spelling mistakes
-    cleaned = cleaned
-      .replace("TRAIL", "TRIAL")
-      .replace("GRUOP", "GROUP");
+    cleaned = cleaned.replace("TRAIL", "TRIAL").replace("GRUOP", "GROUP");
 
     // Add space before CLASS
     return cleaned.replace(/CLASS$/, " CLASS");
   };
 
-
   return (
     <BaseLayout4>
-      <TeacherHeader currentSection="Employees" showBackPath="/admin-main/ui/employees" showBackButton={true} />
+      <TeacherHeader
+        currentSection="Employees"
+        showBackPath="/admin-main/ui/employees"
+        showBackButton={true}
+      />
       <div className="p-4 min-h-screen w-full">
         <div className="grid grid-cols-5 gap-2">
           {/* Left Card */}
@@ -1081,9 +1216,6 @@ const Teacher = () => {
                     {users?.gender}
                   </span>
                 </div>
-
-
-
               </div>
             </div>
 
@@ -1124,9 +1256,15 @@ const Teacher = () => {
                 [
                   { value: teacherOverview.studentCount, label: "Students" },
                   { value: teacherOverview.absentDays, label: "Absent Days" },
-                  { value: teacherOverview.totalClasses, label: "Total Classes" },
+                  {
+                    value: teacherOverview.totalClasses,
+                    label: "Total Classes",
+                  },
                   { value: teacherOverview.leave, label: "Days On Leave" },
-                  { value: `$${teacherOverview.totalEarned}`, label: "Total Earned" },
+                  {
+                    value: `$${teacherOverview.totalEarned}`,
+                    label: "Total Earned",
+                  },
                   { value: teacherOverview.rescheduled, label: "Rescheduled" },
                 ].map((item, idx) => (
                   <div
@@ -1140,14 +1278,13 @@ const Teacher = () => {
                   </div>
                 ))
               ) : (
-                <div className="col-span-2 text-center text-xs text-gray-200">Loading...</div>
+                <div className="col-span-2 text-center text-xs text-gray-200">
+                  Loading...
+                </div>
               )}
             </div>
           </div>
-
-
         </div>
-
 
         {/*Table card */}
         <div className="mt-4  h-min">
@@ -1155,10 +1292,11 @@ const Teacher = () => {
             {tabs.map((tab) => (
               <button
                 key={tab}
-                className={`px-3 py-[7px] text-xs font-medium focus:outline-none transition-all duration-200 ${activeTab === tab
-                  ? "border-b border-b-[#576CBC] text-[#576CBC]"
-                  : "text-[#010E30] dark:text-white"
-                  }`}
+                className={`px-3 py-[7px] text-xs font-medium focus:outline-none transition-all duration-200 ${
+                  activeTab === tab
+                    ? "border-b border-b-[#576CBC] text-[#576CBC]"
+                    : "text-[#010E30] dark:text-white"
+                }`}
                 onClick={() => setActiveTab(tab)}
               >
                 {tab}
@@ -1226,14 +1364,16 @@ const Teacher = () => {
                             .reverse()
                             .map((item, index) => {
                               const student = item.studentDetails?.student;
-                              const subscription = item.studentDetails?.subscription;
+                              const subscription =
+                                item.studentDetails?.subscription;
                               return (
                                 <tr
                                   key={item.studentId || index}
-                                  className={`text-left dark:text-white ${index % 2 === 0
-                                    ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                    : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                    }`}
+                                  className={`text-left dark:text-white ${
+                                    index % 2 === 0
+                                      ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                      : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                  }`}
                                 >
                                   <td className="p-3">{student?.studentId}</td>
                                   <td className="p-3">
@@ -1282,10 +1422,11 @@ const Teacher = () => {
               <div className="space-y-2 -mt-8">
                 <div className="justify-end text-end">
                   <button
-                    className={`font-medium text-[14px] ${view === "month"
-                      ? "text-black"
-                      : "text-white bg-[#576CBC] py-[4px] px-2 rounded"
-                      }`}
+                    className={`font-medium text-[14px] ${
+                      view === "month"
+                        ? "text-black"
+                        : "text-white bg-[#576CBC] py-[4px] px-2 rounded"
+                    }`}
                     onClick={handleclickcalender}
                   >
                     <FaCalendarAlt />
@@ -1298,9 +1439,7 @@ const Teacher = () => {
                       placeholder="Search"
                       className="bg-transparent outline-none text-[12px] w-32 py-3"
                       value={searchScheduledClass}
-                      onChange={(e) =>
-                        setSearchScheduledClass(e.target.value)
-                      }
+                      onChange={(e) => setSearchScheduledClass(e.target.value)}
                     />
                     <div
                       className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-3 border-r-2 border-l-2 px-48 cursor-pointer"
@@ -1322,7 +1461,6 @@ const Teacher = () => {
                     >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
-
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Student ID
                           </th>
@@ -1357,12 +1495,12 @@ const Teacher = () => {
                             .map((event, index) => (
                               <tr
                                 key={event._id}
-                                className={`text-left dark:text-white ${index % 2 === 0
-                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                  }`}
+                                className={`text-left dark:text-white ${
+                                  index % 2 === 0
+                                    ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                    : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                }`}
                               >
-
                                 <td className="p-3 text-blue-600 font-medium">
                                   {event.student.studentId}
                                 </td>
@@ -1371,7 +1509,9 @@ const Teacher = () => {
                                 </td>
                                 <td className="p-3">Quran</td>
                                 <td className="p-3">
-                                  {event.sessionClassType ? formatClassName(event.sessionClassType) : "-"}
+                                  {event.sessionClassType
+                                    ? formatClassName(event.sessionClassType)
+                                    : "-"}
                                 </td>
                                 <td className="p-3">30 Min</td>
                                 <td className="p-3">
@@ -1390,10 +1530,11 @@ const Teacher = () => {
                                 </td>
                                 <td className="p-3">
                                   <span
-                                    className={`text-[9px] dark:bg-[#2E3C2E] dark:text-[#377E36] font-semibold px-3 py-[2px] rounded-md inline-block ${statusStyle[
-                                      event.scheduleStatus as keyof typeof statusStyle
-                                    ]
-                                      }`}
+                                    className={`text-[9px] dark:bg-[#2E3C2E] dark:text-[#377E36] font-semibold px-3 py-[2px] rounded-md inline-block ${
+                                      statusStyle[
+                                        event.scheduleStatus as keyof typeof statusStyle
+                                      ]
+                                    }`}
                                   >
                                     {event.scheduleStatus}
                                   </span>
@@ -1426,137 +1567,112 @@ const Teacher = () => {
               </div>
             )}
 
-            {activeTab === "Earnings" && (
-              <div>
-                {/* Calculate totals */}
-                {(() => {
-                  const totalClasses = paginatedEarnings.reduce(
-                    (sum, item) => sum + (item.monthly?.totalclasses ?? 0),
-                    0
-                  );
+{activeTab === "Earnings" && (
+  <div>
+    {(() => {
+      const totalClasses = paginatedEarnings.reduce(
+        (sum, item) => sum + (item.monthly?.totalclasses ?? 0),
+        0
+      );
 
-                  const totalHours = paginatedEarnings.reduce(
-                    (sum, item) => sum + (item.monthly?.totalhours ?? 0),
-                    0
-                  );
+      const totalHours = paginatedEarnings.reduce(
+        (sum, item) => sum + (item.monthly?.totalhours ?? 0),
+        0
+      );
 
-                  const totalEarnings = paginatedEarnings.reduce(
-                    (sum, item) => sum + (item.monthly?.totalearnings ?? 0),
-                    0
-                  );
+      const totalEarnings = paginatedEarnings.reduce(
+        (sum, item) => sum + (item.monthly?.totalearnings ?? 0),
+        0
+      );
 
-                  return (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {[
-                        { title: "Total Classes", count: totalClasses },
-                        { title: "Total Hours", count: totalHours },
-                        { title: "Total Earnings", count: totalEarnings },
-                      ].map((card) => (
-                        <div
-                          key={card.title}
-                          className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col w-full p-3 h-full"
-                        >
-                          <div className="flex flex-col justify-between gap-y-4">
-                            <p className="text-[15px] font-medium">{card.title}</p>
-                            <h3 className="text-[24px] font-semibold">${card.count}</h3>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()}
-
-                <br />
-                {/* --- Search + Filter + Showing Count --- */}
-                <div className="space-y-2">
-                  <div className="rounded-xl overflow-hidden">
-                    <div className="flex flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                      <input
-                        type="text"
-                        placeholder="Search"
-                        className="bg-transparent outline-none text-[12px] w-32 py-3"
-                        value={searchEarnings}
-                        onChange={(e) => setSearchEarnings(e.target.value)}
-                      />
-
-                      <div
-                        className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
-                        onClick={() => setIsFilterModalOpen(true)}
-                      >
-                        <MdTune className="w-4 h-4" />
-                        <span>Filter</span>
-                      </div>
-
-                      <span className="text-[12px] text-gray-400 py-3">
-                        Showing{" "}
-                        {filteredEarningsMonths.length === 0
-                          ? 0
-                          : (earningsPage - 1) * earningsPerPage + 1}{" "}
-                        to{" "}
-                        {Math.min(
-                          earningsPage * earningsPerPage,
-                          filteredEarningsMonths.length
-                        )}{" "}
-                        of {filteredEarningsMonths.length}
-                      </span>
-                    </div>
-
-                    {/* --- Earnings Table --- */}
-                    <div className="overflow-x-auto max-h-none">
-                      <table
-                        className="w-full min-w-[900px] text-sm text-left table-auto"
-                        style={{ width: "100%", tableLayout: "fixed" }}
-                      >
-                        <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
-                          <tr className="font-medium">
-                            <th className="p-4 text-left">Month</th>
-                            <th className="p-4 text-left">Total Classes</th>
-                            <th className="p-4 text-left">Total Hours</th>
-                            <th className="p-4 text-left">Total Earnings</th>
-                          </tr>
-                        </thead>
-
-                        <tbody className="text-[10px] text-[#1D2939]">
-                          {paginatedEarnings.length > 0 ? (
-                            paginatedEarnings.map((row, index) => (
-                              <tr
-                                key={row.key}
-                                className={`${index % 2 === 0
-                                  ? "bg-white dark:bg-[#2C2C2C]"
-                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                  }`}
-                              >
-                                <td className="p-3">{`${row.monthName} ${row.currentYear}`}</td>
-                                <td className="p-3">{row.monthly?.totalclasses ?? 0}</td>
-                                <td className="p-3">{row.monthly?.totalhours ?? 0}</td>
-                                <td className="p-3">${row.monthly?.totalearnings ?? 0}</td>
-                              </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan={4} className="p-4 text-center">
-                                No data available
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  {/* --- Pagination --- */}
-                  {totalEarningsPages > 1 && (
-                    <div className="flex justify-end mt-2">
-                      <Pagination
-                        currentPage={earningsPage}
-                        totalPages={totalEarningsPages}
-                        onPageChange={setEarningsPage}
-                      />
-                    </div>
-                  )}
+      return (
+        <>
+          {/* Cards Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { title: "Total Classes", count: totalClasses },
+              { title: "Total Hours", count: totalHours },
+              { title: "Total Earnings", count: totalEarnings },
+            ].map((card) => (
+              <div
+                key={card.title}
+                className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col w-full p-3 h-full"
+              >
+                <div className="flex flex-col justify-between gap-y-4">
+                  <p className="text-[15px] font-medium">{card.title}</p>
+                  <h3 className="text-[24px] font-semibold">${card.count}</h3>
                 </div>
               </div>
-            )}
+            ))}
+          </div>
+
+          <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
+            Showing{" "}
+            {filteredEarningsMonths.length === 0
+              ? 0
+              : (earningsPage - 1) * earningsPerPage + 1}{" "}
+            to{" "}
+            {Math.min(
+              earningsPage * earningsPerPage,
+              filteredEarningsMonths.length
+            )}{" "}
+            of {filteredEarningsMonths.length}
+          </span>
+
+          {/* Table */}
+          <div className="overflow-x-auto max-h-none">
+            <table
+              className="w-full min-w-[900px] text-sm text-left table-auto"
+              style={{ width: "100%", tableLayout: "fixed" }}
+            >
+              <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                <tr className="font-medium">
+                  <th className="p-4">Month</th>
+                  <th className="p-4">Total Classes</th>
+                  <th className="p-4">Total Hours</th>
+                  <th className="p-4">Total Earnings</th>
+                </tr>
+              </thead>
+
+              <tbody className="text-[10px] text-[#1D2939]">
+                {paginatedEarnings.length > 0 &&
+                  paginatedEarnings.map((row, index) => (
+                    <tr
+                      key={row.key}
+                      className={`text-left dark:text-white ${
+                        index % 2 === 0
+                          ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                          : "bg-[#F8F8F8] dark:bg-[#303030]"
+                      }`}
+                    >
+                      <td className="p-3">{`${row.monthName} ${row.currentYear}`}</td>
+                      <td className="p-3">{row.monthly?.totalclasses ?? 0}</td>
+                      <td className="p-3">{row.monthly?.totalhours ?? 0}</td>
+                      <td className="p-3">
+                        ${row.monthly?.totalearnings ?? 0}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      );
+    })()}
+
+    {/* Pagination */}
+    {totalEarningsPages > 1 && (
+      <div className="flex justify-end mt-2">
+        <Pagination
+          currentPage={earningsPage}
+          totalPages={totalEarningsPages}
+          onPageChange={setEarningsPage}
+        />
+      </div>
+    )}
+  </div>
+)}
+
 
 
             {activeTab === "Payments" && (
@@ -1578,7 +1694,9 @@ const Teacher = () => {
                       <span>Filter</span>
                     </div>
                     <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-                      Showing {filteredSalaryWages.length === 0 ? 0 : 1} to {filteredSalaryWages.length} of {filteredSalaryWages.length}
+                      Showing {filteredSalaryWages.length === 0 ? 0 : 1} to{" "}
+                      {filteredSalaryWages.length} of{" "}
+                      {filteredSalaryWages.length}
                     </span>
                   </div>
                   <div className="overflow-x-auto max-h-none">
@@ -1604,6 +1722,9 @@ const Teacher = () => {
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Payment Method
                           </th>
+                          {/* <th className="p-4 font-semibold text-[12px] text-left">
+                            Description
+                          </th> */}
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Comments for Reference
                           </th>
@@ -1623,38 +1744,35 @@ const Teacher = () => {
                             .map((item, index) => (
                               <tr
                                 key={item._id}
-                                className={`text-left dark:text-white ${index % 2 === 0
-                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                  }`}
+                                className={`text-left dark:text-white ${
+                                  index % 2 === 0
+                                    ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                    : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                }`}
                               >
-                                <td className="p-3 text-left">
-
-                                  {item._id}
+                                <td className="p-3">{item._id}</td>
+                                <td className="p-3">
+                                  {new Date(
+                                    item.createdDate
+                                  ).toLocaleDateString("en-US", {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                  })}
                                 </td>
-                                <td className="p-3 text-left">
-                                  {new Date(item.createdDate).toLocaleDateString(
-                                    "en-US",
-                                    {
-                                      year: "numeric",
-                                      month: "long",
-                                      day: "numeric",
-                                    }
-                                  )}
-                                </td>
-                                <td className="p-3 text-left">
-                                  {item.salaryAmount}
-                                </td>
-                                <td className="p-3 text-left">{item.isSalaryProcessed || "Bonus"}</td>
-                                <td className="p-3 text-left">{item.paymentMethod}</td>
-                                <td className="p-3 text-left">{item.comments}</td>
-                                <td className="p-3 text-left">
+                                <td className="p-3">{item.salaryAmount}</td>
+                                <td className="p-3">{item.deductionAmount}</td>
+                                <td className="p-3">{item.paymentMethod}</td>
+                                {/* <td className="p-3">{item.description}</td> */}
+                                <td className="p-3">
                                   <span
-                                    className={`inline-flex text-left items-left justify-center gap-1 px-3 py-[1px] rounded-md text-[10px] font-semibold
-                                    ${item.paymentStatus.toLowerCase() === "pending"
+                                    className={`inline-flex items-center justify-center gap-1 px-3 py-[1px] rounded-md text-[10px] font-semibold
+                                    ${
+                                      item.paymentStatus.toLowerCase() ===
+                                      "pending"
                                         ? "bg-red-100 text-[#D34645] dark:bg-[#D3464533] dark:bg-opacity-20 dark:text-[#D34645]"
                                         : "bg-green-100 text-green-700 dark:bg-[#2E3C2E] dark:text-[#377E36] px-6"
-                                      }
+                                    }
                                   `}
                                   >
                                     {item.paymentStatus}
@@ -1767,10 +1885,7 @@ const Teacher = () => {
                         ? 0
                         : (wagesPage - 1) * wagesPerPage + 1}{" "}
                       to{" "}
-                      {Math.min(
-                        wagesPage * wagesPerPage,
-                        filteredWages.length
-                      )}{" "}
+                      {Math.min(wagesPage * wagesPerPage, filteredWages.length)}{" "}
                       of {filteredWages.length}
                     </span>
                   </div>
@@ -1793,7 +1908,6 @@ const Teacher = () => {
                           <th className="p-4 font-semibold text-[12px] text-left">
                             Duration
                           </th>
-
                         </tr>
                       </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
@@ -1801,13 +1915,16 @@ const Teacher = () => {
                           paginatedWages.map((item, index) => (
                             <tr
                               key={item._id}
-                              className={`text-left dark:text-white ${index % 2 === 0
-                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                }`}
+                              className={`text-left dark:text-white ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
                             >
                               <td className="p-3">
-                                {item.classType?.className ? formatClassName(item.classType.className) : "-"}
+                                {item.classType?.className
+                                  ? formatClassName(item.classType.className)
+                                  : "-"}
                               </td>
 
                               <td className="p-3">
@@ -1815,26 +1932,30 @@ const Teacher = () => {
                                   type="text"
                                   className="w-16 px-2 py-1 text-xs dark:bg-[#2C2C2C] dark:text-white text-left"
                                   value={item.classType?.rate || ""}
-                                  onChange={e => {
+                                  onChange={(e) => {
                                     const newRate = e.target.value;
                                     // update local state (editing value)
-                                    setWages(prevWages =>
-                                      prevWages.map(wage =>
+                                    setWages((prevWages) =>
+                                      prevWages.map((wage) =>
                                         wage._id === item._id
                                           ? {
-                                            ...wage,
-                                            classType: {
-                                              ...wage.classType,
-                                              rate: newRate,
-                                            },
-                                          }
+                                              ...wage,
+                                              classType: {
+                                                ...wage.classType,
+                                                rate: newRate,
+                                              },
+                                            }
                                           : wage
                                       )
                                     );
                                   }}
-                                  onKeyDown={e => {
+                                  onKeyDown={(e) => {
                                     if (e.key === "Enter") {
-                                      handleSaveRate(item._id, item.classType?.rate, undefined);
+                                      handleSaveRate(
+                                        item._id,
+                                        item.classType?.rate,
+                                        undefined
+                                      );
                                     }
                                   }}
                                 />
@@ -1844,31 +1965,37 @@ const Teacher = () => {
                               </td>
                               <td className="p-3">
                                 {item.classType?.className === "TRAILCLASS" ? (
-                                  <span className="text-xs dark:text-white">1 day</span>
+                                  <span className="text-xs dark:text-white">
+                                    1 day
+                                  </span>
                                 ) : (
                                   <select
                                     className="w-20 px-2 py-1 text-xs dark:bg-[#2C2C2C] dark:text-white text-left"
                                     value={item.classType?.hoursMins || ""}
-                                    onChange={e => {
+                                    onChange={(e) => {
                                       const hoursMins = e.target.value;
 
                                       // ✅ 1. Update local state
-                                      setWages(prevWages =>
-                                        prevWages.map(wage =>
+                                      setWages((prevWages) =>
+                                        prevWages.map((wage) =>
                                           wage._id === item._id
                                             ? {
-                                              ...wage,
-                                              classType: {
-                                                ...wage.classType,
-                                                hoursMins: hoursMins,
-                                              },
-                                            }
+                                                ...wage,
+                                                classType: {
+                                                  ...wage.classType,
+                                                  hoursMins: hoursMins,
+                                                },
+                                              }
                                             : wage
                                         )
                                       );
 
                                       // ✅ 2. Call save function with only duration
-                                      handleSaveRate(item._id, undefined, hoursMins);
+                                      handleSaveRate(
+                                        item._id,
+                                        undefined,
+                                        hoursMins
+                                      );
                                     }}
                                   >
                                     <option value="30 min">30 min</option>
@@ -1876,7 +2003,6 @@ const Teacher = () => {
                                   </select>
                                 )}
                               </td>
-
                             </tr>
                           ))
                         ) : (
@@ -1948,23 +2074,23 @@ const Teacher = () => {
                         </tr>
                       </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
-                        {filteredWorkingHours
-                          .slice(-5)
-                          .reverse()
-                          .map((item, index) => (
-                            <tr
-                              key={index}
-                              className={`text-left dark:text-white ${index % 2 === 0
+                        {sortedWorkingHours.map((item, index) => (
+                          <tr
+                            key={index}
+                            className={`text-left dark:text-white ${
+                              index % 2 === 0
                                 ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                 : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                }`}
-                            >
-                              <td className="p-3">{item.day}</td>
-                              <td className="p-3">{item.date}</td>
-                              <td className="p-3">{`${item.fromTime} - ${item.toTime}`}</td>
-                              <td className="p-3">GMT</td>
-                            </tr>
-                          ))}
+                            }`}
+                          >
+                            <td className="p-3">{item.day}</td>
+                            <td className="p-3">{item.date}</td>
+                            <td className="p-3">
+                              {item.fromTime} - {item.toTime}
+                            </td>
+                            <td className="p-3">GMT</td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>

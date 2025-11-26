@@ -84,14 +84,6 @@ const ApplicationChart = () => {
             >
               <option>{currentYear}</option>
             </select>
-            {/* If you want a dropdown for year selection, use: */}
-            {/* 
-            <select className="bg-white text-gray-500 text-xs px-2 py-1 rounded shadow-sm ml-2">
-              <option>2025</option>
-              <option>2024</option>
-              ...
-            </select>
-            */}
           </div>
         </div>
 

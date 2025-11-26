@@ -14,8 +14,8 @@ interface Event {
 
 interface AcademicCoachItem {
   subject: string;
-  scheduledStartDate: string; // Assuming this is a string in the API
-  scheduledEndDate: string; // Assuming this is a string in the API
+  scheduledStartDate: string;
+  scheduledEndDate: string;
 }
 
 const Academic: React.FC = () => {
@@ -97,7 +97,7 @@ const Academic: React.FC = () => {
             prev2Label={null}
             showNeighboringMonth={true}
             formatShortWeekday={(_locale, date) => {
-              const map = ["S", "M", "T", "W", "T", "F", "S"]; // Sun..Sat
+              const map = ["S", "M", "T", "W", "T", "F", "S"];
               return map[date.getDay()];
             }}
             tileClassName={({ date, view }) =>

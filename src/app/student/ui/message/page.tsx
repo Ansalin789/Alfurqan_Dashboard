@@ -8,9 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiSearch } from "react-icons/fi";
 import axios from "axios";
 import { io } from "socket.io-client";
-import { Bell } from "lucide-react";
 import StudentHeader from "../../components/StudentHeader";
-import { TbSend } from "react-icons/tb";
 
 interface IMessage {
   _id: string;
@@ -79,7 +77,6 @@ interface IMessagesend {
 
 const Message = () => {
   const [teachers, setTeachers] = useState<IUser[]>([]);
-  const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [academicCoaches, setAcademicCoaches] = useState<IUser[]>([]);
   const [activeTab, setActiveTab] = useState<
     "teachers" | "academicCoaches" | "all"

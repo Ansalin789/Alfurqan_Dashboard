@@ -11,7 +11,7 @@ import { MdTune } from "react-icons/md";
 import { getSocket } from "@/app/utils/socket";
 import AcademicHeader from "../../components/academicHeader";
 
- interface IProfessionalExperience {
+interface IProfessionalExperience {
   jobRole: string;
   organizationName: string;
   jobLocation: string;
@@ -21,7 +21,7 @@ import AcademicHeader from "../../components/academicHeader";
   _id: string;
 }
 
- interface ICandidateApplication {
+interface ICandidateApplication {
   _id: string;
   candidateFirstName: string;
   candidateLastName: string;
@@ -32,7 +32,7 @@ import AcademicHeader from "../../components/academicHeader";
     supervisorRole: string;
   };
   gender: string;
-  applicationDate: string; // ISO date string
+  applicationDate: string;
   candidateEmail: string;
   candidatePhoneNumber: number;
   candidateCountry: string;
@@ -47,26 +47,18 @@ import AcademicHeader from "../../components/academicHeader";
   professionalExperience: IProfessionalExperience[];
   skills: string;
   status: string;
-  createdDate: string; // ISO date string
+  createdDate: string;
   createdBy: string;
   __v: number;
 }
 
-
-const items = Array.from({ length: 100 }, (_, i) => ({
-  id: i + 1,
-  name: `Item ${i + 1}`,
-}));
-
 const ManageTeacher: React.FC = () => {
   const router = useRouter();
-  const [teachers, setTeachers] = useState<ICandidateApplication[]>([]);  
-  // Active filters (applied)
+  const [teachers, setTeachers] = useState<ICandidateApplication[]>([]);
   const [filterName, setFilterName] = useState("");
   const [filterLevel, setFilterLevel] = useState("");
   const [filterCourse, setFilterCourse] = useState("");
-  
-  // Temporary filters (for input)
+
   const [tempFilterName, setTempFilterName] = useState("");
   const [tempFilterLevel, setTempFilterLevel] = useState("");
   const [tempFilterCourse, setTempFilterCourse] = useState("");
@@ -76,9 +68,7 @@ const ManageTeacher: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filter teachers based on both search query and filters
   const filteredTeachers = teachers.filter((teacher) => {
-    // Search query filtering
     const searchLower = searchQuery.toLowerCase();
     const fullName = `${teacher.candidateFirstName} ${teacher.candidateLastName}`.toLowerCase();
     const nameMatch = fullName.includes(searchLower);
@@ -86,15 +76,13 @@ const ManageTeacher: React.FC = () => {
     const courseMatch = teacher.positionApplied?.toLowerCase().includes(searchLower);
     const searchMatch = nameMatch || levelMatch || courseMatch;
 
-    // Filter criteria
-    const filterNameMatch = !filterName || 
+    const filterNameMatch = !filterName ||
       fullName.includes(filterName.toLowerCase());
-    const filterLevelMatch = !filterLevel || 
+    const filterLevelMatch = !filterLevel ||
       teacher.overallRating?.toString() === filterLevel;
-    const filterCourseMatch = !filterCourse || 
+    const filterCourseMatch = !filterCourse ||
       teacher.positionApplied?.toLowerCase() === filterCourse.toLowerCase();
 
-    // Combine both search and filter results
     return searchMatch && filterNameMatch && filterLevelMatch && filterCourseMatch;
   });
 
@@ -103,7 +91,6 @@ const ManageTeacher: React.FC = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentApplicants = filteredTeachers.slice(startIndex, endIndex);
 
-  // Reset filters
   const handleResetFilters = () => {
     setFilterName("");
     setFilterLevel("");
@@ -114,16 +101,14 @@ const ManageTeacher: React.FC = () => {
     setFilter(false);
   };
 
-  // Apply filters
   const handleApplyFilters = () => {
     setFilterName(tempFilterName);
     setFilterLevel(tempFilterLevel);
     setFilterCourse(tempFilterCourse);
-    setCurrentPage(1); // Reset to first page when applying filters
+    setCurrentPage(1);
     setFilter(false);
   };
 
-  // Initialize temp filters when opening filter modal
   const handleOpenFilter = () => {
     setTempFilterName(filterName);
     setTempFilterLevel(filterLevel);
@@ -132,18 +117,18 @@ const ManageTeacher: React.FC = () => {
   };
 
   const [Filter, setFilter] = useState(false);
-  useEffect(()=>{
+  useEffect(() => {
     const userId = typeof window != 'undefined' ? localStorage.getItem('AcademicCoachPortalId') : null;
-     const socket = getSocket(userId ?? '');
-     const handleList = ({ data }: { data: ICandidateApplication }) =>{
-       console.log("📩 Received WebSocket Data:", data);
-       setTeachers(pre => [...pre, data]);
-     };
-     socket.on('supervisorteacherlist',handleList);
-    return () =>{
-      socket.off('supervisorteacherlist',handleList);
+    const socket = getSocket(userId ?? '');
+    const handleList = ({ data }: { data: ICandidateApplication }) => {
+      console.log("📩 Received WebSocket Data:", data);
+      setTeachers(pre => [...pre, data]);
+    };
+    socket.on('supervisorteacherlist', handleList);
+    return () => {
+      socket.off('supervisorteacherlist', handleList);
     }
-  },[]);
+  }, []);
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
@@ -169,15 +154,15 @@ const ManageTeacher: React.FC = () => {
 
         console.log("Fetched data:", data);
 
-       if (data && Array.isArray(data.applicants)) {
-  const approvedApplicants = data.applicants.filter(
-    (applicant : ICandidateApplication) => applicant.applicationStatus === "APPROVED"
-  );
-  console.log(approvedApplicants);
-  setTeachers(approvedApplicants);
-} else {
-  console.error("Unexpected API response structure:", data);
-}
+        if (data && Array.isArray(data.applicants)) {
+          const approvedApplicants = data.applicants.filter(
+            (applicant: ICandidateApplication) => applicant.applicationStatus === "APPROVED"
+          );
+          console.log(approvedApplicants);
+          setTeachers(approvedApplicants);
+        } else {
+          console.error("Unexpected API response structure:", data);
+        }
 
       } catch (error) {
         console.error("Error fetching teachers:", error);
@@ -187,7 +172,7 @@ const ManageTeacher: React.FC = () => {
 
     fetchTeachers();
   }, []);
- 
+
 
   const handleViewTeacherSchedule = (teacherId: string) => {
     if (!teacherId) {
@@ -195,18 +180,16 @@ const ManageTeacher: React.FC = () => {
       return;
     }
     localStorage.setItem("manageTeacherId", teacherId);
-    console.log("Teacher ID:", teacherId); // Debugging
+    console.log("Teacher ID:", teacherId);
     router.push(`/Academic-coach/ui/teacherDetails?teacherId=${teacherId}`);
   };
 
- 
+
   return (
     <BaseLayout1>
       <AcademicHeader currentSection="Teachers" />
       <div className="flex h-screen">
-        {/* Main Content */}
         <div className="flex-1">
-          {/* Cards */}
           <div className="w-full h-[605px] shadow bg-[#FAFAFB] rounded-lg dark:bg-[#343434] dark:text-[#dedede]">
             <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434] h-10">
               <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -221,21 +204,17 @@ const ManageTeacher: React.FC = () => {
               </div>
 
               <div className="relative ">
-                {/* Filter Button: Tune + Filter Left, Arrow Right */}
                 <button
                   className="flex items-center gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
                   onClick={handleOpenFilter}
                 >
-                  {/* <BsFilterLeft /> */}
                   <MdTune className="w-4 h-4" />
                   <span>Filter</span>
                 </button>
 
-                {/* Filter Popup */}
                 {Filter && (
                   <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
                     <div className="bg-white p-6 rounded-lg w-[350px] relative dark:bg-[#252525]">
-                      {/* Close Icon */}
                       <button
                         className="absolute top-2 right-3 text-gray-400 text-xl"
                         onClick={() => setFilter(false)}
@@ -245,7 +224,6 @@ const ManageTeacher: React.FC = () => {
 
                       <h2 className="text-lg font-semibold mb-4">Filter by</h2>
 
-                      {/* Position Applied */}
                       <div className="mb-4">
                         <label
                           htmlFor="name"
@@ -270,7 +248,7 @@ const ManageTeacher: React.FC = () => {
                         >
                           Level
                         </label>
-                        <select 
+                        <select
                           value={tempFilterLevel}
                           onChange={(e) => setTempFilterLevel(e.target.value)}
                           className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
@@ -290,7 +268,7 @@ const ManageTeacher: React.FC = () => {
                         >
                           Course
                         </label>
-                        <select 
+                        <select
                           value={tempFilterCourse}
                           onChange={(e) => setTempFilterCourse(e.target.value)}
                           className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
@@ -301,7 +279,6 @@ const ManageTeacher: React.FC = () => {
                           <option value="Islamic Teacher">Islamic Teacher</option>
                         </select>
                       </div>
-                      {/* Buttons */}
                       <div className="flex justify-end gap-3">
                         <button
                           onClick={handleResetFilters}
@@ -309,7 +286,7 @@ const ManageTeacher: React.FC = () => {
                         >
                           Reset
                         </button>
-                        <button 
+                        <button
                           onClick={handleApplyFilters}
                           className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
                         >
@@ -329,63 +306,61 @@ const ManageTeacher: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-5 gap-4 gap-x-7 p-3 px-2 bg-[#f5f5f5]  dark:bg-[#3b3b3b]">              {currentApplicants.map((teacher: ICandidateApplication) => (
-                <div
-                  key={teacher._id}
-                  className="bg-white dark:bg-[#343434] h-[260px] rounded-lg p-4 max-w-[200px] mx-auto"
-                  >
-                  <div className="items-center">
-                    <div className="h-[126px] rounded-md  dark:bg-[#dadada] flex items-center justify-center">
-                      <Image
-                        src={"/assets/images/profilePicture.png"}
-                        alt="Teacher"
-                        className="rounded-md"
-                        width={160}
-                        height={160}
-                      />
-                    </div>
-                  </div>
-                  <div className="mt-2 text-center">
-                    <h3 className="text-[12px] font-semibold text-[#010e30] dark:text-[#fff] mb-1">
-                      {teacher.candidateFirstName} {teacher.candidateLastName}
-                    </h3>
-                    <p className="text-[#717579] text-[10px] dark:text-[#fff]">
-                      Level: {teacher.overallRating}
-                    </p>
-                    <p className="text-[#717579] text-[10px] dark:text-[#fff]">
-                      {teacher.positionApplied} 
-                    </p>
-                    <div className="flex justify-center">
-                      <FaStar className="text-[#faab3c] text-[10px]" />
-                      <FaStar className="text-[#faab3c] text-[10px] mx-1" />
-                      <FaStar className="text-[#faab3c] text-[10px]" />
-                      <FaStar className="text-gray-300 text-[10px] mx-1" />
-                      <FaStar className="text-gray-300 text-[10px]" />
-                    </div>
-                    <button
-                      className="mt-[8px] text-[11px] bg-[#576cbc] text-[#fff] px-4 py-1 rounded-lg w-full h-[27px]"
-                      onClick={() => handleViewTeacherSchedule(teacher._id)}
-                    >
-                      View Profile
-                    </button>
+              <div
+                key={teacher._id}
+                className="bg-white dark:bg-[#343434] h-[260px] rounded-lg p-4 max-w-[200px] mx-auto"
+              >
+                <div className="items-center">
+                  <div className="h-[126px] rounded-md  dark:bg-[#dadada] flex items-center justify-center">
+                    <Image
+                      src={"/assets/images/profilePicture.png"}
+                      alt="Teacher"
+                      className="rounded-md"
+                      width={160}
+                      height={160}
+                    />
                   </div>
                 </div>
-              ))}
+                <div className="mt-2 text-center">
+                  <h3 className="text-[12px] font-semibold text-[#010e30] dark:text-[#fff] mb-1">
+                    {teacher.candidateFirstName} {teacher.candidateLastName}
+                  </h3>
+                  <p className="text-[#717579] text-[10px] dark:text-[#fff]">
+                    Level: {teacher.overallRating}
+                  </p>
+                  <p className="text-[#717579] text-[10px] dark:text-[#fff]">
+                    {teacher.positionApplied}
+                  </p>
+                  <div className="flex justify-center">
+                    <FaStar className="text-[#faab3c] text-[10px]" />
+                    <FaStar className="text-[#faab3c] text-[10px] mx-1" />
+                    <FaStar className="text-[#faab3c] text-[10px]" />
+                    <FaStar className="text-gray-300 text-[10px] mx-1" />
+                    <FaStar className="text-gray-300 text-[10px]" />
+                  </div>
+                  <button
+                    className="mt-[8px] text-[11px] bg-[#576cbc] text-[#fff] px-4 py-1 rounded-lg w-full h-[27px]"
+                    onClick={() => handleViewTeacherSchedule(teacher._id)}
+                  >
+                    View Profile
+                  </button>
+                </div>
+              </div>
+            ))}
             </div>
-            
-            </div>
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
+
+          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
 
-    
+
     </BaseLayout1>
   );
 };
 
 export default ManageTeacher;
-
-//onClick={() => { handleViewStudentList (); router.push('/Academic/viewTeacherSchedule');}}

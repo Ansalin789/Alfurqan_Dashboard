@@ -12,12 +12,10 @@ export interface TeacherAnalytics {
   maleCount: number;
   femaleCount: number;
 }
-
 export interface TeacherAnalyticsResponse {
   success: boolean;
   data: TeacherAnalytics[];
 }
-
 const StudentsCard: React.FC = () => {
   const [teacher, setTeacher] = useState<TeacherAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,20 +77,13 @@ const StudentsCard: React.FC = () => {
   // Angles
   const femaleAngle = (femalePercent / 100) * 360;
   const maleAngle = (malePercent / 100) * 360;
-
-
   const center = 50;
-
-
   const outerRadius = 40; 
   const innerRadius = 35; 
   const labelRadius = (outerRadius + innerRadius) / 2; 
-
-
   const femaleMidAngle = femaleAngle / 2;
   const femaleX = center + labelRadius * Math.cos((femaleMidAngle * Math.PI) / 180);
   const femaleY = center - labelRadius * Math.sin((femaleMidAngle * Math.PI) / 180);
-
   const maleMidAngle = femaleAngle + maleAngle / 2;
   const maleX = center + labelRadius * Math.cos((maleMidAngle * Math.PI) / 180);
   const maleY = center - labelRadius * Math.sin((maleMidAngle * Math.PI) / 180);

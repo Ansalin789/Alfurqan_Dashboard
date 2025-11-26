@@ -120,7 +120,7 @@ const UpcomingClasses: React.FC = () => {
                   <span className={`text-[13px] font-bold uppercase text-${classItem.color}`}>
                     {classItem.title}
                   </span>
-                  {/* <p className="text-[11px] text-gray-700 dark:text-gray-300">{classItem.time}</p> */}
+                  
                 </div>
               </div>
             ))}

@@ -10,40 +10,8 @@ import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { getSocket } from "@/app/utils/socket";
-import { create } from "domain";
 
-interface Student {
-  learningInterest: string; // Replace with the exact type if known
-  studentId: string;
-  studentFirstName: string;
-  studentLastName: string;
-  studentEmail: string;
-  studentPhone: number;
-  studentCountry: string;
-  preferredTeacher: string;
-  preferredFromTime: string;
-  preferredToTime: string;
-  classStatus?: string;
-  status?: string;
-  trialClassStatus: string;
-  studentStatus: string;
-  createdDate: Date;
-}
 
-interface EvaluationItem {
-  paymentLink: string;
-  _id: string;
-  student: Student;
-  trialClassStatus: string;
-  assignedTeacher: string;
-  paymentStatus: string;
-}
-
-interface ApiResponse {
-  evaluation: EvaluationItem[];
-}
-
-// Define the transformed user structure
 interface TransformedUser {
   _id: string;
   studentId: string;
@@ -65,7 +33,6 @@ interface TransformedUser {
   studentStatus: string; // Optional if not always present
   createdDate: Date; // Optional if not always present
 }
-// Define the return type of the getAllUsers function
 interface User {
   id: string;
   studentId: string;
@@ -89,7 +56,7 @@ interface User {
 interface GetAllUsersResponse {
   success: boolean;
   data: User[];
-  message?: string; // Make message optional
+  message?: string;
 }
 interface ClassPayload {
   academicCoachId: string;
@@ -190,13 +157,10 @@ const getAllUser = async (): Promise<{
       }
     );
 
-    // Add debug log for raw API response
     console.log("Raw API Response:", response.data.evaluation);
 
-    // Transform API data to match TransformedUser interface
     const transformedData: TransformedUser[] = response.data.evaluation.map(
       (item: any) => {
-        // Debug log for each item's studentStatus
         console.log("Item studentStatus before transform:", item.studentStatus);
         return {
           _id: item._id,
@@ -222,7 +186,6 @@ const getAllUser = async (): Promise<{
       }
     );
 
-    // Debug log for transformed data
     console.log("Transformed Data:", transformedData);
 
     return {
@@ -240,7 +203,6 @@ const getAllUser = async (): Promise<{
   }
 };
 
-// Update the getAllUsers function to fetch from your API
 const getAllUsers = async (): Promise<GetAllUsersResponse> => {
   try {
     const academicId = localStorage.getItem("AcademicCoachPortalId");
@@ -340,7 +302,6 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
   }
 };
 
-// Move FilterModal outside of the TrailManagement component
 const FilterModal = ({
   isOpen,
   onClose,
@@ -573,7 +534,6 @@ const FilterModal = ({
 const TrailManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedUserData, setSelectedUserData] = useState<User | null>(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -582,9 +542,7 @@ const TrailManagement = () => {
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [activeTab, setActiveTab] = useState<"evaluation" | "trial">(
-    "evaluation"
-  );
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   console.log(setItemsPerPage);
   const [evaluationUsers, setEvaluationUsers] = useState<TransformedUser[]>([]);
 
@@ -613,7 +571,7 @@ const TrailManagement = () => {
       if ("studentId" in data.data) {
         const user = data.data as User;
         const formatted: User = {
-          id:user.id,
+          id: user.id,
           studentId: user.studentId,
           fname: user.fname,
           lname: user.lname,
@@ -643,10 +601,10 @@ const TrailManagement = () => {
           prev.map((user) =>
             user.studentId === student.studentId
               ? {
-                  ...user,
-                  evaluationStatus: student.evaluationStatus ?? "PENDING",
-                  status: classPayload.studentStatus ?? "NOT JOINED",
-                }
+                ...user,
+                evaluationStatus: student.evaluationStatus ?? "PENDING",
+                status: classPayload.studentStatus ?? "NOT JOINED",
+              }
               : user
           )
         );
@@ -654,10 +612,10 @@ const TrailManagement = () => {
           prev.map((user) =>
             user.studentId === student.studentId
               ? {
-                  ...user,
-                  evaluationStatus: student.evaluationStatus ?? "PENDING",
-                  status: classPayload.studentStatus ?? "NOT JOINED",
-                }
+                ...user,
+                evaluationStatus: student.evaluationStatus ?? "PENDING",
+                status: classPayload.studentStatus ?? "NOT JOINED",
+              }
               : user
           )
         );
@@ -709,18 +667,10 @@ const TrailManagement = () => {
     return {
       ...user,
       studentStatus: evalUser?.studentStatus ?? "NOT JOINED",
-      // You can merge other fields from evalUser if needed
     };
   });
 
-  const openModal = (user: User | null = null) => {
-    setIsEditMode(!!user);
-    setIsModalOpen(true);
-    setModalIsOpen(true);
-  };
-
   const closeModal = () => {
-    setIsModalOpen(false);
     setModalIsOpen(false);
   };
 
@@ -805,7 +755,7 @@ const TrailManagement = () => {
     }
 
     setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
+    setCurrentPage(1);
   };
 
   const handleSearch = (query: string) => {
@@ -825,7 +775,7 @@ const TrailManagement = () => {
       );
     });
     setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset to first page when search changes
+    setCurrentPage(1);
   };
 
   if (errorMessage) {
@@ -836,7 +786,6 @@ const TrailManagement = () => {
     );
   }
 
-  // Pagination logic: calculate currentItems based on filteredUsers, currentPage, and itemsPerPage
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
@@ -868,8 +817,6 @@ const TrailManagement = () => {
                     <MdTune className="w-4 h-4" />
                     <span>Filter</span>
                   </div>
-                  {/* Modal */}
-                  {/* FilterModal is rendered below, so no need for inline modal JSX here */}
                   <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                     <span className="text-left -ml-60 ">
                       Showing {currentItems.length} of {users.length}
@@ -894,13 +841,12 @@ const TrailManagement = () => {
                         ].map((header, index) => (
                           <th
                             key={header.label}
-                            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] whitespace-nowrap ${header.width} ${
-                              index === 0
-                                ? "sticky left-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
-                                : index === 9
+                            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] whitespace-nowrap ${header.width} ${index === 0
+                              ? "sticky left-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                              : index === 9
                                 ? "sticky right-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
                                 : ""
-                            }`}
+                              }`}
                           >
                             {header.label}
                           </th>
@@ -913,17 +859,15 @@ const TrailManagement = () => {
                         currentItems.map((item, index) => (
                           <tr
                             key={item.studentId || index}
-                            className={`text-[12px] ${
-                              index % 2 === 0
-                                ? "bg-[#fff] dark:bg-[#2C2C2C] "
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
-                            }`}
+                            className={`text-[12px] ${index % 2 === 0
+                              ? "bg-[#fff] dark:bg-[#2C2C2C] "
+                              : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
                           >
-                            <td className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%] sticky left-0 z-10 ${
-                              index % 2 === 0
-                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
-                            }`}>
+                            <td className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[8%] sticky left-0 z-10 ${index % 2 === 0
+                              ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                              : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}>
                               {item.studentId}
                             </td>
                             <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] whitespace-nowrap w-[12%]">
@@ -951,32 +895,29 @@ const TrailManagement = () => {
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.preferredTeacher}
                             </td>
-                           
+
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap">
                               <span
-                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
-                                  item.evaluationStatus === "COMPLETED"
-                                    ? "bg-[#ECFDF3] text-[#377E36] px-2 dark:bg-[#377E3633]"
-                                    : item.evaluationStatus === "INPROGRESS"
+                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${item.evaluationStatus === "COMPLETED"
+                                  ? "bg-[#ECFDF3] text-[#377E36] px-2 dark:bg-[#377E3633]"
+                                  : item.evaluationStatus === "INPROGRESS"
                                     ? " bg-[#FDECEC] text-[#D34645]  px-3 dark:bg-[#D3464533]"
                                     : "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
-                                }`}
+                                  }`}
                               >
                                 {item.evaluationStatus === "COMPLETED"
                                   ? "COMPLETED"
                                   : item.evaluationStatus === "INPROGRESS"
-                                  ? "IN PROGRESS"
-                                  : "PENDING"}
+                                    ? "IN PROGRESS"
+                                    : "PENDING"}
                               </span>
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap">
                               {(() => {
-                                // Find the evaluation user for this student
                                 const evalUser = evaluationUsers.find(
                                   (eu) => eu.studentId === item.studentId
                                 );
 
-                                // If evaluation status is PENDING, set student status to PENDING
                                 let status = "NOT JOINED";
                                 if (item.evaluationStatus === "PENDING") {
                                   status = "PENDING";
@@ -990,10 +931,10 @@ const TrailManagement = () => {
                                   status === "JOINED"
                                     ? "bg-[#ECFDF3] text-[#377E36] px-6 dark:bg-[#377E3633]"
                                     : status === "WAITING"
-                                    ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
-                                    : status === "PENDING"
-                                    ? "bg-[#FDF6EC] text-[#F0AD4E] px-5 dark:bg-[#F0AD4E33]"
-                                    : "bg-[#FDECEC] text-[#D34645] px-5 dark:bg-[#D3464533]";
+                                      ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
+                                      : status === "PENDING"
+                                        ? "bg-[#FDF6EC] text-[#F0AD4E] px-5 dark:bg-[#F0AD4E33]"
+                                        : "bg-[#FDECEC] text-[#D34645] px-5 dark:bg-[#D3464533]";
 
                                 return (
                                   <span
@@ -1005,21 +946,60 @@ const TrailManagement = () => {
                               })()}
                             </td>
 
-                            <td className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[6%] sticky right-0 z-10 ${
-                              index % 2 === 0
-                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
-                            }`}>
-                              <button
-                                onClick={() => handleEditClick(item)}
-                                className="hover:cursor-pointer text-center p-2"
-                              >
-                                <FaEllipsisV
-                                  size={14}
-                                  className="text-[#5F6368] dark:text-white"
-                                />
-                              </button>
+                            <td
+                              className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[7%] sticky right-0 z-10 ${index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                }`}
+                            >
+                              <div className="relative inline-block text-left">
+                                <button
+                                  disabled={item.evaluationStatus === "COMPLETED"}
+                                  onClick={() =>
+                                    item.evaluationStatus !== "COMPLETED" &&
+                                    setOpenMenuId(openMenuId === item.id ? null : item.id)
+                                  }
+                                  className={`text-center p-2 ${item.evaluationStatus === "COMPLETED"
+                                      ? "opacity-40 cursor-not-allowed"
+                                      : "hover:cursor-pointer"
+                                    }`}
+                                >
+                                  <FaEllipsisV
+                                    size={12}
+                                    className={`${item.evaluationStatus === "COMPLETED"
+                                        ? "text-gray-400"
+                                        : "text-[#5F6368] dark:text-white"
+                                      }`}
+                                  />
+                                </button>
+                              </div>
+                              
                             </td>
+                            {openMenuId === item.id && item.evaluationStatus !== "COMPLETED" && (
+                              <div
+                                className="absolute right-16 mt-10 w-28 -ml-10 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-30 dark:bg-[#2E2E2E]"
+                                data-open={openMenuId === item.id}
+                              >
+                                <div className="py-1">
+                                  <button
+                                    onClick={() => {
+                                      handleEditClick(item)
+                                      setOpenMenuId(null)
+                                    }}
+                                    className="block w-full px-3 py-2 text-left text-[11px] text-[#010E30E5] hover:bg-gray-100 dark:text-white dark:hover:bg-[#3A3A3A]"
+                                  >
+                                    Evaluate
+                                  </button>
+
+                                  <button
+                                    onClick={() => setOpenMenuId(null)}
+                                    className="block w-full px-3 py-2 text-left text-[11px] text-[#D34645] hover:bg-gray-100 dark:hover:bg-[#3A3A3A]"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </tr>
                         ))
                       ) : (
@@ -1043,7 +1023,6 @@ const TrailManagement = () => {
             </div>
           </div>
         </div>
-        {/* Pagination */}
         <div className="mt-4">
           <Pagination
             currentPage={currentPage}
@@ -1066,7 +1045,7 @@ const TrailManagement = () => {
               onRequestClose={closeModal}
               user={{
                 ...selectedUserData,
-                city: selectedUserData.city ?? "", // Provide a default value for city if undefined
+                city: selectedUserData.city ?? "",
               }}
               isEditMode={isEditMode}
               onSave={() => {
@@ -1079,15 +1058,6 @@ const TrailManagement = () => {
           <div>No user data available for editing.</div>
         )}
       </Modal>
-      {/* <AddStudentModal
-        isOpen={isModalOpen}
-        onRequestClose={closeModal}
-        isEditMode={isEditMode}
-        onSave={() => {
-          fetchStudents();
-          closeModal();
-        }}
-      /> */}
       <FilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}

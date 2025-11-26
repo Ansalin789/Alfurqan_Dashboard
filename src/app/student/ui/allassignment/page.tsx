@@ -6,8 +6,6 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation"; // Add this at the top
-import BaseLayout from "@/components/BaseLayout";
-import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import Pagination from "@/components/Pagination";
 import BaseLayout2 from "@/components/BaseLayout2";
 import StudentHeader from "../../components/StudentHeader";
@@ -77,8 +75,6 @@ const StudentList = () => {
   });
   const [searchKeyword, setSearchKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const itemsPerPage = 10;
 
   // Helper functions for dropdowns
@@ -168,8 +164,6 @@ const StudentList = () => {
 
   useEffect(() => {
     const fetchAssignments = async () => {
-      setLoading(true);
-      setError(null);
             try {
        const token =
     typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
@@ -202,10 +196,8 @@ const StudentList = () => {
         setRegularCount(pending.length);
         setGroupCount(completed.length);
       } catch (err: any) {
-        setError(err.message || "Error fetching assignments");
-      } finally {
-        setLoading(false);
-      }
+        console.log(err.message || "Error fetching assignments");
+      } 
     };
     fetchAssignments();
   }, []);
@@ -214,15 +206,6 @@ const StudentList = () => {
     setOpenDropdownId((prev) => (prev === id ? null : id));
   };
   const router = useRouter(); // Add this
-
-  const handleViewProfile = (studentId: string) => {
-    router.push(`/teacher/ui/managestudentview?studentId=${studentId}`);
-  };
-
-  const handleClick = () => {
-    console.log("Create Assignment clicked");
-    router.push(`/teacher/ui/addingnewassignment`);
-  };
 
   const getStatusStyle = (status: string) => {
     switch (status?.toUpperCase()) {

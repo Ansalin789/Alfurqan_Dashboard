@@ -389,4 +389,3 @@ const ManageTeacher: React.FC = () => {
 
 export default ManageTeacher;
 
-//onClick={() => { handleViewStudentList (); router.push('/Academic/viewTeacherSchedule');}}

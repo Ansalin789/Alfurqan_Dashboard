@@ -303,7 +303,7 @@ const Classes = () => {
               <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             </button>
 
-            <h3 className="text-lg font-semibold mb-4">Filter by</h3>
+            <h3 className="text-[16px] font-semibold mb-4">Filter by</h3>
 
             <div className="grid grid-cols-1 gap-4">
               {/* Student ID */}
@@ -312,7 +312,7 @@ const Classes = () => {
                 <input
                   type="text"
                   name="studentId"
-                  className="w-full p-2 border rounded bg-transparent dark:bg-[#343434]"
+                  className="w-full px-3 text-xs py-2 border dark:border-[#5c5c5c] rounded bg-transparent dark:bg-[#343434]"
                   placeholder="Enter student ID"
                   value={filterCriteria.studentId}
                   onChange={handleFilterChange}
@@ -325,7 +325,7 @@ const Classes = () => {
                 <input
                   type="text"
                   name="studentName"
-                  className="w-full p-2 border rounded bg-transparent dark:bg-[#343434]"
+                  className="w-full px-3 text-xs dark:border-[#5c5c5c] py-2 border rounded bg-transparent dark:bg-[#343434]"
                   placeholder="Enter student name"
                   value={filterCriteria.studentName}
                   onChange={handleFilterChange}
@@ -337,7 +337,7 @@ const Classes = () => {
                 <label className="text-sm block mb-1">Course Name</label>
                 <select
                   name="courseName"
-                  className="w-full p-2 border rounded bg-transparent dark:bg-[#343434]"
+                  className="w-full px-3 text-xs dark:border-[#5c5c5c] py-2 border rounded bg-transparent dark:bg-[#343434]"
                   value={filterCriteria.courseName}
                   onChange={handleFilterChange}
                 >
@@ -355,7 +355,7 @@ const Classes = () => {
                 <label className="text-sm block mb-1">Class Type</label>
                 <select
                   name="classType"
-                  className="w-full p-2 border rounded bg-transparent dark:bg-[#343434]"
+                  className="w-full px-3 text-xs dark:border-[#5c5c5c] py-2 border rounded bg-transparent dark:bg-[#343434]"
                   value={filterCriteria.classType}
                   onChange={handleFilterChange}
                 >
@@ -375,7 +375,7 @@ const Classes = () => {
                   <input
                     type="date"
                     name="fromDate"
-                    className="w-full dark:bg-[#343434] p-2 border rounded bg-transparent [&::-webkit-calendar-picker-indicator]:dark:invert"
+                    className="w-full dark:bg-[#343434] px-3 text-xs dark:border-[#5c5c5c] py-2 border rounded bg-transparent dark:[color-scheme:dark]"
                     value={filterCriteria.fromDate}
                     onChange={handleFilterChange}
                   />
@@ -385,7 +385,7 @@ const Classes = () => {
                   <input
                     type="date"
                     name="toDate"
-                    className="w-full dark:bg-[#343434] p-2 border rounded bg-transparent [&::-webkit-calendar-picker-indicator]:dark:invert"
+                    className="w-full dark:bg-[#343434] px-3 text-xs dark:border-[#5c5c5c] dark:[color-scheme:dark] py-2 border rounded bg-transparent"
                     value={filterCriteria.toDate}
                     onChange={handleFilterChange}
                   />
@@ -397,7 +397,7 @@ const Classes = () => {
                 <label className="text-sm block mb-1">Status</label>
                 <select
                   name="scheduleStatus"
-                  className="w-full dark:bg-[#343434] p-2 border rounded bg-transparent"
+                  className="w-full dark:bg-[#343434] px-3 text-xs dark:border-[#5c5c5c] py-2 border rounded bg-transparent"
                   value={filterCriteria.scheduleStatus}
                   onChange={handleFilterChange}
                 >
@@ -412,13 +412,10 @@ const Classes = () => {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between mt-6">
-              <div className="text-sm text-gray-600 dark:text-gray-300 text-left">
-                Showing {filteredData.length} results
-              </div>
+            <div className="flex items-center justify-end mt-6">
               <div className="flex items-center gap-3">
                 <button
-                  className="px-4 py-2 border rounded text-gray-700 bg-white hover:bg-gray-50"
+                  className="px-3 py-1 text-[12px] rounded-md border border-[#576CBC] text-[#576CBC] font-medium hover:bg-[#EEF1FF] dark:hover:bg-[#343434]"
                   onClick={() =>
                     setFilterCriteria({
                       studentId: "",
@@ -434,13 +431,13 @@ const Classes = () => {
                   Reset
                 </button>
                 <button
-                  className="px-4 py-2 bg-indigo-600 text-white rounded"
+                  className="px-3 py-1 text-[12px] rounded-md bg-[#576CBC] text-white font-medium hover:bg-[#455bb1]"
                   onClick={() => {
                     setIsFilterModalOpen(false);
                     setCurrentPage(1);
                   }}
                 >
-                  Show results
+                  Apply
                 </button>
               </div>
             </div>

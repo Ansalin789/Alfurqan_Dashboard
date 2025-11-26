@@ -258,6 +258,8 @@ const page = () => {
   const [filterDay, setFilterDay] = useState("");
   const [filterStartDate, setFilterStartDate] = useState("");
   const [filterEndDate, setFilterEndDate] = useState("");
+  const [filters, setFilters] = useState<Record<string, any>>({});
+
 
   const events = [
     {
@@ -405,17 +407,53 @@ const page = () => {
 
   // Filtered Working Hours
   const filteredWorkingHours = schedule.filter((item) => {
-    // Search logic
-    const matchesSearch = [item.day, item.date, item.fromTime, item.toTime].some((field) =>
-      field ? field.toString().toLowerCase().includes(searchWorkingHours.toLowerCase()) : false
+    const searchFields = [item.day, item.date];
+
+    let matchesFilters = true;
+    if (filters.day && item.day.toLowerCase() !== filters.day.toLowerCase()) {
+      matchesFilters = false;
+    }
+    if (filters.date) {
+      const itemDate = new Date(item.date);
+      const from = filters.date.from ? new Date(filters.date.from) : null;
+      const to = filters.date.to ? new Date(filters.date.to) : null;
+      if (from && itemDate < from) {
+        matchesFilters = false;
+      }
+      if (to && itemDate > to) {
+        matchesFilters = false;
+      }
+    }
+
+    const matchesSearch = searchFields.some((field) =>
+      field
+        ? field
+            .toString()
+            .toLowerCase()
+            .includes(searchWorkingHours.toLowerCase())
+        : false
     );
-    // Day filter
-    const matchesDay = filterDay ? item.day === filterDay : true;
-    // Date range filter
-    const matchesDate =
-      (!filterStartDate || new Date(item.date) >= new Date(filterStartDate)) &&
-      (!filterEndDate || new Date(item.date) <= new Date(filterEndDate));
-    return matchesSearch && matchesDay && matchesDate;
+    return matchesSearch && matchesFilters;
+  });
+
+  const groupedWorkingHours = Object.values(
+    filteredWorkingHours.reduce((acc, item) => {
+      acc[item.day] = item; // Only the last entry per day
+      return acc;
+    }, {} as Record<string, any>)
+  );
+  const weekOrder = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+
+  const sortedWorkingHours = groupedWorkingHours.sort((a, b) => {
+    return weekOrder.indexOf(a.day) - weekOrder.indexOf(b.day);
   });
 
   const totalPages = Math.ceil(filteredWorkingHours.length / itemsPerPage);
@@ -511,62 +549,46 @@ const page = () => {
               </div>
             )}
             <div className="overflow-x-auto max-h-none">
-              <table
-                className="w-full min-w-[900px] text-sm text-left table-auto"
-                style={{ width: "100%", tableLayout: "fixed" }}
-              >
-                <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
-                  <tr className="font-medium">
-                    <th className="p-4 font-semibold text-[12px] text-left">
-                      Day
-                    </th>
-                    <th className="p-4 font-semibold text-[12px] text-left">
-                      Date
-                    </th>
-                    <th className="p-4 font-semibold text-[12px] text-left">
-                      Working Hours
-                    </th>
-                    <th className="p-4 font-semibold text-[12px] text-left">
-                      GMT
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="text-[10px] text-[#1D2939]">
-                  {currentItems.length > 0 ? (
-                    currentItems.map((item, index) => (
-                      <tr
-                        key={index}
-                        className={`text-left dark:text-white ${
-                          index % 2 === 0
-                            ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                            : "bg-[#F8F8F8] dark:bg-[#303030]"
-                        }`}
-                      >
-                        <td className="p-3">{item.day}</td>
-                        <td className="p-3">{item.date}</td>
-                        <td className="p-3">{`${item.fromTime} - ${item.toTime}`}</td>
-                        <td className="p-3">GMT</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={4} className="p-4 text-center">
-                        <div className="flex flex-col items-center justify-center py-8">
-                          <Image
-                            src="/assets/images/no-data.png"
-                            alt="No data"
-                            width={120}
-                            height={120}
-                          />
-                          <div className="mt-4 text-gray-400 text-sm">
-                            No data available
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+            <table
+                      className="w-full min-w-[900px] text-sm text-left table-auto"
+                      style={{ width: "100%", tableLayout: "fixed" }}
+                    >
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr className="font-medium">
+                          <th className="p-4 font-semibold text-[12px] text-left">
+                            Day
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-left">
+                            Date
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-left">
+                            Working Hours
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-left">
+                            GMT
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-[10px] text-[#1D2939]">
+                        {sortedWorkingHours.map((item, index) => (
+                          <tr
+                            key={index}
+                            className={`text-left dark:text-white ${
+                              index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
+                            }`}
+                          >
+                            <td className="p-3">{item.day}</td>
+                            <td className="p-3">{item.date}</td>
+                            <td className="p-3">
+                              {item.fromTime} - {item.toTime}
+                            </td>
+                            <td className="p-3">GMT</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
             </div>
           </div>
         </div>

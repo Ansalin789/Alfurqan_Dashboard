@@ -136,7 +136,7 @@ export default function AddMeeting({ onClose }: Props) {
       }
 
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/addMeeting123",
+        "https://api.blackstoneinfomaticstech.com/addMeeting",
         requestData,
         {
           headers: {

@@ -114,7 +114,7 @@ export default function Page() {
         }
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/allmeeting/${meetingId}`,
+          `https://api.blackstoneinfomaticstech.com/meeting/${meetingId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -127,20 +127,6 @@ export default function Page() {
           console.log("Setting classData to:", response.data);
           setClassData(response.data);
           setRoomName(response.data.meetingId);
-          // const teacherAttendance = response.data.teacher.map(
-          //   (teacher: Teacher) => ({
-          //     id: null,
-          //     studentId: teacher.teacherId,
-          //     name: teacher.teacherName,
-          //     startTime: null,
-          //     endTime: null,
-          //     joined: false,
-          //     joinTime: "",
-          //     leaveTime: "",
-          //   })
-          // );
-
-          // setAttendance(teacherAttendance);
         } else {
           console.log("No upcoming class found.");
           setClassData(null);
@@ -231,18 +217,13 @@ const payload = {
   };
   const calculateDuration = (startTime: string, endTime: string): string => {
     const today = new Date().toDateString(); // use today's date to construct full datetime
-
     const start = new Date(`${today} ${startTime}`);
     const end = new Date(`${today} ${endTime}`);
-
     const diffMs = end.getTime() - start.getTime(); // difference in milliseconds
-
     if (diffMs < 0) return "Invalid";
-
     const diffMins = Math.floor(diffMs / 60000); // convert to minutes
     const hours = Math.floor(diffMins / 60);
     const minutes = diffMins % 60;
-
     return `${hours}h ${minutes}m`;
   };
 

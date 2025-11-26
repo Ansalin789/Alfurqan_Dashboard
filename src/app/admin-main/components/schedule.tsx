@@ -7,12 +7,8 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  CartesianGrid,
   Area,
   AreaChart,
-  Bar,
-  LabelList,
-  BarChart,
   PieChart,
   Pie,
   Cell,
@@ -53,7 +49,6 @@ interface PieData {
 
 const DashboardClasses = () => {
   const [duration, setDuration] = useState("last6months");
-  const [pieRange, setPieRange] = useState("Today");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [lineData, setLineData] = useState<{ month: string; value: number }[]>(
     []
@@ -62,7 +57,6 @@ const DashboardClasses = () => {
   const [barData, setBarData] = useState<
     { label: string; value: number; color: string }[]
   >([]);
-  const [range, setRange] = useState("Today");
   const [pieData, setPieData] = useState<PieData[]>([]);
   const [total, setTotal] = useState(0);
 
@@ -330,13 +324,6 @@ const DashboardClasses = () => {
           <span className="absolute left-5 text-[10px] font-semibold text-black dark:text-white">
             {item.value}
           </span>
-
-          {/* Hover tooltip */}
-          {/* {hoveredIndex === index && (
-            <div className="absolute -top-6 right-0 bg-gray-900 dark:bg-gray-700 text-white text-[10px] font-semibold px-2 py-[1px] rounded shadow">
-              {item.value}%
-            </div>
-          )} */}
         </div>
       </div>
     </button>

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import BaseLayout2 from "@/components/BaseLayout2";
 import moment from "moment";
-import { CalendarDays, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import { FaClock } from "react-icons/fa";
 import { BsFillCalendar2WeekFill } from "react-icons/bs";
 import StudentHeader from "../../components/StudentHeader";
@@ -73,9 +73,7 @@ const StudentSchedulePage = () => {
   const [activeView, setActiveView] = useState<"monthly" | "weekly" | "daily">(
     "monthly"
   );
-  const [selectedDate, setSelectedDate] = useState<string>(
-    moment().format("YYYY-MM-DD")
-  );
+
   const [eventsForSelectedDate, setEventsForSelectedDate] = useState<Event[]>(
     []
   );
@@ -134,7 +132,6 @@ const StudentSchedulePage = () => {
 
   const handleDateClick = (date: Date) => {
     const formattedDate = moment(date).format("YYYY-MM-DD");
-    setSelectedDate(formattedDate);
 
     const filteredEvents = events.filter(
       (event) => event.date === formattedDate
@@ -494,16 +491,7 @@ const StudentSchedulePage = () => {
                             {event.title}
                           </div>
 
-                          {/* Optional event details */}
-                          {/* 
-            <div className="flex items-center gap-1 text-[9px] text-gray-600 dark:text-gray-300 mt-1">
-              <Clock size={10} />
-              {moment(event.start, 'HH:mm').format("h:mm A")} - {moment(event.end, 'HH:mm').format("h:mm A")}
-            </div>
-            <div className="text-[9px] text-gray-500 dark:text-gray-400 mt-1">
-              {event.studentName}
-            </div> 
-            */}
+                         
                         </div>
                       ))}
                     </div>

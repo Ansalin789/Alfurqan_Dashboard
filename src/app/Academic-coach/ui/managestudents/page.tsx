@@ -139,7 +139,6 @@ const ManageStudents = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showModal, setShowModal] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState<Student[] | null>(null);
   const [totalPackages, setTotalPackages] = useState<string>("");
   const [totalCourses, setTotalCourses] = useState<string>("");
@@ -178,7 +177,7 @@ const ManageStudents = () => {
       );
       const data = await response.json();
       setStudentData(data);
-      setCurrentPage(1); // Calculate total pages
+      setCurrentPage(1);
     };
 
     fetchData();
@@ -212,17 +211,13 @@ const ManageStudents = () => {
         confirmButtonColor: "#576cbc",
       });
 
-      // Optional: reset to first one or clear total
       setTotalPackages("");
       setTotalCourses("");
       setTotalHours(0);
-      // setSelectedStudents([first]); // optional auto-fix
     } else {
-      // ✅ All matched, set totals
       setTotalPackages(first?.student?.package || "");
       setTotalCourses(first?.student?.course || "");
 
-      // If accomplishmentTime represents hours — parse or convert it
       const accomplishmentHours =
         Number(first?.evaluation?.[0]?.accomplishmentTime) || 0;
 
@@ -264,7 +259,6 @@ const ManageStudents = () => {
       } else {
         newSelectedRows = [...prev, index];
       }
-      // Update selectedStudents array
       const newSelectedStudents = newSelectedRows.map(
         (i) => studentsToRender[i]
       );
@@ -274,7 +268,6 @@ const ManageStudents = () => {
   };
 
   const toggleSelectAll = () => {
-    // Only select students that are not REGULAR
     const selectableIndices = studentsToRender
       .map((student, idx) =>
         student.sessionClassType !== "REGULAR" ? idx : null
@@ -297,8 +290,6 @@ const ManageStudents = () => {
     localStorage.setItem("studentManageID", _id);
     router.push(`managestudentview?id=${_id}`);
   };
-
-  //search
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -418,7 +409,6 @@ const ManageStudents = () => {
             </div>
 
             <div className="space-y-4">
-              {/* Student Name */}
               <div>
                 <label
                   htmlFor="studentname"
@@ -435,8 +425,6 @@ const ManageStudents = () => {
                   className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 />
               </div>
-
-              {/* Course */}
               <div>
                 <label
                   htmlFor="studentId"
@@ -452,8 +440,6 @@ const ManageStudents = () => {
                   className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 />
               </div>
-
-              {/* Date */}
               <div>
                 <label
                   htmlFor="date"
@@ -470,8 +456,6 @@ const ManageStudents = () => {
                   className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 />
               </div>
-
-              {/* Time */}
               <div>
                 <label
                   htmlFor="Time"
@@ -488,8 +472,6 @@ const ManageStudents = () => {
                   className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 />
               </div>
-
-              {/* Class Type */}
               <div>
                 <label
                   htmlFor="classtype"
@@ -507,11 +489,9 @@ const ManageStudents = () => {
                   <option value="">Select Class Type</option>
                   <option value="REGULAR">Regular Class</option>
                   <option value="GROUP">Group Class</option>
-                  <option value="TRAIL">Trail Class</option>
+                  <option value="TRAIL">Trial Class</option>
                 </select>
               </div>
-
-              {/* Status */}
               <div>
                 <label
                   htmlFor="stauts"
@@ -532,8 +512,6 @@ const ManageStudents = () => {
                   <option value="RESCHEDULED">Rescheduled</option>
                 </select>
               </div>
-
-              {/* Buttons */}
               <div className="flex justify-between items-center pt-4 ">
                 <button
                   onClick={handleReset}
@@ -559,7 +537,7 @@ const ManageStudents = () => {
                             .includes(filters.studentID.toLowerCase())) &&
                         (!filters.Date ||
                           new Date(user.createdDate).toLocaleDateString() ===
-                            new Date(filters.Date).toLocaleDateString())
+                          new Date(filters.Date).toLocaleDateString())
                       );
                     }).length
                   }{" "}
@@ -573,7 +551,6 @@ const ManageStudents = () => {
     );
   };
 
-  // Add filter handling function
   const handleApplyFilters = (filters: {
     studentName: string;
     studentID: string;
@@ -587,7 +564,7 @@ const ManageStudents = () => {
     status: string;
   }) => {
     const formatDate = (date: Date | string) =>
-      new Date(date).toISOString().split("T")[0]; // 'yyyy-mm-dd'
+      new Date(date).toISOString().split("T")[0];
 
     let filtered = [...studentData.students];
 
@@ -613,10 +590,8 @@ const ManageStudents = () => {
       );
     }
 
-    // Add more filter logic as needed for TeacherName, contact, scheduledClasses, level, Time, classType, status
-
     setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset to first page
+    setCurrentPage(1);
   };
   return (
     <BaseLayout1>
@@ -649,7 +624,6 @@ const ManageStudents = () => {
                     className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
                     onClick={() => setIsFilterModalOpen(true)}
                   >
-                    {/* <BsFilterLeftFilter /> */}
                     <MdTune className="w-4 h-4" />
                     <span>Filter</span>
                   </div>
@@ -660,8 +634,6 @@ const ManageStudents = () => {
                     </span>
                   </div>
                 </div>
-
-                {/* Table */}
                 <table className="w-full">
                   <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0] h-[46px]">
                     <tr className="font-medium ">
@@ -718,11 +690,10 @@ const ManageStudents = () => {
                     {currentItems.map((item, index) => (
                       <tr
                         key={`${item._id}-${index}`}
-                        className={`text-[12px] h-[50px]  ${
-                          index % 2 === 0
+                        className={`text-[12px] h-[50px]  ${index % 2 === 0
                             ? "bg-[#fff] dark:bg-[#2C2C2C]"
                             : "bg-[#F8F8F8] dark:bg-[#303030]"
-                        }`}
+                          }`}
                       >
                         <td className="px-3 py-2 w-[40px]">
                           <input
@@ -734,11 +705,10 @@ const ManageStudents = () => {
                               toggleSelect(index + indexOfFirstItem)
                             }
                             disabled={item.sessionClassType === "REGULARCLASS"}
-                            className={`accent-[#4C6993] ${
-                              item.sessionClassType === "REGULARCLASS"
+                            className={`accent-[#4C6993] ${item.sessionClassType === "REGULARCLASS"
                                 ? "cursor-not-allowed"
                                 : ""
-                            }`}
+                              }`}
                           />
                         </td>
 
@@ -776,7 +746,7 @@ const ManageStudents = () => {
                               : "-";
                           })()}
                         </td>
-                         <td className="px-3 py-2">
+                        <td className="px-3 py-2">
                           {(() => {
                             const val = item.evaluation?.[0]?.subscription?.subscriptionName;
                             const val1 = item.evaluation?.[0]?.accomplishmentTime;
@@ -843,7 +813,6 @@ const ManageStudents = () => {
               onApplyFilters={handleApplyFilters}
               users={studentData.students}
             />
-            {/*filterform  */}
           </div>
         </div>
       </div>

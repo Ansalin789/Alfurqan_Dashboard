@@ -3,8 +3,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
-  Elements,
-  CardElement,
   useElements,
   useStripe,
   CardNumberElement,
@@ -17,16 +15,8 @@ import { Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import StudentHeader from "../../components/StudentHeader";
 import React from "react";
-import Link from "next/link";
 import Pagination from "@/components/Pagination";
 
-const stripePromise = loadStripe(
-  "pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE"
-);
-
-type StripePaymentFormProps = {
-  onPaymentSuccess: (token: any) => void;
-};
 interface Student {
   studentId: string;
   studentName: string;
@@ -73,122 +63,12 @@ interface CheckoutFormProps {
 }
 const itemsPerPage = 10;
 
-const CheckoutForm: React.FC<CheckoutFormProps> = ({
-  clientSecret,
-  invoiceId,
-  amount,
-  currency,
-}) => {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setLoading(true);
-
-    if (!stripe || !elements) return;
-
-    const cardNumberElement = elements.getElement(CardNumberElement);
-    if (!cardNumberElement) {
-      setMessage("Card details are required.");
-      setLoading(false);
-      return;
-    }
-
-    const { error, paymentIntent } = await stripe.confirmCardPayment(
-      clientSecret,
-      {
-        payment_method: { card: cardNumberElement },
-      }
-    );
-
-    if (error) {
-      setMessage(error.message ?? "Payment failed.");
-    } else if (paymentIntent?.status === "succeeded") {
-      // Now send this to your backend if needed
-      await axios.post(
-        "https://api.blackstoneinfomaticstech.com/student/create-payment-intent",
-        {
-          amount,
-          currency,
-          invoiceId,
-          paymentIntentResponse: paymentIntent,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      setMessage("Payment successful!");
-    }
-
-    setLoading(false);
-  };
-
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="w-full max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-[#343434]"
-    >
-      <div className="">
-        <div className="mb-4 ">
-          <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">
-            Card Number
-          </label>
-          <div className="border rounded-md px-3 py-2 flex items-center bg-white dark:bg-[#3C3C3C]">
-            <CardNumberElement className="w-full dark:text-[#ffffff]" />
-          </div>
-        </div>
-        <div className="flex gap-4 mb-4">
-          <div className="flex-1">
-            <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">
-              Expiry
-            </label>
-            <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-[#ffffff]">
-              <CardExpiryElement className="w-full dark:text-[#ffffff]" />
-            </div>
-          </div>
-          <div className="flex-1">
-            <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">
-              CVC
-            </label>
-            <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-[#ffffff]">
-              <CardCvcElement className="w-full dark:text-[#ffffff]" />
-            </div>
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          disabled={!stripe || loading}
-          className={`w-full py-2 px-4 rounded-lg text-white font-bold transition-colors text-[13px] ${
-            !stripe || loading
-              ? "bg-gray-400 cursor-not-allowed"
-              : "cursor-pointer bg-[#2D6AE0] hover:bg-[#1B4FA0]"
-          }`}
-        >
-          {loading ? "Processing..." : "Pay"}
-        </button>
-
-        {message && (
-          <p className="text-center text-sm text-gray-700">{message}</p>
-        )}
-      </div>
-    </form>
-  );
-};
 
 const Invoice = () => {
-  const [showModal, setShowModal] = useState(false); // Payment modal
   const [showFilterModal, setShowFilterModal] = useState(false); // Filter modal
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
-  const [clientSecret, setClientSecret] = useState("");
   const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
   // Add missing filter states
   const [fromDate, setFromDate] = useState("");
@@ -258,7 +138,6 @@ const Invoice = () => {
       return;
     }
 
-    setShowModal(true);
     setShowFilterModal(false); // <-- Add this line
     const evaluationid = selectedInvoice._id;
     const totalprice = totalPrice;
@@ -290,13 +169,7 @@ const Invoice = () => {
       const clientSecret = response?.data?.clientSecret;
       console.log("[DEBUG] Stripe clientSecret:", clientSecret);
 
-      if (clientSecret?.includes("_secret_")) {
-        setClientSecret(clientSecret);
-      } else {
-        console.error("Invalid clientSecret received:", response.data);
-        alert("Error: Invalid payment session. Please try again.");
-        setShowModal(false);
-      }
+     
     } catch (error: any) {
       if (error && error.response && error.response.data) {
         console.error("[DEBUG] Error response data:", error.response.data);
@@ -305,40 +178,10 @@ const Invoice = () => {
         console.error("[DEBUG] Unknown error:", error);
         alert("Unknown error occurred. Check console for details.");
       }
-      setShowModal(false);
     }
   };
 
-  const downloadInvoice = () => {
-    if (typeof window === "undefined") return;
 
-    setIsGeneratingPDF(true);
-
-    // Hide buttons during PDF generation
-    const hideElements = [
-      document.getElementById("hideDuringDownload"),
-      document.getElementById("hideDuringDownloadFooter"),
-    ];
-    hideElements.forEach((el) => el?.classList.add("hidden"));
-
-    const invoiceElement = document.getElementById("invoic");
-    const options = {
-      filename: "invoice.pdf",
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
-    };
-
-    const html2pdf = require("html2pdf.js");
-    html2pdf()
-      .set(options)
-      .from(invoiceElement)
-      .save()
-      .then(() => {
-        // Show elements again after download
-        hideElements.forEach((el) => el?.classList.remove("hidden"));
-        setIsGeneratingPDF(false);
-      });
-  };
 
   function formatDateDMY(dateString?: string) {
     if (!dateString) return "";
@@ -362,17 +205,6 @@ const Invoice = () => {
   function toDateString(date: string) {
     return new Date(date).toISOString().slice(0, 10);
   }
-
-  const getInvoiceDue = (invoice: Invoice) => {
-    const paid =
-      invoice.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
-    return Number(invoice.amount) - paid;
-  };
-
-  const openFilterModal = () => {
-    setShowFilterModal(true);
-    setShowModal(false);
-  };
 
   // Get unique course names for dropdown
   const courseOptions = useMemo(() => {

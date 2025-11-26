@@ -177,7 +177,6 @@ export default function AddGroupAssignClass({
           },
         });
 
-        // ✅ Safely extract array
         let teachersList = [];
         if (Array.isArray(response.data)) {
           teachersList = response.data;
@@ -187,7 +186,6 @@ export default function AddGroupAssignClass({
           teachersList = response.data.teachers;
         }
 
-        // ✅ Filter based on position (course + 'Teacher')
         if (course && teachersList.length > 0) {
           const adjustedPosition =
             course === "Islamic Studies" ? "Islamic" : course;
@@ -206,7 +204,7 @@ export default function AddGroupAssignClass({
        
       } catch (err) {
         console.error("Error fetching teachers", err);
-        setTeachers([]); // fallback to avoid further crashes
+        setTeachers([]); 
       }
     };
 
@@ -222,7 +220,7 @@ export default function AddGroupAssignClass({
           if (time.startTime && time.endTime) {
             const start = new Date(`2023-01-01T${time.startTime}`);
             const end = new Date(`2023-01-01T${time.endTime}`);
-            const diff = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // Convert to hours
+            const diff = (end.getTime() - start.getTime()) / (1000 * 60 * 60); 
             totalHours += diff;
           }
         });

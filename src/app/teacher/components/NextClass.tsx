@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { AiOutlineClockCircle } from "react-icons/ai";
 import { FaUser } from "react-icons/fa";
-import { useRouter } from "next/navigation";
 import axios from "axios";
 import { MdDateRange } from "react-icons/md";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -38,7 +37,6 @@ interface ClassData {
 }
 
 const NextScheduledClass = () => {
-  const router = useRouter();
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isClassOngoing, setIsClassOngoing] = useState(false);
@@ -99,39 +97,7 @@ const NextScheduledClass = () => {
     }
   };
 
-  const triggerHandleEndCall = async () => {
-    try {
-      const token = localStorage.getItem("TeacherAuthToken");
-      if (!token || !classData?._id) return;
-
-      const payload = { sessionId: classData._id };
-
-      const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/classSession/triggerEnd",
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      console.log("✅ Session marked completed:", response.data);
-      setClassData((prev) =>
-        prev ? { ...prev, sessionStatus: "Completed" } : prev
-      );
-      setHasClassEnded(true);
-
-      setTimeout(() => {
-        fetchClassData();
-      }, 1500); // delay ensures backend update
-    } catch (err: any) {
-      console.error(
-        "❌ Error calling handleEndCall:",
-        err?.response?.data || err.message
-      );
-    }
-  };
+ 
 
   useEffect(() => {
     fetchClassData();
@@ -226,7 +192,6 @@ const NextScheduledClass = () => {
     return () => clearInterval(interval);
   }, [classData]);
 
-  const formatTime = (num: number) => (num < 10 ? `0${num}` : num);
 
   const handleJoinClass = () => {
     if (!classData?.classLink) return;
@@ -237,12 +202,7 @@ const NextScheduledClass = () => {
       return;
     }
 window.open(`/teacher/ui/liveclass?id=${classData._id}`, "_blank");
-    // router.push(`/teacher/ui/liveclass?id=${classData._id}`);
   };
-
-  const progress =
-    ((time.hours * 3600 + time.minutes * 60 + time.seconds) / (5 * 60 * 60)) *
-    100;
 
   if (loading)
     return (

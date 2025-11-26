@@ -4,15 +4,6 @@ import { useEffect, useState } from "react";
 import { PieChart, Pie, Cell } from "recharts";
 import axios from "axios";
 
-const handleLogin = (studentId: string, courseName: string) => {
-  localStorage.setItem("StudentPortalId", studentId);
-  localStorage.setItem("StudentCourseName", courseName);
-  console.log("StudentPortalId set to:", studentId);
-  console.log("StudentCourseName set to:", courseName);
-  // Now you can call fetchData or set a state to trigger it
-};
-
-
 const CourseOverview = () => {
   const [dashboardCounts, setDashboardCounts] = useState({
     totalLevel: 0,

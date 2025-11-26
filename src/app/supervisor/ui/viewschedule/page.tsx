@@ -67,35 +67,21 @@ const ViewSchedule = () => {
     Schedule[]
   >([]);
   const [selectedMenu, setSelectedMenu] = useState<number | null>(null);
-
-  // Date Range
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-
-  // Course
   const [course, setCourse] = useState("");
-
-  // Course Type (maps to sessionClassType)
   const [sessionClassType, setSessionClassType] = useState("");
-
-  // Timing (maps to startTime)
   const [startTime, setStartTime] = useState("");
-
-  // Status (maps to scheduleStatus)
   const [scheduleStatus, setScheduleStatus] = useState("");
-
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [showModal, setShowModal] = useState(false);
-
   const [activeTab, setActiveTab] = useState<string>("scheduled");
   const [upcomingClasses, setUpcomingClasses] = useState<Schedule[]>([]);
   const [completedClasses, setCompletedClasses] = useState<Schedule[]>([]);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
-  // Remove the filterData function and replace with useMemo
   const filteredData = useMemo(() => {
     if (!searchQuery) return uniqueStudentSchedules;
     
@@ -296,7 +282,6 @@ const ViewSchedule = () => {
   }, [activeTab, upcomingClasses, completedClasses]);
 
   const [showFilter, setShowFilter] = useState(false);
-  const dataToShow = uniqueStudentSchedules;
   const [currentPage, setCurrentPage] = useState(1);
 
   const itemsPerPage = 10;
@@ -327,10 +312,18 @@ console.log("currentItems", currentItems);
     };
   }, []);
 
-  const handleReset =()=>{
- setShowModal(false)
+const handleReset = () => {
+  setFromDate("");
+  setToDate("");
+  setCourse("");
+  setSessionClassType("");
+  setStartTime("");
+  setScheduleStatus("");
+
   fetchData();
-  }
+  // setShowModal(false);
+};
+
   const isToday = (date: string) => {
     const today = new Date();
     const classDate = new Date(date);
@@ -539,13 +532,13 @@ console.log("currentItems", currentItems);
                 <div className="mb-4">
                   <label
                     htmlFor="courseType"
-                    className="block text-sm text-gray-700 mb-1 dark:text-white"
+                    className="block text-sm mb-1 dark:text-white"
                   >
                     Course Type
                   </label>
                   <select
                     id="courseType"
-                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656] rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full text-[12px] mb-4 p-2 border border-gray-300 dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656] rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     value={sessionClassType}
                     onChange={(e) => setSessionClassType(e.target.value)}
                   >
@@ -553,7 +546,7 @@ console.log("currentItems", currentItems);
 
                     <option>Regular Class</option>
                     <option>Group Class</option>
-                    <option>Trail Class</option>
+                    <option>Trial Class</option>
                   </select>
                 </div>
 
@@ -561,14 +554,14 @@ console.log("currentItems", currentItems);
                 <div className="mb-4">
                   <label
                     htmlFor="timing"
-                    className="block text-sm text-gray-700 mb-1 dark:text-white"
+                    className="block text-sm mb-1 dark:text-white"
                   >
                     Timing
                   </label>
                   <input
                     type="time"
                     id="timing"
-                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656] rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full mb-4 text-xs border border-gray-300 dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656] rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
                   />
@@ -578,13 +571,13 @@ console.log("currentItems", currentItems);
                 <div className="mb-4">
                   <label
                     htmlFor="status"
-                    className="block text-sm text-gray-700 mb-1 dark:text-white"
+                    className="block text-sm mb-1 dark:text-white"
                   >
                     Status
                   </label>
                   <select
                     id="status"
-                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656] rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full mb-4 text-[12px] border border-gray-300 dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656] rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     value={scheduleStatus}
                     onChange={(e) => setScheduleStatus(e.target.value)}
                   >
@@ -595,9 +588,7 @@ console.log("currentItems", currentItems);
                     <option>Re-Scheduled</option>
                   </select>
                 </div>
-
                 <hr className="my-4" />
-
                 <div className="flex justify-between">
                   <button
                     className="px-4 py-2 rounded-md border border-[#576cbc] text-indigo-600 text-sm"
@@ -637,7 +628,7 @@ console.log("currentItems", currentItems);
                   ].map((header) => (
                     <th
                       key={header}
-                      className="text-left px-6 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]"
+                      className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]"
                     >
                       {header}
                     </th>
@@ -654,18 +645,17 @@ console.log("currentItems", currentItems);
                         : "bg-[#F8F8F8] dark:bg-[#303030]"
                     }`}
                   >
-                    <td className="px-6 py-4 text-[#3D8FDE] dark:text-[#3D8FDE] text-left">
+                    <td className="px-4 py-4 text-[#3D8FDE] dark:text-[#3D8FDE] text-left">
                       {item.teacher.teacherName}
                     </td>
-                    <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                    <td className="px-4 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                       {item.classId}
                     </td>
-
-                    <td className="px-8 py-3 text-left">{item.course?.courseName || 'N/A'}</td>
-                    <td className="px-6 py-3 text-left">Regular Class</td>
-                    <td className="px-3 py-3 text-left">
+                    <td className="px-4 py-3 text-left">{item.course?.courseName || 'N/A'}</td>
+                    <td className="px-4 py-3 text-left">Regular Class</td>
+                    <td className="px-4 py-3 text-left">
                       {new Date(item.startDate).toDateString()} </td>
-                    <td className="px-3 py-3 text-left">
+                    <td className="px-4 py-3 text-left">
                       {(() => {
                         let content;
                         console.log(
@@ -700,7 +690,6 @@ console.log("currentItems", currentItems);
                           ) {
                             content = (
                               <button
-                                // onClick={() => handleLiveClassRedirect(item._id)}
                                 className="text-[10px] font-semibold px-[11px] py-1 rounded-lg bg-[#576cbc] text-white border cursor-pointer hover:opacity-80"
                                 onClick={() =>
                                   router.push(
@@ -728,7 +717,7 @@ console.log("currentItems", currentItems);
                       })()}
                     </td>
 
-                    <td className="px-3 py-3 text-left">
+                    <td className="px-4 py-3 text-left">
                       <span
                         className={`text-[10px] font-semibold px-3 py-2 rounded-lg ${getStatusClass(
                           item.scheduleStatus

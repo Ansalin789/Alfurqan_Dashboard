@@ -214,15 +214,6 @@ const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
 
     if (!res.ok) throw new Error("Failed to fetch file");
     const blob = await res.blob();
- 
-      // // Convert base64 to binary
-      // const binaryString = atob(resumeData);
-      // const bytes = new Uint8Array(binaryString.length);
-      // for (let i = 0; i < binaryString.length; i++) {
-      //   bytes[i] = binaryString.charCodeAt(i);
-      // }
-
-      // const blob = new Blob([bytes], { type: "application/pdf" });
       return URL.createObjectURL(blob);
     } catch (error) {
       console.error("Error creating blob URL:", error);
@@ -345,7 +336,6 @@ export default function ApplicantsPage() {
   const [arabicSpeaking, setArabicSpeaking] = useState("Advanced");
   const [arabicWriting, setArabicWriting] = useState("Advanced");
   const [englishSpeaking, setEnglishSpeaking] = useState("Advanced");
-  // const [workingDays, setWorkingDays] = useState("Monday-Saturday");
   const [rating, setRating] = useState(4);
   const [comments, setComments] = useState("");
   const [mode, setMode] = useState<"view" | "edit">("view");
@@ -404,24 +394,6 @@ export default function ApplicantsPage() {
       setSupervisorId(id);
     }
   }, []);
-
-  function focusFromInput() {
-    const input = fromWrapperRef.current?.querySelector("input");
-    input?.focus();
-  }
-
-  function focusToInput() {
-    const input = toWrapperRef.current?.querySelector("input");
-    input?.focus();
-  }
-
-  const handleAddSkill = () => {
-    const trimmed = newSkill.trim();
-    if (trimmed && !skills.includes(trimmed)) {
-      setSkills([...skills, trimmed]);
-      setNewSkill("");
-    }
-  };
 
   pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
@@ -1661,37 +1633,7 @@ const handlesendupdate = async (id: string, status: string) => {
                   )}
                 </div>
               </div>
-              {/* Add this temporarily in your JSX to debug */}
-{/* DEBUG SECTION */}
-{/* {mode === "edit" && (
-  <div className="mt-4 p-3 bg-yellow-100 rounded-lg dark:bg-yellow-900">
-    <button
-      onClick={() => {
-        console.log("🔍 CURRENT STATE VALUES:", {
-          preferredWorkingHours: preferredWorkingHours,
-          expectedSalary: expectedSalary,
-          workingDays: workingDays,
-          comments: comments,
-          quranReading: quranReading,
-          tajweed: tajweed,
-          rating: rating
-        });
-        console.log("🔍 WHAT WILL BE SENT TO BACKEND:", {
-          preferedWorkingHours: preferredWorkingHours,
-          expectedSalary: parseFloat(expectedSalary),
-          preferedWorkingDays: workingDays,
-          comments: comments,
-          overallRating: rating
-        });
-      }}
-      className="px-3 py-1 text-xs bg-yellow-500 text-white rounded"
-    >
-      Check Current vs Backend Field Names
-    </button>
-  </div>
-)} */}
             </div>
-
             {/* Footer (Fixed) */}
             <div className="w-full border-t p-3 flex justify-end gap-3 bg-white z-10 dark:bg-[#343434] dark:border-t-[#5F5959]">
               {mode === "edit" && (

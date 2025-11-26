@@ -20,7 +20,7 @@ const SidebarItems = [
     icon: RiDashboardFill,
   },
   {
-    name: "Trail Management",
+    name: "Trial Management",
     href: "/Academic/trailManagement",
     icon: IoBookmarks,
   },

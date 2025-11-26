@@ -85,7 +85,6 @@ export default function TotalClasses() {
     }
   }, [timeFrame]);
 
-  const maxCount = Math.max(...classData.map((item) => item.count), 1);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -95,15 +94,6 @@ export default function TotalClasses() {
     setTimeFrame(selected);
     setIsDropdownOpen(false);
   };
-
-  // Arrange items into left and right columns
-  const leftItems = classData.filter(
-    (item) => item.type === "Rescheduled" || item.type === "Scheduled"
-  );
-  const rightItems = classData.filter(
-    (item) => item.type === "Completed" || item.type === "Cancelled"
-  );
-
   return (
     <div className="bg-[#fff] rounded-xl p-5 shadow-sm w-full dark:bg-[#343434]">
       {/* Header */}

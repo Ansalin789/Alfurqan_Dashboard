@@ -1,18 +1,14 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { MdTune } from "react-icons/md";
-import { MoreVertical, Search } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Pagination from "@/components/Pagination";
+import React, { useState, useEffect } from "react";
+
+import { useRouter, } from "next/navigation";
 import Modal from "react-modal";
 import StudentHeader from "../../components/StudentHeader";
 import { FcEditImage } from "react-icons/fc";
 
 import Image from "next/image";
-import { IoArrowBackCircleSharp } from "react-icons/io5";
 import BaseLayout2 from "@/components/BaseLayout2";
-import { FaUsers } from "react-icons/fa6";
 import axios from "axios";
 import { X } from "lucide-react";
 
@@ -80,15 +76,11 @@ const Card = ({ title, value, description, image }: CardProps) => (
 );
 
 const StudentProfile = () => {
-  const router = useRouter();
-
-  const [studentRecord, setStudentRecord] = useState<StudentRecord>();
+ 
   const [studentData, setStudentData] = useState<StudentData>();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [formEmail, setFormEmail] = useState("");
   const [formPhone, setFormPhone] = useState("");
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   
   interface StudentData {
@@ -118,178 +110,79 @@ const StudentProfile = () => {
     if (studentData) {
       setFormEmail(studentData.student.studentEmail || "");
       setFormPhone(studentData.student.studentPhone?.toString() || "");
-      setImagePreview(studentData.student.photoUrl || null);
-      setSelectedImage(null);
       setIsEditModalOpen(true);
     }
   };
 
-  // Handle image selection in modal
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setSelectedImage(file);
-    const previewUrl = URL.createObjectURL(file);
-    setImagePreview(previewUrl);
-  };
+ 
 
 
   // Handle save all changes
   const handleSaveAll = async () => {
     if (!studentData) return;
-
+  
     setIsUpdating(true);
-    let hasErrors = false;
-
+  
     try {
       const token = localStorage.getItem("StudentAuthToken");
       const studentId = studentData._id;
-
-      // Check if there are any changes
-      const emailChanged = formEmail !== studentData.student.studentEmail;
-      const phoneChanged = formPhone !== studentData.student.studentPhone?.toString();
-      const hasChanges = emailChanged || phoneChanged || selectedImage;
-
-      if (!hasChanges) {
-        // No changes made, just close the modal
+  
+      if (!token) {
+        alert("Auth token not found.");
+        setIsUpdating(false);
+        return;
+      }
+  
+      const updateData: { student: Partial<StudentData["student"]> } = { student: {} };
+  
+      if (formEmail !== studentData.student.studentEmail) {
+        updateData.student.studentEmail = formEmail;
+      }
+  
+      if (formPhone !== studentData.student.studentPhone?.toString()) {
+        updateData.student.studentPhone = Number(formPhone);
+      }
+  
+      if (Object.keys(updateData.student).length === 0) {
         setIsEditModalOpen(false);
         setIsUpdating(false);
         return;
       }
-
-      // If image is selected, use FormData to send both image and contact info
-      if (selectedImage) {
-        try {
-          const formData = new FormData();
-          formData.append("profilePhoto", selectedImage);
-          
-          // Append student data fields
-          formData.append("student[studentId]", studentData.student.studentId);
-          formData.append("student[studentEmail]", formEmail);
-          formData.append("student[studentPhone]", String(Number(formPhone)));
-          formData.append("student[course]", studentData.student.course || "");
-          formData.append("student[package]", studentData.student.package || "");
-          formData.append("student[gender]", studentData.student.gender || "");
-          
-          // Add city and country if they exist
-          if (studentData.student.city) {
-            formData.append("student[city]", studentData.student.city);
-          }
-          if (studentData.student.country) {
-            formData.append("student[country]", studentData.student.country);
-          }
-
-          await axios.put(
-            `https://api.blackstoneinfomaticstech.com/studentProfile/${studentId}`,
-            formData,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data",
+  
+      await axios.put(
+        `https://api.blackstoneinfomaticstech.com/studentProfile/${studentId}`,
+        updateData,
+        {
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+        }
+      );
+  
+      setStudentData((prev) =>
+        prev
+          ? {
+              ...prev,
+              student: {
+                ...prev.student,
+                ...updateData.student,
               },
             }
-          );
-
-          // Update local state
-          setStudentData((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  student: {
-                    ...prev.student,
-                    studentEmail: formEmail,
-                    studentPhone: Number(formPhone),
-                    photoUrl: imagePreview || prev.student.photoUrl,
-                  },
-                }
-              : prev
-          );
-
-          console.log("✅ Profile updated successfully");
-        } catch (error) {
-          console.error("❌ Failed to update profile:", error);
-          alert("Failed to update profile. Please try again.");
-          hasErrors = true;
-        }
-      } else {
-        // If no image, send JSON with contact updates only
-        try {
-          const updateData: any = {
-            student: {
-              studentId: studentData.student.studentId,
-              studentEmail: formEmail,
-              studentPhone: Number(formPhone),
-              course: studentData.student.course,
-              package: studentData.student.package,
-              gender: studentData.student.gender,
-            },
-          };
-          
-          // Add city and country if they exist
-          if (studentData.student.city) {
-            updateData.student.city = studentData.student.city;
-          }
-          if (studentData.student.country) {
-            updateData.student.country = studentData.student.country;
-          }
-
-          await axios.put(
-            `https://api.blackstoneinfomaticstech.com/studentProfile/${studentId}`,
-            updateData,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-
-          // Update local state
-          setStudentData((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  student: {
-                    ...prev.student,
-                    studentEmail: formEmail,
-                    studentPhone: Number(formPhone),
-                  },
-                }
-              : prev
-          );
-
-          console.log("✅ Contact information updated successfully");
-        } catch (error) {
-          console.error("❌ Failed to update contact information:", error);
-          alert("Failed to update contact information. Please try again.");
-          hasErrors = true;
-        }
-      }
-
-      // Close modal only if no errors and changes were made
-      if (!hasErrors) {
-        alert("Profile updated successfully!");
-        setIsEditModalOpen(false);
-        setSelectedImage(null);
-        setImagePreview(null);
-      }
+          : prev
+      );
+  
+      alert("Profile updated successfully!");
+      setIsEditModalOpen(false);
     } catch (error) {
       console.error("❌ Error updating profile:", error);
-      alert("An error occurred. Please try again.");
+      alert("Failed to update profile. Please try again.");
     } finally {
       setIsUpdating(false);
     }
   };
+  
+  
+  
 
-  // Legacy handler for direct file input (kept for backward compatibility)
-  const handleProfileChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    // Open modal instead of directly uploading
-    handleEditClick();
-  };
-
+ 
   useEffect(() => {
     const studentId = localStorage.getItem("StudentPortalId");
 
@@ -363,8 +256,7 @@ const StudentProfile = () => {
   // Add state for dashboard stats
   const [dashboardStats, setDashboardStats] =
     useState<StudentDashboardCounts | null>(null);
-  const [statsLoading, setStatsLoading] = useState(true);
-  const [statsError, setStatsError] = useState<string | null>(null);
+
 
   useEffect(() => {
     // Fetch dashboard stats
@@ -376,8 +268,6 @@ const StudentProfile = () => {
             : null;
         const studentId = localStorage.getItem("StudentPortalId");
         if (!token || !studentId) {
-          setStatsError("Missing student ID or token");
-          setStatsLoading(false);
           return;
         }
         const response = await axios.get<StudentDashboardCounts>(
@@ -392,10 +282,8 @@ const StudentProfile = () => {
         );
         setDashboardStats(response.data);
       } catch (err) {
-        setStatsError("Failed to load stats");
-      } finally {
-        setStatsLoading(false);
-      }
+       console.log("Failed to load stats");
+      } 
     };
     fetchStats();
   }, []);
@@ -612,43 +500,7 @@ const StudentProfile = () => {
 
           {/* Modal Body */}
           <div className="p-6 space-y-6">
-            {/* Update Image Section */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-                Update Image
-              </h3>
-              <div className="flex flex-col items-center space-y-4">
-                <div className="relative">
-                  <img
-                    src={
-                      imagePreview ||
-                      studentData?.student?.photoUrl ||
-                      "/assets/images/stportfolio.svg"
-                    }
-                    alt="Profile Preview"
-                    className="w-32 h-32 rounded-full object-cover border-4 border-gray-200 dark:border-gray-700"
-                  />
-                </div>
-                <label
-                  htmlFor="imageUpload"
-                  className="cursor-pointer bg-[#54638C] text-white px-6 py-2 rounded-lg hover:bg-[#445275] transition-colors"
-                >
-                  Choose Image
-                </label>
-                <input
-                  id="imageUpload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageChange}
-                />
-                {selectedImage && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Selected: {selectedImage.name}
-                  </p>
-                )}
-              </div>
-            </div>
+          
 
             {/* Divider */}
             <div className="border-t border-gray-200 dark:border-gray-700"></div>

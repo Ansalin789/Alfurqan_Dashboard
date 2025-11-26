@@ -12,7 +12,6 @@ import {
   Cell,
   BarChart,
   Bar,
-  XAxis,
   Tooltip,
   ResponsiveContainer,
   TooltipProps,
@@ -34,18 +33,6 @@ interface ApiResponse {
   evaluationCount: number;
   studentCountByCountry: CountryData[];
 }
-
-interface TrialClassData {
-  _id: string | null;
-  totalCount: number;
-  maleCount: number;
-  femaleCount: number;
-  completedCount: number;
-  pendingCount: number;
-  studentJointCount: number;
-  studentNotJointCount: number;
-}
-
 //////////////////TotalRequestChart//////////////
 
 const TotalRequestChart = () => {
@@ -202,7 +189,6 @@ const CountriesCard = () => {
     }
   };
 
-  const maxCount = Math.max(...(data?.map?.((c) => c.count) || []), 1);
   return (
     <div>
       <h3 className="text-[#010E30] text-[14px] font-semibold dark:text-white">
@@ -257,18 +243,7 @@ const CountriesCard = () => {
 
 const COLORS = ["#9FD0FF", "#FECAFF", "#78A1DB"];
 
-const CustomTooltips = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
-    const label = payload[0]?.name;
-    const value = payload[0]?.value;
-    return (
-      <div className="bg-white border rounded px-2 py-1 text-xs text-gray-800 shadow">
-        {label} - {value}
-      </div>
-    );
-  }
-  return null;
-};
+
 
 const PreferredTeachersCard = () => {
   const [male, setMale] = useState(0);
@@ -310,11 +285,6 @@ const PreferredTeachersCard = () => {
     setMale(maleCount);
     setFemale(femaleCount);
   };
-
-  // Calculate percentages for display
-  const total = male + female;
-  const malePercent = total > 0 ? Math.round((male / total) * 100) : 0;
-  const femalePercent = total > 0 ? Math.round((female / total) * 100) : 0;
 
   const getPieLabelPosition = (
     cx: number,

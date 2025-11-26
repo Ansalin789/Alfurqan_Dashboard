@@ -13,15 +13,7 @@ import AcademicHeader from "./academicHeader";
 import { getSocket } from "@/app/utils/socket";
 import { AnimatePresence, motion } from "framer-motion";
 
-// Event interface for calendar events
-interface Event {
-  title: string;
-  start: Date;
-  end: Date;
-  allDay: boolean;
-}
 
-// Teacher interface (ensure API response matches these keys)
 interface Teacher {
   teacherId: string;
   name: string;
@@ -34,26 +26,6 @@ interface Teacher {
   [key: string]: any;
 }
 
-// Student interface
-interface Student {
-  student: {
-    studentId: string | null;
-    studentFirstName: string;
-    studentLastName: string;
-    studentEmail: string;
-  };
-  startDate: string;
-  endDate: string;
-  package: string;
-  preferedTeacher: string;
-  status: string;
-  totalHourse: number;
-  _id: string;
-}
-
-interface StudentListResponse {
-  students: Student[];
-}
 
 interface ClassSchedule {
   _id: string;
@@ -86,16 +58,6 @@ interface ClassSchedule {
   course: {
     courseName: string;
   };
-}
-
-interface ClassData {
-  course: {
-    courseName: string;
-  };
-  package: string;
-  startDate: string;
-  startTime: string[];
-  endTime: string[];
 }
 
 interface Teacher {
@@ -164,7 +126,6 @@ const SchedulePage = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    // Fetch current class to identify student's assigned teacher for labeling and ordering
     const fetchCurrentClass = async () => {
       const token = typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
       if (!token || !selectedClassId) return;
@@ -244,9 +205,9 @@ const SchedulePage = () => {
 
   const handleDateClick = async (date: Date, position1: string) => {
     setSelectedDate(date);
-    setSelectedTeacher(null); // Clear previously selected
+    setSelectedTeacher(null);
     setAvailableTeachers([]);
-    setIsRescheduleOpen(false); // Close modal until teacher is chosen
+    setIsRescheduleOpen(false);
     console.log("date is ", date);
     const formattedDate = moment(date).format("YYYY-MM-DD");
     const token = localStorage.getItem("AcademicCoachAuthToken");
@@ -255,10 +216,10 @@ const SchedulePage = () => {
       console.warn("⚠️ Missing token");
       return;
     }
-   console.log(position1);
+    console.log(position1);
     try {
-       const adjustedPosition =
-     position === "Islamic Studies" ? "Islamic" : position;
+      const adjustedPosition =
+        position === "Islamic Studies" ? "Islamic" : position;
       const url = `https://api.blackstoneinfomaticstech.com/teacher/availabletime?scheduleDate=${formattedDate}&position=${encodeURIComponent(
         adjustedPosition + " Teacher"
       )}`;
@@ -274,7 +235,7 @@ const SchedulePage = () => {
 
       const data = await res.json();
       setAvailableTeachers(data);
-      console.log("name",data);
+      console.log("name", data);
     } catch (err) {
       console.error("❌ Network error:", err);
     }
@@ -317,12 +278,11 @@ const SchedulePage = () => {
         return;
       }
 
-      // 🔥 Update flat array
       setAvailableTeachers((prev: any[]) => {
         const slotsToRemove = Object.entries(payload.slots).flatMap(
           ([teacherId, updates]) =>
             updates
-              .filter((u) => !u.isStatus) // ❌ only removing slots
+              .filter((u) => !u.isStatus)
               .map((u) => ({
                 teacherId,
                 from: u.from,
@@ -368,7 +328,6 @@ const SchedulePage = () => {
     }
 
     try {
-      // 1. Fetch existing data
       const existingRes = await fetch(
         `https://api.blackstoneinfomaticstech.com/classShedule/${selectedClassId}`,
         {
@@ -392,21 +351,17 @@ const SchedulePage = () => {
         return `${hours}:${minutes}`;
       };
 
-      // This ensures the selected date doesn't shift due to timezone conversion
       const normalizeDate = (date: Date) => {
         const year = date.getFullYear();
-        const month = date.getMonth(); // 0-indexed
+        const month = date.getMonth();
         const day = date.getDate();
 
-        // Create a new Date at noon UTC (avoids time shift)
         const utcDate = new Date(Date.UTC(year, month, day, 12, 0, 0));
-        return utcDate.toISOString(); // Safe to store in DB
+        return utcDate.toISOString();
       };
 
-      // 2. Build updated payload with only specific changes
       const updatedPayload = {
         ...existingData,
-        // Inside your handleRescheduleSubmit
         startDate: normalizeDate(selectedDate),
         endDate: normalizeDate(selectedDate),
         classDay: [
@@ -438,7 +393,6 @@ const SchedulePage = () => {
         rescheduleReason,
       };
 
-      // 3. Send the PUT request
       const res = await fetch(
         `https://api.blackstoneinfomaticstech.com/classShedule/${selectedClassId}`,
         {
@@ -464,7 +418,6 @@ const SchedulePage = () => {
       } else {
         console.log("✅ Class rescheduled successfully.");
         try {
-          // Refresh scheduled classes so the calendar reflects the change
           const refreshRes = await fetch(
             `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
             {
@@ -510,9 +463,7 @@ const SchedulePage = () => {
   const getFirstDayOfMonth = (date: Date) =>
     new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
-  //Colur
 
-  // Helper function to get border and text color based on course
   const getCourseColorClass = (courseName: string) => {
     switch (courseName) {
       case "Quran":
@@ -535,7 +486,6 @@ const SchedulePage = () => {
       map[t.teacherId].slots.push({ fromTime: t.fromTime, toTime: t.toTime });
     });
     const groups = Object.values(map);
-    // Move the student's current teacher to the top if present
     if (currentTeacherId) {
       groups.sort((a, b) => {
         if (a.teacherId === currentTeacherId) return -1;
@@ -607,11 +557,10 @@ const SchedulePage = () => {
             <div key={day} className="flex flex-col">
               <button
                 onClick={() => handleDayClick(day)}
-                className={`w-full p-4 rounded-xl transition-all duration-200 cursor-pointer ${
-                  isSelected
+                className={`w-full p-4 rounded-xl transition-all duration-200 cursor-pointer ${isSelected
                     ? "bg-[#f7f7f7] dark:bg-[#414141] text-black dark:text-white"
                     : "bg-[#f7f7f7] dark:bg-[#414141] text-black dark:text-white"
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -750,7 +699,6 @@ const SchedulePage = () => {
 
     return (
       <>
-        {/* Header */}
         <div className="flex items-end justify-end mb-4 -mt-10 gap-2">
           <button
             onClick={handlePrevMonth}
@@ -777,7 +725,7 @@ const SchedulePage = () => {
         </div>
 
         {/* Calendar Days */}
-        <div className="grid grid-cols-7 gap-2 text-sm h-[455px] overflow-scroll scrollbar-none">
+        <div className="grid grid-cols-7 gap-2 px-2 text-sm h-[455px] overflow-scroll scrollbar-none">
           {totalDays.map((day, i) => {
             if (day === null)
               return <div key={i} className="min-h-[80px] bg-transparent" />;
@@ -803,35 +751,34 @@ const SchedulePage = () => {
                 onClick={() => handleDateClick(date, courseName)}
                 className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer duration-200
       ${hasClasses ? `border ${courseColorClass}` : "border text-[10px]"}
-      ${
-        isToday(day)
-          ? "bg-[#27176518] text-white dark:text-white"
-          : "bg-gray-100 text-gray-500 dark:bg-[#414141] dark:text-white"
-      }
+      ${isToday(day)
+                    ? "bg-[#27176518] text-white dark:text-white"
+                    : "bg-gray-100 text-gray-500 dark:bg-[#414141] dark:text-white"
+                  }
 
       ${isSelected ? "ring-2 ring-[#576cbc]" : ""}
     `}
               >
                 <button onClick={() => handleDateClick(date, courseName)} className="w-full">
-                <div className="font-semibold text-sm text-inherit">{day}</div>
+                  <div className="font-semibold text-sm text-inherit">{day}</div>
 
-                {hasClasses && (
-                  <div className="w-full mt-0 text-center">
-                    <div
-                      className={`text-[10px] font-medium truncate -mb-1 ${courseColorClass}`}
-                    >
-                      {dayClasses[0].course?.courseName}
-                    </div>
-                    <div className={`text-[9px] truncate -mb-2 ${courseColorClass}`}>
-                      {dayClasses[0].startTime[0]} - {dayClasses[0].endTime[0]}
-                    </div>
-                    {dayClasses[0].scheduleStatus === "Rescheduled" && (
-                      <div className={`text-[7px] truncate ${courseColorClass}`}>
-                        Rescheduled from  {moment(dayClasses[0].lastUpdatedDate).format("MMM D")}
+                  {hasClasses && (
+                    <div className="w-full mt-0 text-center">
+                      <div
+                        className={`text-[10px] font-medium truncate -mb-1 ${courseColorClass}`}
+                      >
+                        {dayClasses[0].course?.courseName}
                       </div>
-                    )}
-                  </div>
-                )}
+                      <div className={`text-[9px] truncate -mb-2 ${courseColorClass}`}>
+                        {dayClasses[0].startTime[0]} - {dayClasses[0].endTime[0]}
+                      </div>
+                      {dayClasses[0].scheduleStatus === "Rescheduled" && (
+                        <div className={`text-[7px] truncate ${courseColorClass}`}>
+                          Rescheduled from  {moment(dayClasses[0].lastUpdatedDate).format("MMM D")}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </button>
 
                 {hasClasses && dayClasses.length > 1 && (
@@ -895,19 +842,16 @@ const SchedulePage = () => {
       />
       <div className="p-2">
         <div className="mx-auto gap-4 flex flex-col md:flex-row overflow-hidden h-[630px]">
-          {/* Left: Calendar View */}
           <div className="w-full md:w-2/3 p-6 bg-white dark:bg-[#343434] shadow-md rounded-xl">
-            {/* Tabs */}
             <div className="flex space-x-4 text-sm font-medium mb-4">
               {["Monthly", "Weekly", "Daily"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveView(tab.toLowerCase() as any)}
-                  className={`pb-2 text-sm font-medium ${
-                    activeView === tab.toLowerCase()
+                  className={`pb-2 text-sm font-medium ${activeView === tab.toLowerCase()
                       ? "text-[#576cbc] border-b-2 border-[#576cbc]"
                       : "text-gray-400"
-                  } pb-1`}
+                    } pb-1`}
                 >
                   {tab}
                 </button>
@@ -943,7 +887,6 @@ const SchedulePage = () => {
             )}
           </div>
 
-          {/* Right: Available Teachers */}
           <div className="w-full md:w-1/3 bg-white dark:bg-[#343434] rounded-xl p-6 shadow-md">
             <h3 className="text-[16px] font-medium text-[#111111] dark:text-white mb-4">
               Available Teachers
@@ -961,104 +904,104 @@ const SchedulePage = () => {
                       const yourTeacher = groupedByTeacher.filter((g) => g.teacherId === currentTeacherId);
                       const otherTeachers = groupedByTeacher.filter((g) => g.teacherId !== currentTeacherId);
                       const renderGroup = (group: { teacherId: string; name: string; slots: { fromTime: string; toTime: string }[] }) => {
-                      const selected = selectedSlotByTeacher[group.teacherId] || group.slots[0] || null;
-                      return (
-                        <motion.div
-                          key={group.teacherId}
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          transition={{ duration: 0.25 }}
-                          className="flex items-center justify-between py-4 px-2 border-b-2 dark:border-[#5c5c5c]"
-                        >
-                          {/* Left Side */}
-                          <div className="flex items-center gap-4">
-                            <img
-                              src={`https://api.dicebear.com/7.x/initials/svg?seed=${group.name}`}
-                              alt={group.name}
-                              className="w-10 h-10 rounded-full"
-                            />
-                            <div>
-                              <p className="text-sm font-medium text-gray-800 dark:text-white">
-                                {toTitleCase(group.name)}
-                              </p>
+                        const selected = selectedSlotByTeacher[group.teacherId] || group.slots[0] || null;
+                        return (
+                          <motion.div
+                            key={group.teacherId}
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                            transition={{ duration: 0.25 }}
+                            className="flex items-center justify-between py-4 px-2 border-b-2 dark:border-[#5c5c5c]"
+                          >
+                            {/* Left Side */}
+                            <div className="flex items-center gap-4">
+                              <img
+                                src={`https://api.dicebear.com/7.x/initials/svg?seed=${group.name}`}
+                                alt={group.name}
+                                className="w-10 h-10 rounded-full"
+                              />
+                              <div>
+                                <p className="text-sm font-medium text-gray-800 dark:text-white">
+                                  {toTitleCase(group.name)}
+                                </p>
+                              </div>
                             </div>
-                          </div>
 
-                          {/* Right Side */}
-                          <div className="flex items-center gap-2 relative">
-                            <button
-                              onClick={() => setOpenDropdownFor((prev) => (prev === group.teacherId ? null : group.teacherId))}
-                              className="flex items-center gap-2 border border-gray-200 dark:border-[#5c5c5c] bg-gray-100 dark:bg-[#4a4a4a] hover:bg-gray-200 dark:hover:bg-[#5a5a5a] rounded-full pl-2 pr-3 py-1 transition"
-                            >
-                              <span className="inline-flex items-center gap-1 text-[12px] font-medium text-gray-700 dark:text-gray-100 bg-white dark:bg-[#3f3f3f] border border-gray-200 dark:border-[#5c5c5c] rounded-full px-2 py-[2px]">
-                                <MdAccessTime className="text-gray-500" />
-                                {selected ? `${selected.fromTime} - ${selected.toTime}` : "Select slot"}
-                              </span>
-                              <MdExpandMore className={`text-gray-600 dark:text-gray-200 transition-transform ${openDropdownFor === group.teacherId ? "rotate-180" : "rotate-0"}`} />
-                            </button>
+                            {/* Right Side */}
+                            <div className="flex items-center gap-2 relative">
+                              <button
+                                onClick={() => setOpenDropdownFor((prev) => (prev === group.teacherId ? null : group.teacherId))}
+                                className="flex items-center gap-2 border border-gray-200 dark:border-[#5c5c5c] bg-gray-100 dark:bg-[#4a4a4a] hover:bg-gray-200 dark:hover:bg-[#5a5a5a] rounded-full pl-2 pr-3 py-1 transition"
+                              >
+                                <span className="inline-flex items-center gap-1 text-[12px] font-medium text-gray-700 dark:text-gray-100 bg-white dark:bg-[#3f3f3f] border border-gray-200 dark:border-[#5c5c5c] rounded-full px-2 py-[2px]">
+                                  <MdAccessTime className="text-gray-500" />
+                                  {selected ? `${selected.fromTime} - ${selected.toTime}` : "Select slot"}
+                                </span>
+                                <MdExpandMore className={`text-gray-600 dark:text-gray-200 transition-transform ${openDropdownFor === group.teacherId ? "rotate-180" : "rotate-0"}`} />
+                              </button>
 
-                            <AnimatePresence>
-                              {openDropdownFor === group.teacherId && (
-                                <motion.div
-                                  initial={{ opacity: 0, y: -6 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: -6 }}
-                                  transition={{ duration: 0.15 }}
-                                  className="absolute right-10 top-full mt-2 w-56 bg-white dark:bg-[#3a3a3a] border border-gray-200 dark:border-[#5c5c5c] rounded-xl shadow-lg z-10 overflow-hidden"
-                                >
-                                  <div className="max-h-64 overflow-y-scroll scrollbar-none py-1">
-                                    {group.slots.map((slot, idx) => {
-                                      const isActive = selected && selected.fromTime === slot.fromTime && selected.toTime === slot.toTime;
-                                      return (
-                                        <div className="rounded-lg mx-1" key={`${group.teacherId}-${idx}`}>
-                                          <button
-                                            onClick={() => {
-                                              setSelectedSlotByTeacher((prev) => ({
-                                                ...prev,
-                                                [group.teacherId]: { fromTime: slot.fromTime, toTime: slot.toTime },
-                                              }));
-                                              setOpenDropdownFor(null);
-                                            }}
-                                            className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between rounded-lg hover:bg-gray-100 dark:hover:bg-[#4a4a4a] ${isActive ? "bg-gray-100 dark:bg-[#4a4a4a]" : ""}`}
-                                          >
-                                            <span className="flex items-center gap-2">
-                                              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-700 dark:text-gray-100 bg-gray-50 dark:bg-[#2f2f2f] border border-gray-200 dark:border-[#5c5c5c] rounded-full px-2 py-[1px]">
-                                                <MdAccessTime className="text-gray-500" />
-                                                {slot.fromTime} - {slot.toTime}
+                              <AnimatePresence>
+                                {openDropdownFor === group.teacherId && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -6 }}
+                                    transition={{ duration: 0.15 }}
+                                    className="absolute right-10 top-full mt-2 w-56 bg-white dark:bg-[#3a3a3a] border border-gray-200 dark:border-[#5c5c5c] rounded-xl shadow-lg z-10 overflow-hidden"
+                                  >
+                                    <div className="max-h-64 overflow-y-scroll scrollbar-none py-1">
+                                      {group.slots.map((slot, idx) => {
+                                        const isActive = selected && selected.fromTime === slot.fromTime && selected.toTime === slot.toTime;
+                                        return (
+                                          <div className="rounded-lg mx-1" key={`${group.teacherId}-${idx}`}>
+                                            <button
+                                              onClick={() => {
+                                                setSelectedSlotByTeacher((prev) => ({
+                                                  ...prev,
+                                                  [group.teacherId]: { fromTime: slot.fromTime, toTime: slot.toTime },
+                                                }));
+                                                setOpenDropdownFor(null);
+                                              }}
+                                              className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between rounded-lg hover:bg-gray-100 dark:hover:bg-[#4a4a4a] ${isActive ? "bg-gray-100 dark:bg-[#4a4a4a]" : ""}`}
+                                            >
+                                              <span className="flex items-center gap-2">
+                                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-700 dark:text-gray-100 bg-gray-50 dark:bg-[#2f2f2f] border border-gray-200 dark:border-[#5c5c5c] rounded-full px-2 py-[1px]">
+                                                  <MdAccessTime className="text-gray-500" />
+                                                  {slot.fromTime} - {slot.toTime}
+                                                </span>
                                               </span>
-                                            </span>
-                                            {isActive && (
-                                              <span className="text-[10px] text-[#576CBC] font-semibold">Selected</span>
-                                            )}
-                                          </button>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
+                                              {isActive && (
+                                                <span className="text-[10px] text-[#576CBC] font-semibold">Selected</span>
+                                              )}
+                                            </button>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
 
-                            <button
-                              onClick={() => {
-                                const chosen = selected || group.slots[0];
-                                if (!chosen) return;
-                                handleTeacherClick({
-                                  teacherId: group.teacherId,
-                                  name: group.name,
-                                  fromTime: chosen.fromTime,
-                                  toTime: chosen.toTime,
-                                  isStatus: true,
-                                } as TeacherSlot);
-                              }}
-                              className="p-1 hover:bg-gray-200 dark:hover:bg-[#5c5c5c] rounded-full transition"
-                            >
-                              <MdOutlineKeyboardArrowRight className="text-xl text-gray-500 dark:text-[#5c5c5c]" />
-                            </button>
-                          </div>
-                        </motion.div>
-                      );
+                              <button
+                                onClick={() => {
+                                  const chosen = selected || group.slots[0];
+                                  if (!chosen) return;
+                                  handleTeacherClick({
+                                    teacherId: group.teacherId,
+                                    name: group.name,
+                                    fromTime: chosen.fromTime,
+                                    toTime: chosen.toTime,
+                                    isStatus: true,
+                                  } as TeacherSlot);
+                                }}
+                                className="p-1 hover:bg-gray-200 dark:hover:bg-[#5c5c5c] rounded-full transition"
+                              >
+                                <MdOutlineKeyboardArrowRight className="text-xl text-gray-500 dark:text-[#5c5c5c]" />
+                              </button>
+                            </div>
+                          </motion.div>
+                        );
                       };
 
                       return (

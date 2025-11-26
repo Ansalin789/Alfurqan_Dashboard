@@ -103,6 +103,9 @@ const Totalstudents = () => {
     fetchStudents();
   }, []);
 
+  const uniqueClassTypes = Array.from(new Set(students.map(s => s.studentDetails.classType)));
+
+
   // Filter students based on search term + filters
   const filteredStudents = students.filter((student) => {
     const q = searchTerm.trim().toLowerCase();
@@ -244,7 +247,7 @@ const Totalstudents = () => {
                       <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                     </button>
 
-                    <h3 className="text-lg font-semibold mb-4">Filter by</h3>
+                    <h3 className="text-[16px] font-semibold mb-4">Filter by</h3>
 
                     <div className="grid grid-cols-1 gap-4">
                       {/* Student ID */}
@@ -252,7 +255,7 @@ const Totalstudents = () => {
                         <label className="text-sm block mb-1">Student ID</label>
                         <input
                           type="text"
-                          className="w-full p-2 border rounded bg-transparent dark:bg-[#343434]"
+                          className="w-full text-xs px-3 py-2 dark:border-[#5c5c5c] border rounded bg-transparent dark:bg-[#343434]"
                           placeholder="Enter student ID"
                           value={filters.studentId}
                           onChange={(e) =>
@@ -265,7 +268,7 @@ const Totalstudents = () => {
                       <div>
                         <label className="text-sm block mb-1">Select Student</label>
                         <select
-                          className="w-full dark:bg-[#343434] p-2 border rounded bg-transparent"
+                          className="w-full dark:bg-[#343434] text-xs px-3 py-2 dark:border-[#5c5c5c] border rounded bg-transparent"
                           value={filters.studentName}
                           onChange={(e) =>
                             setFilters((s) => ({ ...s, studentName: e.target.value }))
@@ -284,7 +287,7 @@ const Totalstudents = () => {
                       <div>
                         <label className="text-sm block mb-1">Select Course</label>
                         <select
-                          className=" dark:bg-[#343434] w-full p-2 border rounded bg-transparent"
+                          className=" dark:bg-[#343434] w-full text-xs px-3 py-2 dark:border-[#5c5c5c] border rounded bg-transparent"
                           value={filters.courseName}
                           onChange={(e) =>
                             setFilters((s) => ({ ...s, courseName: e.target.value }))
@@ -302,30 +305,20 @@ const Totalstudents = () => {
                       {/* Class Type */}
                       <div>
                         <label className="text-sm block mb-1">Class Type</label>
-                        <input
-                          type="text"
-                          className="w-full p-2 border rounded bg-transparent dark:bg-[#343434]"
-                          placeholder="e.g. Online"
+                        <select
+                        name="classType"
+                          className="w-full text-xs px-3 py-2 dark:border-[#5c5c5c] border rounded bg-transparent dark:bg-[#343434]"
                           value={filters.classType}
                           onChange={(e) =>
                             setFilters((s) => ({ ...s, classType: e.target.value }))
                           }
-                        />
+                          >
+                            <option value=""> Select Class Type</option>
+                            {uniqueClassTypes.map((type, i) => (
+      <option key={i} value={type}>{type}</option>
+    ))}
+                        </select>
                       </div>
-
-                      {/* Level */}
-                      {/* <div>
-                        <label className="text-sm block mb-1">Level</label>
-                        <input
-                          type="text"
-                          className="w-full p-2 border rounded bg-transparent dark:bg-[#343434]"
-                          placeholder="e.g. Beginner"
-                          value={filters.level}
-                          onChange={(e) =>
-                            setFilters((s) => ({ ...s, level: e.target.value }))
-                          }
-                        />
-                      </div> */}
 
                       {/* Date range */}
                       <div className="grid grid-cols-2 gap-3">
@@ -333,7 +326,7 @@ const Totalstudents = () => {
                           <label className="text-sm block mb-1">From Date</label>
                           <input
                             type="date"
-                            className="w-full dark:bg-[#343434] p-2 border rounded bg-transparent [&::-webkit-calendar-picker-indicator]:dark:invert"
+                            className="w-full dark:bg-[#343434] text-xs px-3 py-2 dark:border-[#5c5c5c] border rounded bg-transparent dark:[color-scheme:dark]"
                             value={filters.fromDate}
                             onChange={(e) =>
                               setFilters((s) => ({ ...s, fromDate: e.target.value }))
@@ -344,7 +337,7 @@ const Totalstudents = () => {
                           <label className="text-sm block mb-1">To Date</label>
                           <input
                             type="date"
-                            className="w-full  dark:bg-[#343434] p-2 border rounded bg-transparent [&::-webkit-calendar-picker-indicator]:dark:invert"
+                            className="w-full  dark:bg-[#343434] text-xs px-3 py-2 dark:border-[#5c5c5c] border rounded bg-transparent dark:[color-scheme:dark]"
                             value={filters.toDate}
                             onChange={(e) =>
                               setFilters((s) => ({ ...s, toDate: e.target.value }))
@@ -357,7 +350,7 @@ const Totalstudents = () => {
                       <div>
                         <label className="text-sm block mb-1">Status</label>
                         <select
-                          className="w-full dark:bg-[#343434] p-2 border rounded bg-transparent"
+                          className="w-full dark:bg-[#343434] text-xs px-3 py-2 dark:border-[#5c5c5c] border rounded bg-transparent"
                           value={filters.status}
                           onChange={(e) =>
                             setFilters((s) => ({ ...s, status: e.target.value }))
@@ -371,13 +364,10 @@ const Totalstudents = () => {
                     </div>
 
                     {/* footer */}
-                    <div className="flex items-center justify-between mt-6">
-                      <div className="text-sm text-gray-600 dark:text-gray-300 text-left">
-                        Showing {filteredStudents.length} results
-                      </div>
+                    <div className="flex items-center justify-end mt-6">
                       <div className="flex items-center gap-3">
                         <button
-                          className="px-4 py-2 border rounded text-gray-700 bg-white hover:bg-gray-50"
+                          className="px-3 py-1 text-[12px] rounded-md border border-[#576CBC] text-[#576CBC] font-medium hover:bg-[#EEF1FF] dark:hover:bg-[#343434]"
                           onClick={() =>
                             setFilters({
                               studentId: "",
@@ -394,13 +384,13 @@ const Totalstudents = () => {
                           Reset
                         </button>
                         <button
-                          className="px-4 py-2 bg-indigo-600 text-white rounded"
+                          className="px-3 py-1 text-[12px] rounded-md bg-[#576CBC] text-white font-medium hover:bg-[#455bb1]"
                           onClick={() => {
                             setIsFilterModalOpen(false);
                             setCurrentPage(1);
                           }}
                         >
-                          Show results
+                          Apply
                         </button>
                       </div>
                     </div>
