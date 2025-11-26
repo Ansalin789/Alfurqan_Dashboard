@@ -522,7 +522,7 @@ const TrailManagement = () => {
                     <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                       <tr>
                         {[
-                          { label: "Trail ID" },
+                          { label: "Trial ID" },
                           { label: "Student Name" },
                           { label: "Email" },
                           { label: "Mobile" },

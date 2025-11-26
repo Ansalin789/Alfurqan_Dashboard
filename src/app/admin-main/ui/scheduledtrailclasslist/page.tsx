@@ -257,7 +257,7 @@ const Trailclasslist = () => {
 
   return (
     <BaseLayout4>
-    <AdminHeader currentSection="Scheduled Trail Class" showBackButton showBackPath="trailmanagement"/>
+    <AdminHeader currentSection="Scheduled Trial Class" showBackButton showBackPath="trailmanagement"/>
       <div className="py-2 px-4 mx-auto w-full ">
         <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
           <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">

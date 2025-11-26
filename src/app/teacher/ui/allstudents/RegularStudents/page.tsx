@@ -249,9 +249,8 @@ const RegularStudents = () => {
       const lowerName = filters.studentName.toLowerCase();
       result = result.filter((student) => {
         const studentInfo = student.studentDetails?.student;
-        const fullName = `${studentInfo?.studentFirstName || ""} ${
-          studentInfo?.studentLastName || ""
-        }`.toLowerCase();
+        const fullName = `${studentInfo?.studentFirstName || ""} ${studentInfo?.studentLastName || ""
+          }`.toLowerCase();
         return fullName.includes(lowerName);
       });
     }
@@ -559,8 +558,8 @@ const RegularStudents = () => {
                 q.assignmentType?.toLowerCase() === "image"
                   ? "image identification"
                   : q.assignmentType?.toLowerCase() === "wordmatch"
-                  ? "word match"
-                  : q.assignmentType?.toLowerCase(),
+                    ? "word match"
+                    : q.assignmentType?.toLowerCase(),
               name: q.assignmentType,
             });
           } catch (err) {
@@ -577,16 +576,16 @@ const RegularStudents = () => {
             q.chooseType
               ? "choose"
               : q.trueorfalseType
-              ? "truefalse"
-              : "noOption"
+                ? "truefalse"
+                : "noOption"
           );
           formData.append(
             `${prefix}[typeofQuestion]`,
             q.chooseType
               ? "choose"
               : q.trueorfalseType
-              ? "truefalse"
-              : "noOption"
+                ? "truefalse"
+                : "noOption"
           );
           formData.append(`${prefix}[assignmentName]`, q.assignmentName || "");
           formData.append(`${prefix}[assignmentType]`, assignmentTypeValue);
@@ -819,17 +818,16 @@ const RegularStudents = () => {
 
     const filtered = regularStudents.filter((user) => {
       const studentInfo = user.studentDetails?.student;
-      const fullName = `${studentInfo?.studentFirstName || ""} ${
-        studentInfo?.studentLastName || ""
-      }`.toLowerCase();
+      const fullName = `${studentInfo?.studentFirstName || ""} ${studentInfo?.studentLastName || ""
+        }`.toLowerCase();
       // Check all assignments, not just the first
       const assignmentMatch = user.assignment.some((assignment) =>
-        (
-          assignment.assignmentName?.toLowerCase().includes(lowerQuery) ||
-          assignment.assignmentStatus?.toLowerCase().includes(lowerQuery) ||
-          assignment.assignmentType?.toLowerCase().includes(lowerQuery) ||
-          assignment.title?.toLowerCase().includes(lowerQuery)
-        )
+      (
+        assignment.assignmentName?.toLowerCase().includes(lowerQuery) ||
+        assignment.assignmentStatus?.toLowerCase().includes(lowerQuery) ||
+        assignment.assignmentType?.toLowerCase().includes(lowerQuery) ||
+        assignment.title?.toLowerCase().includes(lowerQuery)
+      )
       );
 
       return (
@@ -899,7 +897,7 @@ const RegularStudents = () => {
       case "Not Completed":
         return "bg-[#FDF6EC] text-[#F0AD4E] dark:bg-[#F0AD4E33] dark:text-[#F0AD4E]";
       case "Not Assigned":
-        return "bg-[#FDECEC] text-[#D34645] dark:text-[#D34645] dark:bg-[#D3464533]" ;
+        return "bg-[#FDECEC] text-[#D34645] dark:text-[#D34645] dark:bg-[#D3464533]";
       case "Assigned":
         return "bg-[#225BAA] text[#225BAA] dark:bg-[#225BAA33] dark:text-[#225BAA]";
       case "Pending":
@@ -913,8 +911,8 @@ const RegularStudents = () => {
   const displayList = isFiltered
     ? filteredStudents
     : searchQuery
-    ? filteredUsers
-    : regularStudents;
+      ? filteredUsers
+      : regularStudents;
   const startIdx = (currentPage - 1) * itemsPerPage;
   const endIdx = startIdx + itemsPerPage;
   const paginatedList = displayList.slice(startIdx, endIdx);
@@ -954,165 +952,172 @@ const RegularStudents = () => {
                       &times;
                     </button>
 
-                    <h2 className="text-lg font-semibold mb-3 dark:text-[#fff]">
-                      Filter Students
+                    <h2 className="text-[16px] font-semibold mb-3 dark:text-[#fff]">
+                      Filter by
                     </h2>
 
                     {/* Scrollable content */}
                     <div className="flex-1 overflow-y-scroll scrollbar-none pr-2">
-                      <div className="mb-3">
-                        <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                          Assignment Id
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                          value={filters.assignmentId}
-                          onChange={(e) =>
-                            setFilters({
-                              ...filters,
-                              assignmentId: e.target.value, // ✅ fixed bug, was assignmentName
-                            })
-                          }
-                        />
-                      </div>
-
-                      <div className="mb-3">
-                        <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                          Assignment Name
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                          value={filters.assignmentName}
-                          onChange={(e) =>
-                            setFilters({
-                              ...filters,
-                              assignmentName: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-
-                      <div className="mb-3">
-                        <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                          Course
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                          value={filters.course}
-                          onChange={(e) =>
-                            setFilters({ ...filters, course: e.target.value })
-                          }
-                        />
-                      </div>
-
-                      <div className="mb-3">
-                        <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                          Level
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                          value={filters.level}
-                          onChange={(e) =>
-                            setFilters({ ...filters, level: e.target.value })
-                          }
-                        />
-                      </div>
-
-                      {/* Assigned Date */}
-                      <div className="mb-3">
-                        <label className="block text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                          Assigned Date
-                        </label>
-                        <div className="flex gap-2">
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Assignment ID */}
+                        <div className="mb-3">
+                          <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                            Assignment Id
+                          </label>
                           <input
-                            type="date"
-                            className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] [&::-webkit-calendar-picker-indicator]:dark:invert"
-                            value={filters.fromDate}
+                            type="text"
+                            className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                            value={filters.assignmentId}
                             onChange={(e) =>
                               setFilters({
                                 ...filters,
-                                fromDate: e.target.value,
-                              })
-                            }
-                          />
-                          <input
-                            type="date"
-                            className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] [&::-webkit-calendar-picker-indicator]:dark:invert"
-                            value={filters.toDate}
-                            onChange={(e) =>
-                              setFilters({ ...filters, toDate: e.target.value })
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      {/* Due Date */}
-                      <div className="mb-3">
-                        <label className="block text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                          Due Date
-                        </label>
-                        <div className="flex gap-2">
-                          <input
-                            type="date"
-                            className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] [&::-webkit-calendar-picker-indicator]:dark:invert"
-                            value={filters.dueFromDate}
-                            onChange={(e) =>
-                              setFilters({
-                                ...filters,
-                                dueFromDate: e.target.value,
-                              })
-                            }
-                          />
-                          <input
-                            type="date"
-                            className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] [&::-webkit-calendar-picker-indicator]:dark:invert"
-                            value={filters.dueToDate}
-                            onChange={(e) =>
-                              setFilters({
-                                ...filters,
-                                dueToDate: e.target.value,
+                                assignmentId: e.target.value,
                               })
                             }
                           />
                         </div>
-                      </div>
 
-                      {/* Status */}
-                      <div className="mb-4">
-                        <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                          Status
-                        </label>
-                        <select
-                          className="w-full border rounded-md p-2 text-[12px] dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                          value={filters.status}
-                          onChange={(e) =>
-                            setFilters({ ...filters, status: e.target.value })
-                          }
-                        >
-                          <option value="">Select status</option>
-                          <option value="Completed">Completed</option>
-                          <option value="Not Completed">Not Completed</option>
-                          <option value="Not Assigned">Not Assigned</option>
-                          <option value="Assigned">Assigned</option>
-                          <option value="Pending">Pending</option>
-                        </select>
+                        {/* Assignment Name */}
+                        <div className="mb-3">
+                          <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                            Assignment Name
+                          </label>
+                          <input
+                            type="text"
+                            className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                            value={filters.assignmentName}
+                            onChange={(e) =>
+                              setFilters({
+                                ...filters,
+                                assignmentName: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+
+                        {/* Course */}
+                        <div className="mb-3">
+                          <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                            Course
+                          </label>
+                          <input
+                            type="text"
+                            className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                            value={filters.course}
+                            onChange={(e) =>
+                              setFilters({ ...filters, course: e.target.value })
+                            }
+                          />
+                        </div>
+
+                        {/* Level */}
+                        <div className="mb-3">
+                          <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                            Level
+                          </label>
+                          <input
+                            type="text"
+                            className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                            value={filters.level}
+                            onChange={(e) =>
+                              setFilters({ ...filters, level: e.target.value })
+                            }
+                          />
+                        </div>
+
+                        {/* Assigned Date (Full Width) */}
+                        <div className="mb-3 col-span-2">
+                          <label className="block text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                            Assigned Date
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="date"
+                              className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                              value={filters.fromDate}
+                              onChange={(e) =>
+                                setFilters({
+                                  ...filters,
+                                  fromDate: e.target.value,
+                                })
+                              }
+                            />
+                            <input
+                              type="date"
+                              className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                              value={filters.toDate}
+                              onChange={(e) =>
+                                setFilters({ ...filters, toDate: e.target.value })
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        {/* Due Date (Full Width) */}
+                        <div className="mb-3 col-span-2">
+                          <label className="block text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                            Due Date
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="date"
+                              className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                              value={filters.dueFromDate}
+                              onChange={(e) =>
+                                setFilters({
+                                  ...filters,
+                                  dueFromDate: e.target.value,
+                                })
+                              }
+                            />
+                            <input
+                              type="date"
+                              className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                              value={filters.dueToDate}
+                              onChange={(e) =>
+                                setFilters({
+                                  ...filters,
+                                  dueToDate: e.target.value,
+                                })
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        {/* Status */}
+                        <div className="mb-4 col-span-2">
+                          <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                            Status
+                          </label>
+                          <select
+                            className="w-full border rounded-md p-2 text-[12px] dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
+                            value={filters.status}
+                            onChange={(e) =>
+                              setFilters({ ...filters, status: e.target.value })
+                            }
+                          >
+                            <option value="">Select status</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Not Completed">Not Completed</option>
+                            <option value="Not Assigned">Not Assigned</option>
+                            <option value="Assigned">Assigned</option>
+                            <option value="Pending">Pending</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
+
 
                     {/* Footer fixed at bottom */}
                     <div className="flex justify-end gap-3 pt-3 border-t dark:border-[#444]">
                       <button
                         onClick={handleResetFilters}
-                        className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium dark:text-[#576CBC] dark:border-[#576CBC]"
+                        className="px-3 text-[12px] py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium dark:text-[#576CBC] dark:border-[#576CBC]"
                       >
                         Reset
                       </button>
                       <button
-                        className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                        className="px-3 text-[12px] py-1 rounded-md bg-[#576CBC] text-white font-medium"
                         onClick={handleApplyFilters}
                       >
                         Apply Filters
@@ -1127,8 +1132,8 @@ const RegularStudents = () => {
                   {isFiltered
                     ? filteredStudents.length
                     : searchQuery
-                    ? filteredUsers.length
-                    : regularStudents.length}{" "}
+                      ? filteredUsers.length
+                      : regularStudents.length}{" "}
                   of {regularStudents.length}{" "}
                 </span>
               </div>
@@ -1172,11 +1177,10 @@ const RegularStudents = () => {
                     return (
                       <tr
                         key={modalIdNoAssignment}
-                        className={`text-[12px] ${
-                          studentIndex % 2 === 0
+                        className={`text-[12px] ${studentIndex % 2 === 0
                             ? "bg-white dark:bg-[#2C2C2C]"
                             : "bg-[#F8F8F8] dark:bg-[#303030]"
-                        }`}
+                          }`}
                       >
                         <td className="px-3 py-2 break-words">
                           {student?.studentId}
@@ -1233,15 +1237,14 @@ const RegularStudents = () => {
                                   )
                                 }
                               >
-                               Admin Assign
+                                Admin Assign
                               </button>
                               <button
                                 className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
                                 onClick={() => {
                                   setStudentId(student.studentId);
                                   setStudentName(
-                                    `${studentInfo?.studentFirstName ?? ""} ${
-                                      studentInfo?.studentLastName ?? ""
+                                    `${studentInfo?.studentFirstName ?? ""} ${studentInfo?.studentLastName ?? ""
                                     }`
                                   );
                                   setSessionClassType(
@@ -1413,11 +1416,10 @@ const RegularStudents = () => {
                       return (
                         <tr
                           key={`${student.studentId}-${assignIndex}`}
-                          className={`text-[12px] ${
-                            studentIndex % 2 === 0
+                          className={`text-[12px] ${studentIndex % 2 === 0
                               ? "bg-white dark:bg-[#2C2C2C]"
                               : "bg-[#F8F8F8] dark:bg-[#303030]"
-                          }`}
+                            }`}
                         >
                           <td className="px-3 py-2 break-words">
                             {student?.studentId}
@@ -1448,7 +1450,7 @@ const RegularStudents = () => {
                             <span
                               className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle(
                                 assignmentItem?.assignmentStatus ||
-                                  assignmentItem?.status
+                                assignmentItem?.status
                               )}`}
                             >
                               {assignmentItem?.assignmentStatus ||
@@ -1493,17 +1495,15 @@ const RegularStudents = () => {
                                           onClick={() => {
                                             setStudentId(student.studentId);
                                             setStudentName(
-                                              `${
-                                                studentInfo?.studentFirstName ??
-                                                ""
-                                              } ${
-                                                studentInfo?.studentLastName ??
-                                                ""
+                                              `${studentInfo?.studentFirstName ??
+                                              ""
+                                              } ${studentInfo?.studentLastName ??
+                                              ""
                                               }`
                                             );
                                             setSessionClassType(
                                               studentDetails?.classType ??
-                                                "REGULARCLASS"
+                                              "REGULARCLASS"
                                             );
                                             setAssignedTeacher(
                                               studentDetails?.teacher
@@ -1532,7 +1532,7 @@ const RegularStudents = () => {
                                             )
                                           }
                                         >
-                                         Admin Assign
+                                          Admin Assign
                                         </button>
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
@@ -1587,24 +1587,22 @@ const RegularStudents = () => {
                                             )
                                           }
                                         >
-                                         Admin Assign
+                                          Admin Assign
                                         </button>
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
                                           onClick={() => {
                                             setStudentId(student.studentId);
                                             setStudentName(
-                                              `${
-                                                studentInfo?.studentFirstName ??
-                                                ""
-                                              } ${
-                                                studentInfo?.studentLastName ??
-                                                ""
+                                              `${studentInfo?.studentFirstName ??
+                                              ""
+                                              } ${studentInfo?.studentLastName ??
+                                              ""
                                               }`
                                             );
                                             setSessionClassType(
                                               studentDetails?.classType ??
-                                                "REGULARCLASS"
+                                              "REGULARCLASS"
                                             );
                                             setAssignedTeacher(
                                               studentDetails?.teacher
@@ -1859,11 +1857,10 @@ const RegularStudents = () => {
                     {adminAssignmentList.map((assignment) => (
                       <div
                         key={assignment.assignmentId}
-                        className={`flex items-center justify-between p-4 rounded-lg border dark:border-gray-700 transition ${
-                          selectedAssignments.includes(assignment.assignmentId)
+                        className={`flex items-center justify-between p-4 rounded-lg border dark:border-gray-700 transition ${selectedAssignments.includes(assignment.assignmentId)
                             ? "bg-green-100 dark:bg-green-900"
                             : "bg-white dark:bg-[#262626]"
-                        }`}
+                          }`}
                       >
                         <div>
                           <p className="font-medium">

@@ -150,7 +150,7 @@ const NextTrailSession = () => {
         </div>
 
         {/* Message */}
-          <p className="float-text text-sm sm:text-base font-medium">Trail class for now 📚 No classes ahead</p>
+          <p className="float-text text-sm sm:text-base font-medium">Trial class for now 📚 No classes ahead</p>
 
         {/* Scoped animations */}
         <style jsx>{`

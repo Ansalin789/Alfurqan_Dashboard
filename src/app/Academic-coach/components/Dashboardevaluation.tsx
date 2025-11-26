@@ -87,7 +87,7 @@ const StudentEvaluation = () => {
       <table className="w-full">
         <thead>
           <tr className="text-center border-b text-[11px] font-semibold">
-            <th className="p-1">Trail</th>
+            <th className="p-1">Trial</th>
             <th className="p-1">Name</th>
             <th className="p-1">Mobile</th>
             <th className="p-1">Country</th>

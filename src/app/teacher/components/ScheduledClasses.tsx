@@ -382,7 +382,7 @@ const ScheduledClasses = () => {
     const lowerQuery = query.toLowerCase();
 
     const filtered = dataToShow.filter((item) => {
-      const isTrial = item.classType === "Trail class" || (item as any).isTrial;
+      const isTrial = item.classType === "Trial class" || (item as any).isTrial;
 
       // Date fields as shown in UI
       const classDate = isTrial
@@ -599,7 +599,7 @@ const ScheduledClasses = () => {
               <tbody>
                 {currentItems.length > 0 ? (
                   currentItems.map((item, index) => {
-                    const isTrial = item.classType === "Trail class" || item.isTrial;
+                    const isTrial = item.classType === "Trial class" || item.isTrial;
 
                     // Get the appropriate date
                     const classDate = isTrial ?
@@ -760,10 +760,16 @@ const ScheduledClasses = () => {
       <Modal
         isOpen={isFilterModalOpen}
         onRequestClose={() => setIsFilterModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white  dark:bg-[#343434] w-[650px] "
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white dark:bg-[#252525] w-[650px] "
         overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-40"
       >
         <div>
+          <button
+              className="absolute top-2 right-3 text-gray-400 text-xl"
+              onClick={() => setIsFilterModalOpen(false)}
+            >
+              &times;
+            </button>
           <h2 className="text-[16px] font-semibold mb-6 text-[#2D2D2D] dark:text-white">
             Filter by
           </h2>
@@ -774,7 +780,7 @@ const ScheduledClasses = () => {
                 Student
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-whited text-[#5C5C5C] dark:border-[#5C5C5C]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs dark:bg-[#343434] dark:text-whited dark:border-[#5C5C5C]"
                 value={filters.studentName}
                 onChange={(e) =>
                   setFilters({ ...filters, studentName: e.target.value })
@@ -793,7 +799,7 @@ const ScheduledClasses = () => {
                 Course
               </label>
               <select
-                className="w-full px-3 py-2 border text-[#5C5C5C] border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                className="w-full px-3 py-2 border text-[#5C5C5C] border-gray-300 rounded-lg text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
                 value={filters.courseName}
                 onChange={(e) =>
                   setFilters({ ...filters, courseName: e.target.value })
@@ -812,11 +818,10 @@ const ScheduledClasses = () => {
               </label>
               <input
                 type="date"
-                className="w-full px-3 py-2 border rounded-lg text-sm 
+                className="w-full px-3 py-2 border rounded-lg text-xs 
               text-[#5C5C5C] dark:text-white 
                bg-white dark:bg-[#343434] 
-               border-gray-300 dark:border-[#5C5C5C]
-               [&::-webkit-calendar-picker-indicator]:dark:invert"
+               border-gray-300 dark:border-[#5C5C5C] dark:[color-scheme:dark]"
                 value={filters.fromDate}
                 onChange={(e) =>
                   setFilters({ ...filters, fromDate: e.target.value })
@@ -830,11 +835,10 @@ const ScheduledClasses = () => {
               </label>
               <input
                 type="date"
-                className="w-full px-3 py-2 border rounded-lg text-sm 
+                className="w-full px-3 py-2 border rounded-lg text-xs 
               text-[#5C5C5C] dark:text-white 
                bg-white dark:bg-[#343434] 
-               border-gray-300 dark:border-[#5C5C5C]
-               [&::-webkit-calendar-picker-indicator]:dark:invert"
+               border-gray-300 dark:border-[#5C5C5C] dark:[color-scheme:dark]"
                 value={filters.toDate}
                 onChange={(e) =>
                   setFilters({ ...filters, toDate: e.target.value })
@@ -846,7 +850,7 @@ const ScheduledClasses = () => {
                 Status
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] text-[#5C5C5C] dark:text-white dark:border-[#5C5C5C]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs dark:bg-[#343434] text-[#5C5C5C] dark:text-white dark:border-[#5C5C5C]"
                 value={filters.scheduleStatus}
                 onChange={(e) =>
                   setFilters({ ...filters, scheduleStatus: e.target.value })
@@ -862,7 +866,7 @@ const ScheduledClasses = () => {
           <div className="flex justify-end gap-3">
             <button
               onClick={handleResetFilters}
-              className="px-5 py-2 border border-[#576CBC] text-[#576CBC] bg-white rounded-lg text-sm font-medium hover:bg-[#f6f8ff]"
+              className="px-3 py-1 text-[12px] rounded-md border border-[#576CBC] text-[#576CBC] font-medium hover:bg-[#EEF1FF] dark:hover:bg-[#343434]"
             >
               Reset
             </button>
@@ -871,9 +875,9 @@ const ScheduledClasses = () => {
                 handleApplyFilters();
                 setIsFilterModalOpen(false);
               }}
-              className="px-5 py-2 bg-[#576CBC] text-white rounded-lg text-sm font-medium hover:bg-[#475ab1]"
+              className="px-3 text-[12px] py-1 bg-[#576CBC] text-white rounded-md font-medium hover:bg-[#475ab1]"
             >
-              Show {filteredClasses.length} results
+              Apply
             </button>
           </div>
         </div>

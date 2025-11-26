@@ -726,7 +726,7 @@ function LiveClass() {
 
   return (
     <BaseLayout>
-      <TeacherHeader currentSection="Trail class" />
+      <TeacherHeader currentSection="Trial class" />
 <div className="min-h-screen grid grid-rows-10 gap-4 "> 
    {isFormData ? (
     <>

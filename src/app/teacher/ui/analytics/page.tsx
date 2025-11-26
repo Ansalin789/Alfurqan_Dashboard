@@ -740,12 +740,12 @@ function Analytics() {
 
                           {/* Class Type */}
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
-                               {(() => {
-                            const val = schedule.studentDetails.classType
-                            return val
-                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
-                              : "-";
-                          })()}
+                            {(() => {
+                              const val = schedule.studentDetails.classType
+                              return val
+                                ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                                : "-";
+                            })()}
                           </td>
 
                           {/* Joined Date */}
@@ -929,7 +929,7 @@ function Analytics() {
 
             <div className="flex justify-end">
               <button
-                className=" mt-4 text-[#576CBC] border border-[#576CBC] bg-[#fff] rounded-md px-4 py-2 text-sm font-medium hover:bg-[#dbe2f3] transition duration-200 dark:bg-[#2E3343]"
+                className=" mt-4 text-[12px] text-[#576CBC] border border-[#576CBC] bg-[#fff] rounded-md px-3 py-1 font-medium hover:bg-[#dbe2f3] transition duration-200 dark:bg-[#2E3343]"
                 onClick={() => {
                   if (activeView === "students") {
                     router.push("/teacher/ui/analytics/totalstudents");
@@ -960,7 +960,7 @@ function Analytics() {
                   &times;
                 </button>
 
-                <h2 className="text-lg font-semibold mb-5 dark:text-white">
+                <h2 className="text-[16px] font-semibold mb-5 dark:text-white">
                   Filter by
                 </h2>
 
@@ -970,7 +970,7 @@ function Analytics() {
                     Course Name
                   </label>
                   <select
-                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] text-gray-400"
+                    className="w-full px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] text-gray-400"
                     value={filters.courseName}
                     onChange={(e) =>
                       setFilters({ ...filters, courseName: e.target.value })
@@ -993,7 +993,7 @@ function Analytics() {
                     Student Name
                   </label>
                   <select
-                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] text-gray-400"
+                    className="w-full px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] text-gray-400"
                     value={filters.studentName}
                     onChange={(e) =>
                       setFilters({ ...filters, studentName: e.target.value })
@@ -1016,7 +1016,7 @@ function Analytics() {
                     Class Type
                   </label>
                   <select
-                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] text-gray-400"
+                    className="w-full px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] text-gray-400"
                     value={filters.classType}
                     onChange={(e) =>
                       setFilters({ ...filters, classType: e.target.value })
@@ -1037,7 +1037,7 @@ function Analytics() {
                 <div className="mb-4">
                   <label
                     htmlFor="timimg"
-                    className="block text-sm text-gray-700 mb-1 dark:text-white"
+                    className="block text-sm mb-1 dark:text-[#D6D6D6]"
                   >
                     Timing
                   </label>
@@ -1047,7 +1047,7 @@ function Analytics() {
                       setFilters({ ...filters, time: e.target.value })
                     }
                     type="time"
-                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-400 placeholder:opacity-60"
+                    className="w-full mb-4 py-2 border dark:border-[#5c5c5c] dark:bg-[#343434] dark:text-white rounded p-1 text-xs  [&::-webkit-calendar-picker-indicator]:dark:invert"
                     placeholder="Select Time"
                   />
                 </div>
@@ -1060,7 +1060,7 @@ function Analytics() {
                   <div className="flex gap-2">
                     <input
                       type="date"
-                      className="w-1/2 px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] placeholder:text-gray-400 placeholder:opacity-80"
+                      className="w-1/2 px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] placeholder:text-gray-400 placeholder:opacity-80 [&::-webkit-calendar-picker-indicator]:dark:invert"
                       value={filters.fromDate}
                       onChange={(e) =>
                         setFilters({ ...filters, fromDate: e.target.value })
@@ -1069,7 +1069,7 @@ function Analytics() {
                     />
                     <input
                       type="date"
-                      className="w-1/2 px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] placeholder:text-gray-600 "
+                      className="w-1/2 px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] placeholder:text-gray-600 [&::-webkit-calendar-picker-indicator]:dark:invert"
                       value={filters.toDate}
                       onChange={(e) =>
                         setFilters({ ...filters, toDate: e.target.value })
@@ -1083,13 +1083,13 @@ function Analytics() {
                 <div className="flex justify-end gap-3">
                   <button
                     onClick={handleResetFilters}
-                    className="px-4 py-2 rounded-md border border-[#576CBC] text-[#576CBC] font-medium hover:bg-[#EEF1FF] dark:hover:bg-[#343434]"
+                    className="px-3 py-1 text-[12px] rounded-md border border-[#576CBC] text-[#576CBC] font-medium hover:bg-[#EEF1FF] dark:hover:bg-[#343434]"
                   >
                     Reset
                   </button>
                   <button
                     onClick={handleApplyFilters}
-                    className="px-4 py-2 rounded-md bg-[#576CBC] text-white font-medium hover:bg-[#455bb1]"
+                    className="px-3 py-1 text-[12px] rounded-md bg-[#576CBC] text-white font-medium hover:bg-[#455bb1]"
                   >
                     Apply
                   </button>

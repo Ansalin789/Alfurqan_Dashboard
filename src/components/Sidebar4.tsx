@@ -23,7 +23,7 @@ const SidebarItems = [
     icon: MdBookmarks,
     subItems: [
       { name: 'Trial Class', href: '/admin-main/ui/evaluations' },
-      { name: 'Scheduled Trail class', href: '/admin-main/ui/trailmanagement' },
+      { name: 'Scheduled Trial class', href: '/admin-main/ui/trailmanagement' },
     ],
   },
   { name: 'Manage Students', href: '/admin-main/ui/student', icon: '/assets/images/local-library.png' },

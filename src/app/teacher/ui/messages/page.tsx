@@ -105,10 +105,21 @@ const Message = () => {
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [messageCount, setMessageCount] = useState<number>(0);
+    const [userName, setUserName] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
  const [academicCoaches, setAcademicCoaches] = useState<IUser[]>([]);
   const [userStatus, setUserStatus] = useState<string>("inactive");
   
+    useEffect(() => {
+      // setIsClient(true);
+      const name = localStorage.getItem("TeacherPortalName");
+      const id = localStorage.getItem("TeacherPortalId");
+      setUserName(
+  name ? name.charAt(0).toUpperCase() + name.slice(1).toLowerCase() : ""
+);
+
+      // setUserId(id);
+    }, []);
   let userId: string | null = null;
 
   if (typeof window !== "undefined") {
@@ -396,11 +407,10 @@ const Message = () => {
               </motion.div>
               <div>
                 <div className="flex">
-                  <h3 className="text-sm font-semibold dark:text-white text-[#374557]">
-                  Teacher{" "}
+                  <h3 className="text-[18px] font-semibold text-[#010E30] dark:text-[#fff]">
+                  {userName}{" "}
                   </h3>
-                  <button className="ml-[1px] text-gray-500">
-                    <Bell size={16} className="text-white" />
+                  <button className="ml-2 text-gray-500">
                     {messageCount > 0 && (
                       <span className=" -mt-7 bg-red-600 text-white text-[8px] rounded-full h-3 w-3 flex items-center justify-center animate-pulse">
                         {messageCount}
@@ -409,7 +419,7 @@ const Message = () => {
                   </button>
                 </div>
 
-                <p className="text-xs dark:text-[#FFFFFF99] text-gray-400">Administrator</p>
+                <p className="text-xs dark:text-[#FFFFFF99] text-gray-400">Teacher</p>
               </div>
             </div>
 

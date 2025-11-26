@@ -1340,7 +1340,7 @@ const Step6 = ({
   updatedStudentData.learningInterest === "Islamic Studies"
     ? "Islamic Teacher"
     : `${updatedStudentData.learningInterest} Teacher`;
-    console.log("📤 Sending academicTrailClassTeacherListRequest");
+    console.log("📤 Sending academicTrialClassTeacherListRequest");
     console.log("📤 Sending with payload:", {
       startDate: trailStartDate,
       from: fromTime,
@@ -1497,7 +1497,7 @@ const Step6 = ({
       <div className={`relative z-10 w-full max-w-4xl `}>
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl">
           <div className="flex items-center  mb-5">
-            <h2 className="text-[18px] font-medium text-white">Trail Class</h2>
+            <h2 className="text-[18px] font-medium text-white">Trial Class</h2>
           </div>
           <div className="flex flex-wrap gap-4 justify-between items-center">
             <div className="flex items-center gap-2">

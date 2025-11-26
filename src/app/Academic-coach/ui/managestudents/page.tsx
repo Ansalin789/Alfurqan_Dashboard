@@ -489,7 +489,7 @@ const ManageStudents = () => {
                   <option value="">Select Class Type</option>
                   <option value="REGULAR">Regular Class</option>
                   <option value="GROUP">Group Class</option>
-                  <option value="TRAIL">Trail Class</option>
+                  <option value="TRAIL">Trial Class</option>
                 </select>
               </div>
               <div>

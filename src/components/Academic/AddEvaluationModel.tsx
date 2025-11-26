@@ -251,7 +251,7 @@ gardianLanguage: '',
         <div className="flex justify-between items-center mb-4 pb-2 border-gray-100">
           <div>
             <h2 className="text-[18px] font-bold bg-gradient-to-r from-[#415075] via-[#1e273c] to-[#1e273c] text-transparent bg-clip-text">
-              {isEditMode ? 'Edit Student' : 'Add Trail Student'}
+              {isEditMode ? 'Edit Student' : 'Add Trial Student'}
             </h2>
           </div>
           <div className="flex items-center gap-4">

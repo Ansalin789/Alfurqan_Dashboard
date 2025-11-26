@@ -714,7 +714,7 @@ const TeacherDetails = () => {
                   <option value="">Select Class Type</option>
                   <option value="Online">Regular</option>
                   <option value="Offline">Group</option>
-                  <option value="Offline">Trail</option>
+                  <option value="Offline">Trial</option>
                 </select>
               </div>
               <div>

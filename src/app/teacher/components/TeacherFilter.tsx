@@ -261,7 +261,7 @@ const TeacherFilter = () => {
       timing: "",
     });
     setFilteredMeetings(dataToShow);
-    setShowMeetingFilterModal(false);
+    // setShowMeetingFilterModal(false);
   };
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -400,23 +400,23 @@ const TeacherFilter = () => {
                   key={item._id}
                   className="text-[12px] odd:bg-white even:bg-[#F8F8F8] dark:odd:bg-[#2C2C2C] dark:even:bg-[#303030]"
                 >
-                  <td className="px-3 py-2 text-[#3D8FDE] font-medium">
+                  <td className="px-4 py-2 text-[#3D8FDE] font-medium">
                     {item.meetingId}
                   </td>
-                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                  <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
                     {item.meetingName}
                   </td>
-                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                  <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
                     {new Date(item.selectedDate).toLocaleDateString("en-US", {
                       month: "short",
                       day: "2-digit",
                       year: "numeric",
                     })}
                   </td>
-                  <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
+                  <td className="px-4 py-2 text-left w-[180px] break-words whitespace-normal">
                     {item.startTime}
                   </td>
-                  <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[180px] break-words whitespace-normal">
+                  <td className="px-4 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[180px] break-words whitespace-normal">
                     <span
                       className={`px-2 font-semibold text-[10px] text-center py-[3px] rounded-md ${
                         item.meetingStatus === "Scheduled"
@@ -429,7 +429,7 @@ const TeacherFilter = () => {
                       {(item.meetingStatus || "UNKNOWN").toUpperCase()}
                     </span>
                   </td>
-                  <td className="px-3 py-2 relative ">
+                  <td className="px-4 py-2 relative ">
                     {item.meetingStatus === "Scheduled" ||
                     item.meetingStatus === "Rescheduled" ? (
                       <div className="relative inline-block text-left">
@@ -500,7 +500,7 @@ const TeacherFilter = () => {
             >
               &times;
             </button>
-            <h2 className="text-lg font-semibold mb-4">Filter by</h2>
+            <h2 className="text-[16px] font-semibold mb-4">Filter by</h2>
             <div className="mb-4">
               <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
                 Meeting Name
@@ -577,21 +577,21 @@ const TeacherFilter = () => {
                 <option value="">Select status</option>
                 <option value="Scheduled">Scheduled</option>
                 <option value="Rescheduled">Rescheduled</option>
-                {/* <option value="Completed">Completed</option> */}
+                <option value="Completed">Completed</option>
               </select>
             </div>
             <div className="flex justify-end gap-3">
               <button
                 onClick={handleResetMeetingFilters}
-                className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+                className="px-3 py-1 text-[12px] rounded-md border border-[#576CBC] text-[#576CBC] font-medium hover:bg-[#EEF1FF] dark:hover:bg-[#343434]"
               >
                 Reset
               </button>
               <button
-                className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                className="px-3 py-1 text-[12px] rounded-md bg-[#576CBC] text-white font-medium hover:bg-[#455bb1]"
                 onClick={handleApplyMeetingFilters}
               >
-                Show {filteredMeetings.length} results
+                Apply
               </button>
             </div>
           </div>

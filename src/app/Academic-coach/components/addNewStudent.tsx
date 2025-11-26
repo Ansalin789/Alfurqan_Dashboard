@@ -1104,7 +1104,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
               <div className="p-8 border-[#576CBC] border rounded-md">
                 <div className="flex items-center mb-5">
                   <h2 className="text-[18px] font-medium text-gray-900 dark:text-gray-100">
-                    Trail Class
+                    Trial Class
                   </h2>
                 </div>
 
