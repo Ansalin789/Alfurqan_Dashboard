@@ -62,15 +62,6 @@ interface Course {
   courseName: string;
 }
 
-interface ClassData {
-  course: {
-    courseName: string;
-  };
-  package: string;
-  startDate: string;
-  startTime: string[];
-  endTime: string[];
-}
 
 interface Teacher {
   _id: string;

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
-  CardElement,
   useElements,
   useStripe,
   CardNumberElement,
@@ -24,9 +23,7 @@ const stripePromise = loadStripe(
   "pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE"
 );
 
-type StripePaymentFormProps = {
-  onPaymentSuccess: (token: any) => void;
-};
+
 interface Student {
   studentId: string;
   studentName: string;
@@ -60,15 +57,7 @@ interface Invoice {
   payments?: { amount: number; date: string }[]; // Added payments array
 }
 
-interface InvoiceResponse {
-  totalCount: number;
-  invoice: Invoice[];
-}
 
-interface StudentInvoiceByIdResponse {
-  count: number;
-  data: Invoice[];
-}
 
 interface CheckoutFormProps {
   clientSecret: string;
@@ -126,18 +115,13 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
   invoiceId,
   amount,
   currency,
-  selectedInvoice,
   downloadInvoice,
 }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [paymentStatus, setPaymentStatus] = useState<
-    null | "succeeded" | "failed"
-  >(null);
-  const [paymentDetails, setPaymentDetails] = useState<any>(null);
-  const [isDark, setIsDark] = useState(false);
+   const [isDark, setIsDark] = useState(false);
   const [cardBrand, setCardBrand] = useState("unknown");
   const [zip, setZip] = useState("");
 
@@ -185,7 +169,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
 
     if (error) {
       setMessage(error.message ?? "Payment failed.");
-      setPaymentStatus("failed");
     } else if (paymentIntent?.status === "succeeded") {
       try {
         const response = await axios.post(
@@ -203,12 +186,10 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
           }
         );
 
-        setPaymentDetails(response.data);
-        setPaymentStatus("succeeded");
+    
         setMessage("Payment successful!");
       } catch (error) {
         setMessage("Payment processing failed.");
-        setPaymentStatus("failed");
       }
     }
 
@@ -296,22 +277,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
           </div>
         </div>
       </div>
-      {/* <div className="mb-4">
-        <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">ZIP Code</label>
-        <input
-          type="text"
-          maxLength={6}
-          pattern="\d{6}"
-          required
-          value={zip}
-          onChange={(e) => {
-            const cleaned = e.target.value.replace(/\D/g, '');
-            setZip(cleaned);
-          }}
-          placeholder="123456"
-          className="w-full border rounded-md px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-[#232323] dark:text-white"
-        />
-      </div> */}
       <button
         type="submit"
         disabled={!stripe || loading}
@@ -470,9 +435,7 @@ const Invoice = () => {
     console.log("[DEBUG] totalprice:", totalprice);
     console.log("[DEBUG] evaluationid:", evaluationid);
 
-    // Set paymentDate to current date/time in ISO format
-    const paymentDate = new Date().toISOString();
-
+ 
     try {
       const response = await axios.post(
         "https://api.blackstoneinfomaticstech.com/student/create-payment-intent",
@@ -624,10 +587,7 @@ const Invoice = () => {
     return calculatedDue < 0 ? 0 : calculatedDue;
   };
 
-  const openFilterModal = () => {
-    setShowFilterModal(true);
-    setShowModal(false); // <-- Add this line
-  };
+ 
 
   // Filtering logic
   const handleFilter = () => {

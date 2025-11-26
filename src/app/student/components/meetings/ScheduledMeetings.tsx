@@ -2,11 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import { MdTune } from "react-icons/md";
-import { MoreVertical, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Modal from "react-modal";
-import { FaEye } from "react-icons/fa";
 import Pagination from "@/components/Pagination";
 import { IoMdClose } from "react-icons/io";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
@@ -72,21 +71,16 @@ const getTeacherName = (teacher: Teacher | Teacher[] | undefined): string => {
 };
 
 const ScheduledMeetings = () => {
-  const router = useRouter();
-
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
-  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-
   const [activeTab, setActiveTab] = useState("upcoming");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-
   const [upcomingClasses, setUpcomingClasses] = useState<StudentMeeting[]>([]);
   const [completedData, setCompletedData] = useState<StudentMeeting[]>([]);
-  const [filteredMeetings, setFilteredMeetings] = useState<StudentMeeting[]>([]);
+  const [filteredMeetings, setFilteredMeetings] = useState<StudentMeeting[]>(
+    []
+  );
 
   // Filter modal state
   const [showMeetingFilterModal, setShowMeetingFilterModal] = useState(false);
@@ -165,7 +159,9 @@ const ScheduledMeetings = () => {
       const participants = Array.isArray(data.participants)
         ? data.participants
         : [data.participants];
-      const found = participants.find((app) => app && app.studentId === studentId);
+      const found = participants.find(
+        (app) => app && app.studentId === studentId
+      );
       if (found) {
         setUpcomingClasses((prev) =>
           prev.some((m) => m.meetingId === data.meetingId)
@@ -255,41 +251,6 @@ const ScheduledMeetings = () => {
     });
     setFilteredMeetings(dataToShow);
     setShowMeetingFilterModal(false);
-  };
-
-  const isStartMeetingNow = (dateStr: string, start: string, end: string) => {
-    const now = new Date();
-    const date = new Date(dateStr);
-    const [startH, startM] = start.split(":").map(Number);
-    const [endH, endM] = end.split(":").map(Number);
-    const startTime = new Date(date);
-    startTime.setHours(startH, startM, 0, 0);
-    const endTime = new Date(date);
-    endTime.setHours(endH, endM, 0, 0);
-    return now >= startTime && now <= endTime;
-  };
-
-  const getMeetingStatusClass = (status: string) => {
-    switch (status) {
-      case "Scheduled":
-        return "bg-[#F0FDF4] text-[#377E36]";
-      case "Rescheduled":
-        return "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white";
-      case "Completed":
-        return "bg-[#ECFDF3] text-[#377E36]";
-      default:
-        return "bg-gray-200 text-gray-700";
-    }
-  };
-
-  const handleViewDetails = (meetingId: string) => {
-    const meeting = filteredMeetings.find((m) => m._id === meetingId);
-    if (meeting) {
-      setSelectedMeetingDetails(meeting);
-      setIsMeetingDetailsModalOpen(true);
-    } else {
-      console.error("Meeting not found:", meetingId);
-    }
   };
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -624,15 +585,6 @@ const ScheduledMeetings = () => {
                   <span className="text-[#4F46E5]">
                     {getTeacherName(selectedMeetingDetails.teacher)}
                   </span>
-                  {/* <span
-                    className={`text-lg ${
-                      selectedMeetingDetails.teacher.attendee === "present"
-                        ? "text-green-600"
-                        : "text-red-500"
-                    }`}
-                  >
-                    {selectedMeetingDetails.teacher.attendee === "present" ? "✔" : "✘"}
-                  </span> */}
                 </div>
               </div>
             </div>

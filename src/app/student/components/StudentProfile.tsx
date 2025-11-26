@@ -204,10 +204,6 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
         console.log("API Response:", response.data);
         setDashboardCounts({
           totalLevel: Number(response.data.totalLevel) || 0,
-          // totalAttendance: Number(response.data.totalAttendance) || 0,
-          // totalClasses: Number(response.data.totalClasses) || 0,
-          // presentCount: 0,
-          // totalDuration: String(response.data.totalDuration) || "0",
         });
       } catch (error) {
         console.error("Error fetching dashboard counts:", error);

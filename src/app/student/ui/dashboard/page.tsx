@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { PieChart, Pie, Cell } from "recharts";
+
 import BaseLayout2 from "../../../../components/BaseLayout2";
 import ApplicationChart from "../../components/Growth";
-import axios from "axios";
 import Subject from "../../components/SubjectCard";
 import CourseOverview from "../../components/CourseOverview";
 import UpcomingTable from "../../components/UpcomingTable";

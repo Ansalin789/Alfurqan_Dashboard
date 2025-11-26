@@ -1,18 +1,14 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { MdTune } from "react-icons/md";
-import { MoreVertical, Search } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Pagination from "@/components/Pagination";
+import React, { useState, useEffect } from "react";
+
+import { useRouter, } from "next/navigation";
 import Modal from "react-modal";
 import StudentHeader from "../../components/StudentHeader";
 import { FcEditImage } from "react-icons/fc";
 
 import Image from "next/image";
-import { IoArrowBackCircleSharp } from "react-icons/io5";
 import BaseLayout2 from "@/components/BaseLayout2";
-import { FaUsers } from "react-icons/fa6";
 import axios from "axios";
 import { X } from "lucide-react";
 
@@ -80,15 +76,11 @@ const Card = ({ title, value, description, image }: CardProps) => (
 );
 
 const StudentProfile = () => {
-  const router = useRouter();
-
-  const [studentRecord, setStudentRecord] = useState<StudentRecord>();
+ 
   const [studentData, setStudentData] = useState<StudentData>();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [formEmail, setFormEmail] = useState("");
   const [formPhone, setFormPhone] = useState("");
-  // const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  // const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   
   interface StudentData {
@@ -118,21 +110,11 @@ const StudentProfile = () => {
     if (studentData) {
       setFormEmail(studentData.student.studentEmail || "");
       setFormPhone(studentData.student.studentPhone?.toString() || "");
-      // setImagePreview(studentData.student.photoUrl || null);
-      // setSelectedImage(null);
       setIsEditModalOpen(true);
     }
   };
 
-  // Handle image selection in modal
-  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (!file) return;
-
-  //   setSelectedImage(file);
-  //   const previewUrl = URL.createObjectURL(file);
-  //   setImagePreview(previewUrl);
-  // };
+ 
 
 
   // Handle save all changes
@@ -200,14 +182,7 @@ const StudentProfile = () => {
   
   
 
-  // Legacy handler for direct file input (kept for backward compatibility)
-  const handleProfileChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    // Open modal instead of directly uploading
-    handleEditClick();
-  };
-
+ 
   useEffect(() => {
     const studentId = localStorage.getItem("StudentPortalId");
 
@@ -281,8 +256,7 @@ const StudentProfile = () => {
   // Add state for dashboard stats
   const [dashboardStats, setDashboardStats] =
     useState<StudentDashboardCounts | null>(null);
-  const [statsLoading, setStatsLoading] = useState(true);
-  const [statsError, setStatsError] = useState<string | null>(null);
+
 
   useEffect(() => {
     // Fetch dashboard stats
@@ -294,8 +268,6 @@ const StudentProfile = () => {
             : null;
         const studentId = localStorage.getItem("StudentPortalId");
         if (!token || !studentId) {
-          setStatsError("Missing student ID or token");
-          setStatsLoading(false);
           return;
         }
         const response = await axios.get<StudentDashboardCounts>(
@@ -310,10 +282,8 @@ const StudentProfile = () => {
         );
         setDashboardStats(response.data);
       } catch (err) {
-        setStatsError("Failed to load stats");
-      } finally {
-        setStatsLoading(false);
-      }
+       console.log("Failed to load stats");
+      } 
     };
     fetchStats();
   }, []);
@@ -530,43 +500,7 @@ const StudentProfile = () => {
 
           {/* Modal Body */}
           <div className="p-6 space-y-6">
-            {/* Update Image Section */}
-            {/* <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-                Update Image
-              </h3>
-              <div className="flex flex-col items-center space-y-4">
-                <div className="relative">
-                  <img
-                    src={
-                      imagePreview ||
-                      studentData?.student?.photoUrl ||
-                      "/assets/images/stportfolio.svg"
-                    }
-                    alt="Profile Preview"
-                    className="w-32 h-32 rounded-full object-cover border-4 border-gray-200 dark:border-gray-700"
-                  />
-                </div>
-                <label
-                  htmlFor="imageUpload"
-                  className="cursor-pointer bg-[#54638C] text-white px-6 py-2 rounded-lg hover:bg-[#445275] transition-colors"
-                >
-                  Choose Image
-                </label>
-                <input
-                  id="imageUpload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageChange}
-                />
-                {selectedImage && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Selected: {selectedImage.name}
-                  </p>
-                )}
-              </div>
-            </div> */}
+          
 
             {/* Divider */}
             <div className="border-t border-gray-200 dark:border-gray-700"></div>

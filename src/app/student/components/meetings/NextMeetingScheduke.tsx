@@ -61,8 +61,6 @@ const NextMeetingSchedule = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isTimeUp, setIsTimeUp] = useState(false);
-const [isMeetingOngoing, setIsMeetingOngoing] = useState(false);
-
   useEffect(() => {
     const fetchMeeting = async () => {
       setLoading(true);
@@ -154,7 +152,6 @@ useEffect(() => {
     if (now < meetingStart) {
       // Before start time
       setIsTimeUp(false);
-      setIsMeetingOngoing(false);
 
       const diff = meetingStart.getTime() - now.getTime();
       const totalSeconds = Math.floor(diff / 1000);
@@ -166,12 +163,10 @@ useEffect(() => {
     } else if (now >= meetingStart && now <= meetingEnd) {
       // During meeting
       setIsTimeUp(true);
-      setIsMeetingOngoing(true);
       setTime({ hours: 0, minutes: 0, seconds: 0 });
     } else {
       // After end time
       setIsTimeUp(false);
-      setIsMeetingOngoing(false);
       setClassData(null); // Hide meeting details
     }
   };
@@ -186,20 +181,9 @@ useEffect(() => {
 
   const handleStartClass = () => {
 router.push(`/student/ui/livemeeting?id=${classData?._id}`);
-    // router.push(`/teacher/livemeeting/${classData?.meetingId}`);
   };
 
   const formatTime = (time: number) => (time < 10 ? `0${time}` : time);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-    return `${day < 10 ? "0" + day : day}.${
-      month < 10 ? "0" + month : month
-    }.${year}`;
-  };
 
   const progress =
     ((time.hours * 3600 + time.minutes * 60 + time.seconds) / (5 * 60 * 60)) *
@@ -224,28 +208,6 @@ router.push(`/student/ui/livemeeting?id=${classData?._id}`);
     return <div className="text-center text-red-500">Error: {error}</div>;
   }
 
-  const isMeetingToday = (meeting: StudentMeeting | null) => {
-    if (!meeting || !meeting.selectedDate) return false;
-    const today = new Date();
-    const meetingDate = new Date(meeting.selectedDate);
-    return (
-      today.getFullYear() === meetingDate.getFullYear() &&
-      today.getMonth() === meetingDate.getMonth() &&
-      today.getDate() === meetingDate.getDate()
-    );
-  };
-
-  // if (!classData || !isMeetingToday(classData)) {
-  //   return (
-  //     <div className="flex flex-col items-center justify-center bg-gradient-to-br from-[#71a1db] to-[#71a1db] rounded-xl shadow p-5 min-h-[90px]">
-  //       <div className="text-3xl mb-1 animate-bounce">✨</div>
-  //       <div className="text-md font-semibold text-blue-50 mb-1">
-  //         No meeting scheduled for today!
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="bg-[#71a1db] rounded-xl shadow flex items-center justify-between text-white">
       <div className="items-center p-2 px-8">
@@ -263,11 +225,7 @@ router.push(`/student/ui/livemeeting?id=${classData?._id}`);
             <p className="text-[13px]">{classData?.startTime}</p>
           </div>
         </div>
-        {/* {classData?.selectedDate && (
-          <p className="text-[13px] mt-2 text-gray-300">
-            Class Date: {formatDate(classData.selectedDate)}
-          </p>
-        )} */}
+       
       </div>
       <div className="flex items-center space-x-2 px-14">
         {isTimeUp ? (

@@ -2,12 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { BiSolidSkipNextCircle } from "react-icons/bi";
-import { IoPlaySkipBackCircle } from "react-icons/io5";
 import { FaStar } from "react-icons/fa";
-import BaseLayout from "@/components/BaseLayout";
-import TeacherHeader from "@/app/teacher/components/TeacherHeader";
-import BaseLayout1 from "@/components/BaseLayout1";
 import WaveSurfer from "wavesurfer.js";
 import StudentHeader from "../../components/StudentHeader";
 import BaseLayout2 from "@/components/BaseLayout2";
@@ -221,13 +216,7 @@ const AudioWavePlayer = ({ audioUrl }: { audioUrl: string }) => {
   );
 };
 
-const calculateStarRating = (score: number, maxScore: number) => {
-  const starCount = 5;
-  const filledStars = Math.round((score / (maxScore || 1)) * starCount);
-  return Array.from({ length: starCount }, (_, i) =>
-    <FaStar key={i} className={i < filledStars ? 'text-[#faab3c]' : 'text-gray-200'} />
-  );
-};
+
 
 const handleBackClick = (currentQuestionIndex: number, setCurrentQuestionIndex: (cb: (prev: number) => number) => void, setSelectedOption: (v: any) => void, setWrittenAnswer: (v: string) => void) => {
   if (currentQuestionIndex > 0) {
@@ -237,12 +226,6 @@ const handleBackClick = (currentQuestionIndex: number, setCurrentQuestionIndex: 
   }
 };
 
-const resetState = (setSelectedOption: (v: any) => void, setWrittenAnswer: (v: string) => void, setSelectedFile: (v: any) => void, setAudioUrl: (v: any) => void) => {
-  setSelectedOption(null);
-  setWrittenAnswer("");
-  setSelectedFile(null);
-  setAudioUrl(null);
-};
 
 const QuizPage = () => {
   const router = useRouter();
@@ -253,7 +236,6 @@ const QuizPage = () => {
   const [quizData, setQuizData] = useState<QuizData[]>([]);
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
@@ -261,7 +243,6 @@ const QuizPage = () => {
   const [writtenAnswer, setWrittenAnswer] = useState("");
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [score, setScore] = useState(0);
   const [isQuizCompleted, setIsQuizCompleted] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const currentQuestion = quizData[currentQuestionIndex];
@@ -509,38 +490,8 @@ const QuizPage = () => {
       fetchAssignments();
     }
   }, [assignmentId]);
-
-  const handleStartRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-
-      mediaRecorder.ondataavailable = (event) => {
-        audioChunks.current.push(event.data);
-      };
-
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks.current, { type: "audio/wav" });
-        const audioURL = URL.createObjectURL(audioBlob);
-        setAudioUrl(audioURL);
-        audioChunks.current = [];
-      };
-
-      mediaRecorder.start();
-      mediaRecorderRef.current = mediaRecorder;
-      setIsRecording(true);
-    } catch (err) {
-      console.error("Error accessing microphone:", err);
-    }
-  };
-
-  const handleStopRecording = () => {
-    mediaRecorderRef.current?.stop();
-    setIsRecording(false);
-  };
   // Add after useState for score
   const [userAnswers, setUserAnswers] = useState<{ [id: string]: string }>({});
-  const [answerResults, setAnswerResults] = useState<{ [id: string]: { userAnswer: string, correctAnswer: string, isCorrect: boolean } }>({});
   const [totalScore, setTotalScore] = useState<number>(0);
   const [backendScore, setBackendScore] = useState<number | null>(null);
   // For multiple choice, true/false, image identification, update userAnswers on option click
@@ -570,10 +521,7 @@ const QuizPage = () => {
     setIsChecked(true);
   };
 
-  const handleFileSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) setSelectedFile(file);
-  };
+ 
 
   const handleWordClick = (word: string) => {
     if (!selectedWords.includes(word)) {
@@ -585,12 +533,7 @@ const QuizPage = () => {
     setSelectedWords(selectedWords.filter((_, i) => i !== index));
   };
 
-  const handleSkip = () => {
-    setSelectedWords([]);
-    setIsChecked(false);
-    setIsCorrect(null);
-    handleNextClick();
-  };
+ 
 
   const handleCheck = () => {
     if (
@@ -624,65 +567,7 @@ const QuizPage = () => {
     }
   };
 
-  // Move update logic to a reusable function
-  const updateAssignment = async () => {
-    if (!assignment) return;
 
-    const formData = new FormData();
-
-    // Always set the answer field to what the user selected/entered
-    let answerValue = "";
-    if (assignment.assignmentType === "Quiz" || assignment.assignmentType === "quiz-choose" || assignment.assignmentType === "quiz-truefalse" || assignment.assignmentType === "image-identification") {
-      answerValue = selectedOption ?? "";
-    } else if (assignment.assignmentType === "Writing" || assignment.assignmentType === "writing") {
-      answerValue = writtenAnswer;
-    } else if (assignment.assignmentType === "word-match") {
-      answerValue = selectedWords.join(" ");
-    }
-    formData.append("answer", answerValue);
-
-    // Append other fields as needed
-    formData.append("studentId", assignment.studentId ?? "");
-    formData.append("assignmentName", assignment.assignmentName ?? "");
-    formData.append("assignedTeacher", assignment.assignedTeacher ?? "");
-    formData.append("assignmentType", assignment.assignmentType ?? "");
-    formData.append("status", "completed");
-    formData.append("updatedBy", "Student");
-    formData.append("updatedDate", new Date().toISOString());
-
-    // Append file if selected
-    if (selectedFile) {
-      formData.append("uploadFile", selectedFile);
-    }
-    // Append audio if recorded
-    if (typeof audioUrl === 'string' && audioUrl) {
-      try {
-        const audioBlob = await fetch(audioUrl).then(r => r.blob());
-        formData.append('audioFile', audioBlob, 'audio.wav');
-      } catch (e) {}
-    }
-
-    try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
-      if (!token) {
-        console.error("❌ StudentAuthToken not found");
-        return;
-      }
-      const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/assignments/bulk?assignmentId=${assignmentId}`,
-        formData,
-        {
-          headers: {
-            // DO NOT set Content-Type here!
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-      console.log('Update response:', response);
-    } catch (error) {
-      console.error('Submission failed:', error);
-    }
-  };
 
   // Update handleNextClick to call updateAssignment
   const handleNextClick = async () => {
@@ -767,25 +652,6 @@ const QuizPage = () => {
     return aWords.every((word, idx) => word === bWords[idx]);
   }
 
-  // --- WRITING SECTION: Use word-for-word, case-insensitive match for score ---
-  const isWritingCorrect = (writtenAnswer: string, correctAnswer: string) => {
-    return wordsMatchCaseInsensitive(writtenAnswer, correctAnswer);
-  };
-
-  // --- READING SECTION: Use word-for-word, case-insensitive match for score ---
-  const isReadingCorrect = (recordedText: string, correctAnswer: string) => {
-    return wordsMatchCaseInsensitive(recordedText, correctAnswer);
-  };
-
-  // Level calculation based on score and total questions
-  const getLevel = (score: number, total: number) => {
-    if (total === 0) return "N/A";
-    if (score === total) return "Advanced";
-    const percent = (score / total) * 100;
-    if (percent >= 90) return "Advanced";
-    if (percent >= 70) return "Intermediate";
-    return "Beginner";
-  };
 
   // Star rating calculation (proportional)
   const calculateStarRating = (score: number, total: number) => {
@@ -812,7 +678,6 @@ const QuizPage = () => {
     setTotalScore(correct);
   }, [userAnswers, quizData]);
 
-  const stars = calculateStarRating(totalScore, quizData.length);
 
   const [recordedText, setRecordedText] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -854,22 +719,7 @@ const QuizPage = () => {
     setIsSpeechChecked(false);
     setIsSpeechCorrect(null);
   };
-  // --- READING SECTION: Validate with lowercase ---
-  const handleCheckSpeaking = () => {
-    if (currentQuestion?.type === "reading") {
-      setIsSpeechChecked(true);
-      const user = recordedText.trim().toLowerCase();
-      const correct = (currentQuestion.correctAnswer || "").trim().toLowerCase();
-      setIsSpeechCorrect(user === correct);
-      if (currentQuestion && currentQuestion._id) {
-        setUserAnswers((prev) => ({
-          ...prev,
-          [currentQuestion._id]: recordedText.trim(), // store as entered
-        }));
-      }
-      if (user === correct) setScore((prev) => prev + 1);
-    }
-  };
+ 
 
   const renderQuizContent = () => {
     const q = currentQuestion;
@@ -1000,13 +850,6 @@ const QuizPage = () => {
                 </div>
                 {/* Skip and Check buttons below options */}
                 <div className="flex flex-row w-full mb-4">
-                  {/* <button
-                    onClick={handleSkip}
-                    className="px-6 py-2 rounded-md border border-[#c4c4c4] dark:border  bg-transparent dark: text-gray-700 font-medium shadow-sm"
-                    disabled={isChecked}
-                  >
-                    Skip
-                  </button> */}
                   <button
                     onClick={handleCheck}
                     className={`px-6 py-2 rounded-md font-semibold ${
@@ -1207,11 +1050,7 @@ const QuizPage = () => {
             <div className="w-full flex flex-col max-w-full bg-[#f4f5fb] dark:bg-[#343434] rounded-xl p-4 items-center mx-auto min-h-[400px] justify-center">
               <div className="flex flex-row">
                 <div className="flex flex-col items-center justify-center mr-20 p-0">
-                  {/* <img
-                    src="/assets/images/q5.svg"
-                    alt="Cartoon"
-                    className="w-40 h-40 object-contain"
-                  /> */}
+                 
                 </div>
                 {/* Right: Question and controls */}
                 <div className="flex flex-col  justify-start flex-1 min-w-[320px] max-w-[500px] -ml-48">
@@ -1742,8 +1581,6 @@ const QuizPage = () => {
     return <div className="text-center">Question type not supported yet</div>;
   };
 
-  // Helper to ensure no null is passed to FormData
-  const safeString = (val: any): string => (val === null || val === undefined ? '' : `${val}`);
 
   return (
     <BaseLayout2>
@@ -1810,16 +1647,6 @@ const QuizPage = () => {
                   <p>Loading quiz data...</p>
                 ) : (
                   <>
-                    {/* <div className="flex items-center justify-between gap-10 mt-20 w-[600px] ml-60">
-                      {currentQuestionIndex > 0 && (
-                        <button onClick={handleBackClick}>
-                          <IoPlaySkipBackCircle className="text-2xl" />
-                        </button>
-                      )}
-                      <h2 className="text-sm font-medium text-gray-500">
-                        Question {currentQuestionIndex + 1}
-                      </h2>
-                    </div> */}
 
                     <div className="items-center justify-between align-middle">
                       {renderQuizContent()}

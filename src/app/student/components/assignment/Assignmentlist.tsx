@@ -5,7 +5,6 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation"; // Add this at the top
-// import AssignmentFilterForm from "./AssignmentFilterForm"; // You need to create this component as described
 
 interface AssignmentType {
   _id: string;
@@ -58,12 +57,9 @@ interface AssignmentType {
 
 const StudentList = () => {
   const [assignments, setAssignments] = useState<AssignmentType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"Pending" | "Completed">("Pending");
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const router = useRouter();
-  const [backendScore, setBackendScore] = useState<number | null>(null);
   const [showFilter, setShowFilter] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
 
@@ -125,8 +121,6 @@ const StudentList = () => {
 
   useEffect(() => {
     const fetchAssignments = async () => {
-      setLoading(true);
-      setError(null);
       try {
         const token =
           typeof window !== "undefined"
@@ -149,10 +143,8 @@ const StudentList = () => {
         const data = await res.json();
         setAssignments((data.data || []) as AssignmentType[]);
       } catch (err: any) {
-        setError(err.message || "Error fetching assignments");
-      } finally {
-        setLoading(false);
-      }
+        console.log(err.message || "Error fetching assignments");
+      } 
     };
     fetchAssignments();
   }, []);
@@ -263,23 +255,6 @@ const StudentList = () => {
       ...prev,
       [field]: value
     }));
-  };
-
-  const resetFilters = () => {
-    setFilters({
-      assignmentName: "",
-      course: "",
-      level: "",
-      assignedDateFrom: "",
-      assignedDateTo: "",
-      dueDateFrom: "",
-      dueDateTo: "",
-      status: ""
-    });
-  };
-
-  const applyFilters = () => {
-    setShowFilter(false);
   };
 
   return (
@@ -632,10 +607,7 @@ const StudentList = () => {
               </table>
             );
           })()}
-
-
           </div>
-
           <div className="flex justify-end">
             <button
               className=" mt-4 text-[#576CBC] border border-[#576CBC] bg-[#fff] rounded-md px-4 py-1 text-sm font-medium hover:bg-[#dbe2f3] transition duration-200 dark:bg-[#2E3343]"

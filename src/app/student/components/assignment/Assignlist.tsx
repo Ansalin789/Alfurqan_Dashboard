@@ -11,7 +11,6 @@ function Assignment() {
     totalPending: 0,
   });
 
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAssignmentData = async () => {
@@ -50,9 +49,7 @@ function Assignment() {
         }
       } catch (error) {
         console.error("API error:", error);
-      } finally {
-        setLoading(false);
-      }
+      } 
     };
 
     fetchAssignmentData();
