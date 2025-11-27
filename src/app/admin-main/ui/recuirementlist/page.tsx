@@ -72,15 +72,6 @@ const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
 
     if (!res.ok) throw new Error("Failed to fetch file");
     const blob = await res.blob();
- 
-      // // Convert base64 to binary
-      // const binaryString = atob(resumeData);
-      // const bytes = new Uint8Array(binaryString.length);
-      // for (let i = 0; i < binaryString.length; i++) {
-      //   bytes[i] = binaryString.charCodeAt(i);
-      // }
-
-      // const blob = new Blob([bytes], { type: "application/pdf" });
       return URL.createObjectURL(blob);
     } catch (error) {
       console.error("Error creating blob URL:", error);
@@ -150,7 +141,6 @@ const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
 
 
 export default function ApplicantsPage() {
-  const router = useRouter();
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [activeTab, setActiveTab] = React.useState("All");
   const [currentPage, setCurrentPage] = React.useState(1);

@@ -20,7 +20,7 @@ import {
 import axios from "axios";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
-import ReactDOM from "react-dom";
+
 
 // Register chart.js modules
 ChartJS.register(
@@ -33,16 +33,6 @@ ChartJS.register(
 );
 
 countries.registerLocale(enLocale);
-
-interface CountryStat {
-  country: string;
-  count: number;
-  percentage: number;
-}
-interface OtherEmpCountResponse {
-  totalOtherEmpCount: number;
-  otherEmpCount: OtherEmpEntry[];
-}
 
 interface StudentData {
   studentId: string;
@@ -164,62 +154,6 @@ interface ScheduledClass {
   amount: string;
 }
 
-interface OtherEmpEntry {
-  country: string[]; // e.g., ["ADMIN"]
-  count: number;
-  percentage: number;
-}
-const formatRole = (role: string) => {
-  switch (role) {
-    case "ACADEMICCOACH":
-      return "Academic Coach";
-    case "SUPERVISOR":
-      return "Supervisor";
-    case "USER":
-      return "User";
-    case "ADMIN":
-      return "Admin";
-    default:
-      return role;
-  }
-};
-// Replace COLORS object with array for correct indexing
-const COLORS = ["#A3D3FF", "#FFD6F7", "#B4C7ED"];
-interface GenderCountResponse {
-  employeePercentage: number;
-  employeeMalePercentage: string;
-  employeeFemalePercentage: string;
-}
-interface DashboardCounts {
-  totalApplication: number;
-  shortlisted: number;
-  rejected: number;
-  waiting: number;
-}
-
-// Add interface for leave request list API
-interface LeaveRequest {
-  _id: string;
-  name: string;
-  employeeId: string;
-  role: string;
-  fromDate: string;
-  toDate: string;
-  leaveStatus: string;
-  leaveType: string;
-  approvedId: string;
-  approvedName: string;
-  reason: string;
-  status: string;
-  createdDate: string;
-  createdBy: string;
-  updatedDate: string;
-  __v: number;
-}
-interface LeaveRequestListResponse {
-  totalCount: number;
-  leaveRequest: LeaveRequest[];
-}
 interface ShiftSchedule {
   date: string;
   day: string;
@@ -228,17 +162,8 @@ interface ShiftSchedule {
 }
 
 const page = () => {
-  const [view, setView] = useState<"month" | "week" | "day" | "agenda">(
-    "agenda"
-  );
-  const tabs = [
-    "Studentslist",
-    "ScheduledClass",
-    "Earnings",
-    "Payments",
-    "Wages",
-    "WorkingHours",
-  ];
+
+
   const searchParams = useSearchParams();
   const employeeId = searchParams.get("teacherId");
   const [schedule, setSchedule] = useState<ShiftSchedule[]>([]);
@@ -250,40 +175,11 @@ const page = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [searchScheduledClass, setSearchScheduledClass] = useState("");
-  const [searchPayments, setSearchPayments] = useState("");
-  const [searchWages, setSearchWages] = useState("");
   const [searchWorkingHours, setSearchWorkingHours] = useState("");
-  const [searchEarnings, setSearchEarnings] = useState("");
   const [filterDay, setFilterDay] = useState("");
   const [filterStartDate, setFilterStartDate] = useState("");
   const [filterEndDate, setFilterEndDate] = useState("");
   const [filters, setFilters] = useState<Record<string, any>>({});
-
-
-  const events = [
-    {
-      title: "Evaluation Class (20)",
-      start: new Date(2024, 0, 2),
-      end: new Date(2024, 0, 2),
-    },
-    {
-      title: "To-Do Task (01)",
-      start: new Date(2024, 0, 2),
-      end: new Date(2024, 0, 2),
-    },
-    {
-      title: "Meeting (01)",
-      start: new Date(2024, 0, 17),
-      end: new Date(2024, 0, 17),
-    },
-  ];
-
-  const statusStyle = {
-    Complete: "bg-[#002F56] text-white",
-    Pending: "bg-gray-300 text-gray-700",
-    Rescheduled: "bg-yellow-300 text-black",
-  };
 
   useEffect(() => {
     const token =
@@ -386,24 +282,7 @@ const page = () => {
     fetchData();
   }, []);
 
-  const router = useRouter();
 
-  const formatTime = (timeStr: string): string => {
-    const [hour, minute] = timeStr.split(":");
-    const date = new Date();
-    date.setHours(Number(hour), Number(minute));
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false, // disables AM/PM
-    });
-  };
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setSearchTerm(query);
-    setCurrentPage(1);
-  };
 
   // Filtered Working Hours
   const filteredWorkingHours = schedule.filter((item) => {
@@ -459,10 +338,6 @@ const page = () => {
   const totalPages = Math.ceil(filteredWorkingHours.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems: ShiftSchedule[] = filteredWorkingHours.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
 
   return (
     <BaseLayout4>

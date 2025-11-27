@@ -270,19 +270,6 @@ const CoursesChart = () => {
 
 
 
-const getBarColor = (
-  value: number,
-  maxValue: number
-): "#0ea5e9" | "#38bdf8" | "#7dd3fc" | "#bae6fd" | "#e0f2fe" => {
-  const percentage = maxValue > 0 ? (value / maxValue) * 100 : 0;
-
-  if (percentage >= 90) return "#0ea5e9";
-  if (percentage >= 70) return "#38bdf8";
-  if (percentage >= 50) return "#7dd3fc";
-  if (percentage >= 30) return "#bae6fd";
-  return "#e0f2fe";
-};
-
 export default function Home() {
   const socketRef = useRef<Socket | null>(null);
   const userId = "6805da8c06542aa33858b889";
@@ -290,10 +277,10 @@ export default function Home() {
   const [barData, setBarData] = useState<ChartDataItem[]>([]);
   const [data, setData] = useState<StudentInvoice[]>([]);
   const [visitorData, setVisitorData] = useState<any[]>([]);
-const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [revenueDatas, setRevenueDatas] = useState<any[]>([]);
   const [selectedRevenueYear, setSelectedRevenueYear] = useState(new Date().getFullYear());
-const [selectedVisitorYear, setSelectedVisitorYear] = useState(new Date().getFullYear());
+  const [selectedVisitorYear, setSelectedVisitorYear] = useState(new Date().getFullYear());
 
 
   useEffect(() => {
@@ -334,7 +321,7 @@ const [selectedVisitorYear, setSelectedVisitorYear] = useState(new Date().getFul
       socketRef.current?.off("revenueUpdate", handleRevenueUpdate);
     };
   }, [userId]);
-  
+
   useEffect(() => {
     const fetchMeetings = async (token: string) => {
       try {
@@ -476,13 +463,13 @@ const [selectedVisitorYear, setSelectedVisitorYear] = useState(new Date().getFul
   };
 
   useEffect(() => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('AdminAuthToken');
-    if (token) {
-      fetchRevenueData(selectedYear, token);
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchRevenueData(selectedYear, token);
+      }
     }
-  }
-}, [selectedYear]);
+  }, [selectedYear]);
 
 
   useEffect(() => {
@@ -500,283 +487,283 @@ const [selectedVisitorYear, setSelectedVisitorYear] = useState(new Date().getFul
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Analytics"/>
+      <AdminHeader currentSection="Analytics" />
       <div className="flex-1  overflow-auto">
         <div className="py-1 px-3 w-full h-full space-y-2">
           {/* Revenue Section */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-<div className="relative bg-[#6172B0] rounded-2xl p-4 text-white overflow-hidden shadow-lg h-full w-full">
-  {/* Content */}
-  <div className="relative z-10">
-    <h3 className="text-base font-medium opacity-90 mb-1">Total Income</h3>
-    <div className="text-4xl font-bold mb-4">$8954.57</div>
-    <div className="flex items-center gap-2">
-      <div className="w-6 h-6 flex items-center justify-center rounded-full border-2 border-white">
-        <svg
-          className="w-3.5 h-3.5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M12 19V5" />
-          <path d="M5 12l7-7 7 7" />
-        </svg>
-      </div>
-      <span className="text-sm font-semibold">15%</span>
-    </div>
-  </div>
+            <div className="relative bg-[#6172B0] rounded-2xl p-4 text-white overflow-hidden shadow-lg h-full w-full">
+              {/* Content */}
+              <div className="relative z-10">
+                <h3 className="text-base font-medium opacity-90 mb-1">Total Income</h3>
+                <div className="text-4xl font-bold mb-4">$8954.57</div>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 flex items-center justify-center rounded-full border-2 border-white">
+                    <svg
+                      className="w-3.5 h-3.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 19V5" />
+                      <path d="M5 12l7-7 7 7" />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-semibold">15%</span>
+                </div>
+              </div>
 
-  {/* Decorative Wave Background + Stroke */}
-<svg
-  className="absolute bottom-0 left-0 w-full h-[300px] z-0"
-  viewBox="0 0 320 100"
-  preserveAspectRatio="none"
->
-  <defs>
-    <linearGradient id="waveGradient" >
-      <stop offset="0%" stopColor="#4E61A7" />
-      <stop offset="100%" stopColor="#9CB1FF" />
-    </linearGradient>
-  </defs>
+              {/* Decorative Wave Background + Stroke */}
+              <svg
+                className="absolute bottom-0 left-0 w-full h-[300px] z-0"
+                viewBox="0 0 320 100"
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <linearGradient id="waveGradient" >
+                    <stop offset="0%" stopColor="#4E61A7" />
+                    <stop offset="100%" stopColor="#9CB1FF" />
+                  </linearGradient>
+                </defs>
 
-  {/* Gradient fill below wave */}
-  <path
-    d="M0,96 C40,80 80,60 120,70 C160,80 200,90 240,75 C280,60 300,65 320,80 L320,100 L0,100 Z"
-    fill="url(#waveGradient)"
-    opacity="0.8"
-  />
+                {/* Gradient fill below wave */}
+                <path
+                  d="M0,96 C40,80 80,60 120,70 C160,80 200,90 240,75 C280,60 300,65 320,80 L320,100 L0,100 Z"
+                  fill="url(#waveGradient)"
+                  opacity="0.8"
+                />
 
-  {/* White stroke on top of wave */}
-  <path
-    d="M0,96 C40,80 80,60 120,70 C160,80 200,90 240,75 C280,60 300,65 320,80"
-    fill="none"
-    stroke="white"
-    strokeWidth="1"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    opacity="0.9"
-  />
-</svg>
+                {/* White stroke on top of wave */}
+                <path
+                  d="M0,96 C40,80 80,60 120,70 C160,80 200,90 240,75 C280,60 300,65 320,80"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="1"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity="0.9"
+                />
+              </svg>
 
-</div>
+            </div>
 
 
-         
+
             {/* Revenue Chart */}
-<div className="col-span-3 bg-white dark:bg-[#343434] rounded-xl p-4 shadow-sm border border-gray-200 dark:border-[#555555]">
-  <div className="flex justify-between items-center mb-3">
-    <h3 className="text-[15px] font-semibold dark:text-[#FFFFFF] text-slate-800">Total Invoice Revenue</h3>
+            <div className="col-span-3 bg-white dark:bg-[#343434] rounded-xl p-4 shadow-sm border border-gray-200 dark:border-[#555555]">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-[15px] font-semibold dark:text-[#FFFFFF] text-slate-800">Total Invoice Revenue</h3>
 
-    {/* Select + Arrow */}
-    <div className="relative inline-block w-fit">
-      <select
-        value={selectedRevenueYear}
-        onChange={async (e) => {
-          const year = Number(e.target.value);
-          setSelectedRevenueYear(year);
-          const token = localStorage.getItem("AdminAuthToken");
-          if (token) {
-            await fetchRevenueData(year, token);
-          }
-        }}
-        className="appearance-none bg-[#EFEFEF] dark:bg-[#DEDEDE] dark:text-[#666666] border border-gray-300 dark:border-[#666666] rounded text-sm h-[26px] px-2 pr-6 text-gray-700 focus:outline-none"
-      >
-        {Array.from({ length: 5 }, (_, i) => {
-          const year = new Date().getFullYear() - i;
-          return (
-            <option key={year} value={year}>
-              {year === new Date().getFullYear() ? "This Year" : "Last Year"}
-            </option>
-          );
-        })}
-      </select>
+                {/* Select + Arrow */}
+                <div className="relative inline-block w-fit">
+                  <select
+                    value={selectedRevenueYear}
+                    onChange={async (e) => {
+                      const year = Number(e.target.value);
+                      setSelectedRevenueYear(year);
+                      const token = localStorage.getItem("AdminAuthToken");
+                      if (token) {
+                        await fetchRevenueData(year, token);
+                      }
+                    }}
+                    className="appearance-none bg-[#EFEFEF] dark:bg-[#DEDEDE] dark:text-[#666666] border border-gray-300 dark:border-[#666666] rounded text-sm h-[26px] px-2 pr-6 text-gray-700 focus:outline-none"
+                  >
+                    {Array.from({ length: 5 }, (_, i) => {
+                      const year = new Date().getFullYear() - i;
+                      return (
+                        <option key={year} value={year}>
+                          {year === new Date().getFullYear() ? "This Year" : "Last Year"}
+                        </option>
+                      );
+                    })}
+                  </select>
 
-      <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-[11px]">
-        ▼
-      </div>
-    </div>
-  </div>
+                  <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-[11px]">
+                    ▼
+                  </div>
+                </div>
+              </div>
 
-  <div className="h-[220px]  pt-1">
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart
-        data={revenueDatas}
-        margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
-      >
-        <XAxis
-          dataKey="label"
-          axisLine={false}
-          tickLine={false}
-          interval={0}
-          tick={{
-            fill: "#0f172a",
-            fontSize: 16,
-            fontWeight: 500,
-          }}
-          className="dark:[&_text]:fill-[#FFFFFF]  "
-        />
-        <YAxis hide />
-        <Bar
-          dataKey="revenue"
-          radius={[20, 20, 20, 20]}
-          barSize={50}
-          label={{
-            position: "top",
-            formatter: (value: number) => `$${value}`,
-            fill: "#0f172a",
-            fontSize: 16,
-            fontWeight: 600,
-          }}
-          className="dark:[&_text]:fill-[#FFFFFF]"
-        >
-          {revenueDatas.map((entry) => (
-            <Cell key={`cell-${entry.label}`} fill="#8CB3F4" />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  </div>
-</div>
+              <div className="h-[220px]  pt-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={revenueDatas}
+                    margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                  >
+                    <XAxis
+                      dataKey="label"
+                      axisLine={false}
+                      tickLine={false}
+                      interval={0}
+                      tick={{
+                        fill: "#0f172a",
+                        fontSize: 16,
+                        fontWeight: 500,
+                      }}
+                      className="dark:[&_text]:fill-[#FFFFFF]  "
+                    />
+                    <YAxis hide />
+                    <Bar
+                      dataKey="revenue"
+                      radius={[20, 20, 20, 20]}
+                      barSize={50}
+                      label={{
+                        position: "top",
+                        formatter: (value: number) => `$${value}`,
+                        fill: "#0f172a",
+                        fontSize: 16,
+                        fontWeight: 600,
+                      }}
+                      className="dark:[&_text]:fill-[#FFFFFF]"
+                    >
+                      {revenueDatas.map((entry) => (
+                        <Cell key={`cell-${entry.label}`} fill="#8CB3F4" />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
 
 
           </div>
 
           {/* Middle Section */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
-{/* Visitor Insights */}
-<div className="lg:col-span-2 bg-white dark:bg-[#343434] rounded-xl shadow-sm p-4 border border-gray-200 dark:border-[#555555]">
-  <div className="flex justify-between items-center mb-4">
-    <h3 className="text-sm font-semibold dark:text-[#FFFFFF] text-gray-800">Visitor Insights</h3>
-<div className="relative inline-block w-fit">
-  <select
-    value={selectedVisitorYear}
-    onChange={async (e) => {
-      const year = Number(e.target.value);
-      setSelectedVisitorYear(year);
-      const token = localStorage.getItem("AdminAuthToken");
-      if (token) {
-        await fetchVisitorData(token); // reuse the function
-      }
-    }}
-    className="appearance-none bg-[#EFEFEF] dark:bg-[#DEDEDE] dark:text-[#666666] text-xs border border-gray-300 dark:border-[#666666] rounded px-2 py-1 pr-6 focus:outline-none"
-  >
-    {Array.from({ length: 5 }, (_, i) => {
-      const year = new Date().getFullYear() - i;
-      const label =
-        year === new Date().getFullYear()
-          ? "This Year"
-          : year === new Date().getFullYear() - 1
-          ? "Last Year"
-          : year;
-      return (
-        <option key={year} value={year}>
-          {label}
-        </option>
-      );
-    })}
-  </select>
+            {/* Visitor Insights */}
+            <div className="lg:col-span-2 bg-white dark:bg-[#343434] rounded-xl shadow-sm p-4 border border-gray-200 dark:border-[#555555]">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-sm font-semibold dark:text-[#FFFFFF] text-gray-800">Visitor Insights</h3>
+                <div className="relative inline-block w-fit">
+                  <select
+                    value={selectedVisitorYear}
+                    onChange={async (e) => {
+                      const year = Number(e.target.value);
+                      setSelectedVisitorYear(year);
+                      const token = localStorage.getItem("AdminAuthToken");
+                      if (token) {
+                        await fetchVisitorData(token); // reuse the function
+                      }
+                    }}
+                    className="appearance-none bg-[#EFEFEF] dark:bg-[#DEDEDE] dark:text-[#666666] text-xs border border-gray-300 dark:border-[#666666] rounded px-2 py-1 pr-6 focus:outline-none"
+                  >
+                    {Array.from({ length: 5 }, (_, i) => {
+                      const year = new Date().getFullYear() - i;
+                      const label =
+                        year === new Date().getFullYear()
+                          ? "This Year"
+                          : year === new Date().getFullYear() - 1
+                            ? "Last Year"
+                            : year;
+                      return (
+                        <option key={year} value={year}>
+                          {label}
+                        </option>
+                      );
+                    })}
+                  </select>
 
-  {/* Custom arrow */}
-  <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-[9px]">
-    ▼
-  </div>
-</div>
+                  {/* Custom arrow */}
+                  <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-[9px]">
+                    ▼
+                  </div>
+                </div>
 
-  </div>
-  <div className="h-[220px]">
-    <ResponsiveContainer width="100%" height="100%">
-<LineChart
-  data={visitorDataStatic}
-  margin={{ top: 30, right: 20, left: -20, bottom: 20 }}
->
+              </div>
+              <div className="h-[220px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={visitorDataStatic}
+                    margin={{ top: 30, right: 20, left: -20, bottom: 20 }}
+                  >
 
-        <XAxis
-  dataKey="date"
-  axisLine={false}
-  tickLine={false}
-  interval={0} // Shows all months
-  tick={{
-    fill: "#64748b",
-    fontSize: 11,
-    fontWeight: 600,
-    dy: 6, // push ticks downward
-  }}
-  padding={{ left: 10, right: 10 }}
-  className="dark:[&_text]:fill-[#FFFFFF]"
-/>
+                    <XAxis
+                      dataKey="date"
+                      axisLine={false}
+                      tickLine={false}
+                      interval={0} // Shows all months
+                      tick={{
+                        fill: "#64748b",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        dy: 6, // push ticks downward
+                      }}
+                      padding={{ left: 10, right: 10 }}
+                      className="dark:[&_text]:fill-[#FFFFFF]"
+                    />
 
-        <YAxis
-          axisLine={false}
-          tickLine={false}
-          tick={{
-            fill: "#64748b",
-            fontSize: 10,
-            fontWeight: 600,
-          }}
-          className="dark:[&_text]:fill-[#FFFFFF] "
-        />
-        <Tooltip content={<CustomTooltip />} />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{
+                        fill: "#64748b",
+                        fontSize: 10,
+                        fontWeight: 600,
+                      }}
+                      className="dark:[&_text]:fill-[#FFFFFF] "
+                    />
+                    <Tooltip content={<CustomTooltip />} />
 
-        <Line
-          type="monotone"
-          dataKey="Friend"
-          stroke="#99f6e4"
-          strokeWidth={4}
-          dot={<CustomDot />}
-        />
-        <Line
-          type="monotone"
-          dataKey="SocialMedia"
-          stroke="#bfdbfe"
-          strokeWidth={4}
-          dot={false}
-        />
-        <Line
-          type="monotone"
-          dataKey="Email"
-          stroke="#86efac"
-          strokeWidth={4}
-          dot={false}
-        />
-        <Line
-          type="monotone"
-          dataKey="Google"
-          stroke="#c4b5fd"
-          strokeWidth={4}
-          dot={false}
-        />
-        <Line
-          type="monotone"
-          dataKey="Other"
-          stroke="#93c5fd"
-          strokeWidth={4}
-          dot={false}
-        />
-      </LineChart>
-    </ResponsiveContainer>
-  </div>
+                    <Line
+                      type="monotone"
+                      dataKey="Friend"
+                      stroke="#99f6e4"
+                      strokeWidth={4}
+                      dot={<CustomDot />}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="SocialMedia"
+                      stroke="#bfdbfe"
+                      strokeWidth={4}
+                      dot={false}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="Email"
+                      stroke="#86efac"
+                      strokeWidth={4}
+                      dot={false}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="Google"
+                      stroke="#c4b5fd"
+                      strokeWidth={4}
+                      dot={false}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="Other"
+                      stroke="#93c5fd"
+                      strokeWidth={4}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
 
-  <div className="flex flex-wrap justify-center mt-4 gap-x-8 gap-y-2 text-xs font-medium dark:text-[#FFFFFF] text-gray-700">
-    <div className="flex items-center gap-1">
-      <span className="w-2 h-2  bg-[#99f6e4]"></span> Friends
-    </div>
-    <div className="flex items-center gap-1">
-      <span className="w-2 h-2  bg-[#bfdbfe]"></span> Social Media
-    </div>
-    <div className="flex items-center gap-1">
-      <span className="w-2 h-2  bg-[#86efac]"></span> E-Mail
-    </div>
-    <div className="flex items-center gap-1">
-      <span className="w-2 h-2 bg-[#c4b5fd]"></span> Google
-    </div>
-    <div className="flex items-center gap-1">
-      <span className="w-2 h-2 bg-[#93c5fd]"></span> Other
-    </div>
-  </div>
-</div>
+              <div className="flex flex-wrap justify-center mt-4 gap-x-8 gap-y-2 text-xs font-medium dark:text-[#FFFFFF] text-gray-700">
+                <div className="flex items-center gap-1">
+                  <span className="w-2 h-2  bg-[#99f6e4]"></span> Friends
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="w-2 h-2  bg-[#bfdbfe]"></span> Social Media
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="w-2 h-2  bg-[#86efac]"></span> E-Mail
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-[#c4b5fd]"></span> Google
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-[#93c5fd]"></span> Other
+                </div>
+              </div>
+            </div>
 
 
             {/* Countries */}

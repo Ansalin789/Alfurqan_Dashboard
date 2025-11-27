@@ -38,8 +38,6 @@ const Trailclasslist = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const itemsPerPage = 10;
-  const router = useRouter();
-  const [filterOpen, setFilterOpen] = useState(false);
   const [dashboardRead,setdashboardRead]=useState(false);
 const [filters, setFilters] = useState({
   invoiceId: "",
@@ -104,12 +102,6 @@ const fetchInvoice = (token: string) => {
     });
 };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
-  };
-
- 
 
   // Combine filter modal and search text logic
   const filterAndSearchInvoices = invoices.filter((invoice) => {

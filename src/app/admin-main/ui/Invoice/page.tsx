@@ -47,7 +47,6 @@ import { useRouter } from "next/navigation";
 import InvoicesDueByDays from "../../components/invoicedue";
 import { MdTune } from "react-icons/md";
 import AdminHeader from "../../components/AdminHeader";
-import Pagination from "@/components/Pagination";
 
 // Register ChartJS components
 ChartJS.register(
@@ -64,10 +63,8 @@ ChartJS.register(
 );
 
 export default function Page() {
-  const [showNotifications, setShowNotifications] = useState(false);
   const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-
   type InvoiceType = "total" | "paid" | "pending" | "void";
   const [invoiceCounts, setInvoiceCounts] = useState<
     Record<InvoiceType, number>
@@ -80,7 +77,6 @@ export default function Page() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const itemsPerPage = 10;
-  const [filterOpen, setFilterOpen] = useState(false);
   const [dashboardRead, setdashboardRead] = useState(false);
   const [filters, setFilters] = useState({
     invoiceId: "",
@@ -143,11 +139,6 @@ export default function Page() {
       .catch((error) => {
         console.error("Error fetching invoices:", error);
       });
-  };
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
   };
 
   // Combine filter modal and search text logic
@@ -231,11 +222,7 @@ export default function Page() {
     indexOfFirstItem,
     indexOfLastItem
   );
-  const totalPages = Math.ceil(filterAndSearchInvoices.length / itemsPerPage);
-
-  // Only one definition of calculateDueDays should exist, before its first use
-
-  useEffect(() => {
+ useEffect(() => {
     const token =
       typeof window !== "undefined"
         ? localStorage.getItem("AdminAuthToken")
@@ -321,9 +308,7 @@ export default function Page() {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return `${diffDays} days`;
   };
-  const handleclicksend = () => {
-    router.push("/admin-main/ui/send-invoice");
-  };
+
   return (
     <BaseLayout4>
       <AdminHeader currentSection="Invoice" />
@@ -341,14 +326,6 @@ export default function Page() {
             </div>
           ))}
         </div>
-
-        {/* <button
-              onClick={handleclicksend}
-              disabled={!dashboardRead}
-              className="flex items-center bg-[#002244] text-white px-4 py-2 rounded-sm text-[12px] font-medium shadow"
-            >
-              + New Invoice
-            </button> */}
 
         {/* Middle Sections */}
         <div className="flex gap-6 mb-6 items-start">

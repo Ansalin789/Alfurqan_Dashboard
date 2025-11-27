@@ -133,7 +133,7 @@ const Academic: React.FC = () => {
         onChange={() => {}} // Empty function since we don't need the functionality
         value={value}
         navigationLabel={({ date }) =>
-          `${date.toLocaleString("default", { month: "long" }).toUpperCase()}, ${date.getFullYear()}`
+          `${date.toLocaleString("default", { month: "short" }).toUpperCase()}, ${date.getFullYear()}`
         }
         nextLabel="›"
         prevLabel="‹"

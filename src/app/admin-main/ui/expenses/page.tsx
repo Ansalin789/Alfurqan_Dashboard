@@ -2,12 +2,8 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import BaseLayout4 from "@/components/BaseLayout4";
-import { FaEdit } from "react-icons/fa";
-import { AiOutlinePlus } from "react-icons/ai";
-import { Bell, Search, Sun, X } from "lucide-react";
+import {  Search } from "lucide-react";
 import axios from "axios";
-import TeacherHeader from "@/app/teacher/components/TeacherHeader";
-
 import Pagination from "@/components/Pagination";
 import { MdTune } from "react-icons/md";
 import AdminHeader from "../../components/AdminHeader";
@@ -26,27 +22,8 @@ interface Expense {
   __v: number;
 }
 
-// Define the API Response interface
-interface ApiResponse {
-  totalCount: number;
-  expenses: Expense[];
-}
-interface ExpensePayload {
-  paymentDate: string;
-  expenseType: string;
-  amount: string;
-  category: string;
-  paymentMethod: string;
-  status: string;
-  createdDate: string;
-  createdBy: string;
-  updatedDate: string;
-  updatedBy: string;
-}
-
 const Expenses = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [isPopupOpens, setIsPopupOpens] = useState<number | null>(null);
   const [salaryData, setSalaryData] = useState<Expense[]>([]);
   const [searchText, setSearchText] = useState("");
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
