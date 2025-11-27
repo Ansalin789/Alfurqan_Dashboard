@@ -238,7 +238,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                 value={form.fromDate}
                 onChange={handleChange}
                 type="date"
-                className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C] dark:[color-scheme:dark]"
               />
             </div>
 
@@ -254,7 +254,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                 value={form.toDate}
                 onChange={handleChange}
                 type="date"
-                className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C] dark:[color-scheme:dark]"
               />
             </div>
           </div>
@@ -276,7 +276,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                 type="text"
                 value={leaveSummary.sickLeave}
                 readOnly
-                className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
+                className="w-full border rounded px-3 py-2 text-gray-800 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
 
@@ -291,7 +291,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                 type="text"
                 value={leaveSummary.casualLeave}
                 readOnly
-                className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
+                className="w-full border rounded px-3 py-2 text-gray-800 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
 
@@ -306,7 +306,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                 type="text"
                 value={leaveSummary.paidLeave}
                 readOnly
-                className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
+                className="w-full border rounded px-3 py-2 text-gray-800 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
 
@@ -321,7 +321,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                 type="text"
                 value={leaveSummary.deductionDays}
                 readOnly
-                className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
+                className="w-full border rounded px-3 py-2 text-gray-800 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
 
@@ -344,17 +344,17 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
         </div>
 
         {/* Divider and Buttons */}
-        <div className="border-t pt-4 mt-4 flex justify-end gap-2">
+        <div className="flex justify-end gap-2">
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1 border border-[#576CBC] rounded text-[#576CBC] hover:bg-gray-100 transition "
+            className="px-3 py-1 text-[12px] rounded-md border border-[#576CBC] text-[#576CBC] font-medium hover:bg-[#EEF1FF] dark:hover:bg-[#343434]"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-3 py-1 bg-[#576CBC] text-white rounded hover:bg-blue-700 transition"
+            className="px-3 py-1 text-[12px] rounded-md bg-[#576CBC] text-white font-medium hover:bg-[#455bb1]"
           >
             Submit
           </button>
