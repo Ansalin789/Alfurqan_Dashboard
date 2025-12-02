@@ -528,64 +528,73 @@ const SignIn: React.FC = () => {
           <div className="absolute inset-0 bg-black/25"></div>
 
           {/* Content */}
-          <div className="relative z-10 flex flex-col justify-between w-full h-full px-4 sm:px-6 lg:px-12 py-6 sm:py-8">
+         <div className="relative z-10 flex flex-col justify-between w-full h-full px-4 sm:px-6 lg:px-12 py-6 sm:py-8">
 
-            {/* TOP CARD - Responsive */}
-            <div className="bg-white rounded-xl p-4 sm:p-6 w-full max-w-sm sm:max-w-md lg:max-w-[635px] mx-auto shadow-2xl mt-8 sm:mt-16 lg:mt-32">
-              <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-6">
-                <div className="flex-1 text-left w-full">
-                  <h2 className="text-lg sm:text-xl lg:text-[22px] font-extrabold leading-[1.2] text-[#576CBC] mb-4 sm:mb-6">
-                    Connecting You to Qur'an,<br />
-                    Arabic, and the Wisdom of<br />
-                    Islam
-                  </h2>
-                  <p className="text-[#808080] text-sm sm:text-[15px] lg:text-[17px] leading-relaxed mb-4 sm:mb-6">
-                    And We have certainly made the Qur'an easy for remembrance, so is there is any who will remember ?
-                  </p>
-                  <p className="text-[#808080] text-xs sm:text-sm lg:text-[16px] font-medium">
-                    Surah Al-Qamar (54:17)
-                  </p>
-                </div>
+  {/* TOP CARD */}
+  <div className="bg-white rounded-xl p-4 sm:p-6 w-full max-w-sm sm:max-w-md lg:max-w-[635px] mx-auto shadow-xl mt-8 sm:mt-16 lg:mt-28">
+    <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-6">
+      <div className="flex-1 text-left w-full">
+        <h2 className="text-lg sm:text-xl lg:text-[22px] font-extrabold leading-[1.2] text-[#576CBC] mb-4 sm:mb-6">
+          Connecting You to Qur'an,<br />
+          Arabic, and the Wisdom of<br />
+          Islam
+        </h2>
 
-                <div className="flex-shrink-0 w-full sm:w-auto">
-                  <img
-                    src="/assets/images/close-up-hands-holding-diplomas-caps.svg"
-                    alt="supervisor"
-                    className="w-40 h-40 sm:w-48 sm:h-48 lg:w-[245px] lg:h-[245px] object-cover rounded-xl mx-auto"
-                  />
-                </div>
-              </div>
-            </div>
+        <p className="text-[#808080] text-sm sm:text-[15px] lg:text-[17px] leading-relaxed mb-4 sm:mb-6">
+          And We have certainly made the Qur'an easy for remembrance, so is there is any who will remember ?
+        </p>
 
-            {/* BOTTOM SECTION - Responsive */}
-            <div className="text-center text-white mx-auto mb-8 sm:mb-12 mt-4 sm:mt-0">
-              <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-2">Supervisor Dashboard</h2>
+        <p className="text-[#808080] text-xs sm:text-sm lg:text-[16px] font-medium">
+          Surah Al-Qamar (54:17)
+        </p>
+      </div>
 
-              <p className="text-[#CFD9E0] text-[20px] sm:text-sm leading-relaxed max-w-xs sm:max-w-md mx-auto mb-2 sm:mb-4">
-                Manage your entire educational platform with powerful administrative tools,
-                user management systems, and comprehensive analytics dashboards.
-              </p>
+      <div className="flex-shrink-0 w-full sm:w-auto">
+        <img
+          src="/assets/images/close-up-hands-holding-diplomas-caps.svg"
+          alt="supervisor"
+          className="w-40 h-40 sm:w-48 sm:h-48 lg:w-[245px] lg:h-[245px] object-cover rounded-xl mx-auto"
+        />
+      </div>
+    </div>
+  </div>
 
-              <div className="flex items-center justify-center gap-4 mt-8 sm:mt-16">
-                <button className="w-6 h-6 flex items-center justify-center text-[#A6B4E2] hover:text-white">
-                  <ChevronLeft size={16} />
-                </button>
+  {/* BOTTOM SECTION */}
+  <div className="text-center text-white mx-auto mt-6 sm:mt-10 mb-10 sm:mb-16">
+    <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-2">
+      Supervisor Dashboard
+    </h2>
 
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#A6B4E2]" />
-                  <div className="relative w-5 h-5 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-[#E8EBF9]" />
-                    <div className="absolute w-full h-full rounded-full border-[3px] border-[#E8EBF9] border-t-transparent rotate-[25deg]" />
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-[#A6B4E2]" />
-                </div>
+    <p className="text-[#CFD9E0] text-sm sm:text-base lg:text-[17px] leading-relaxed max-w-xs sm:max-w-md mx-auto mb-4">
+      Manage your entire educational platform with powerful administrative tools,
+      user management systems, and comprehensive analytics dashboards.
+    </p>
 
-                <button className="w-6 h-6 flex items-center justify-center text-[#A6B4E2] hover:text-white">
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
-          </div>
+    {/* PAGINATION */}
+    <div className="flex items-center justify-center gap-4 mt-8 sm:mt-14">
+      <button className="w-6 h-6 flex items-center justify-center text-[#A6B4E2] hover:text-white">
+        <ChevronLeft size={16} />
+      </button>
+
+      <div className="flex items-center gap-2">
+        <div className="w-2 h-2 rounded-full bg-[#A6B4E2]" />
+
+        {/* Active Dot – stroke removed */}
+        <div className="relative w-5 h-5 flex items-center justify-center">
+          <div className="w-2 h-2 rounded-full bg-[#E8EBF9]" />
+        </div>
+
+        <div className="w-2 h-2 rounded-full bg-[#A6B4E2]" />
+      </div>
+
+      <button className="w-6 h-6 flex items-center justify-center text-[#A6B4E2] hover:text-white">
+        <ChevronRight size={16} />
+      </button>
+    </div>
+  </div>
+
+</div>
+
         </div>
       </div>
     </GoogleOAuthProvider>
