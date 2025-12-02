@@ -52,8 +52,8 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
     startTime: "",
     endTime: "",
   });
- 
- 
+
+
 
   const itemsPerPage = 10;
 
@@ -102,58 +102,58 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
 
     // Format the date to match the search query in "Month Day, Year" format
     const formattedDate = new Date(row.startDate).toLocaleString("en-US", {
-        month: "long",
-        day: "2-digit",
-        year: "numeric",
+      month: "long",
+      day: "2-digit",
+      year: "numeric",
     }).toLowerCase(); // Ensure the date is in lowercase for comparison
 
     const matchesSearch =
-        row._id.toLowerCase().includes(search) || // Match Class ID
-        row.student?.studentFirstName?.toLowerCase().includes(search) || // Match Student First Name
-        row.teacher?.teacherName?.toLowerCase().includes(search) || // Match Teacher Name
-        row.course?.courseName?.toLowerCase().includes(search) || // Match Course Name
-        formattedDate.includes(search) || // Match Date
-        row.startTime[0].includes(search); // Match Start Time
+      row._id.toLowerCase().includes(search) || // Match Class ID
+      row.student?.studentFirstName?.toLowerCase().includes(search) || // Match Student First Name
+      row.teacher?.teacherName?.toLowerCase().includes(search) || // Match Teacher Name
+      row.course?.courseName?.toLowerCase().includes(search) || // Match Course Name
+      formattedDate.includes(search) || // Match Date
+      row.startTime[0].includes(search); // Match Start Time
 
     const matchesTeacher = meetingFilters.teacher
-        ? row.teacher?.teacherName.toLowerCase().includes(meetingFilters.teacher.toLowerCase())
-        : true;
+      ? row.teacher?.teacherName.toLowerCase().includes(meetingFilters.teacher.toLowerCase())
+      : true;
 
     const matchesCourse = meetingFilters.course
-        ? row.course?.courseName.toLowerCase().includes(meetingFilters.course.toLowerCase())
-        : true;
+      ? row.course?.courseName.toLowerCase().includes(meetingFilters.course.toLowerCase())
+      : true;
 
     const matchesStatus = meetingFilters.status
-        ? row.scheduleStatus === meetingFilters.status
-        : true;
+      ? row.scheduleStatus === meetingFilters.status
+      : true;
 
     const matchesStartDate = meetingFilters.fromDate
-        ? new Date(row.startDate) >= new Date(meetingFilters.fromDate)
-        : true;
+      ? new Date(row.startDate) >= new Date(meetingFilters.fromDate)
+      : true;
 
     const matchesEndDate = meetingFilters.toDate
-        ? new Date(row.startDate) <= new Date(meetingFilters.toDate)
-        : true;
+      ? new Date(row.startDate) <= new Date(meetingFilters.toDate)
+      : true;
 
     const matchesStartTime = meetingFilters.startTime
-        ? row.startTime[0] >= meetingFilters.startTime
-        : true;
+      ? row.startTime[0] >= meetingFilters.startTime
+      : true;
 
     const matchesEndTime = meetingFilters.endTime
-        ? row.endTime[0] <= meetingFilters.endTime
-        : true;
+      ? row.endTime[0] <= meetingFilters.endTime
+      : true;
 
     return (
-        matchesSearch &&
-        matchesTeacher &&
-        matchesCourse &&
-        matchesStatus &&
-        matchesStartDate &&
-        matchesEndDate &&
-        matchesStartTime &&
-        matchesEndTime
+      matchesSearch &&
+      matchesTeacher &&
+      matchesCourse &&
+      matchesStatus &&
+      matchesStartDate &&
+      matchesEndDate &&
+      matchesStartTime &&
+      matchesEndTime
     );
-});
+  });
 
   const totalPages = Math.ceil(filteredClassData.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -195,7 +195,7 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Student Class"  showBackPath={`/admin-main/ui/studentlist?studentId=${studentId}`} showBackButton />
+      <AdminHeader currentSection="Student Class" showBackPath={`/admin-main/ui/studentlist?studentId=${studentId}`} showBackButton />
       <div>
         <div className="rounded-lg overflow-hidden">
           <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
@@ -244,11 +244,10 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
                   paginatedClassData.map((row, index) => (
                     <tr
                       key={row._id}
-                      className={`text-center dark:text-white ${
-                        index % 2 === 0
+                      className={`text-center dark:text-white ${index % 2 === 0
                           ? "bg-[#fff] dark:bg-[#2C2C2C]"
                           : "bg-[#F8F8F8] dark:bg-[#303030]"
-                      }`}
+                        }`}
                     >
                       <td className="p-3 text-left">{row.classId}</td>
                       <td className="p-3 text-left">{row.teacher?.teacherName}</td>
@@ -284,7 +283,7 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
         {/* Filter Modal */}
         {isFilterModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
-<div className="bg-white p-6 rounded-xl w-[400px] relative dark:bg-[#252525] shadow-xl">
+            <div className="bg-white p-6 rounded-xl w-[400px] relative dark:bg-[#252525] shadow-xl">
               <button
                 className="absolute top-4 right-4 text-gray-400 text-2xl"
                 onClick={() => setIsFilterModalOpen(false)}
@@ -301,56 +300,56 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
                   onChange={(e) => setMeetingFilters({ ...meetingFilters, teacher: e.target.value })}
                 />
               </div>
-             <div className="mb-4">
-  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
-    Course
-  </label>
+              <div className="mb-4">
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  Course
+                </label>
 
-  <select
-    className="w-full px-3 py-2 border rounded text-xs dark:text-white dark:border-[#5C5C5C] dark:bg-[#343434]"
-    value={meetingFilters.course}
-    onChange={(e) =>
-      setMeetingFilters({ ...meetingFilters, course: e.target.value })
-    }
-  >
-    <option value="">Select Course</option>
-    <option value="Quran">Quran</option>
-    <option value="Arabic">Arabic</option>
-    <option value="Islamic Studies	">Islamic Studies	</option>
+                <select
+                  className="w-full px-3 py-2 border rounded text-xs dark:text-white dark:border-[#5C5C5C] dark:bg-[#343434]"
+                  value={meetingFilters.course}
+                  onChange={(e) =>
+                    setMeetingFilters({ ...meetingFilters, course: e.target.value })
+                  }
+                >
+                  <option value="">Select Course</option>
+                  <option value="Quran">Quran</option>
+                  <option value="Arabic">Arabic</option>
+                  <option value="Islamic Studies	">Islamic Studies	</option>
 
-    {/* If you have dynamic course list, map here */}
-    {/* 
+                  {/* If you have dynamic course list, map here */}
+                  {/* 
     {courseList.map((course) => (
       <option key={course._id} value={course.courseName}>
         {course.courseName}
       </option>
     ))}
     */}
-  </select>
-</div>
+                </select>
+              </div>
 
               <div className="mb-4">
                 <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Date</label>
-                    <div className="flex gap-2">
-                <input
-                  type="date"
-                  className="w-1/2 border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
-                  value={meetingFilters.fromDate}
-                  onChange={(e) => setMeetingFilters({ ...meetingFilters, fromDate: e.target.value })}
-                />
-                <input
-                  type="date"
-                  className="w-1/2 border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
-                  value={meetingFilters.toDate}
-                  onChange={(e) => setMeetingFilters({ ...meetingFilters, toDate: e.target.value })}
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    className="w-1/2 border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                    value={meetingFilters.fromDate}
+                    onChange={(e) => setMeetingFilters({ ...meetingFilters, fromDate: e.target.value })}
+                  />
+                  <input
+                    type="date"
+                    className="w-1/2 border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                    value={meetingFilters.toDate}
+                    onChange={(e) => setMeetingFilters({ ...meetingFilters, toDate: e.target.value })}
+                  />
                 </div>
-                </div>
+              </div>
               <div className="mb-4">
                 <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">Start Time</label>
                 <input
                   type="time"
-      className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                  className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
                   value={meetingFilters.startTime}
                   onChange={(e) => setMeetingFilters({ ...meetingFilters, startTime: e.target.value })}
                 />
@@ -364,7 +363,7 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
                   onChange={(e) => setMeetingFilters({ ...meetingFilters, endTime: e.target.value })}
                 />
               </div> */}
-                            <div className="mb-6">
+              <div className="mb-6">
                 <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">Status</label>
                 <select
                   className="w-full border rounded-md p-2 text-[12px] dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"

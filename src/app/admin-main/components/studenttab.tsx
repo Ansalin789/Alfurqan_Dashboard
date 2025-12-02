@@ -4,6 +4,7 @@ import axios from "axios";
 import { MdTune } from "react-icons/md";
 import { PieChart, Pie, Cell } from "recharts";
 import { useRouter } from "next/navigation";
+import Pagination from "@/components/Pagination";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.blackstoneinfomaticstech.com";
 
@@ -15,6 +16,7 @@ type TabbedTableProps = {
 // types.ts (or wherever you define your types)
 interface ClassSchedule {
   _id: string;
+  classId: string;
   package: string;
   startDate: string;
   endDate: string;
@@ -63,7 +65,7 @@ interface StudentItem {
   _id: string;
   username: string;
   password: string;
-  course:string;
+  course: string;
   role: string;
   status: string;
   createdDate: string;
@@ -178,7 +180,7 @@ interface AssignmentType {
     _id: string;
     status: string;
   }[];
- 
+
 }
 
 // Define the PaymentResponse interface
@@ -200,7 +202,7 @@ interface PaymentDetail {
   _id: string;
   userId: string;
   userName: string;
-  course:string;
+  course: string;
   paymentStatus: string;
   paymentAmount: string;
   paymentResponse: PaymentResponse;
@@ -238,7 +240,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // Define itemsPerPage only once
+  const itemsPerPage = 5;
 
   const [dashboardCounts, setDashboardCounts] = useState({
     totalLevel: 0,
@@ -268,29 +270,29 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
   });
 
   const [isCourseFilterModalOpen, setIsCourseFilterModalOpen] = useState(false);
-  const [isAssignmentFilterModalOpen, setIsAssignmentFilterModalOpen] = useState(false); 
+  const [isAssignmentFilterModalOpen, setIsAssignmentFilterModalOpen] = useState(false);
 
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-       
+
         const token = localStorage.getItem("AdminAuthToken");
-       
+
         if (!token || !studentId || !courseName) {
-          console.error("❌ studentId or courseName missing in localStorage or props"); 
+          console.error("❌ studentId or courseName missing in localStorage or props");
           return;
         }
- 
+
         const response = await axios.get(`${API_BASE_URL}/dashboard/student/counts`, {
           params: { studentId, courseName },
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
-           
+
           },
         });
- 
+
         setDashboardCounts({
           totalLevel: Number(response.data.totalLevel) || 0,
           totalAttendance: Number(response.data.totalAttendance) || 0,
@@ -301,16 +303,16 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
 
 
         setMaxDuration(Number(response.data.totalDuration));
-        setMaxClasses(Number(response.data.totalClasses)); 
+        setMaxClasses(Number(response.data.totalClasses));
 
       } catch (error) {
         console.error("❌ Error fetching dashboard counts:", error);
       }
     };
- 
+
     fetchData();
-  }, [studentId, courseName]); 
- 
+  }, [studentId, courseName]);
+
 
   const data = [
     {
@@ -355,7 +357,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
       }
     }
   }, [studentId]);
- 
+
 
   const fetchStudentDetails = async (token: string, studentId: string) => {
     try {
@@ -459,12 +461,12 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
     }).toLowerCase();
 
     const matchesSearch =
-      row._id.toLowerCase().includes(search) || 
-      row.teacher.teacherName.toLowerCase().includes(search) || 
-      row.course.courseName.toLowerCase().includes(search) || 
+      row._id.toLowerCase().includes(search) ||
+      row.teacher.teacherName.toLowerCase().includes(search) ||
+      row.course.courseName.toLowerCase().includes(search) ||
       formattedDate.includes(search) ||
-      row.startTime[0].includes(search); 
-    return matchesSearch; 
+      row.startTime[0].includes(search);
+    return matchesSearch;
   });
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -490,13 +492,13 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
     indexOfFirstItem,
     indexOfLastItem
   );
-  const handleViewDetails = (studentId : string) => {
+  const handleViewDetails = (studentId: string) => {
     router.push(`/admin-main/ui/studentclass?studentId=${studentId}`);
   };
-  const handleViewDetailsAssignments = (studentId : string) => {
+  const handleViewDetailsAssignments = (studentId: string) => {
     router.push(`/admin-main/ui/studentclassAssignments?studentId=${studentId}`);
   };
-  const handleViewDetailsAssessments = (studentId : string) => {
+  const handleViewDetailsAssessments = (studentId: string) => {
     router.push(`/admin-main/ui/studentclassAssessments?studentId=${studentId}`);
   };
   const [assignments, setAssignments] = useState<AssignmentType[]>([]);
@@ -515,9 +517,9 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
     dueDateFrom: "",
     dueDateTo: "",
     status: "",
-    classType: "" 
+    classType: ""
   });
- 
+
 
   // Map assignment status for display and filtering
   const mapStatus = (status?: string) => {
@@ -647,7 +649,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
   // Apply filters to the appropriate tab
   const filteredPendingAssignments = filterAssignments(pendingAssignments);
   const filteredCompletedAssignments = filterAssignments(completedAssignments);
- 
+
   const toggleDropdown = (id: string) => {
     setOpenDropdownId((prev) => (prev === id ? null : id));
   };
@@ -689,7 +691,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
 
 
   // Fetch payment history
-useEffect(() => {
+  useEffect(() => {
     const fetchPaymentHistory = async () => {
       try {
         const token = localStorage.getItem("AdminAuthToken");
@@ -758,7 +760,7 @@ useEffect(() => {
       startTime: "",
       endTime: "",
     });
-    setIsFilterModalOpen(false); // Close the modal
+    // setIsFilterModalOpen(false);
   };
 
 
@@ -831,6 +833,10 @@ useEffect(() => {
     );
   });
 
+  const totalPages = Math.ceil(filteredCourseData.length / itemsPerPage);
+  const payment = Math.ceil(filteredPaymentData.length / itemsPerPage);
+  const assignment = Math.ceil(filteredAssignmentData.length / itemsPerPage);
+
   return (
     <div className=" overflow-x-auto mt-4">
       {/* Tabs */}
@@ -839,11 +845,10 @@ useEffect(() => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-3 py-1 ${
-              activeTab === tab
-                ? "border-b-2 border-b-[#576CBC] text-[#576CBC]"
-                : "text-[#010E30] dark:text-white"
-            }`}
+            className={`px-3 py-1 ${activeTab === tab
+              ? "border-b-2 border-b-[#576CBC] text-[#576CBC]"
+              : "text-[#010E30] dark:text-white"
+              }`}
           >
             {tab}
           </button>
@@ -883,7 +888,7 @@ useEffect(() => {
                 <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                   <tr className="font-medium">
                     <th className="p-4 font-semibold text-[12px] text-left">
-                     Class ID
+                      Class ID
                     </th>
                     <th className="p-4 font-semibold text-[12px] text-left">
                       Teacher Name
@@ -906,14 +911,13 @@ useEffect(() => {
                   {paginatedClassData.length > 0 ? (
                     paginatedClassData.map((row, index) => (
                       <tr
-                        key={row._id}
-                        className={`text-left dark:text-white ${
-                          index % 2 === 0
-                            ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                            : "bg-[#F8F8F8] dark:bg-[#303030]"
-                        }`}
+                        key={row.classId}
+                        className={`text-left dark:text-white ${index % 2 === 0
+                          ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                          : "bg-[#F8F8F8] dark:bg-[#303030]"
+                          }`}
                       >
-                        <td className="p-3">{row._id}</td>
+                        <td className="p-3">{row.classId}</td>
                         <td className="p-3">{row.teacher.teacherName}</td>
                         <td className="p-3">{row.course.courseName}</td>
                         <td className="p-3">
@@ -928,13 +932,12 @@ useEffect(() => {
                         </td>
                         <td className="p-3">
                           <span
-                            className={`inline-flex items-center justify-center w-24 h-6 px-3 py-1 rounded-sm whitespace-nowrap ${
-                              row.scheduleStatus === "Rescheduled"
-                                ? "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200"
-                                : row.scheduleStatus === "Scheduled"
+                            className={`inline-flex items-center justify-center w-24 h-6 px-3 py-1 rounded-sm whitespace-nowrap ${row.scheduleStatus === "Rescheduled"
+                              ? "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200"
+                              : row.scheduleStatus === "Scheduled"
                                 ? "bg-[#ececfd] text-[#002c5f] dark:bg-[#2e333c] dark:text-[#fff]"
                                 : " bg-[#ECFDF3] dark:bg-[#2E3C2E] dark:text-[#377E36] text-[#377E36]"
-                            }`}
+                              }`}
                           >
                             {row.scheduleStatus}
                           </span>
@@ -962,8 +965,8 @@ useEffect(() => {
                 >
                   &times;
                 </button>
-                <h2 className="text-lg font-semibold mb-6 dark:text-white">Filter by</h2>
-               
+                <h2 className="text-[16px] font-semibold mb-6 dark:text-white">Filter by</h2>
+
                 <div className="mb-4">
                   <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Teacher Name</label>
                   <input
@@ -973,62 +976,62 @@ useEffect(() => {
                     onChange={(e) => setMeetingFilters({ ...meetingFilters, teacher: e.target.value })}
                   />
                 </div>
-               
+
                 <div className="mb-4">
-  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
-    Course
-  </label>
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                    Course
+                  </label>
 
-  <select
-    className="w-full px-3 py-2 border rounded text-xs dark:text-white dark:border-[#5C5C5C] dark:bg-[#343434]"
-    value={meetingFilters.course}
-    onChange={(e) =>
-      setMeetingFilters({ ...meetingFilters, course: e.target.value })
-    }
-  >
-    <option value="">Select Course</option>
-    <option value="Quran">Quran</option>
-    <option value="Arabic">Arabic</option>
-    <option value="Islamic Studies ">Islamic Studies </option>
-  </select>
-</div>
+                  <select
+                    className="w-full px-3 py-2 border rounded text-xs dark:text-white dark:border-[#5C5C5C] dark:bg-[#343434]"
+                    value={meetingFilters.course}
+                    onChange={(e) =>
+                      setMeetingFilters({ ...meetingFilters, course: e.target.value })
+                    }
+                  >
+                    <option value="">Select Course</option>
+                    <option value="Quran">Quran</option>
+                    <option value="Arabic">Arabic</option>
+                    <option value="Islamic Studies ">Islamic Studies </option>
+                  </select>
+                </div>
 
-               
+
                 <div className="mb-4">
                   <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Date</label>
                   <div className="flex gap-2">
-                  <input
-                    type="date"
-                    className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
-                    value={meetingFilters.fromDate}
-                    onChange={(e) => setMeetingFilters({ ...meetingFilters, fromDate: e.target.value })}
-                  />
-              <input
-                    type="date"
-                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                    value={meetingFilters.toDate}
-                    onChange={(e) => setMeetingFilters({ ...meetingFilters, toDate: e.target.value })}
-                  />
-                </div>
+                    <input
+                      type="date"
+                      className="w-full border rounded-md p-2 text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] dark:[color-scheme:dark]"
+                      value={meetingFilters.fromDate}
+                      onChange={(e) => setMeetingFilters({ ...meetingFilters, fromDate: e.target.value })}
+                    />
+                    <input
+                      type="date"
+                      className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] dark:[color-scheme:dark]"
+                      value={meetingFilters.toDate}
+                      onChange={(e) => setMeetingFilters({ ...meetingFilters, toDate: e.target.value })}
+                    />
+                  </div>
                 </div>
 
                 <div className="mb-4">
                   <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Time</label>
                   <div className="flex gap-2">
-                  <input
-                    type="time"
-                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                    value={meetingFilters.startTime}
-                    onChange={(e) => setMeetingFilters({ ...meetingFilters, startTime: e.target.value })}
-                  />
-               
-                  <input
-                    type="time"
-                    className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                    value={meetingFilters.endTime}
-                    onChange={(e) => setMeetingFilters({ ...meetingFilters, endTime: e.target.value })}
-                  />
-                </div>
+                    <input
+                      type="time"
+                      className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] dark:[color-scheme:dark]"
+                      value={meetingFilters.startTime}
+                      onChange={(e) => setMeetingFilters({ ...meetingFilters, startTime: e.target.value })}
+                    />
+
+                    <input
+                      type="time"
+                      className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] dark:[color-scheme:dark]"
+                      value={meetingFilters.endTime}
+                      onChange={(e) => setMeetingFilters({ ...meetingFilters, endTime: e.target.value })}
+                    />
+                  </div>
                 </div>
                 <div className="mb-4">
                   <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Status</label>
@@ -1047,28 +1050,28 @@ useEffect(() => {
                 <div className="flex justify-end gap-3">
                   <button
                     onClick={handleResetFilters}
-                    className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+                    className="px-3 py-1 text-[12px] rounded-md border border-[#576CBC] text-[#576CBC] font-medium hover:bg-[#EEF1FF] dark:hover:bg-[#343434]"
                   >
                     Reset
                   </button>
                   <button
-                    className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                    className="px-3 text-[12px] py-1 bg-[#576CBC] text-white rounded-md font-medium hover:bg-[#475ab1]"
                     onClick={handleApplyFilters}
                   >
-                    Apply Filters
+                    Apply
                   </button>
                 </div>
               </div>
             </div>
           )}
           <div className="flex justify-end mt-4">
-                  <button
-                    className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
-                    onClick={()=>handleViewDetails(studentId)}
-                  >
-                    View All
-                  </button>
-                </div>
+            <button
+              className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
+              onClick={() => handleViewDetails(studentId)}
+            >
+              View All
+            </button>
+          </div>
         </div>
       )}
 
@@ -1086,7 +1089,7 @@ useEffect(() => {
                   &times;
                 </button>
                 <h2 className="text-lg font-semibold mb-6 dark:text-white">Filter by</h2>
-               
+
                 <div className="mb-4">
                   <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Course Name</label>
                   <input
@@ -1153,54 +1156,54 @@ useEffect(() => {
           )}
           {/* Donut/Progress Grid */}
           <div className="grid grid-cols-4 gap-4 text-left mb-6">
-        {data.map((item, idx) => (
-          <div
-            key={idx}
-            className="p-4 rounded-xl shadow-lg w-full bg-gradient-to-b from-white to-[#F9FAFB] dark:from-[#343434] dark:to-[#2A2A2A]"
-          >
-            <h3 className="text-[#010E30] dark:text-white text-[14px] font-medium mb-2">
-              {item.title}
-            </h3>
-            <div className="flex justify-center">
-              <div className="relative w-[80px] h-[80px]">
-                <PieChart width={80} height={80}>
-                  <Pie
-                    data={[{ value: 100 }]}
-                    dataKey="value"
-                    innerRadius={26}
-                    outerRadius={35}
-                    startAngle={90}
-                    endAngle={-270}
-                    stroke="none"
-                    isAnimationActive={false}
-                  >
-                    <Cell fill={item.bgColor} />
-                  </Pie>
-                  <Pie
-                    data={[
-                      { value: item.percentage },
-                      { value: 100 - item.percentage },
-                    ]}
-                    dataKey="value"
-                    innerRadius={24}
-                    outerRadius={38}
-                    startAngle={90}
-                    endAngle={-270}
-                    cornerRadius={2}
-                    stroke="none"
-                    isAnimationActive={false}
-                  >
-                    <Cell fill={item.ringColor} />
-                    <Cell fill="transparent" />
-                  </Pie>
-                </PieChart>
-                <div className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold text-[#010E30] dark:text-white">
-                  {item.value}
+            {data.map((item, idx) => (
+              <div
+                key={idx}
+                className="p-4 rounded-xl shadow-lg w-full bg-gradient-to-b from-white to-[#F9FAFB] dark:from-[#343434] dark:to-[#2A2A2A]"
+              >
+                <h3 className="text-[#010E30] dark:text-white text-[14px] font-medium mb-2">
+                  {item.title}
+                </h3>
+                <div className="flex justify-center">
+                  <div className="relative w-[80px] h-[80px]">
+                    <PieChart width={80} height={80}>
+                      <Pie
+                        data={[{ value: 100 }]}
+                        dataKey="value"
+                        innerRadius={26}
+                        outerRadius={35}
+                        startAngle={90}
+                        endAngle={-270}
+                        stroke="none"
+                        isAnimationActive={false}
+                      >
+                        <Cell fill={item.bgColor} />
+                      </Pie>
+                      <Pie
+                        data={[
+                          { value: item.percentage },
+                          { value: 100 - item.percentage },
+                        ]}
+                        dataKey="value"
+                        innerRadius={24}
+                        outerRadius={38}
+                        startAngle={90}
+                        endAngle={-270}
+                        cornerRadius={2}
+                        stroke="none"
+                        isAnimationActive={false}
+                      >
+                        <Cell fill={item.ringColor} />
+                        <Cell fill="transparent" />
+                      </Pie>
+                    </PieChart>
+                    <div className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold text-[#010E30] dark:text-white">
+                      {item.value}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        ))}
+            ))}
           </div>
           <div className="rounded-xl overflow-hidden">
             <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
@@ -1214,13 +1217,13 @@ useEffect(() => {
                   setCurrentPage(1);
                 }}
               />
-          <div
-            className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
-            onClick={() => setIsCourseFilterModalOpen(true)} // Open filter modal on click
-          >
-            <MdTune className="w-4 h-4" />
-            <span>Filter</span>
-          </div>
+              <div
+                className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+                onClick={() => setIsCourseFilterModalOpen(true)} // Open filter modal on click
+              >
+                <MdTune className="w-4 h-4" />
+                <span>Filter</span>
+              </div>
               <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
                 Showing{" "}
                 {filteredCourseData.length === 0
@@ -1256,14 +1259,13 @@ useEffect(() => {
                 </thead>
                 <tbody className="text-[10px] text-[#1D2939]">
                   {filteredCourseData.length > 0 ? (
-                    filteredCourseData.map((row, index) => (
+                    filteredCourseData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((row, index) => (
                       <tr
                         key={row.id}
-                        className={`text-left dark:text-white ${
-                          index % 2 === 0
-                            ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                            : "bg-[#F8F8F8] dark:bg-[#303030]"
-                        }`}
+                        className={`text-left dark:text-white ${index % 2 === 0
+                          ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                          : "bg-[#F8F8F8] dark:bg-[#303030]"
+                          }`}
                       >
                         <td className="p-3">{row.id}</td>
                         <td className="p-3">{row.name}</td>
@@ -1277,11 +1279,10 @@ useEffect(() => {
                         <td className="p-3">{row.package}</td>
                         <td className="p-3">
                           <span
-                            className={`inline-flex items-center justify-center w-16 h-6 px-3 py-1 rounded-sm ${
-                              row.status === "Active"
-                                ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] dark:text-[#377E36] text-[#377E36]"
-                                : "bg-[#ececfd] text-[#002c5f] dark:bg-[#2e333c] dark:text-[#fff]"
-                            }`}
+                            className={`inline-flex items-center justify-center w-16 h-6 px-3 py-1 rounded-sm ${row.status === "Active"
+                              ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] dark:text-[#377E36] text-[#377E36]"
+                              : "bg-[#ececfd] text-[#002c5f] dark:bg-[#2e333c] dark:text-[#fff]"
+                              }`}
                           >
                             {row.status}
                           </span>
@@ -1299,26 +1300,13 @@ useEffect(() => {
               </table>
             </div>
           </div>
-          {Math.ceil(coursesData.length / itemsPerPage) > 1 && (
-            <div className="flex justify-end mt-4">
-              <div className="flex gap-2">
-                {Array.from(
-                  { length: Math.ceil(coursesData.length / itemsPerPage) },
-                  (_, i) => (
-                    <button
-                      key={i}
-                      className={`w-6 h-6 text-[13px] flex items-center justify-center rounded ${
-                        currentPage === i + 1
-                          ? "bg-[#1C3557] text-white"
-                          : "text-[#1C3557] border border-[#1C3557]"
-                      }`}
-                      onClick={() => setCurrentPage(i + 1)}
-                    >
-                      {i + 1}
-                    </button>
-                  )
-                )}
-              </div>
+          {totalPages > 1 && (
+            <div className="flex justify-end">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
             </div>
           )}
         </div>
@@ -1360,13 +1348,13 @@ useEffect(() => {
                 </thead>
                 <tbody className="text-[10px] text-[#1D2939]">
                   {filteredPaymentData.length > 0 ? (
-                    filteredPaymentData.map((payment, index) => (
+                    filteredPaymentData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((payment, index) => (
                       <tr key={payment._id} className={`text-left dark:text-white ${index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"}`}>
                         <td className="p-3">{payment._id}</td>
-                        <td className="p-3">{new Date(payment.paymentDate).toLocaleDateString("en-GB",{
-                          day:'numeric',
-                          month:'short',
-                          year:'numeric',
+                        <td className="p-3">{new Date(payment.paymentDate).toLocaleDateString("en-GB", {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
                         })}</td>
                         <td className="p-3">{payment.course}</td>
                         <td className="p-3">{payment.paymentAmount}</td>
@@ -1386,6 +1374,15 @@ useEffect(() => {
               </table>
             </div>
           </div>
+          {payment > 1 && (
+            <div className="flex justify-end">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
         </div>
       )}
 
@@ -1456,11 +1453,10 @@ useEffect(() => {
                       return (
                         <tr
                           key={row.subject + row.date + index}
-                          className={`text-left dark:text-white ${
-                            index % 2 === 0
-                              ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                              : "bg-[#F8F8F8] dark:bg-[#303030]"
-                          }`}
+                          className={`text-left dark:text-white ${index % 2 === 0
+                            ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                            : "bg-[#F8F8F8] dark:bg-[#303030]"
+                            }`}
                         >
                           <td className="p-3">{row.subject}</td>
                           <td className="p-3">{row.date}</td>
@@ -1487,36 +1483,14 @@ useEffect(() => {
               </table>
             </div>
           </div>
-          {Math.ceil(assessment.length / itemsPerPage) > 1 && (
-            <div className="flex justify-end mt-4">
-              <div className="flex gap-2">
-                {Array.from(
-                  { length: Math.ceil(assessment.length / itemsPerPage) },
-                  (_, i) => (
-                    <button
-                      key={i}
-                      className={`w-6 h-6 text-[13px] flex items-center justify-center rounded ${
-                        currentPage === i + 1
-                          ? "bg-[#1C3557] text-white"
-                          : "text-[#1C3557] border border-[#1C3557]"
-                      }`}
-                      onClick={() => setCurrentPage(i + 1)}
-                    >
-                      {i + 1}
-                    </button>
-                  )
-                )}
-              </div>
-              <div className="flex justify-end mt-4">
-                  <button
-                    className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
-                    onClick={()=>handleViewDetailsAssessments(studentId)}
-                  >
-                    View All
-                  </button>
-                </div>
+          {assignment > 1 && (
+            <div className="flex justify-end">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
             </div>
-           
           )}
         </div>
       )}
@@ -1536,7 +1510,7 @@ useEffect(() => {
                   // Reset pagination if needed
                 }}
               />
-             
+
               <div
                 className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
                 onClick={() => setIsAssignmentFilterModalOpen(true)} // Open filter modal on click
@@ -1565,7 +1539,7 @@ useEffect(() => {
                     ].map((header, idx) => (
                       <th
                         key={idx}
-                        className="p-4 font-semibold text-[12px] text-left border border-[#4C6993]"
+                        className="p-3 font-semibold text-[12px] text-left"
                       >
                         {header}
                       </th>
@@ -1600,16 +1574,16 @@ useEffect(() => {
                   )}
                 </tbody>
               </table>
-              <div className="flex justify-end mt-4">
-                  <button
-                    className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
-                    onClick={()=>handleViewDetailsAssignments(studentId)}
-                  >
-                    View All
-                  </button>
-                </div>
-            </div>
+              </div>
           </div>
+          <div className="flex justify-end mt-4">
+                <button
+                  className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
+                  onClick={() => handleViewDetailsAssignments(studentId)}
+                >
+                  View All
+                </button>
+            </div>
 
           {/* Filter Modal for Assignments */}
           {isAssignmentFilterModalOpen && (
@@ -1621,8 +1595,8 @@ useEffect(() => {
                 >
                   &times;
                 </button>
-                <h2 className="text-lg font-semibold mb-6 dark:text-white">Filter by</h2>
-               
+                <h2 className="text-[16px] font-semibold mb-6 dark:text-white">Filter by</h2>
+
                 <div className="mb-4">
                   <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Assignment Name</label>
                   <input
@@ -1671,13 +1645,13 @@ useEffect(() => {
                   <div className="flex gap-2">
                     <input
                       type="date"
-                      className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                      className="w-full border rounded-md p-2 text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] dark:[color-scheme:dark]"
                       value={filters.assignedDateFrom}
                       onChange={(e) => handleFilterChange('assignedDateFrom', e.target.value)}
                     />
                     <input
                       type="date"
-                      className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                      className="w-full border rounded-md p-2 text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] dark:[color-scheme:dark]"
                       value={filters.assignedDateTo}
                       onChange={(e) => handleFilterChange('assignedDateTo', e.target.value)}
                     />
@@ -1689,13 +1663,13 @@ useEffect(() => {
                   <div className="flex gap-2">
                     <input
                       type="date"
-                      className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                      className="w-full border rounded-md p-2 text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] dark:[color-scheme:dark]"
                       value={filters.dueDateFrom}
                       onChange={(e) => handleFilterChange('dueDateFrom', e.target.value)}
                     />
                     <input
                       type="date"
-                      className="w-full border rounded-md p-2 text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                      className="w-full border rounded-md p-2 text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] dark:[color-scheme:dark]"
                       value={filters.dueDateTo}
                       onChange={(e) => handleFilterChange('dueDateTo', e.target.value)}
                     />
@@ -1707,18 +1681,18 @@ useEffect(() => {
                 <div className="flex justify-end gap-3">
                   <button
                     onClick={resetFilters}
-                    className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+                    className="px-3 py-1 text-[12px] rounded-md border border-[#576CBC] text-[#576CBC] font-medium hover:bg-[#EEF1FF] dark:hover:bg-[#343434]"
                   >
                     Reset
                   </button>
                   <button
-                    className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                    className="px-3 text-[12px] py-1 bg-[#576CBC] text-white rounded-md font-medium hover:bg-[#475ab1]"
                     onClick={() => {
                       setIsAssignmentFilterModalOpen(false);
                       // Apply filters logic here
                     }}
                   >
-                    Apply Filters
+                    Apply
                   </button>
                 </div>
               </div>

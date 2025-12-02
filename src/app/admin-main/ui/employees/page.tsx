@@ -7,6 +7,9 @@ import { useRouter } from "next/navigation";
 import { Search, MoreVertical } from "lucide-react";
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
+import { FaEye } from "react-icons/fa";
+import { FaRegEdit } from "react-icons/fa";
+
 import {
   BarChart,
   Bar,
@@ -35,6 +38,7 @@ import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 import ReactDOM from "react-dom";
 import AdminHeader from "../../components/AdminHeader";
+import NewDesignation from "../../components/NewDesignation";
 
 // Register chart.js modules
 ChartJS.register(
@@ -277,6 +281,15 @@ const Page = () => {
   const [genderData, setGenderData] = useState<GenderChartData[]>([]);
   const [countryData, setCountryData] = useState<CountryStat[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+  const openPopup = () => {
+    setIsPopupOpen(true);
+  };
+
+  const closePopup = () => {
+    setIsPopupOpen(false);
+  };
   const [chartData, setChartData] = useState<
     { name: string; value: number; color: string }[]
   >([]);
@@ -986,16 +999,14 @@ const Page = () => {
     if (active && payload && payload.length) {
       return (
         <div
-          className={`p-2 rounded shadow-md text-[12px] border ${
-            isDark
+          className={`p-2 rounded shadow-md text-[12px] border ${isDark
               ? "bg-[#22223b] text-white border-[#444]"
               : "bg-white text-[#22223b] border-gray-200"
-          }`}
+            }`}
         >
           <div
-            className={`font-normal ${
-              isDark ? "text-white" : "text-[#22223b]"
-            }`}
+            className={`font-normal ${isDark ? "text-white" : "text-[#22223b]"
+              }`}
           >
             {payload[0].payload.name}
           </div>
@@ -1054,41 +1065,37 @@ const Page = () => {
           {/* Tab Navigation */}
           <div className="flex flex-wrap gap-2 sm:space-x-4 py-2 overflow-x-auto">
             <button
-              className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
-                activeTab === "teachers"
+              className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${activeTab === "teachers"
                   ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
                   : ""
-              }`}
+                }`}
               onClick={() => setActiveTab("teachers")}
             >
               Teachers
             </button>
             <button
-              className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
-                activeTab === "otheremployees"
+              className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${activeTab === "otheremployees"
                   ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
                   : ""
-              }`}
+                }`}
               onClick={() => setActiveTab("otheremployees")}
             >
               Other Employees
             </button>
             <button
-              className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
-                activeTab === "recruitment"
+              className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${activeTab === "recruitment"
                   ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
                   : ""
-              }`}
+                }`}
               onClick={() => setActiveTab("recruitment")}
             >
               Recruitment
             </button>
             <button
-              className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
-                activeTab === "leave"
+              className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${activeTab === "leave"
                   ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
                   : ""
-              }`}
+                }`}
               onClick={() => setActiveTab("leave")}
             >
               Leave
@@ -2112,6 +2119,34 @@ const Page = () => {
                                 {employee.gender}
                               </p>
                               <div className="flex flex-col justify-center gap-2 px-5 mt-2">
+                                <div className="flex justify-center gap-2">
+                                  <button
+                                    className="text-[12px] bg-[#576CBC] text-white px-[8px] py-[6px] rounded-md"
+                                    onClick={() =>
+                                      handleViewEmployee(
+                                        employee.userId,
+                                        employee._id
+                                      )
+                                    }
+                                  >
+                                    <FaEye size={16} />
+                                  </button>
+                                  <div>
+                                    <button
+                                      className="text-[12px] bg-[#576CBC] text-white px-[8px] py-[6px] rounded-md"
+                                      onClick={openPopup}
+                                    >
+                                      <FaRegEdit size={16} />
+                                    </button>
+
+                                    {isPopupOpen && (
+                                      <NewDesignation
+                                        onClose={closePopup}
+                                      />
+                                    )}
+                                  </div>
+                                </div>
+
                                 <button
                                   className="text-[12px] border border-[#576CBC] text-[#576CBC] dark:text-[#fff] px-2 py-1 rounded-lg"
                                   onClick={() =>
@@ -2124,17 +2159,7 @@ const Page = () => {
                                 >
                                   Portal Access
                                 </button>
-                                <button
-                                  className="text-[12px] bg-[#576CBC] text-white px-2 py-1 rounded-lg"
-                                  onClick={() =>
-                                    handleViewEmployee(
-                                      employee.userId,
-                                      employee._id
-                                    )
-                                  }
-                                >
-                                  View Profile
-                                </button>
+
                               </div>
                             </div>
                           </div>
@@ -2324,11 +2349,10 @@ const Page = () => {
                             return (
                               <tr
                                 key={item._id}
-                                className={`text-[12px] ${
-                                  index % 2 === 0
+                                className={`text-[12px] ${index % 2 === 0
                                     ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                     : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                }`}
+                                  }`}
                               >
                                 <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                                   {item.employeeId}
@@ -2649,7 +2673,7 @@ const Page = () => {
                                   type="text"
                                   value={
                                     selectedLeave?.status === "APPROVED" ||
-                                    selectedLeave?.status === "REJECTED"
+                                      selectedLeave?.status === "REJECTED"
                                       ? selectedLeave?.approvedDays || ""
                                       : approvedDays
                                   }
@@ -2679,7 +2703,7 @@ const Page = () => {
                                   type="date"
                                   value={
                                     selectedLeave?.status === "APPROVED" ||
-                                    selectedLeave?.status === "REJECTED"
+                                      selectedLeave?.status === "REJECTED"
                                       ? selectedLeave.fromDate || ""
                                       : fromDate
                                   }
@@ -2708,7 +2732,7 @@ const Page = () => {
                                   type="date"
                                   value={
                                     selectedLeave?.status === "APPROVED" ||
-                                    selectedLeave?.status === "REJECTED"
+                                      selectedLeave?.status === "REJECTED"
                                       ? selectedLeave?.toDate || ""
                                       : toDate
                                   }
@@ -2737,7 +2761,7 @@ const Page = () => {
                                   type="text"
                                   value={
                                     selectedLeave?.status === "APPROVED" ||
-                                    selectedLeave?.status === "REJECTED"
+                                      selectedLeave?.status === "REJECTED"
                                       ? selectedLeave?.deductionDays || ""
                                       : deductionDays
                                   }
@@ -2869,8 +2893,8 @@ const Page = () => {
                                 value={
                                   leaveFilterFrom
                                     ? leaveFilterFrom
-                                        .toISOString()
-                                        .split("T")[0]
+                                      .toISOString()
+                                      .split("T")[0]
                                     : ""
                                 }
                                 onChange={(e) =>
@@ -3024,9 +3048,8 @@ const Page = () => {
                 ].map((field, index) => (
                   <div
                     key={index}
-                    className={`flex flex-col ${
-                      field.full ? "col-span-2" : ""
-                    }`}
+                    className={`flex flex-col ${field.full ? "col-span-2" : ""
+                      }`}
                   >
                     <label className="text-xs font-medium text-gray-700 mb-1">
                       {field.label}
@@ -3039,10 +3062,10 @@ const Page = () => {
                           formData[field.name as keyof OtherEmployeess]
                         )
                           ? (
-                              formData[
-                                field.name as keyof OtherEmployeess
-                              ] as string[]
-                            ).join(", ")
+                            formData[
+                            field.name as keyof OtherEmployeess
+                            ] as string[]
+                          ).join(", ")
                           : formData[field.name as keyof OtherEmployeess] ?? ""
                       }
                       onChange={(e) => {
