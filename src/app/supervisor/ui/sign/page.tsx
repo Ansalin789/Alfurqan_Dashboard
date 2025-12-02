@@ -528,26 +528,26 @@ const SignIn: React.FC = () => {
           <div className="absolute inset-0 bg-black/25"></div>
 
           {/* Content */}
-         <div className="relative z-10 flex flex-col justify-between w-full h-full px-4 sm:px-6 lg:px-12 xl:px-20 py-6 sm:py-10">
+        <div className="relative z-10 flex flex-col justify-between w-full h-full px-4 sm:px-6 lg:px-10 py-6">
 
   {/* TOP CARD */}
   <div className="
-    bg-white rounded-2xl shadow-2xl
-    p-5 sm:p-7 lg:p-10
+    bg-white rounded-xl shadow-lg
+    p-4 sm:p-5 lg:p-6
     w-full 
-    max-w-[95%] sm:max-w-lg md:max-w-xl lg:max-w-3xl xl:max-w-[700px]
+    max-w-sm sm:max-w-md lg:max-w-xl
     mx-auto
-    mt-10 sm:mt-16 lg:mt-24 xl:mt-32
+    mt-14 sm:mt-28 lg:mt-32
   ">
-    <div className="flex flex-col md:flex-row items-center gap-6 lg:gap-10">
+    <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-5">
 
       {/* LEFT CONTENT */}
       <div className="flex-1 text-left w-full">
         <h2 className="
-          text-xl sm:text-2xl lg:text-[26px] xl:text-[30px]
-          font-extrabold leading-tight 
+          text-lg sm:text-xl lg:text-[20px]
+          font-bold leading-snug 
           text-[#576CBC]
-          mb-4 sm:mb-6
+          mb-3 sm:mb-4
         ">
           Connecting You to Qur'an,<br />
           Arabic, and the Wisdom of<br />
@@ -556,18 +556,14 @@ const SignIn: React.FC = () => {
 
         <p className="
           text-[#808080]
-          text-sm sm:text-base lg:text-[18px] xl:text-[20px]
+          text-sm sm:text-[15px] lg:text-[16px]
           leading-relaxed
-          mb-4 sm:mb-6
+          mb-3 sm:mb-4
         ">
           And We have certainly made the Qur'an easy for remembrance, so is there is any who will remember ?
         </p>
 
-        <p className="
-          text-[#808080]
-          text-xs sm:text-sm lg:text-[16px] xl:text-[18px]
-          font-medium
-        ">
+        <p className="text-[#808080] text-xs sm:text-sm lg:text-[15px] font-medium">
           Surah Al-Qamar (54:17)
         </p>
       </div>
@@ -578,11 +574,10 @@ const SignIn: React.FC = () => {
           src="/assets/images/close-up-hands-holding-diplomas-caps.svg"
           alt="supervisor"
           className="
-            w-40 h-40
-            sm:w-48 sm:h-48
-            lg:w-[260px] lg:h-[260px]
-            xl:w-[300px] xl:h-[300px]
-            object-cover rounded-2xl
+            w-36 h-36
+            sm:w-44 sm:h-44
+            lg:w-[200px] lg:h-[200px]
+            object-cover rounded-lg
           "
         />
       </div>
@@ -590,56 +585,41 @@ const SignIn: React.FC = () => {
   </div>
 
   {/* BOTTOM SECTION */}
-  <div className="text-center text-white mx-auto mt-8 sm:mt-12 lg:mt-16 mb-12 sm:mb-20">
+  <div className="text-center text-white mx-auto mt-3 sm:mt-6 mb-10">
 
-    <h2 className="
-      text-xl sm:text-2xl lg:text-3xl xl:text-4xl
-      font-semibold mb-3
-    ">
+    <h2 className="text-lg sm:text-xl lg:text-[22px] font-semibold mb-2">
       Supervisor Dashboard
     </h2>
 
     <p className="
       text-[#CFD9E0]
-      text-sm sm:text-base lg:text-[18px] xl:text-[20px]
+      text-sm sm:text-base
       leading-relaxed
-      max-w-sm sm:max-w-lg lg:max-w-xl
-      mx-auto mb-6
+      max-w-xs sm:max-w-md mx-auto mb-3
     ">
       Manage your entire educational platform with powerful administrative tools,
       user management systems, and comprehensive analytics dashboards.
     </p>
 
     {/* PAGINATION */}
-    <div className="flex items-center justify-center gap-5 mt-10 lg:mt-16">
+    <div className="flex items-center justify-center gap-4 mt-8">
 
-      <button className="
-        w-7 h-7 lg:w-9 lg:h-9 
-        flex items-center justify-center
-        text-[#A6B4E2] hover:text-white transition
-      ">
-        <ChevronLeft size={18} />
+      <button className="w-6 h-6 flex items-center justify-center text-[#A6B4E2] hover:text-white">
+        <ChevronLeft size={14} />
       </button>
 
-      {/* Indicators */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
+        <div className="w-2 h-2 rounded-full bg-[#A6B4E2]" />
 
-        <div className="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-[#A6B4E2]" />
-
-        <div className="w-3.5 h-3.5 lg:w-4.5 lg:h-4.5 flex items-center justify-center">
-          <div className="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-[#E8EBF9]" />
+        <div className="w-4 h-4 flex items-center justify-center">
+          <div className="w-2 h-2 rounded-full bg-[#E8EBF9]" />
         </div>
 
-        <div className="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-[#A6B4E2]" />
-
+        <div className="w-2 h-2 rounded-full bg-[#A6B4E2]" />
       </div>
 
-      <button className="
-        w-7 h-7 lg:w-9 lg:h-9
-        flex items-center justify-center
-        text-[#A6B4E2] hover:text-white transition
-      ">
-        <ChevronRight size={18} />
+      <button className="w-6 h-6 flex items-center justify-center text-[#A6B4E2] hover:text-white">
+        <ChevronRight size={14} />
       </button>
 
     </div>
@@ -647,6 +627,7 @@ const SignIn: React.FC = () => {
   </div>
 
 </div>
+
 
 
         </div>
