@@ -156,6 +156,7 @@ const TeacherDetails = () => {
   interface StudentInfo {
     _id: string;
     fullName: string;
+    firstName: string;
     courseName: string;
     studentId: string;
   }
@@ -366,7 +367,7 @@ const TeacherDetails = () => {
           sessionClassType: "TRIALCLASS",
 
           student: {
-            id : trialClass.student.studentRegisterId || "",
+            id : trialClass.student.studentId || "",
             studentId: trialClass.student?.studentId || "N/A",
             studentFirstName: trialClass.student?.name?.split(" ")[0] || "Trial",
             studentLastName: trialClass.student?.name?.split(" ").slice(1).join(" ") || "Student",
@@ -393,6 +394,7 @@ const TeacherDetails = () => {
       } else {
         console.log("No trial classes found or incorrect format.");
       }
+      setClassScheduleData(classScheduleData);
 
       const allClasses = [...regularClasses, ...trialClasses];
       console.log("All Classes Combined:", allClasses);
@@ -408,28 +410,47 @@ const TeacherDetails = () => {
     }
   };
 
-  const getUniqueStudentsFromSchedule = (
-    schedule: ClassSchedule[]
-  ): StudentInfo[] => {
-    const studentSet = new Set<string>();
-    const studentInfoArray: StudentInfo[] = [];
+const getUniqueStudentsFromSchedule = (
+  schedule: ClassSchedule[]
+): StudentInfo[] => {
+  const studentSet = new Set<string>();
+  const studentInfoArray: StudentInfo[] = [];
 
-    schedule.forEach((item: ClassSchedule) => {
-      if (item.student && item.student.studentId) {
-        const fullName = item.student.studentFirstName || "";
-        const courseName = item.course?.courseName || "";
-        const studentId = item.student.studentId;
-        const _id = item.student.id ?? '';
+  schedule.forEach((item: ClassSchedule, index) => {
+    console.log(`--- Processing item ${index} ---`);
+    console.log("Full student object:", item.student);
+    console.log("Student ID:", item.student?.studentId);
+    console.log("Student ID field:", item.student?.id);
+    console.log("Student first name:", item.student?.studentFirstName);
+    console.log("Student last name:", item.student?.studentLastName);
+    
+    if (item.student && item.student.studentId) {
+      console.log("Valid student found:", item.student);
+      const _id = item.student.id; // This should be the MongoDB ObjectId
+      const fullName = `${item.student.studentFirstName || ""} ${item.student.studentLastName || ""}`.trim();
+      const courseName = item.course?.courseName || "";
+      const studentId = item.student.studentId;
 
-        if (!studentSet.has(studentId)) {
-          studentSet.add(studentId);
-          studentInfoArray.push({ fullName, courseName, studentId, _id });
-        }
+      console.log(`Extracted - FullName: ${fullName}, Course: ${courseName}, StudentId: ${studentId}, _id: ${_id}`);
+
+      if (!studentSet.has(studentId) && _id !== studentId) {
+        console.log(`Extracted2 - FullName: ${fullName}, Course: ${courseName}, StudentId: ${studentId}, _id: ${_id}`);
+        studentSet.add(studentId);
+        studentInfoArray.push({ 
+          fullName, 
+          firstName: item.student.studentFirstName || "",
+          courseName, 
+          studentId, 
+          _id 
+        });
       }
-    });
-
-    return studentInfoArray;
-  };
+    }
+    console.log(`--- End item ${index} ---`);
+  });
+  
+  console.log("Final Unique Students Extracted:", studentInfoArray);
+  return studentInfoArray;
+};
 
   useEffect(() => {
     const fetchData = async () => {
@@ -476,6 +497,7 @@ const TeacherDetails = () => {
 
   useEffect(() => {
     if (classScheduleData.length > 0) {
+      console.log("Extracting unique students from class schedule data",classScheduleData);
       const uniqueStudents = getUniqueStudentsFromSchedule(classScheduleData);
       setStudentInfoList(uniqueStudents);
     }
@@ -836,9 +858,10 @@ const TeacherDetails = () => {
       ? scheduledClasses.length
       : completedClasses.length;
 
-  const handleViewDetails = (_id: string) => {
-    localStorage.setItem("studentManageID", _id);
-    router.push(`managestudentview?id=${_id}`);
+  const handleViewDetails = (id: string) => {
+    console.log("Viewing details for student ID:", id);
+    localStorage.setItem("studentManageID", id);
+    router.push(`managestudentview?id=${id}`);
   };
   return (
     <BaseLayout1>
@@ -851,7 +874,7 @@ const TeacherDetails = () => {
         <div className="flex gap-x-5 w-full">
           <div className="rounded-xl flex items-center p-6 w-[633px] h-[247px] border bg-[#5e6578] text-white ">
             <div className="flex flex-col items-center w-1/3 px-4 text-center">
-              <div className="relative mb-1 w-[160px] h-[160px]">
+              <div className="relative mb-3 w-[100px] h-[100px]">
                 <Image
                   src="/assets/images/student-portfolio.svg"
                   alt="Profile"
@@ -860,10 +883,10 @@ const TeacherDetails = () => {
                 />
               </div>
 
-              <h2 className="text-lg font-semibold text-white break-words mb-1">
+              <h2 className="text-sm font-semibold text-white break-words mb-1">
                 {teachers?.candidateFirstName}
               </h2>
-              <p className="text-[11px] text-[#C9C9C9] break-words word-wrap w-[200px] px-2">
+              <p className="text-[10px] text-[#C9C9C9] break-words word-wrap w-[200px] px-3">
                 {teachers?.candidateEmail}
               </p>
             </div>
@@ -873,7 +896,7 @@ const TeacherDetails = () => {
               <h3 className="text-[16px] font-semibold mb-4 text-[#ffff]">
                 Personal Info
               </h3>
-              <ul className="text-sm space-y-2 text-[#ffff]">
+              <ul className="text-xs space-y-2 text-[#ffff]">
                 <li className="flex justify-between ">
                   <span>Contact</span>
                   <span className="text-[#DADADA]/80 text-left">
@@ -961,7 +984,8 @@ const TeacherDetails = () => {
                       className="text-[12px] font-medium text-[#111827] dark:text-white cursor-pointer hover:underline"
                       onClick={() => handleViewDetails(student._id)}
                     >
-                      {student.fullName}
+                      {student.firstName[0].toUpperCase() +
+                        student.firstName.slice(1).toLowerCase()}
                     </span>
                   </div>
                   <span className="text-[11px] text-[#576CBC] font-medium whitespace-nowrap">

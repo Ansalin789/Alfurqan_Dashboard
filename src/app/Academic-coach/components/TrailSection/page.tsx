@@ -1604,7 +1604,7 @@ const TrailSection = () => {
                                   <button
                                     className="block w-full px-3 py-2 text-left text-[11px] text-[#010E30E5] hover:bg-gray-100 dark:text-white dark:hover:bg-[#3A3A3A]"
                                     onClick={() => {
-                                      handleClick(item._id.toString());
+                                      handleClick(item.trialId.toString());
                                       setOpenActionMenuForId(null);
                                     }}
                                   >
