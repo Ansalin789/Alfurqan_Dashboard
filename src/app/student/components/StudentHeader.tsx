@@ -7,6 +7,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { getSocket } from "@/app/utils/socket";
 import axios from "axios";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
+import NewCourse from "./newCourse";
 
 type Props = {
   readonly currentSection: string;
@@ -39,7 +40,7 @@ export default function StudentHeader({
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
   const [dashboardWrite, setDashboardWrite] = useState(false); // For Notifications
-
+  const [showNewCousre, setShowNewCousre] = useState(false);
   useEffect(() => {
     const roleAccessRaw = localStorage.getItem("StudentRolePermission");
     if (roleAccessRaw) {
@@ -113,6 +114,10 @@ export default function StudentHeader({
   const handleLogOut = () => {
     router.push("/student/ui/sign");
   };
+
+  const handleNewCourse = () => {
+    setShowNewCousre(true);
+  }
 
   // Mark as Seen
   const handleNotificationClick = async (notificationId: string) => {
@@ -282,6 +287,12 @@ export default function StudentHeader({
             {userName}
           </div>
           <hr className="border-gray-300 dark:border-gray-600 my-1" />
+          <button 
+          onClick={handleNewCourse}
+           className="w-full text-left px-4 py-2 text-sm text-[#576CBC] hover:bg-gray-100 dark:hover:bg-gray-700">
+            Add New Course
+          </button>
+                    <hr className="border-gray-300 dark:border-gray-600 my-1" />
           <button
             onClick={handleLogOut}
             className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -407,6 +418,7 @@ export default function StudentHeader({
                 </div>
               </div>
             )}
+            {showNewCousre && (<NewCourse onClose={() => setShowNewCousre(false)} />)}
     </div>
   );
 }
