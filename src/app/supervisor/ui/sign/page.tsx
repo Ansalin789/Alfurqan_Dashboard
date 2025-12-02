@@ -363,7 +363,15 @@ const SignIn: React.FC = () => {
             />
           </div>
 
-          <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 overflow-auto scrollbar-none -mt-8 lg:-mt-16 py-8 lg:py-0">
+<div
+  className="
+    flex-1
+    flex items-center justify-center
+    px-4 sm:px-6 lg:px-8
+    overflow-auto scrollbar-none
+    py-6
+  "
+>
             <div className="w-full max-w-md">
               <h2 className="text-2xl sm:text-[32px] font-bold text-black mb-2 text-center lg:text-left">Sign in</h2>
               <p className="text-[#718096] mb-6 sm:mb-8 text-sm sm:text-[14px] text-center lg:text-left">
