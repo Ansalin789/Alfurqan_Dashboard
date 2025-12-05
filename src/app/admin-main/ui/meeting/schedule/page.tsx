@@ -66,7 +66,6 @@ const CustomToolbar = ({ label, onViewChange, view }: any) => {
   );
 };
 const Schedules: React.FC = () => {
-  const [view, setView] = useState<string>(Views.MONTH);
   const [showSuccess] = useState(false);
   const [successMessage] = useState("");
   const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
@@ -548,11 +547,6 @@ const Schedules: React.FC = () => {
             </div>
           )}
 
-   
-
-
-
-      
     </BaseLayout4>
   );
 };

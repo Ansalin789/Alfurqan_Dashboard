@@ -397,7 +397,7 @@ const ManageStudents = () => {
         <div className="fixed inset-0 bg-opacity-40 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg w-[320px] relative dark:bg-[#252525]">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-sm font-semibold text-gray-800 dark:text-white">
+              <h2 className="text-[16px] font-semibold text-gray-800 dark:text-white">
                 Filter by
               </h2>
               <button
@@ -409,6 +409,22 @@ const ManageStudents = () => {
             </div>
 
             <div className="space-y-4">
+              
+              <div>
+                <label
+                  htmlFor="studentId"
+                  className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]"
+                >
+                  Student ID
+                </label>
+                <input
+                  value={filters.studentID}
+                  onChange={(e) =>
+                    setFilters({ ...filters, studentID: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                />
+              </div>
               <div>
                 <label
                   htmlFor="studentname"
@@ -422,22 +438,7 @@ const ManageStudents = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, studentName: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="studentId"
-                  className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]"
-                >
-                  Student ID
-                </label>
-                <input
-                  value={filters.studentID}
-                  onChange={(e) =>
-                    setFilters({ ...filters, studentID: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  className="w-full px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 />
               </div>
               <div>
@@ -453,7 +454,7 @@ const ManageStudents = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, Date: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  className="w-full px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white dark:[color-scheme:dark]"
                 />
               </div>
               <div>
@@ -469,7 +470,7 @@ const ManageStudents = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, Time: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  className="w-full px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white dark:[color-scheme:dark]"
                 />
               </div>
               <div>
@@ -484,7 +485,7 @@ const ManageStudents = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, classType: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  className="w-full px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 >
                   <option value="">Select Class Type</option>
                   <option value="REGULAR">Regular Class</option>
@@ -504,7 +505,7 @@ const ManageStudents = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, status: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  className="w-full px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 >
                   <option value="">Select Status</option>
                   <option value="SCHEDULED">Scheduled</option>
@@ -515,33 +516,15 @@ const ManageStudents = () => {
               <div className="flex justify-between items-center pt-4 ">
                 <button
                   onClick={handleReset}
-                  className="w-[45%] py-2 border border-[#576CBC] text-[#576CBC] rounded-md text-sm font-medium hover:bg-blue-50"
+                  className="px-3 py-1 text-[12px] rounded-md border border-[#576CBC] text-[#576CBC] font-medium hover:bg-[#EEF1FF] dark:hover:bg-[#343434]"
                 >
                   Reset
                 </button>
                 <button
                   onClick={handleApply}
-                  className="w-[50%] py-2 bg-[#576CBC] text-white rounded-md text-sm font-medium"
+                  className="px-3 py-1 text-[12px] rounded-md bg-[#576CBC] text-white font-medium hover:bg-[#455bb1]"
                 >
-                  Show{" "}
-                  {
-                    users.filter((user) => {
-                      return (
-                        (!filters.studentName ||
-                          `${user.username ?? ""}`
-                            .toLowerCase()
-                            .includes(filters.studentName.toLowerCase())) &&
-                        (!filters.studentID ||
-                          user.student?.studentId
-                            ?.toLowerCase()
-                            .includes(filters.studentID.toLowerCase())) &&
-                        (!filters.Date ||
-                          new Date(user.createdDate).toLocaleDateString() ===
-                          new Date(filters.Date).toLocaleDateString())
-                      );
-                    }).length
-                  }{" "}
-                  results
+                  Apply
                 </button>
               </div>
             </div>

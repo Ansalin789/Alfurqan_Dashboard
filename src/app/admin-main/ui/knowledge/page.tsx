@@ -150,15 +150,7 @@ export default function KnowledgeBase() {
 
     if (!res.ok) throw new Error("Failed to fetch file");
     const blob = await res.blob();
- 
-      // // Convert base64 to binary
-      // const binaryString = atob(resumeData);
-      // const bytes = new Uint8Array(binaryString.length);
-      // for (let i = 0; i < binaryString.length; i++) {
-      //   bytes[i] = binaryString.charCodeAt(i);
-      // }
 
-      // const blob = new Blob([bytes], { type: "application/pdf" });
       return URL.createObjectURL(blob);
     } catch (error) {
       console.error("Error creating blob URL:", error);
@@ -225,16 +217,7 @@ console.log("res", blob.type);
       console.error("❌ Error fetching knowledge base list:", error);
     }
   };
-  const arrayBufferToBase64 = (buffer: number[]): string => {
-    let binary = "";
-    const bytes = new Uint8Array(buffer);
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return window.btoa(binary);
-  };
-
+ 
   useEffect(() => {
     const query = searchQuery.toLowerCase();
 
@@ -305,18 +288,7 @@ console.log("res", blob.type);
       }
     }
   }, [selectedVideo]);
-  const openPdfBlob = (base64: string) => {
-    const byteCharacters = atob(base64);
-    const byteArray = new Uint8Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteArray[i] = byteCharacters.charCodeAt(i);
-    }
-
-    const blob = new Blob([byteArray], { type: "application/pdf" });
-    const blobUrl = URL.createObjectURL(blob);
-    window.open(blobUrl, "_blank");
-  };
-
+ 
   const itemsPerPage = 5;
 
   const totalPages = Math.ceil(filteredClass.length / itemsPerPage);
