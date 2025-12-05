@@ -227,10 +227,6 @@ interface LeaveRequest {
   updatedDate: string;
   __v: number;
 }
-interface LeaveRequestListResponse {
-  totalCount: number;
-  leaveRequest: LeaveRequest[];
-}
 
 // Update the interface for the new API response
 interface LeaveSummaryListResponse {
@@ -770,60 +766,6 @@ const Page = () => {
       `/admin-main/ui/employees/otheremployees?employeeId=${employeeId}&userId=${userId}`
     );
   };
-  // Generate month names for the chart labels
-  const chartTemplate = (color: string) => ({
-    labels: Array(6).fill(""),
-    datasets: [
-      {
-        data: [12, 19, 3, 5, 2, 3], // Dummy data, you can replace with real values
-        borderColor: color,
-        backgroundColor: color + "33", // '33' = ~20% opacity for hex
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4,
-        pointRadius: 0,
-      },
-    ],
-  });
-
-  const smallChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-    scales: {
-      x: {
-        display: false,
-      },
-      y: {
-        display: false,
-      },
-    },
-  };
-
-  const getStatusBadge = (status: string) => {
-    const base =
-      "inline-flex items-center  px-3 py-2 w-full text-xs font-medium";
-    if (status === "Pending")
-      return (
-        <span className={`${base} text-yellow-600 bg-yellow-100`}>
-          ⚠ Pending
-        </span>
-      );
-    if (status === "Approved")
-      return (
-        <span className={`${base} text-green-600 bg-green-100`}>
-          ✅ Approved
-        </span>
-      );
-    if (status === "Declined")
-      return (
-        <span className={`${base} text-red-600 bg-red-100`}>❌ Declined</span>
-      );
-  };
 
   function handlePortalAccess(username: string, password: string) {
     const encodedUsername = encodeURIComponent(username);
@@ -991,7 +933,6 @@ const Page = () => {
   const CustomTooltip = ({
     active,
     payload,
-    label,
   }: TooltipProps<any, any>) => {
     const isDark =
       typeof window !== "undefined" &&
@@ -1943,16 +1884,7 @@ const Page = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="py-3">
-                    {/* <div className="flex items-end justify-end gap-2 text-[14px] text-gray-400 dark:text-gray-400">
-                      <button
-                        onClick={() => setShowForm(true)}
-                        className="flex items-center gap-2 bg-[#576CBC] text-white text-xs font-medium px-4 py-2 rounded-lg shadow"
-                        disabled={!dashboardRead}
-                      >
-                        <span className="text-lg">+</span> Add new
-                      </button>
-                    </div> */}
+                  <div className="py-3">   
                     <div className="mt-3 w-full h-full shadow bg-[#f5f5f5] rounded-lg dark:bg-[#343434] dark:text-[#dedede]">
                       <div className="flex justify-between bg-[#fafafb] items-center px-4 py-0 rounded-md dark:bg-[#343434] h-12">
                         <div className="flex items-center gap-2 text-sm text-gray-500">

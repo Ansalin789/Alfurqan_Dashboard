@@ -136,9 +136,6 @@ const upcomingData = classData
   const teacherNames = Array.from(
     new Set(classData.map((c) => c.teacher?.teacherName).filter(Boolean))
   );
-  const classTypes = Array.from(
-    new Set(classData.map((c) => c.sessionClassType).filter(Boolean))
-  );
 
   useEffect(() => {
     setFilteredClasses(baseData);

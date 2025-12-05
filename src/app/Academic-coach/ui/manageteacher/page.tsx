@@ -98,7 +98,7 @@ const ManageTeacher: React.FC = () => {
     setTempFilterName("");
     setTempFilterLevel("");
     setTempFilterCourse("");
-    setFilter(false);
+    // setFilter(false);
   };
 
   const handleApplyFilters = () => {
@@ -222,7 +222,7 @@ const ManageTeacher: React.FC = () => {
                         &times;
                       </button>
 
-                      <h2 className="text-lg font-semibold mb-4">Filter by</h2>
+                      <h2 className="text-[16px] font-semibold mb-4">Filter by</h2>
 
                       <div className="mb-4">
                         <label
@@ -236,8 +236,8 @@ const ManageTeacher: React.FC = () => {
                             type="text"
                             value={tempFilterName}
                             onChange={(e) => setTempFilterName(e.target.value)}
-                            placeholder="Search by teacher name"
-                            className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                            placeholder="Search by name"
+                            className="w-full border rounded-md p-2 text-xs dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
                           />
                         </div>
                       </div>
@@ -251,7 +251,7 @@ const ManageTeacher: React.FC = () => {
                         <select
                           value={tempFilterLevel}
                           onChange={(e) => setTempFilterLevel(e.target.value)}
-                          className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                          className="w-full border rounded-md p-2 text-xs dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
                         >
                           <option value="">All Levels</option>
                           <option value="1">Level 1</option>
@@ -271,7 +271,7 @@ const ManageTeacher: React.FC = () => {
                         <select
                           value={tempFilterCourse}
                           onChange={(e) => setTempFilterCourse(e.target.value)}
-                          className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                          className="w-full border rounded-md p-2 text-xs dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
                         >
                           <option value="">All Courses</option>
                           <option value="Quran Teacher">Quran Teacher</option>
@@ -279,18 +279,18 @@ const ManageTeacher: React.FC = () => {
                           <option value="Islamic Teacher">Islamic Teacher</option>
                         </select>
                       </div>
-                      <div className="flex justify-end gap-3">
+                      <div className="flex justify-between gap-3">
                         <button
                           onClick={handleResetFilters}
-                          className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+                          className="px-3 py-1 text-[12px] rounded-md border border-[#576CBC] text-[#576CBC] font-medium hover:bg-[#EEF1FF] dark:hover:bg-[#343434]"
                         >
                           Reset
                         </button>
                         <button
                           onClick={handleApplyFilters}
-                          className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                          className="px-3 py-1 text-[12px] rounded-md bg-[#576CBC] text-white font-medium hover:bg-[#455bb1]"
                         >
-                          Submit
+                          Apply
                         </button>
                       </div>
                     </div>

@@ -16,37 +16,6 @@ import AcademicHeader from "@/app/Academic-coach/components/academicHeader";
 import axios from "axios";
 import { getSocket } from "@/app/utils/socket";
 
-// Define the return type of the getAllUsers function
-interface Student {
-  learningInterest: string; // Replace with the exact type if known
-  studentId: string;
-  studentFirstName: string;
-  studentLastName: string;
-  studentEmail: string;
-  studentPhone: number;
-  studentCountry: string;
-  preferredTeacher: string;
-  preferredFromTime: string;
-  preferredToTime: string;
-  classStatus?: string;
-  status?: string;
-  trialClassStatus: string;
-  studentStatus: string;
-  createdDate: Date;
-}
-
-interface EvaluationItem {
-  paymentLink: string;
-  _id: string;
-  student: Student;
-  trialClassStatus: string;
-  assignedTeacher: string;
-  paymentStatus: string;
-}
-
-interface ApiResponse {
-  evaluation: EvaluationItem[];
-}
 
 // Define the transformed user structure
 interface TransformedUser {
@@ -447,13 +416,6 @@ const TrailSection = () => {
   }, []);
 
   const router = useRouter();
-  const handleSyncClick = () => {
-    if (router) {
-      router.push("TrailSection");
-    } else {
-      console.error("Router is not available");
-    }
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -478,100 +440,11 @@ const TrailSection = () => {
     // Modal.setAppElement("body");
   }, []);
 
-  const openModal = (user: User | null = null) => {
-    setIsEditMode(!!user);
-    setIsModalOpen(true);
-    setModalIsOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setModalIsOpen(false);
-  };
 
   useEffect(() => {
     console.log("Current users data:", users);
   }, [users]);
 
-  const fetchStudents = async () => {
-    try {
-      const allData = await getAllUsers();
-      if (allData.success && allData.data) {
-        setUsers(allData.data);
-      } else {
-        setErrorMessage(allData.message ?? "Failed to fetch users");
-      }
-    } catch (error) {
-      setErrorMessage("An unexpected error occurred");
-      console.error("An unexpected error occurred", error);
-    }
-  };
-
-  const handleEditClick = (studentId: User) => {
-    setSelectedUserData(studentId);
-    setModalIsOpen(true);
-  };
-
-  // Add filter handling function
-  const handleApplyFilters = (filters: {
-    country: string;
-    course: string;
-    teacher: string;
-    status: string;
-    trailId: string;
-    studentName: string;
-    email: string;
-    mobile: string;
-    time: string;
-    evaluationStatus: string;
-  }) => {
-    let filtered = [...users];
-
-    if (filters.country) {
-      filtered = filtered.filter((user) => user.country === filters.country);
-    }
-    if (filters.course) {
-      filtered = filtered.filter((user) => user.course === filters.course);
-    }
-    if (filters.teacher) {
-      filtered = filtered.filter(
-        (user) => user.preferredTeacher === filters.teacher
-      );
-    }
-    if (filters.status) {
-      filtered = filtered.filter(
-        (user) => user.evaluationStatus === filters.status
-      );
-    }
-    if (filters.trailId) {
-      filtered = filtered.filter((user) =>
-        user.studentId.includes(filters.trailId)
-      );
-    }
-    if (filters.studentName) {
-      filtered = filtered.filter((user) =>
-        `${user.fname} ${user.lname}`
-          .toLowerCase()
-          .includes(filters.studentName.toLowerCase())
-      );
-    }
-    if (filters.email) {
-      filtered = filtered.filter((user) =>
-        user.email.toLowerCase().includes(filters.email.toLowerCase())
-      );
-    }
-    if (filters.mobile) {
-      filtered = filtered.filter((user) =>
-        user.number.includes(filters.mobile)
-      );
-    }
-    if (filters.time) {
-      filtered = filtered.filter((user) => user.time.includes(filters.time));
-    }
-
-    setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
-  };
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -593,13 +466,6 @@ const TrailSection = () => {
     setCurrentPage(1); // Reset to first page when search changes
   };
 
-  // if (error) return <div>Error: {error}</div>;
-
-  // Pagination logic: calculate currentItems based on filteredUsers, currentPage, and itemsPerPage
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const recentItems = [...filteredUsers]
     .sort((a, b) => b.sortTimestamp - a.sortTimestamp)
     .slice(0, 5);

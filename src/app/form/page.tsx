@@ -112,13 +112,6 @@ const MultiStepForm = () => {
     setAvailableTimes(defaultTimes);
     setPreferredFromTime("");
 
-    // Automatically set preferredToTime when a from time is selected
-    // const handleFromTimeSelection = (fromTime: string) => {
-    //     const fromTimeIndex = defaultTimes.indexOf(fromTime);
-    //     if (fromTimeIndex !== -1 && fromTimeIndex + 1 < defaultTimes.length) {
-    //         setPreferredToTime(defaultTimes[fromTimeIndex + 1]);
-    //     }
-    // };
   };
 
   const validateStep1 = () => {

@@ -156,6 +156,7 @@ const TeacherDetails = () => {
   interface StudentInfo {
     _id: string;
     fullName: string;
+    firstName: string;
     courseName: string;
     studentId: string;
   }
@@ -366,7 +367,7 @@ const TeacherDetails = () => {
           sessionClassType: "TRIALCLASS",
 
           student: {
-            id : trialClass.student.studentRegisterId || "",
+            id : trialClass.student.studentId || "",
             studentId: trialClass.student?.studentId || "N/A",
             studentFirstName: trialClass.student?.name?.split(" ")[0] || "Trial",
             studentLastName: trialClass.student?.name?.split(" ").slice(1).join(" ") || "Student",
@@ -393,6 +394,7 @@ const TeacherDetails = () => {
       } else {
         console.log("No trial classes found or incorrect format.");
       }
+      setClassScheduleData(classScheduleData);
 
       const allClasses = [...regularClasses, ...trialClasses];
       console.log("All Classes Combined:", allClasses);
@@ -408,28 +410,47 @@ const TeacherDetails = () => {
     }
   };
 
-  const getUniqueStudentsFromSchedule = (
-    schedule: ClassSchedule[]
-  ): StudentInfo[] => {
-    const studentSet = new Set<string>();
-    const studentInfoArray: StudentInfo[] = [];
+const getUniqueStudentsFromSchedule = (
+  schedule: ClassSchedule[]
+): StudentInfo[] => {
+  const studentSet = new Set<string>();
+  const studentInfoArray: StudentInfo[] = [];
 
-    schedule.forEach((item: ClassSchedule) => {
-      if (item.student && item.student.studentId) {
-        const fullName = item.student.studentFirstName || "";
-        const courseName = item.course?.courseName || "";
-        const studentId = item.student.studentId;
-        const _id = item.student.id ?? '';
+  schedule.forEach((item: ClassSchedule, index) => {
+    console.log(`--- Processing item ${index} ---`);
+    console.log("Full student object:", item.student);
+    console.log("Student ID:", item.student?.studentId);
+    console.log("Student ID field:", item.student?.id);
+    console.log("Student first name:", item.student?.studentFirstName);
+    console.log("Student last name:", item.student?.studentLastName);
+    
+    if (item.student && item.student.studentId) {
+      console.log("Valid student found:", item.student);
+      const _id = item.student.id; // This should be the MongoDB ObjectId
+      const fullName = `${item.student.studentFirstName || ""} ${item.student.studentLastName || ""}`.trim();
+      const courseName = item.course?.courseName || "";
+      const studentId = item.student.studentId;
 
-        if (!studentSet.has(studentId)) {
-          studentSet.add(studentId);
-          studentInfoArray.push({ fullName, courseName, studentId, _id });
-        }
+      console.log(`Extracted - FullName: ${fullName}, Course: ${courseName}, StudentId: ${studentId}, _id: ${_id}`);
+
+      if (!studentSet.has(studentId) && _id !== studentId) {
+        console.log(`Extracted2 - FullName: ${fullName}, Course: ${courseName}, StudentId: ${studentId}, _id: ${_id}`);
+        studentSet.add(studentId);
+        studentInfoArray.push({ 
+          fullName, 
+          firstName: item.student.studentFirstName || "",
+          courseName, 
+          studentId, 
+          _id 
+        });
       }
-    });
-
-    return studentInfoArray;
-  };
+    }
+    console.log(`--- End item ${index} ---`);
+  });
+  
+  console.log("Final Unique Students Extracted:", studentInfoArray);
+  return studentInfoArray;
+};
 
   useEffect(() => {
     const fetchData = async () => {
@@ -476,6 +497,7 @@ const TeacherDetails = () => {
 
   useEffect(() => {
     if (classScheduleData.length > 0) {
+      console.log("Extracting unique students from class schedule data",classScheduleData);
       const uniqueStudents = getUniqueStudentsFromSchedule(classScheduleData);
       setStudentInfoList(uniqueStudents);
     }
@@ -632,7 +654,7 @@ const TeacherDetails = () => {
         <div className="fixed inset-0 bg-opacity-40 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-lg font-semibold text-gray-800 dark:text-white">
+              <h1 className="text-[16px] font-semibold text-gray-800 dark:text-white">
                 Filter by
               </h1>
               <button
@@ -654,7 +676,7 @@ const TeacherDetails = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, studentName: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  className="w-full px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 />
               </div>
               <div>
@@ -666,7 +688,7 @@ const TeacherDetails = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, course: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  className="w-full px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 >
                   <option value="">Select Course</option>
                   <option value="QURAN">Quran</option>
@@ -684,7 +706,7 @@ const TeacherDetails = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, Date: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded text-sm dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] dark:[color-scheme:dark]"
+                  className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] dark:[color-scheme:dark]"
                 />
               </div>
               <div>
@@ -697,7 +719,7 @@ const TeacherDetails = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, Time: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded text-sm dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] dark:[color-scheme:dark]"
+                  className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434] dark:[color-scheme:dark]"
                 />
               </div>
               <div>
@@ -709,7 +731,7 @@ const TeacherDetails = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, classType: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  className="w-full px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 >
                   <option value="">Select Class Type</option>
                   <option value="Online">Regular</option>
@@ -726,7 +748,7 @@ const TeacherDetails = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, status: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  className="w-full px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 >
                   <option value="">Select Status</option>
                   <option value="SCHEDULED">Scheduled</option>
@@ -734,49 +756,18 @@ const TeacherDetails = () => {
                   <option value="RESCHEDULED">Rescheduled</option>
                 </select>
               </div>
-              <div className="flex justify-between items-center pt-4 ">
+              <div className="flex justify-end gap-3 items-center pt-4 ">
                 <button
                   onClick={handleReset}
-                  className="w-[45%] py-2 border border-[#576CBC] text-[#576CBC] rounded-md text-sm font-medium hover:bg-blue-50"
+                  className="px-3 py-1 text-[12px] rounded-md border border-[#576CBC] text-[#576CBC] font-medium hover:bg-[#EEF1FF] dark:hover:bg-[#343434]"
                 >
                   Reset
                 </button>
                 <button
                   onClick={handleApply}
-                  className="w-[50%] py-2 bg-[#576CBC] text-white rounded-md text-sm font-medium"
+                  className="px-3 py-1 text-[12px] rounded-md bg-[#576CBC] text-white font-medium hover:bg-[#455bb1]"
                 >
-                  Show{" "}
-                  {
-                    (activeTab === "scheduled"
-                      ? scheduledClasses
-                      : completedClasses
-                    ).filter((user) => {
-                      return (
-                        (!filters.studentName ||
-                          `${user.student?.studentFirstName ?? ""} ${user.student?.studentLastName ?? ""
-                            }`
-                            .toLowerCase()
-                            .includes(filters.studentName.toLowerCase())) &&
-                        (!filters.course ||
-                          user.course.courseName
-                            ?.toLowerCase()
-                            .includes(filters.course.toLowerCase())) &&
-                        (!filters.Date ||
-                          new Date(user.startDate).toLocaleDateString() ===
-                          new Date(filters.Date).toLocaleDateString()) &&
-                        (!filters.Time ||
-                          (user.startTime &&
-                            user.startTime.includes(filters.Time))) &&
-                        (!filters.classType ||
-                          user.sessionClassType?.toLowerCase() ===
-                          filters.classType.toLowerCase()) &&
-                        (!filters.status ||
-                          user.scheduleStatus?.toLowerCase() ===
-                          filters.status.toLowerCase())
-                      );
-                    }).length
-                  }{" "}
-                  results
+                  Apply
                 </button>
               </div>
             </div>
@@ -867,9 +858,10 @@ const TeacherDetails = () => {
       ? scheduledClasses.length
       : completedClasses.length;
 
-  const handleViewDetails = (_id: string) => {
-    localStorage.setItem("studentManageID", _id);
-    router.push(`managestudentview?id=${_id}`);
+  const handleViewDetails = (id: string) => {
+    console.log("Viewing details for student ID:", id);
+    localStorage.setItem("studentManageID", id);
+    router.push(`managestudentview?id=${id}`);
   };
   return (
     <BaseLayout1>
@@ -882,7 +874,7 @@ const TeacherDetails = () => {
         <div className="flex gap-x-5 w-full">
           <div className="rounded-xl flex items-center p-6 w-[633px] h-[247px] border bg-[#5e6578] text-white ">
             <div className="flex flex-col items-center w-1/3 px-4 text-center">
-              <div className="relative mb-1 w-[160px] h-[160px]">
+              <div className="relative mb-3 w-[100px] h-[100px]">
                 <Image
                   src="/assets/images/student-portfolio.svg"
                   alt="Profile"
@@ -891,10 +883,10 @@ const TeacherDetails = () => {
                 />
               </div>
 
-              <h2 className="text-lg font-semibold text-white break-words mb-1">
+              <h2 className="text-sm font-semibold text-white break-words mb-1">
                 {teachers?.candidateFirstName}
               </h2>
-              <p className="text-[11px] text-[#C9C9C9] break-words word-wrap w-[200px] px-2">
+              <p className="text-[10px] text-[#C9C9C9] break-words word-wrap w-[200px] px-3">
                 {teachers?.candidateEmail}
               </p>
             </div>
@@ -904,7 +896,7 @@ const TeacherDetails = () => {
               <h3 className="text-[16px] font-semibold mb-4 text-[#ffff]">
                 Personal Info
               </h3>
-              <ul className="text-sm space-y-2 text-[#ffff]">
+              <ul className="text-xs space-y-2 text-[#ffff]">
                 <li className="flex justify-between ">
                   <span>Contact</span>
                   <span className="text-[#DADADA]/80 text-left">
@@ -992,7 +984,8 @@ const TeacherDetails = () => {
                       className="text-[12px] font-medium text-[#111827] dark:text-white cursor-pointer hover:underline"
                       onClick={() => handleViewDetails(student._id)}
                     >
-                      {student.fullName}
+                      {student.firstName[0].toUpperCase() +
+                        student.firstName.slice(1).toLowerCase()}
                     </span>
                   </div>
                   <span className="text-[11px] text-[#576CBC] font-medium whitespace-nowrap">

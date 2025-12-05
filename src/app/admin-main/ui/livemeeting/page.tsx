@@ -62,7 +62,6 @@ export default function Page() {
   const seacrh = useSearchParams();
   const meetingId = seacrh.get("meetingId");
   const [meetingUpdate, setMeetingUpdate] = useState(false);
-  const [meetingMinutes, setMeetingMinutes] = useState<string>("");
 
   useEffect(() => {
     const fetchClassData = async () => {
@@ -151,8 +150,7 @@ export default function Page() {
           _id: teacher._id,
         };
       }),
-      // Optionally add updatedBy if you have the admin info
-      // updatedBy: classData?.admin?.adminId,
+
     };
 
     try {
@@ -161,7 +159,7 @@ export default function Page() {
           ? localStorage.getItem("AdminAuthToken")
           : null;
       if (!token) {
-        console.error("\u274C AdminAuthToken not found");
+        console.error("AdminAuthToken not found");
         return;
       }
 
@@ -183,11 +181,11 @@ export default function Page() {
       }
 
       const result = await response.json();
-      console.log("\u2705 Meeting Minutes Updated:", result);
+      console.log(" Meeting Minutes Updated:", result);
 
       setMeetingUpdate(false); // close modal
     } catch (error) {
-      console.error("\u274C Error updating meeting minutes:", error);
+      console.error(" Error updating meeting minutes:", error);
     }
   };
   const calculateDuration = (startTime: string, endTime: string): string => {
@@ -304,13 +302,6 @@ export default function Page() {
                         ],
                       }}
                       onApiReady={(externalApi) => {
-                        type ParticipantLog = {
-                          id: string;
-                          name?: string;
-                          studentId?: string;
-                          startCallTime: string;
-                          endCallTime?: string;
-                        };
 
                         // ✅ Handle Participant Joined
                         externalApi.addListener(

@@ -56,12 +56,6 @@ interface Employee {
   status: string;
   __v: number;
 }
-interface ClassType {
-  className: string;
-  hoursMins: string;
-  rate: string;
-  currency: string;
-}
 
 interface MonthlyEarnings {
   year: number;
@@ -175,9 +169,6 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
 const EmployeePage = () => {
   const [activeTab, setActiveTab] = useState("Wages");
   const [schedule, setSchedule] = useState<ShiftSchedule[]>([]);
-  const [fetchWorkingHours, setfetchWorkingHours] = useState<ShiftSchedule[]>(
-    []
-  );
   const [toast, setToast] = useState<{ type: string; message: string } | null>(
     null
   );
@@ -233,7 +224,6 @@ const EmployeePage = () => {
   const [searchWorking, setSearchWorking] = useState("");
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filters, setFilters] = useState<Record<string, any>>({});
-  const [selectedId, setSelectedId] = useState("");
   const [selectedEmpId, setSelectedEmpId] = useState("");
   // Add this helper function to format dates
   const formatDate = (dateString: string): string => {
