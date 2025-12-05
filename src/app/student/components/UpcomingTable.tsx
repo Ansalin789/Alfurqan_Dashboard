@@ -94,7 +94,7 @@ const UpcomingTable = () => {
           })
           .sort(
             (a, b) =>
-              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+              new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
           );
 
         const completed = classes
@@ -103,7 +103,7 @@ const UpcomingTable = () => {
             (a, b) =>
               new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
           );
-        setUpcomingClasses(upcoming);
+        setUpcomingClasses(upcoming.slice(0, 5));
         console.log("upcomoinig class",upcoming);
         console.log("completed clasees",completed);
       } catch (error) {

@@ -58,6 +58,7 @@ useEffect(() => {
     try {
       const loginStudentId = localStorage.getItem("StudentPortalId");
       const token = localStorage.getItem("StudentAuthToken");
+      const courseName = localStorage.getItem("StudentcourseName");
       const res = await axios.get(
         `https://api.blackstoneinfomaticstech.com/alstudents/${loginStudentId}`,
         {
@@ -113,10 +114,11 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
   useEffect(() => {
     const studentId = localStorage.getItem("StudentPortalId");
     const token = localStorage.getItem("StudentAuthToken");
+    const courseName = localStorage.getItem("StudentcourseName");
 
     // Fetch student details from API and set name/email
     const fetchStudentDetails = async () => {
-      if (!studentId || !token) return;
+      if (!studentId || !token || !courseName) return;
       try {
         const res = await axios.get(
           `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
@@ -138,15 +140,15 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
 
     const fetchStudentInvoices = async () => {
       try {
-        if (!studentId || !token) {
+        if (!studentId || !token || !courseName) {
           console.warn("Missing studentId or token in localStorage");
           return;
         }
 
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/studentinvoiceById",
+          "http://localhost:5001/studentinvoiceById",
           {
-            params: { studentId, paymentStatus }, // Include paymentStatus here
+            params: { studentId, paymentStatus, courseName }, // Include paymentStatus here
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
@@ -154,14 +156,14 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
           }
         );
 
-        console.log("API response:", response.data);
+        console.log("API responseeeeee:", response.data);
 
         // Check if the response contains data
-        if (response.data && Array.isArray(response.data.data)) {
+        if (response.data.data && Array.isArray(response.data.data)) {
           setInvoices(response.data.data); // Set the invoices state
           console.log("Invoices:", response.data.data); // Log the invoices
         } else {
-          console.warn("Invalid data format from API:", response.data);
+          console.warn("Invalid data format from API:", response.data.data);
         }
       } catch (error) {
         console.error("Error fetching invoices:", error);
@@ -232,7 +234,7 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
           <h3 className="text-[#010E30] font-bold text-[16px] dark:text-white text-center">
             {studentName ?? "Loading..."}
           </h3>
-          <p className="text-[#4b5563] text-[13px] text-center mt-1">
+          <p className="text-[#4b5563] text-[11px] text-center mt-1">
             {studentEmail ?? "Loading..."}
           </p>
           <p className="text-[#4b5563] text-[13px] mb-2 text-center mt-2">
@@ -259,13 +261,13 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
           Upcoming Payments
         </h3>
 
-        {invoices.filter((i) => i.invoiceStatus === "Pending").length === 0 ? (
+        {invoices.filter((i) => i.invoiceStatus === "PENDING").length === 0 ? (
           <p className="text-gray-500 text-xs text-center mt-12 align-middle">
             No pending payments found
           </p>
         ) : (
           invoices
-            .filter((i) => i.paymentStatus === "Pending")
+            .filter((i) => i.paymentStatus === "PENDING")
             .slice(0, 2)
             .map((invoice) => (
               <div
@@ -313,18 +315,18 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
           Recent Payments
         </h3>
 
-        {invoices.filter((i) => i.invoiceStatus === "Paid").length === 0 ? (
+        {invoices.filter((i) => i.invoiceStatus === "PAID" || i.invoiceStatus === "Paid").length === 0 ? (
           <p className="text-gray-500 text-xs text-center mt-12 align-middle">
             No paid payments found
           </p>
         ) : (
           invoices
-            .filter((i) => i.invoiceStatus === "Paid")
+            .filter((i) => i.invoiceStatus === "PAID" || i.invoiceStatus === "Paid")
             .slice(0, 2)
             .map((invoice) => (
               <div
                 key={invoice._id}
-                className="flex items-center justify-between py-2 border-b last:border-b-0"
+                className="flex items-center justify-between py-2 overflow-scroll scrollbar-none h-[60px] border-b last:border-b-0"
               >
                 <div className="flex items-center gap-2">
                   <img
@@ -333,10 +335,10 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
                     className="w-8 h-8 rounded-full object-cover"
                   />
                   <div>
-                    <p className="text-[#010E30] text-[13px] dark:text-white">
+                    <p className="text-[#010E30] text-[12px] dark:text-white">
                       {invoice.itemDescription || "Class Invoice"}
                     </p>
-                    <p className="text-[#010E30] text-[13px] font-semibold dark:text-white">
+                    <p className="text-[#010E30] text-[11px] font-semibold dark:text-white">
                       ${invoice.amount.toFixed(2)}
                     </p>
                   </div>
@@ -345,7 +347,7 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
                   <p className="text-[#377E36] text-[11px]">
                     {invoice.invoiceStatus}
                   </p>
-                  <p className="text-gray-400 text-[12px]">
+                  <p className="text-gray-400 text-[11px]">
                     {new Date(invoice.paymentDate).toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "long",
@@ -395,7 +397,7 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
 
         {showShareOptions && (
           <div
-            className="absolute top-full left-0 mt-3 w-60 rounded-2xl shadow-xl 
+            className="absolute top-full left-0 -mt-6 ml-16 w-60 rounded-2xl shadow-xl 
       bg-white/80 dark:bg-[#2c2c2c]/80 backdrop-blur-xl border border-white/20 
       z-50 animate-fadeIn p-3"
           >
