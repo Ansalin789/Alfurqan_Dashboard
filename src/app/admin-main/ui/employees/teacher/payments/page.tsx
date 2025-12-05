@@ -33,185 +33,6 @@ ChartJS.register(
 
 countries.registerLocale(enLocale);
 
-
-
-interface StudentData {
-  studentId: string;
-  name: string;
-  studentDetails: StudentDetails;
-}
-
-interface StudentDetails {
-  student: Student;
-  teacher: Teacher;
-  subscription: Subscription;
-  _id: string;
-  academicCoachId: string;
-  classDay: string[];
-  startTime: string[];
-  endTime: string[];
-  isLanguageLevel: boolean;
-  languageLevel: string;
-  isReadingLevel: boolean;
-  readingLevel: string;
-  isGrammarLevel: boolean;
-  grammarLevel: string;
-  hours: number;
-  planTotalPrice: number;
-  classStartDate: string;
-  classEndDate: string;
-  classStartTime: string;
-  classEndTime: string;
-  accomplishmentTime: string;
-  studentRate: number;
-  gardianName: string;
-  gardianEmail: string;
-  gardianPhone: string;
-  gardianCity: string;
-  gardianCountry: string;
-  gardianTimeZone: string;
-  gardianLanguage: string;
-  assignedTeacher: string;
-  studentStatus: string;
-  classStatus: string;
-  comments: string;
-  trialClassStatus: string;
-  invoiceStatus: string;
-  paymentLink: string;
-  paymentStatus: string;
-  status: string;
-  createdDate: string;
-  createdBy: string;
-  updatedDate: string;
-  updatedBy: string;
-  expectedFinishingDate: number;
-  assignedTeacherId: string;
-  assignedTeacherEmail: string;
-  __v: number;
-  teacherStatus: string;
-}
-
-interface Student {
-  studentId: string;
-  studentFirstName: string;
-  studentLastName: string;
-  studentEmail: string;
-  studentGender?: string;
-  studentPhone: number;
-  studentCity: string;
-  studentCountry: string;
-  studentCountryCode: string;
-  learningInterest: string;
-  numberOfStudents: number;
-  preferredTeacher: string;
-  preferredFromTime: string;
-  preferredToTime: string;
-  timeZone: string;
-  referralSource: string;
-  preferredDate: string;
-  evaluationStatus: string;
-  status: string;
-  createdDate: string;
-  createdBy: string;
-}
-
-interface Teacher {
-  teacherName: string;
-}
-
-interface Subscription {
-  subscriptionName: string;
-}
-
-interface ScheduledClass {
-  student: {
-    studentId: string;
-    studentFirstName: string;
-    studentLastName: string;
-    studentEmail: string;
-    gender: string;
-  };
-  teacher: {
-    teacherId: string;
-    teacherName: string;
-    teacherEmail: string;
-  };
-  _id: string;
-  classDay: string[];
-  package: string;
-  startDate: string;
-  endDate: string;
-  startTime: string[];
-  endTime: string[];
-  scheduleStatus: string;
-  classLink: string;
-  status: string;
-  createdBy: string;
-  sessionClassType: string;
-  sessionStarttime: string;
-  sessionsEndtime: string;
-  createdDate: string;
-  lastUpdatedDate: string;
-  amount: string;
-}
-
-interface OtherEmpEntry {
-  country: string[]; // e.g., ["ADMIN"]
-  count: number;
-  percentage: number;
-}
-const formatRole = (role: string) => {
-  switch (role) {
-    case "ACADEMICCOACH":
-      return "Academic Coach";
-    case "SUPERVISOR":
-      return "Supervisor";
-    case "USER":
-      return "User";
-    case "ADMIN":
-      return "Admin";
-    default:
-      return role;
-  }
-};
-// Replace COLORS object with array for correct indexing
-const COLORS = ["#A3D3FF", "#FFD6F7", "#B4C7ED"];
-interface GenderCountResponse {
-  employeePercentage: number;
-  employeeMalePercentage: string;
-  employeeFemalePercentage: string;
-}
-interface DashboardCounts {
-  totalApplication: number;
-  shortlisted: number;
-  rejected: number;
-  waiting: number;
-}
-
-// Add interface for leave request list API
-interface LeaveRequest {
-  _id: string;
-  name: string;
-  employeeId: string;
-  role: string;
-  fromDate: string;
-  toDate: string;
-  leaveStatus: string;
-  leaveType: string;
-  approvedId: string;
-  approvedName: string;
-  reason: string;
-  status: string;
-  createdDate: string;
-  createdBy: string;
-  updatedDate: string;
-  __v: number;
-}
-interface LeaveRequestListResponse {
-  totalCount: number;
-  leaveRequest: LeaveRequest[];
-}
-
 interface SalaryWageRecord {
   _id: string;
   status: string;
@@ -231,67 +52,23 @@ interface SalaryWageRecord {
   salaryAmount: number;
 }
 
-interface SalaryWagesResponse {
-  totalCount: number;
-  records: SalaryWageRecord[];
-}
-
 const page = () => {
-  const [view, setView] = useState<"month" | "week" | "day" | "agenda">(
-    "agenda"
-  );
-  const tabs = [
-    "Students List",
-    "Scheduled Class",
-    "Earnings",
-    "Payments",
-    "Wages",
-    "Working Hours",
-  ];
+
   const searchParams = useSearchParams();
   const employeeId = searchParams.get("teacherId");
 
   const [salaryWages, setSalaryWages] = useState<SalaryWageRecord[]>([]);
-const [selectedSalary, setSelectedSalary] = useState<SalaryWageRecord | null>(null);
-const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
-
+  const [selectedSalary, setSelectedSalary] = useState<SalaryWageRecord | null>(null);
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [searchScheduledClass, setSearchScheduledClass] = useState("");
   const [searchPayments, setSearchPayments] = useState("");
-  const [searchWages, setSearchWages] = useState("");
-  const [searchWorkingHours, setSearchWorkingHours] = useState("");
-  const [searchEarnings, setSearchEarnings] = useState("");
   const [filterStartDate, setFilterStartDate] = useState("");
   const [filterEndDate, setFilterEndDate] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
-
-  const events = [
-    {
-      title: "Evaluation Class (20)",
-      start: new Date(2024, 0, 2),
-      end: new Date(2024, 0, 2),
-    },
-    {
-      title: "To-Do Task (01)",
-      start: new Date(2024, 0, 2),
-      end: new Date(2024, 0, 2),
-    },
-    {
-      title: "Meeting (01)",
-      start: new Date(2024, 0, 17),
-      end: new Date(2024, 0, 17),
-    },
-  ];
-
-  const statusStyle = {
-    Complete: "bg-[#002F56] text-white",
-    Pending: "bg-gray-300 text-gray-700",
-    Rescheduled: "bg-yellow-300 text-black",
-  };
 
   useEffect(() => {
     const fetchSalaryWages = async () => {
@@ -322,28 +99,10 @@ const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
     fetchSalaryWages();
   }, [employeeId]);
 
-  const router = useRouter();
-
-  const formatTime = (timeStr: string): string => {
-    const [hour, minute] = timeStr.split(":");
-    const date = new Date();
-    date.setHours(Number(hour), Number(minute));
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false, // disables AM/PM
-    });
+  const handleViewDownload = (item: SalaryWageRecord) => {
+    setSelectedSalary(item);
+    setIsReceiptModalOpen(true);
   };
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setSearchTerm(query);
-    setCurrentPage(1);
-  };
-const handleViewDownload = (item: SalaryWageRecord) => {
-  setSelectedSalary(item);
-  setIsReceiptModalOpen(true);
-};
 
   // Filtered and paginated salary wages
   const filteredSalaryWages = salaryWages.filter((item) => {
@@ -498,12 +257,12 @@ const handleViewDownload = (item: SalaryWageRecord) => {
                     <tr
                       key={item._id}
                       className={`text-left dark:text-white ${index % 2 === 0
-                          ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                          : "bg-[#F8F8F8] dark:bg-[#303030]"
+                        ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                        : "bg-[#F8F8F8] dark:bg-[#303030]"
                         }`}
                     >
                       <td className="p-3 text-left">
-                        
+
                         {item._id}
                       </td>
                       <td className="p-3 text-left">
@@ -577,53 +336,53 @@ const handleViewDownload = (item: SalaryWageRecord) => {
         )}
 
         {isReceiptModalOpen && selectedSalary && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-    <div className="bg-white dark:bg-[#232323] p-6 rounded-lg w-[600px] relative">
-      <button
-        className="absolute top-2 right-2 text-xl text-gray-500 dark:text-gray-300"
-        onClick={() => setIsReceiptModalOpen(false)}
-      >
-        &times;
-      </button>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white dark:bg-[#232323] p-6 rounded-lg w-[600px] relative">
+              <button
+                className="absolute top-2 right-2 text-xl text-gray-500 dark:text-gray-300"
+                onClick={() => setIsReceiptModalOpen(false)}
+              >
+                &times;
+              </button>
 
-      <div id="salary-receipt" className="p-4">
-        <h2 className="text-xl font-bold mb-4">Salary Receipt</h2>
-        <p><strong>Employee Name:</strong> {selectedSalary.employeeName}</p>
-        <p><strong>Employee ID:</strong> {selectedSalary.employeeId}</p>
-        <p><strong>Designation:</strong> {selectedSalary.designation}</p>
-        <p><strong>Salary Amount:</strong> ${selectedSalary.salaryAmount}</p>
-        <p><strong>Deductions:</strong> ${selectedSalary.deductionAmount}</p>
-        <p><strong>Payment Method:</strong> {selectedSalary.paymentMethod}</p>
-        <p><strong>Payment Status:</strong> {selectedSalary.paymentStatus}</p>
-        <p><strong>Date:</strong> {new Date(selectedSalary.createdDate).toLocaleDateString()}</p>
-      </div>
+              <div id="salary-receipt" className="p-4">
+                <h2 className="text-xl font-bold mb-4">Salary Receipt</h2>
+                <p><strong>Employee Name:</strong> {selectedSalary.employeeName}</p>
+                <p><strong>Employee ID:</strong> {selectedSalary.employeeId}</p>
+                <p><strong>Designation:</strong> {selectedSalary.designation}</p>
+                <p><strong>Salary Amount:</strong> ${selectedSalary.salaryAmount}</p>
+                <p><strong>Deductions:</strong> ${selectedSalary.deductionAmount}</p>
+                <p><strong>Payment Method:</strong> {selectedSalary.paymentMethod}</p>
+                <p><strong>Payment Status:</strong> {selectedSalary.paymentStatus}</p>
+                <p><strong>Date:</strong> {new Date(selectedSalary.createdDate).toLocaleDateString()}</p>
+              </div>
 
-      <button
-        className="mt-4 px-4 py-2 bg-[#6C74F6] text-white rounded"
-        onClick={() => {
-          import("jspdf").then(jsPDFModule => {
-            import("html2canvas").then(html2canvasModule => {
-              const jsPDF = jsPDFModule.default;
-              const html2canvas = html2canvasModule.default;
-              const input = document.getElementById("salary-receipt")!;
-              html2canvas(input).then(canvas => {
-                const imgData = canvas.toDataURL("image/png");
-                const pdf = new jsPDF("p", "mm", "a4");
-                const imgProps = pdf.getImageProperties(imgData);
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-                pdf.save(`Salary_Receipt_${selectedSalary.employeeName}.pdf`);
-              });
-            });
-          });
-        }}
-      >
-        Download
-      </button>
-    </div>
-  </div>
-)}
+              <button
+                className="mt-4 px-4 py-2 bg-[#6C74F6] text-white rounded"
+                onClick={() => {
+                  import("jspdf").then(jsPDFModule => {
+                    import("html2canvas").then(html2canvasModule => {
+                      const jsPDF = jsPDFModule.default;
+                      const html2canvas = html2canvasModule.default;
+                      const input = document.getElementById("salary-receipt")!;
+                      html2canvas(input).then(canvas => {
+                        const imgData = canvas.toDataURL("image/png");
+                        const pdf = new jsPDF("p", "mm", "a4");
+                        const imgProps = pdf.getImageProperties(imgData);
+                        const pdfWidth = pdf.internal.pageSize.getWidth();
+                        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+                        pdf.save(`Salary_Receipt_${selectedSalary.employeeName}.pdf`);
+                      });
+                    });
+                  });
+                }}
+              >
+                Download
+              </button>
+            </div>
+          </div>
+        )}
 
       </div>
     </BaseLayout4>

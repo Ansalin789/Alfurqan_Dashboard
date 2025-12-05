@@ -96,28 +96,29 @@ export default function AddApplicants({ onClose }: Props) {
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
 
-  const updateWorkingHours = (start: string, end: string) => {
-    const value = start && end ? `${start} - ${end}` : "";
+  const [startHour, setStartHour] = useState("");
+const [startMinute, setStartMinute] = useState("");
 
-    handleChange({
-      target: {
-        name: "workingHours",
-        value,
-      },
-    } as React.ChangeEvent<HTMLInputElement>);
-  };
+const [endHour, setEndHour] = useState("");
+const [endMinute, setEndMinute] = useState("");
 
-  const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setStartTime(value);
-    updateWorkingHours(value, endTime);
-  };
+const updateWorkingHours = (sh : any, sm : any, eh: any, em: any) => {
+  if (!sh || !sm || !eh || !em) return;
 
-  const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setEndTime(value);
-    updateWorkingHours(startTime, value);
-  };
+  const start = `${sh}:${sm}`;
+  const end = `${eh}:${em}`;
+
+  setAddApplicantForm(prev => ({
+    ...prev,
+    workingHours: `${start} - ${end}`
+  }));
+};
+const hours = Array.from({ length: 24 }, (_, i) =>
+  String(i).padStart(2, "0")
+);
+
+const minutes = ["00", "30"];
+
 
   const handleChange1 = (
     index: number,
@@ -220,6 +221,8 @@ export default function AddApplicants({ onClose }: Props) {
     if (addApplicantForm.resume) {
       formData.append("uploadResume", addApplicantForm.resume);
     }
+
+   
 
     try {
       const token =
@@ -477,24 +480,43 @@ export default function AddApplicants({ onClose }: Props) {
               </label>
 
               <div className="flex items-center w-full   text-xs dark:text-white dark:bg-[#343434] ">
-                <PhoneInput
-                  country="IN"
-                  value={addApplicantForm.phone}
-                  onChange={(value) => {
-                    setAddApplicantForm((prev) => ({
-                      ...prev,
-                      phoneNumber: value,
-                    }));
+               <PhoneInput
+  defaultCountry="IN"
+  value={addApplicantForm.phone}
+  onChange={(value) => {
+    // value = "+919876543210"
 
-                    if (!value || !isValidPhoneNumber(value)) {
-                      setPhoneError("Invalid phone number");
-                    } else {
-                      setPhoneError("");
-                    }
-                  }}
-                  className="w-full"
-                  inputClassName="!border-0 !outline-none !shadow-none !w-full  dark:!bg-transparent text-xs"
-                />
+    if (!value) {
+      setAddApplicantForm(prev => ({ ...prev, phone: "" }));
+      setPhoneError("Invalid phone number");
+      return;
+    }
+
+    // Extract only digits (remove +)
+    const digitsOnly = value.replace(/\D/g, ""); // "919876543210"
+
+    // Remove the country code (first N digits)
+    // For India (IN) dial code is 91
+    const localNumber = digitsOnly.startsWith("91")
+      ? digitsOnly.substring(2)
+      : digitsOnly; // fallback
+
+    setAddApplicantForm(prev => ({
+      ...prev,
+      phone: localNumber, // store only local number
+    }));
+
+    // Validation
+    if (localNumber.length < 10) {
+      setPhoneError("Invalid phone number");
+    } else {
+      setPhoneError("");
+    }
+  }}
+  className="w-full"
+  inputClassName="!border-0 !outline-none !shadow-none !w-full dark:!bg-transparent text-xs"
+/>
+
               </div>
 
               {phoneError && (
@@ -701,36 +723,82 @@ export default function AddApplicants({ onClose }: Props) {
             </div>
 
             {/* Working Hours */}
-            <div>
-              <label className="block text-black dark:text-white">
-                Preferred Working Hours
-              </label>
+        <div>
+  <label className="block text-black dark:text-white">Preferred Working Hours</label>
 
-              <div className="flex gap-2 mt-1">
-                <input
-                  type="time"
-                  value={startTime}
-                  onChange={handleStartTimeChange}
-                  className="w-1/2 border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                />
-                <input
-                  type="time"
-                  value={endTime}
-                  onChange={handleEndTimeChange}
-                  className="w-1/2 border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                />
-              </div>
+  <div className="flex items-center gap-2 mt-1">
 
-              <input
-                type="hidden"
-                name="workingHours"
-                value={addApplicantForm.workingHours}
-              />
+    {/* Start Hour */}
+    <select
+      value={startHour}
+      onChange={(e) => {
+        setStartHour(e.target.value);
+        updateWorkingHours(e.target.value, startMinute, endHour, endMinute);
+      }}
+      className="border rounded px-2 py-2 text-xs w-16 dark:text-white dark:bg-[#343434]"
+    >
+      <option value="">HH</option>
+      {hours.map((h) => (
+        <option key={h} value={h}>{h}</option>
+      ))}
+    </select>
 
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Selected: {addApplicantForm.workingHours || "None"}
-              </p>
-            </div>
+    {/* Start Minute */}
+    <select
+      value={startMinute}
+      onChange={(e) => {
+        setStartMinute(e.target.value);
+        updateWorkingHours(startHour, e.target.value, endHour, endMinute);
+      }}
+      className="border rounded px-2 py-2 text-xs w-16 dark:text-white dark:bg-[#343434]"
+    >
+      <option value="">MM</option>
+      {minutes.map((m) => (
+        <option key={m} value={m}>{m}</option>
+      ))}
+    </select>
+
+    <span className="text-black dark:text-white">-</span>
+
+    {/* End Hour */}
+    <select
+      value={endHour}
+      onChange={(e) => {
+        setEndHour(e.target.value);
+        updateWorkingHours(startHour, startMinute, e.target.value, endMinute);
+      }}
+      className="border rounded px-2 py-2 text-xs w-16 dark:text-white dark:bg-[#343434]"
+    >
+      <option value="">HH</option>
+      {hours.map((h) => (
+        <option key={h} value={h}>{h}</option>
+      ))}
+    </select>
+
+    {/* End Minute */}
+    <select
+      value={endMinute}
+      onChange={(e) => {
+        setEndMinute(e.target.value);
+        updateWorkingHours(startHour, startMinute, endHour, e.target.value);
+      }}
+      className="border rounded px-2 py-2 text-xs w-16 dark:text-white dark:bg-[#343434]"
+    >
+      <option value="">MM</option>
+      {minutes.map((m) => (
+        <option key={m} value={m}>{m}</option>
+      ))}
+    </select>
+  </div>
+
+  <input type="hidden" name="workingHours" value={addApplicantForm.workingHours} />
+
+  <p className="text-xs text-gray-500 dark:text-gray-400">
+    Selected: {addApplicantForm.workingHours || "None"}
+  </p>
+</div>
+
+
           </div>
         </div>
 

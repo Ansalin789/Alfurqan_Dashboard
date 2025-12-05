@@ -81,13 +81,6 @@ const StudentClassAssignmentsPage = () => {
       try {
         const token = localStorage.getItem("AdminAuthToken");
 
-
-  // Pagination logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const displayedItemsCount = filteredClassData.length;
-
-  // Calculate the display range
         if (!token || !studentId) {
           console.error("Missing token or student ID");
           return;
@@ -141,12 +134,6 @@ const StudentClassAssignmentsPage = () => {
       setError(null);
       try {
         const token = localStorage.getItem("AdminAuthToken");
-
-
-  // Pagination logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const displayedItemsCount = filteredClassData.length;
 
   // Calculate the display range
         if (!token || !studentId) {
@@ -256,15 +243,6 @@ const StudentClassAssignmentsPage = () => {
     return isAssignmentCompleted && allQuestionsNotAssigned;
   });
 
-  // Apply filters to the appropriate tab
-  const filteredPendingAssignments = filterAssignments(pendingAssignments);
-  const filteredCompletedAssignments = filterAssignments(completedAssignments);
-  const studentsToDisplay = activeTab === "Pending" ? filteredPendingAssignments : filteredCompletedAssignments;
-
-  const toggleDropdown = (id: string) => {
-    setOpenDropdownId((prev) => (prev === id ? null : id));
-  };
-
   const getStatusStyle = (status: string) => {
     switch (status?.toUpperCase()) {
       case "COMPLETED":
@@ -300,13 +278,6 @@ const StudentClassAssignmentsPage = () => {
     // Close filter modal after reset
     setIsAssignmentFilterModalOpen(false);
   };
-
-  const applyFilters = () => {
-    // Apply filters logic here - this will re-run the filteredAssignmentData memoization
-    setIsAssignmentFilterModalOpen(false);
-  };
-
-  // Placeholder functions
 
   const handleViewDetailsAssignments = (id: string) => {
     console.log("View details for assignment id:", id);

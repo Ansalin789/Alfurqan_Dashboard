@@ -824,14 +824,14 @@ const TeachersSchedule = () => {
           <div className="w-full lg:w-1/3 bg-white dark:bg-[#343434] shadow-md rounded-xl flex flex-col min-h-[500px] lg:h-[700px]">
             <div className="p-4 md:p-6">
               <div className="mb-4 md:mb-6">
-                <h3 className="text-base md:text-base font-semibold text-gray-800 dark:text-white">
+                <h3 className="text-[16px] font-semibold text-gray-800 dark:text-white">
                   Add New Schedule
                 </h3>
               </div>
 
               <div className="space-y-3 md:space-y-4">
                 <div>
-                  <label htmlFor="gcuyc" className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="gcuyc" className="block text-sm md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Date
                   </label>
                   <input
@@ -842,20 +842,20 @@ const TeachersSchedule = () => {
                       setRescheduleDate(date);
                     }}
                     min={moment().format("YYYY-MM-DD")}
-                    className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent dark:[color-scheme:dark]"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label htmlFor="gcuyc" className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label htmlFor="gcuyc" className="block text-sm md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       From Time
                     </label>
                     <select
                       name="fromTime"
                       value={formData.fromTime}
                       onChange={handleFromTimeChange}
-                      className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="">Select Time</option>
                       {timeSlots.map((slot: any) => (
@@ -874,7 +874,7 @@ const TeachersSchedule = () => {
                       name="toTime"
                       value={formData.toTime}
                       readOnly
-                      className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                 </div>

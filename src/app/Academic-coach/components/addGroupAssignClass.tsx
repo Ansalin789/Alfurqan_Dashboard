@@ -436,27 +436,27 @@ export default function AddGroupAssignClass({
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
       <div
-        className="w-[95%] max-w-6xl mx-auto 
+        className="w-full max-w-xl mx-auto 
     bg-white dark:bg-[#1F1F1F] rounded-xl shadow-xl 
     p-10 my-6 overflow-y-auto max-h-[90vh] transition-all duration-300 scrollbar-none"
       >
         {/* Title */}
-        <h1 className="text-2xl font-semibold text-[#1E1E1E] dark:text-white mb-8">
+        <h1 className="text-lg font-semibold text-[#1E1E1E] dark:text-white mb-6">
           Schedule Classes
         </h1>
 
         <div className="space-y-5">
           {/* Assigned Students */}
           <div className="relative">
-            <label className="block text-[18px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-2">
+            <label className="block text-[15px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-3">
               Assigned Students
             </label>
 
             {/* Dropdown Header */}
             <div
               onClick={() => setShowStudentDropdown(!showStudentDropdown)}
-              className={`flex justify-between items-center gap-2 border border-[#D4D4D4] dark:border-[#3F3F46] 
-    rounded-lg p-3 min-h-[44px] bg-white dark:bg-[#2A2A2A] cursor-pointer transition-all duration-300 relative z-30 ${
+              className={`flex text-xs justify-between items-center gap-2 border border-[#D4D4D4] dark:border-[#3F3F46] 
+    rounded-lg p-2 bg-white dark:bg-[#2A2A2A] cursor-pointer transition-all duration-300 relative z-30 ${
       showStudentDropdown ? "bg-[#F4F4F5] dark:bg-[#3A3A3A]" : ""
     }`}
             >
@@ -465,13 +465,13 @@ export default function AddGroupAssignClass({
                   studentInfos.map((student) => (
                     <span
                       key={student.id}
-                      className="px-3 py-1 bg-[#F4F4F5] dark:bg-[#3A3A3A] text-[#3F3F46] dark:text-[#E4E4E7] text-sm rounded-full"
+                      className="px-3 py-1 bg-[#F4F4F5] dark:bg-[#3A3A3A] text-[#3F3F46] dark:text-[#E4E4E7] text-xs rounded-full"
                     >
                       {student.studentName}
                     </span>
                   ))
                 ) : (
-                  <span className="text-sm text-[#71717A] dark:text-[#A1A1AA]">
+                  <span className="text-xs text-[#71717A] dark:text-[#A1A1AA]">
                     Select students...
                   </span>
                 )}
@@ -507,7 +507,7 @@ export default function AddGroupAssignClass({
                             : "hover:bg-[#F4F4F5] dark:hover:bg-[#3A3A3A]"
                         }`}
                       >
-                        <span className="text-sm text-[#3F3F46] dark:text-[#E4E4E7]">
+                        <span className="text-xs text-[#3F3F46] dark:text-[#E4E4E7]">
                           {student.studentName}
                         </span>
 
@@ -520,7 +520,7 @@ export default function AddGroupAssignClass({
                     );
                   })
                 ) : (
-                  <div className="px-4 py-3 text-sm text-[#71717A] dark:text-[#A1A1AA]">
+                  <div className="px-4 py-2 text-xs text-[#71717A] dark:text-[#A1A1AA]">
                     No students available
                   </div>
                 )}
@@ -530,14 +530,14 @@ export default function AddGroupAssignClass({
 
           {/* Course */}
           <div>
-            <label className="block text-[18px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-2">
+            <label className="block text-[15px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-3">
               Course
             </label>
             <input
               type="text"
               defaultValue={course}
               readOnly
-              className="w-full border border-[#D4D4D4] dark:border-[#3F3F46] rounded-lg px-3 py-2.5 
+              className="w-full text-xs border border-[#D4D4D4] dark:border-[#3F3F46] rounded-lg px-3 py-2 
           focus:outline-none focus:ring-1 focus:ring-[#6366F1] bg-white dark:bg-[#2A2A2A] 
           text-[#1E1E1E] dark:text-[#E4E4E7]"
             />
@@ -550,14 +550,14 @@ export default function AddGroupAssignClass({
               { label: "Hours", value: totalHours },
             ].map((item) => (
               <div key={item.label}>
-                <label className="block text-[18px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-2">
+                <label className="block text-[15px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-3">
                   {item.label}
                 </label>
                 <input
                   type="text"
                   defaultValue={item.value}
                   readOnly
-                  className="w-full border border-[#E4E4E7] dark:border-[#3F3F46] rounded-lg px-3 py-2.5 
+                  className="w-full text-xs border border-[#E4E4E7] dark:border-[#3F3F46] rounded-lg px-3 py-2 
               focus:outline-none focus:ring-1 focus:ring-[#6366F1] bg-white dark:bg-[#2A2A2A] 
               text-[#1E1E1E] dark:text-[#E4E4E7]"
                 />
@@ -569,15 +569,15 @@ export default function AddGroupAssignClass({
           <div>
             <label
               htmlFor="join-date"
-              className="text-[18px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-2 block"
+              className="text-[15px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-2 block"
             >
               Start Date
             </label>
             <input
               type="date"
               id="join-date"
-              className="w-full border border-[#D4D4D4] dark:border-[#3F3F46] rounded-lg px-3 py-2 
-          bg-white dark:bg-[#2A2A2A] text-[#1E1E1E] dark:text-[#E4E4E7]"
+              className="w-full border text-xs border-[#D4D4D4] dark:border-[#3F3F46] rounded-lg px-3 py-2 
+          bg-white dark:bg-[#2A2A2A] text-[#1E1E1E] dark:text-[#E4E4E7] dark:[color-scheme:dark]"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
             />
@@ -585,7 +585,7 @@ export default function AddGroupAssignClass({
 
           {/* Teacher */}
           <div className="relative">
-            <label className="text-[18px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-2 block">
+            <label className="text-[15px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-2 block">
               Teacher
             </label>
 
@@ -593,13 +593,13 @@ export default function AddGroupAssignClass({
             <div
               onClick={() => setShowTeacherDropdown(!showTeacherDropdown)}
               className={`flex justify-between items-center border border-[#D4D4D4] dark:border-[#3F3F46]
-    rounded-lg px-3 py-2.5 cursor-pointer transition-all duration-300 
+    rounded-lg px-3 py-2 text-xs cursor-pointer transition-all duration-300 
     bg-white dark:bg-[#2A2A2A] ${
       showTeacherDropdown ? "bg-[#F4F4F5] dark:bg-[#3A3A3A]" : ""
     }`}
             >
               <span
-                className={`text-sm ${
+                className={`text-xs ${
                   selectedTeacher
                     ? "text-[#3F3F46] dark:text-[#E4E4E7]"
                     : "text-[#71717A] dark:text-[#A1A1AA]"
@@ -621,17 +621,17 @@ export default function AddGroupAssignClass({
             {/* Floating Dropdown */}
             {showTeacherDropdown && (
               <div
-                className="absolute left-0 top-full mt-2 w-full border border-[#E4E4E7] dark:border-[#3F3F46]
+                className="absolute text-xs left-0 top-full mt-2 w-full border border-[#E4E4E7] dark:border-[#3F3F46]
       rounded-lg shadow-lg bg-white dark:bg-[#2A2A2A] max-h-[200px] overflow-y-auto z-40 animate-fadeIn"
               >
                 {Array.isArray(teachers) && teachers.length > 0 ? (
                   teachers.map((teacher) => (
                     <div
                       key={teacher.teacherId}
-                      className={`px-4 py-2 text-sm cursor-pointer border-b last:border-none
+                      className={`px-4 py-2 text-xs cursor-pointer border-b last:border-none
             transition-colors ${
               selectedTeacher?.teacherId === teacher.teacherId
-                ? "bg-[#EEF2FF] dark:bg-[#3F3F46]"
+                ? "bg-[#EEF2FF] dark:bg-[#3F3F46] text-xs"
                 : "hover:bg-[#F4F4F5] dark:hover:bg-[#3A3A3A]"
             }`}
                       onClick={() => {
@@ -643,7 +643,7 @@ export default function AddGroupAssignClass({
                     </div>
                   ))
                 ) : (
-                  <div className="px-4 py-3 text-sm text-[#71717A] dark:text-[#A1A1AA]">
+                  <div className="px-4 py-2 text-xs text-[#71717A] dark:text-[#A1A1AA]">
                     No teachers available
                   </div>
                 )}
@@ -653,7 +653,7 @@ export default function AddGroupAssignClass({
 
           {/* Preferred day & time */}
           <div>
-            <label className="block text-[18px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-2">
+            <label className="block text-[15px] font-extralight text-[#010E30] dark:text-[#E4E4E7] mb-2">
               Preferred day & time
             </label>
 
@@ -675,7 +675,7 @@ export default function AddGroupAssignClass({
                         setOpenDay(openDay === day.day ? null : day.day)
                       }
                       className={`flex justify-between items-center border border-[#D4D4D4] dark:border-[#3F3F46] 
-            rounded-lg px-3 py-2 cursor-pointer transition-all duration-300 relative z-30 ${
+            rounded-lg px-3 py-2 text-xs cursor-pointer transition-all duration-300 relative z-30 ${
               openDay === day.day
                 ? "bg-[#F4F4F5] dark:bg-[#3A3A3A]"
                 : "bg-white dark:bg-[#2A2A2A]"
@@ -806,14 +806,14 @@ export default function AddGroupAssignClass({
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 text-sm font-medium border border-[#576CBC] text-[#576CBC] rounded-lg hover:bg-[#E6E9F5] dark:hover:bg-[#2B2B2B]"
+            className="px-4 py-2 text-xs font-medium border border-[#576CBC] text-[#576CBC] rounded-lg hover:bg-[#E6E9F5] dark:hover:bg-[#2B2B2B]"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             type="button"
-            className="px-5 py-2 text-sm font-medium bg-[#576CBC] hover:bg-[#4459A9] text-white rounded-lg"
+            className="px-4 py-2 text-xs font-medium bg-[#576CBC] hover:bg-[#4459A9] text-white rounded-lg"
           >
             Submit
           </button>

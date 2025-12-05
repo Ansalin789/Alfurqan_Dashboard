@@ -42,17 +42,10 @@ const Page: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedRole(e.target.value);
-  };
-
   const router = useRouter();
   const itemsPerPage = 10;
 
   const [isFilterPopupOpen, setFilterPopupOpen] = useState(false);
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(
-    null
-  );
   const [filterCriteria, setFilterCriteria] = useState({
     name: "",
     designation: "",
@@ -200,19 +193,9 @@ const Page: React.FC = () => {
     router.push(path);
   };
 
-  const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
-
   return (
     <BaseLayout4>
       <AdminHeader currentSection="Role Access" />
-      {/* <div className="p-2 sm:p-2 md:p-2 min-h-screen w-full max-w-8xl mx-auto "> */}
         <div className="mt-0">
           <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
             <div className="flex justify-between items-center px-4 py-0">

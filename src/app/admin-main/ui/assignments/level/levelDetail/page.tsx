@@ -302,22 +302,22 @@ const Page = () => {
       options: [],
     }));
   };
- const handleClose = () => {
+  const handleClose = () => {
     setQuestions([]);
-        setForm({
-          assignmentName: "",
-          questionName: "",
-          questionText: "",
-          assignmentType: "quiz",
-          contentType: "text",
-          answerType: "choose",
-          allowedAnswerTypes: ["choose", "trueorfalse", "nooption"],
-          options: [],
-          correctAnswer: "",
-        });
-        setAssignmentType("quiz");
-        setShowForm(false);
- }
+    setForm({
+      assignmentName: "",
+      questionName: "",
+      questionText: "",
+      assignmentType: "quiz",
+      contentType: "text",
+      answerType: "choose",
+      allowedAnswerTypes: ["choose", "trueorfalse", "nooption"],
+      options: [],
+      correctAnswer: "",
+    });
+    setAssignmentType("quiz");
+    setShowForm(false);
+  }
   const handleSaveAssignment = async () => {
     const payload: IAdminAssignmentCreate = {
       levelId,
@@ -446,9 +446,9 @@ const Page = () => {
           {currentPage === 1
             ? Math.min(3, totalItems)
             : Math.min(
-                3 + (currentPage - 2) * itemsPerPage + itemsPerPage,
-                totalItems
-              )}{" "}
+              3 + (currentPage - 2) * itemsPerPage + itemsPerPage,
+              totalItems
+            )}{" "}
           of {totalItems} entries
         </div>
 
@@ -482,11 +482,10 @@ const Page = () => {
                   )}
                   <button
                     onClick={() => setCurrentPage(page)}
-                    className={`w-8 h-8 rounded-md border flex items-center justify-center text-sm transition ${
-                      page === currentPage
+                    className={`w-8 h-8 rounded-md border flex items-center justify-center text-sm transition ${page === currentPage
                         ? "bg-[#FAFAFB] text-[#203F78] border-[#203F78] dark:bg-[#939393]"
                         : "bg-white dark:bg-[#565656] text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#939393]"
-                    }`}
+                      }`}
                   >
                     {page}
                   </button>
@@ -586,11 +585,10 @@ const Page = () => {
                           className="hidden peer"
                         />
                         <div
-                          className={`w-5 h-5 border-2 rounded-sm flex items-center justify-center ${
-                            form.answerType === "choose"
+                          className={`w-5 h-5 border-2 rounded-sm flex items-center justify-center ${form.answerType === "choose"
                               ? "bg-blue-600 border-blue-600 text-white"
                               : "border-gray-400 text-transparent"
-                          }`}
+                            }`}
                         >
                           ✓
                         </div>
@@ -615,11 +613,10 @@ const Page = () => {
                           className="hidden peer"
                         />
                         <div
-                          className={`w-5 h-5 border-2 rounded-sm flex items-center justify-center ${
-                            form.answerType === "trueorfalse"
+                          className={`w-5 h-5 border-2 rounded-sm flex items-center justify-center ${form.answerType === "trueorfalse"
                               ? "bg-blue-600 border-blue-600 text-white"
                               : "border-gray-400 text-transparent"
-                          }`}
+                            }`}
                         >
                           ✓
                         </div>
@@ -644,11 +641,10 @@ const Page = () => {
                           className="hidden peer"
                         />
                         <div
-                          className={`w-5 h-5 border-2 rounded-sm flex items-center justify-center ${
-                            form.answerType === "nooption"
+                          className={`w-5 h-5 border-2 rounded-sm flex items-center justify-center ${form.answerType === "nooption"
                               ? "bg-blue-600 border-blue-600 text-white"
                               : "border-gray-400 text-transparent"
-                          }`}
+                            }`}
                         >
                           ✓
                         </div>
@@ -774,111 +770,109 @@ const Page = () => {
                   )}
 
                 {/* ✅ Choose (multiple) options */}
-               {form.answerType === "choose" && (
-  <div className="space-y-3">
-    <label htmlFor="options" className="font-medium">Options</label>
+                {form.answerType === "choose" && (
+                  <div className="space-y-3">
+                    <label htmlFor="options" className="font-medium">Options</label>
 
-    {form.options.map((opt, index) => {
-      const isSelected =
-        Array.isArray(form.correctAnswer) &&
-        form.correctAnswer.includes(opt);
+                    {form.options.map((opt, index) => {
+                      const isSelected =
+                        Array.isArray(form.correctAnswer) &&
+                        form.correctAnswer.includes(opt);
 
-      return (
-        <div
-          key={index}
-          className={`flex items-center gap-3 p-2 rounded-md ${
-            isSelected ? 'bg-[#377E36] dark:bg-[#377E36]' : ''
-          }`}
-        >
-          <input
-            type="checkbox"
-            name="correctOption"
-            checked={isSelected}
-            onChange={(e) => {
-              let updatedAnswers = Array.isArray(form.correctAnswer)
-                ? [...form.correctAnswer]
-                : [];
+                      return (
+                        <div
+                          key={index}
+                          className={`flex items-center gap-3 p-2 rounded-md ${isSelected ? 'bg-[#377E36] dark:bg-[#377E36]' : ''
+                            }`}
+                        >
+                          <input
+                            type="checkbox"
+                            name="correctOption"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              let updatedAnswers = Array.isArray(form.correctAnswer)
+                                ? [...form.correctAnswer]
+                                : [];
 
-              if (e.target.checked) {
-                updatedAnswers.push(opt);
-              } else {
-                updatedAnswers = updatedAnswers.filter((ans) => ans !== opt);
-              }
+                              if (e.target.checked) {
+                                updatedAnswers.push(opt);
+                              } else {
+                                updatedAnswers = updatedAnswers.filter((ans) => ans !== opt);
+                              }
 
-              setForm({ ...form, correctAnswer: updatedAnswers });
-            }}
-          />
-          <input
-            type="text"
-            value={opt}
-            onChange={(e) => {
-              const newOptions = [...form.options];
-              newOptions[index] = e.target.value;
+                              setForm({ ...form, correctAnswer: updatedAnswers });
+                            }}
+                          />
+                          <input
+                            type="text"
+                            value={opt}
+                            onChange={(e) => {
+                              const newOptions = [...form.options];
+                              newOptions[index] = e.target.value;
 
-              // Sync with correctAnswer if label was selected
-              let updatedCorrect = form.correctAnswer;
-              if (Array.isArray(form.correctAnswer)) {
-                if (form.correctAnswer.includes(opt)) {
-                  updatedCorrect = form.correctAnswer.map((ans) =>
-                    ans === opt ? e.target.value : ans
-                  );
-                }
-              }
+                              // Sync with correctAnswer if label was selected
+                              let updatedCorrect = form.correctAnswer;
+                              if (Array.isArray(form.correctAnswer)) {
+                                if (form.correctAnswer.includes(opt)) {
+                                  updatedCorrect = form.correctAnswer.map((ans) =>
+                                    ans === opt ? e.target.value : ans
+                                  );
+                                }
+                              }
 
-              setForm({
-                ...form,
-                options: newOptions,
-                correctAnswer: updatedCorrect,
-              });
-            }}
-            className="flex-1 px-3 py-2 rounded-md bg-gray-100 dark:bg-[#2a2a2a] border border-gray-300"
-          />
-        </div>
-      );
-    })}
+                              setForm({
+                                ...form,
+                                options: newOptions,
+                                correctAnswer: updatedCorrect,
+                              });
+                            }}
+                            className="flex-1 px-3 py-2 rounded-md bg-gray-100 dark:bg-[#2a2a2a] border border-gray-300"
+                          />
+                        </div>
+                      );
+                    })}
 
-    {form.options.length < 4 && (
-      <button
-        type="button"
-        onClick={() =>
-          setForm({ ...form, options: [...form.options, ""] })
-        }
-        className="text-blue-600 text-sm"
-      >
-        + Add Option
-      </button>
-    )}
-  </div>
-)}
+                    {form.options.length < 4 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm({ ...form, options: [...form.options, ""] })
+                        }
+                        className="text-blue-600 text-sm"
+                      >
+                        + Add Option
+                      </button>
+                    )}
+                  </div>
+                )}
 
 
                 {/* ✅ True or False (single answer) */}
-              {form.answerType === "trueorfalse" && (
-  <div className="space-y-3">
-    <label htmlFor="ugu" className="font-medium">
-      Select Correct Answer
-    </label>
-    <div className="flex gap-4">
-      {["True", "False"].map((opt) => {
-        const isSelected = form.correctAnswer === opt;
-        return (
-          <button
-            key={opt}
-            type="button"
-            onClick={() => setForm({ ...form, correctAnswer: opt })}
-            className={`px-6 py-2 rounded-md border text-sm font-medium transition-all ${
-              isSelected
-                ? "bg-green-100 text-green-800 border-green-400 dark:bg-green-900 dark:text-green-200"
-                : "bg-gray-100 dark:bg-[#2a2a2a] text-gray-700 dark:text-white border-gray-300"
-            }`}
-          >
-            {opt}
-          </button>
-        );
-      })}
-    </div>
-  </div>
-)}
+                {form.answerType === "trueorfalse" && (
+                  <div className="space-y-3">
+                    <label htmlFor="ugu" className="font-medium">
+                      Select Correct Answer
+                    </label>
+                    <div className="flex gap-4">
+                      {["True", "False"].map((opt) => {
+                        const isSelected = form.correctAnswer === opt;
+                        return (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => setForm({ ...form, correctAnswer: opt })}
+                            className={`px-6 py-2 rounded-md border text-sm font-medium transition-all ${isSelected
+                                ? "bg-green-100 text-green-800 border-green-400 dark:bg-green-900 dark:text-green-200"
+                                : "bg-gray-100 dark:bg-[#2a2a2a] text-gray-700 dark:text-white border-gray-300"
+                              }`}
+                          >
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
               </div>
 

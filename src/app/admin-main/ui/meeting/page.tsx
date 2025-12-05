@@ -70,7 +70,6 @@ const Meetings = () => {
   const [isDatePickerOpens, setIsDatePickerOpens] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
   const [completedData, setCompletedData] = useState<Meeting[]>([]);
   const [upcomingClasses, setUpcomingClasses] = useState<Meeting[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -120,9 +119,6 @@ const Meetings = () => {
       email: string;
     }[]
   >([]);
-
-  const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
-
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
 
@@ -735,20 +731,6 @@ const Meetings = () => {
           </h2>
 
           <div className="grid grid-cols-2 gap-4 mb-6">
-            {/* <div>
-              <label className="text-sm font-medium text-[#444] dark:text-white mb-1 block">
-                Meeting Name
-              </label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
-                value={filters.meetingName}
-                onChange={(e) =>
-                  setFilters({ ...filters, meetingName: e.target.value })
-                }
-                placeholder="Enter meeting name"
-              />
-            </div> */}
             <div>
               <label className="text-sm font-medium text-[#444] dark:text-white mb-1 block">
                 Teacher

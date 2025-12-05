@@ -5,47 +5,13 @@ import Modal from "react-modal";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import Pagination from "@/components/Pagination";
-import { FaEllipsisV } from "react-icons/fa";
-
-import Dashboard from "../../components/evaluationcard";
 import BaseLayout4 from "@/components/BaseLayout4";
 import { MdTune } from "react-icons/md";
 import axios from "axios";
 import AdminHeader from "../../components/AdminHeader";
 import { getSocket } from "@/app/utils/socket";
 
-interface Student {
-  learningInterest: string; // Replace with the exact type if known
-  studentId: string;
-  studentFirstName: string;
-  studentLastName: string;
-  studentEmail: string;
-  studentPhone: number;
-  studentCountry: string;
-  preferredTeacher: string;
-  preferredFromTime: string;
-  preferredToTime: string;
-  classStatus?: string;
-  status?: string;
-  trialClassStatus: string;
-  studentStatus: string;
-  createdDate: Date;
-}
 
-interface EvaluationItem {
-  paymentLink: string;
-  _id: string;
-  student: Student;
-  trialClassStatus: string;
-  assignedTeacher: string;
-  paymentStatus: string;
-}
-
-interface ApiResponse {
-  evaluation: EvaluationItem[];
-}
-
-// Define the transformed user structure
 interface TransformedUser {
   _id: string;
   studentId: string;
@@ -835,27 +801,6 @@ const TrailSection = () => {
     Modal.setAppElement("body");
   }, []);
 
-  const mergedUsers = users.map((user) => {
-    const evalUser = evaluationUsers.find(
-      (evalUser) => evalUser.studentId === user.studentId
-    );
-    return {
-      ...user,
-      studentStatus: evalUser?.studentStatus ?? "NOT JOINED",
-      // You can merge other fields from evalUser if needed
-    };
-  });
-
-  const openModal = (user: User | null = null) => {
-    setIsEditMode(!!user);
-    setIsModalOpen(true);
-    setModalIsOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setModalIsOpen(false);
-  };
 
   useEffect(() => {
     console.log("Current users data:", users);
@@ -875,10 +820,6 @@ const TrailSection = () => {
     }
   };
 
-  const handleEditClick = (studentId: User) => {
-    setSelectedUserData(studentId);
-    setModalIsOpen(true);
-  };
 
   // Updated filter handling function
   const handleApplyFilters = (filters: {

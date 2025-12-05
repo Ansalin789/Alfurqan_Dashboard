@@ -284,10 +284,10 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
   <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-[#1D1D1D] rounded-lg shadow-xl p-5 w-full max-w-2xl mx-3 text-sm scrollbar-none"
+        className="bg-white dark:bg-[#1f1f1f] rounded-lg shadow-xl p-5 w-full max-w-xl mx-3 text-sm scrollbar-none"
                 style={{ maxHeight: "90vh", overflowY: "auto" }}
       >
-    <h1 className="text-xl font-semibold text-gray-800 mb-5 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+    <h1 className="text font-semibold text-gray-800 mb-4 dark:text-white dark:border-gray-700 pb-2">
     Add Meeting
         </h1>
 
@@ -297,38 +297,44 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
             <div>
               <label
                 htmlFor="uyvuhvyuc"
-                className="block text-sm mb-1 text-gray-600 dark:text-gray-300">
+                className="block text-sm mb-2 text-gray-600 dark:text-gray-300">
                 Meeting Name
               </label>
               <input
                 value={meetingTitle}
                 onChange={(e) => setMeetingTitle(e.target.value)}
                 type="text"
-                className="w-full border border-gray-300 dark:border-[#5C5C5C] rounded-lg px-3 py-2 text-[13px] font-light text-gray-800 dark:text-white dark:bg-[#2B2B2B] focus:ring-2 focus:ring-[#576CBC] outline-none"
+                className="w-full text-xs border border-[#D4D4D4] dark:border-[#3F3F46] rounded-lg px-3 py-2 
+          focus:outline-none focus:ring-1 focus:ring-[#6366F1] bg-white dark:bg-[#2A2A2A] 
+          text-[#1E1E1E] dark:text-[#E4E4E7]"
                 />
             </div>
             <div className="mt-4">              
               <label
                 htmlFor="uyvuhvyuc"
-                className="block text-sm mb-1 text-gray-600 dark:text-gray-300">
+                className="block text-sm mb-2 text-gray-600 dark:text-gray-300">
                 Start Time
               </label>
               <input
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full border border-gray-300 dark:border-[#5C5C5C] rounded-lg px-3 py-2 text-[13px] font-light text-gray-800 dark:text-white dark:bg-[#2B2B2B] focus:ring-2 focus:ring-[#576CBC] outline-none dark:[color-scheme:dark]"
+                className="w-full text-xs border border-[#D4D4D4] dark:border-[#3F3F46] rounded-lg px-3 py-2 
+          focus:outline-none focus:ring-1 focus:ring-[#6366F1] bg-white dark:bg-[#2A2A2A] 
+          text-[#1E1E1E] dark:text-[#E4E4E7] dark:[color-scheme:dark]"
                 />
             </div>
             <div className="mt-4">              
               <label
                 htmlFor="uyvuhvyuc"
-                className="block text-sm mb-1 text-gray-600 dark:text-gray-300">
+                className="block text-sm mb-2 text-gray-600 dark:text-gray-300">
               
                 Add Participants
               </label>
-              <div className="relative flex items-center border border-gray-300 dark:border-[#5C5C5C] rounded-lg px-2 py-2 dark:bg-[#2B2B2B]">
-              <div className="flex-1 px-2 text-[13px] text-gray-500 dark:text-gray-300 font-light">
+              <div className="relative flex items-center rounded-lg dark:bg-[#2B2B2B]  w-full text-xs border border-[#D4D4D4] dark:border-[#3F3F46] rounded-lg px-2 py-2 
+          focus:outline-none focus:ring-1 focus:ring-[#6366F1] bg-white dark:bg-[#2A2A2A] 
+          text-[#1E1E1E] dark:text-[#E4E4E7]">
+              <div className="flex-1 px-2 text-xs text-gray-500 dark:text-gray-300 font-light">
               Select Participants                </div>
                 <button
                   type="button"
@@ -346,10 +352,10 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
                 <div className="fixed inset-0 bg-black/50" />
                 <div className="fixed inset-0 flex items-center justify-center p-4">
                 <section className="bg-white dark:bg-[#1D1D1D] rounded-xl p-6 w-full max-w-md shadow-xl">
-                <h2 className="text-base font-semibold mb-4 text-gray-800 dark:text-white">
+                <h2 className="text-[16px] font-medium mb-4 text-gray-800 dark:text-white">
                       Select Participants
                     </h2>
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2 mb-3 border-b border-gray-300 dark:border-gray-600 pb-2">
                       <button onClick={() => setRoleTab("Student")} className={`px-3 py-1.5 text-xs rounded-md ${roleTab === "Student" ? "bg-[#576CBC] text-white" : "bg-gray-100 dark:bg-[#2B2B2B] text-gray-800 dark:text-white"}`}>Students</button>
                       <button onClick={() => setRoleTab("Teacher")} className={`px-3 py-1.5 text-xs rounded-md ${roleTab === "Teacher" ? "bg-[#576CBC] text-white" : "bg-gray-100 dark:bg-[#2B2B2B] text-gray-800 dark:text-white"}`}>Teachers</button>
                       <button onClick={() => setRoleTab("Admin")} className={`px-3 py-1.5 text-xs rounded-md ${roleTab === "Admin" ? "bg-[#576CBC] text-white" : "bg-gray-100 dark:bg-[#2B2B2B] text-gray-800 dark:text-white"}`}>Admins</button>
@@ -437,13 +443,13 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
                     <div className="flex justify-end mt-6 gap-3">
                     <button
                         onClick={() => setOpen(false)}
-                        className="px-4 py-1.5 text-sm border border-gray-400 rounded-lg text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#2B2B2B]"
+                        className="px-3 py-1 text-xs border border-gray-400 rounded-lg text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#2B2B2B]"
                         >
                         Cancel
                       </button>
                       <button
                         onClick={() => setOpen(false)}
-                        className="px-4 py-1.5 text-sm bg-[#576CBC] text-white rounded-lg hover:bg-[#4459A9]"
+                        className="px-3 py-1 text-xs bg-[#576CBC] text-white rounded-lg hover:bg-[#4459A9]"
                         >
                         Done
                       </button>
@@ -454,14 +460,14 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
             </div>
             {selectedTeachers.length > 0 && (
               <div className="mt-3">
-                <label className="block text-sm mb-1 text-gray-600 dark:text-gray-300">
+                <label className="block text-xs mb-1 text-gray-600 dark:text-gray-300">
                   Selected Students
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {selectedTeachers.map((t) => (
                     <span
                       key={t._id}
-                      className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[12px] border border-gray-300 text-gray-700 dark:text-white dark:border-[#5C5C5C] dark:bg-[#2B2B2B]"
+                      className="inline-flex items-center gap-2 px-1.5 py-0.5 rounded text-[10px] border border-gray-300 text-gray-700 dark:text-white dark:border-[#5C5C5C] dark:bg-[#2B2B2B]"
                     >
                       {t.username}
                       <button
@@ -481,12 +487,12 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
             )}
             {selectedTeacherUsers.length > 0 && (
               <div className="mt-3">
-                <label className="block text-sm mb-1 text-gray-600 dark:text-gray-300">
+                <label className="block text-xs mb-1 text-gray-600 dark:text-gray-300">
                   Selected Teachers
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {selectedTeacherUsers.map((t) => (
-                    <span key={t._id} className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[12px] border border-gray-300 text-gray-700 dark:text-white dark:border-[#5C5C5C] dark:bg-[#2B2B2B]">
+                    <span key={t._id} className="inline-flex items-center gap-2 px-1.5 py-0.5 rounded text-[10px] border border-gray-300 text-gray-700 dark:text-white dark:border-[#5C5C5C] dark:bg-[#2B2B2B]">
                       {t.username}
                       <button
                         type="button"
@@ -503,17 +509,17 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
             )}
             {selectedAdminUsers.length > 0 && (
               <div className="mt-3">
-                <label className="block text-sm mb-1 text-gray-600 dark:text-gray-300">
+                <label className="block text-xs mb-1 text-gray-600 dark:text-gray-300">
                   Selected Admins
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {selectedAdminUsers.map((t) => (
-                    <span key={t._id} className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[12px] border border-gray-300 text-gray-700 dark:text-white dark:border-[#5C5C5C] dark:bg-[#2B2B2B]">
+                    <span key={t._id} className="inline-flex items-center gap-2 px-1.5 py-0.5 rounded text-[10px] border border-gray-300 text-gray-700 dark:text-white dark:border-[#5C5C5C] dark:bg-[#2B2B2B]">
                       {t.username}
                       <button
                         type="button"
                         onClick={() => setSelectedAdminUsers((prev) => prev.filter((p) => p._id !== t._id))}
-                        className="ml-1 text-gray-500 hover:text-red-600"
+                        className="ml-1 text-gray-500 hover:text-gray-800"
                         aria-label="Remove"
                       >
                         ×
@@ -530,7 +536,7 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
             <div className="mb-3">
               <label
                 htmlFor="uyvuhvyuc"
-                className="block text-sm mb-1 text-gray-600 dark:text-gray-300">
+                className="block text-sm mb-2 text-gray-600 dark:text-gray-300">
                       Date                 
               </label>
               <input
@@ -538,13 +544,15 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
                 min={minDateForMeeting}
-                className="w-full border border-gray-300 dark:border-[#5C5C5C] rounded-lg px-3 py-2 text-[13px] font-light text-gray-800 dark:text-white dark:bg-[#2B2B2B] focus:ring-2 focus:ring-[#576CBC] outline-none dark:[color-scheme:dark]"
+                className="w-full text-xs border border-[#D4D4D4] dark:border-[#3F3F46] rounded-lg px-3 py-2 
+          focus:outline-none focus:ring-1 focus:ring-[#6366F1] bg-white dark:bg-[#2A2A2A] 
+          text-[#1E1E1E] dark:text-[#E4E4E7] dark:[color-scheme:dark]"
                 />
             </div>
             <div className="mt-4">
               <label
                 htmlFor="uyvuhvyuc"
-               className="block text-sm mb-1 text-gray-600 dark:text-gray-300"
+               className="block text-sm mb-2 text-gray-600 dark:text-gray-300"
               >
                 End Time
               </label>
@@ -552,7 +560,9 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full border border-gray-300 dark:border-[#5C5C5C] rounded-lg px-3 py-2 text-[13px] font-light text-gray-800 dark:text-white dark:bg-[#2B2B2B] focus:ring-2 focus:ring-[#576CBC] outline-none dark:[color-scheme:dark]"
+                className="w-full text-xs border border-[#D4D4D4] dark:border-[#3F3F46] rounded-lg px-3 py-2 
+          focus:outline-none focus:ring-1 focus:ring-[#6366F1] bg-white dark:bg-[#2A2A2A] 
+          text-[#1E1E1E] dark:text-[#E4E4E7] dark:[color-scheme:dark]"
                 />
             </div>
           </div>
@@ -569,7 +579,7 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            className="w-full border border-gray-300 dark:border-[#5C5C5C] rounded-lg px-3 py-3 text-[13px] font-light text-gray-800 dark:text-white dark:bg-[#2B2B2B] focus:ring-2 focus:ring-[#576CBC] outline-none resize-none"
+            className="w-full text-xs border border-gray-300 dark:border-[#5C5C5C] rounded-lg px-3 py-3 text-[13px] font-light text-gray-800 dark:text-white dark:bg-[#2B2B2B] focus:ring-2 focus:ring-[#576CBC] outline-none resize-none"
             placeholder="Write meeting details..."
           />
         </div>
@@ -579,13 +589,13 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
         <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 border border-[#576CBC] text-[#576CBC] rounded-lg hover:bg-[#E6E9F5] dark:hover:bg-[#2B2B2B]"
+            className="px-4 py-2 text-xs border border-[#576CBC] text-[#576CBC] rounded-lg hover:bg-[#E6E9F5] dark:hover:bg-[#2B2B2B]"
             >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-[#576CBC] text-white rounded-lg hover:bg-[#4459A9]"
+            className="px-4 py-2 text-xs bg-[#576CBC] text-white rounded-lg hover:bg-[#4459A9]"
             >
             Submit
           </button>

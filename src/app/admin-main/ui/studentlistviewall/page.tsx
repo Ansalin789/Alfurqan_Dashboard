@@ -2,12 +2,10 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FaEdit, FaFilter } from "react-icons/fa";
 import BaseLayout4 from "@/components/BaseLayout4";
 import axios from "axios";
 import AdminHeader from "../../components/AdminHeader";
 import Pagination from "@/components/Pagination";
-import { Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import { BsThreeDotsVertical } from "react-icons/bs";
 
@@ -60,25 +58,7 @@ const [meetingFilters, setMeetingFilters] = useState({
   course: "",
   fromDate: "",
 });
-
-// Filtered students based on filters
-const filteredStudentsByFilters = filteredStudents.filter((student) => {
-  const matchesTeacher = meetingFilters.teacher
-    ? student.teacherName.toLowerCase().includes(meetingFilters.teacher.toLowerCase())
-    : true;
-
-  const matchesCourse = meetingFilters.course
-    ? student.student.course.toLowerCase().includes(meetingFilters.course.toLowerCase())
-    : true;
-
-  const matchesFromDate = meetingFilters.fromDate
-    ? new Date(student.evaluation[0].joiningDate) >= new Date(meetingFilters.fromDate)
-    : true;
-
-  return matchesTeacher && matchesCourse && matchesFromDate;
-});
-
-  // Fetch students data from API
+ // Fetch students data from API
   const [students, setStudents] = useState<Student[]>([]); // Initialize as an empty array
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
