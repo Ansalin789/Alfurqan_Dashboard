@@ -273,8 +273,15 @@ const SignIn: React.FC = () => {
           />
         </div>
 
-        <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 overflow-auto scrollbar-none -mt-8 lg:-mt-16 py-8 lg:py-0">
-          <div className="w-full max-w-md">
+<div
+  className="
+    flex-1
+    flex items-center justify-center
+    px-4 sm:px-6 lg:px-8
+    overflow-auto scrollbar-none
+    py-6
+  "
+>          <div className="w-full max-w-md">
             <h2 className="text-2xl sm:text-[32px] font-bold text-black mb-2 text-center lg:text-left">Sign in</h2>
             <p className="text-[#718096] mb-6 sm:mb-8 text-sm sm:text-[14px] text-center lg:text-left">
               Don't have an account?{' '}
@@ -448,8 +455,15 @@ const SignIn: React.FC = () => {
         <div className="relative z-10 flex flex-col justify-between w-full h-full px-4 sm:px-6 lg:px-12 py-6 sm:py-8">
 
           {/* TOP CARD - Responsive */}
-          <div className="bg-white rounded-xl p-4 sm:p-6 w-full max-w-sm sm:max-w-md lg:max-w-[635px] mx-auto shadow-2xl mt-8 sm:mt-16 lg:mt-32">
-            <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-6">
+{/* TOP CARD */}
+  <div className="
+    bg-white rounded-xl shadow-lg
+    p-4 sm:p-5 lg:p-6
+    w-full 
+    max-w-sm sm:max-w-md lg:max-w-xl
+    mx-auto
+    mt-14 sm:mt-28 lg:mt-32
+  ">              <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-6">
               <div className="flex-1 text-left w-full">
                 <h2 className="text-lg sm:text-xl lg:text-[22px] font-extrabold leading-[1.2] text-[#576CBC] mb-4 sm:mb-6">
                     Connecting You to Qur'an,<br />
@@ -475,7 +489,7 @@ const SignIn: React.FC = () => {
           </div>
 
           {/* BOTTOM SECTION - Responsive */}
-          <div className="text-center text-white mx-auto mb-8 sm:mb-12 mt-4 sm:mt-0">
+             <div className="text-center text-white mx-auto mt-3 sm:mt-6 mb-10">
             <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-2">Student Dashboard</h2>
 
             <p className="text-[#CFD9E0] text-[20px] sm:text-sm leading-relaxed max-w-xs sm:max-w-md mx-auto mb-2 sm:mb-4">

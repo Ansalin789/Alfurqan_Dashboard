@@ -232,7 +232,7 @@ export default function UpgradeClassForm({ onClose }: Readonly<Props>) {
           className="bg-white dark:bg-[#1D1D1D] rounded-lg shadow-xl p-5 w-full max-w-lg mx-3 text-sm border border-[#DFE0EB] dark:border-[#444] scrollbar-none"
           style={{ maxHeight: "90vh", overflowY: "auto" }}
         >
-          <h2 className="text-[18px] font-semibold text-[#010E30] dark:text-white">
+          <h2 className="text-[16px] font-semibold text-[#010E30] dark:text-white">
             Upgrade Classes
           </h2>
 
@@ -248,7 +248,7 @@ export default function UpgradeClassForm({ onClose }: Readonly<Props>) {
               <input
                 type="text"
                 id="ugcuc"
-                className="border rounded text-sm px-1 w-40 bg-white/5 dark:bg-[#2c2c2c] border-[#4f5154] text-[#010E30] dark:text-white"
+                className="border rounded text-xs px-2 py-1  w-full bg-white/5 dark:bg-[#2c2c2c] border-[#4f5154] text-[#010E30] dark:text-white"
                 value={selectedTeacher?.teacherName}
               />
             </div>
@@ -263,7 +263,7 @@ export default function UpgradeClassForm({ onClose }: Readonly<Props>) {
               <input
                 type="date"
                 id="ugcuc"
-                className="border rounded text-sm px-1 bg-white/5 dark:bg-[#2c2c2c] border-[#4f5154] text-[#010E30] dark:text-white"
+                className="border rounded text-xs px-2 py-1 bg-white/5 dark:bg-[#2c2c2c] border-[#4f5154] text-[#010E30] dark:text-white dark:[color-scheme:dark]"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
               />

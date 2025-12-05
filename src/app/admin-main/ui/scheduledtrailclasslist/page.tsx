@@ -86,7 +86,6 @@ export interface TransformedUser {
 }
 
 const Trailclasslist = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredUsers, setFilteredUsers] = useState<TransformedUser[]>([]);
@@ -195,64 +194,6 @@ const Trailclasslist = () => {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const filteredItems = filteredItemsAll.slice(indexOfFirstItem, indexOfLastItem);
-  
-    const handleSearch = (query: string) => {
-      setSearchQuery(query);
-      setCurrentPage(1);
-    };
-
-    const goToNextPage = () => {
-      if (currentPage < totalPages) {
-        setCurrentPage(currentPage + 1);
-      }
-    };
-  
-    const goToPrevPage = () => {
-      if (currentPage > 1) {
-        setCurrentPage(currentPage - 1);
-      }
-    };
-  
-    const goToPage = (pageNumber: number) => {
-      setCurrentPage(pageNumber);
-    };
-  
-    // Calculate page numbers to display
-    const getPageNumbers = () => {
-      const pageNumbers = [];
-      const maxVisiblePages = 5; // Maximum number of page buttons to show
-  
-      if (totalPages <= maxVisiblePages) {
-        for (let i = 1; i <= totalPages; i++) {
-          pageNumbers.push(i);
-        }
-      } else {
-        // Show first page, current page, and last page with ellipses
-        const leftBound = Math.max(1, currentPage - 1);
-        const rightBound = Math.min(totalPages, currentPage + 1);
-  
-        if (leftBound > 1) {
-          pageNumbers.push(1);
-          if (leftBound > 2) {
-            pageNumbers.push(-1); // -1 represents ellipsis
-          }
-        }
-  
-        for (let i = leftBound; i <= rightBound; i++) {
-          pageNumbers.push(i);
-        }
-  
-        if (rightBound < totalPages) {
-          if (rightBound < totalPages - 1) {
-            pageNumbers.push(-1); // -1 represents ellipsis
-          }
-          pageNumbers.push(totalPages);
-        }
-      }
-  
-      return pageNumbers;
-  };
-  
 
 
   return (

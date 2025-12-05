@@ -118,12 +118,6 @@ const StudentModuleAccess = () => {
       }));
 
       setPermissions((prev) => {
-        const current = prev.studentmodules[module] || {
-          read: false,
-          write: false,
-          delete: false,
-        };
-
         const newState = !selectedModules[module];
 
         return {

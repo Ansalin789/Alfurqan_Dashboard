@@ -316,15 +316,6 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
                   <option value="Quran">Quran</option>
                   <option value="Arabic">Arabic</option>
                   <option value="Islamic Studies	">Islamic Studies	</option>
-
-                  {/* If you have dynamic course list, map here */}
-                  {/* 
-    {courseList.map((course) => (
-      <option key={course._id} value={course.courseName}>
-        {course.courseName}
-      </option>
-    ))}
-    */}
                 </select>
               </div>
 
@@ -354,15 +345,7 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
                   onChange={(e) => setMeetingFilters({ ...meetingFilters, startTime: e.target.value })}
                 />
               </div>
-              {/* <div className="mb-4">
-                <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">End Time</label>
-                <input
-                  type="time"
-                  className="w-full border rounded-md p-2 text-[12px] dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                  value={meetingFilters.endTime}
-                  onChange={(e) => setMeetingFilters({ ...meetingFilters, endTime: e.target.value })}
-                />
-              </div> */}
+
               <div className="mb-6">
                 <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">Status</label>
                 <select

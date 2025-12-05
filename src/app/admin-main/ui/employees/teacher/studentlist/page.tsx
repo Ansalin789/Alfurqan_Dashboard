@@ -20,7 +20,7 @@ import {
 import axios from "axios";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
-import ReactDOM from "react-dom";
+
 
 // Register chart.js modules
 ChartJS.register(
@@ -33,16 +33,6 @@ ChartJS.register(
 );
 
 countries.registerLocale(enLocale);
-
-interface CountryStat {
-  country: string;
-  count: number;
-  percentage: number;
-}
-interface OtherEmpCountResponse {
-  totalOtherEmpCount: number;
-  otherEmpCount: OtherEmpEntry[];
-}
 
 interface StudentData {
   studentId: string;
@@ -164,38 +154,6 @@ interface ScheduledClass {
   amount: string;
 }
 
-interface OtherEmpEntry {
-  country: string[]; // e.g., ["ADMIN"]
-  count: number;
-  percentage: number;
-}
-const formatRole = (role: string) => {
-  switch (role) {
-    case "ACADEMICCOACH":
-      return "Academic Coach";
-    case "SUPERVISOR":
-      return "Supervisor";
-    case "USER":
-      return "User";
-    case "ADMIN":
-      return "Admin";
-    default:
-      return role;
-  }
-};
-// Replace COLORS object with array for correct indexing
-const COLORS = ["#A3D3FF", "#FFD6F7", "#B4C7ED"];
-interface GenderCountResponse {
-  employeePercentage: number;
-  employeeMalePercentage: string;
-  employeeFemalePercentage: string;
-}
-interface DashboardCounts {
-  totalApplication: number;
-  shortlisted: number;
-  rejected: number;
-  waiting: number;
-}
 
 // Add interface for leave request list API
 interface LeaveRequest {
@@ -216,23 +174,9 @@ interface LeaveRequest {
   updatedDate: string;
   __v: number;
 }
-interface LeaveRequestListResponse {
-  totalCount: number;
-  leaveRequest: LeaveRequest[];
-}
 
 const page = () => {
-  const [view, setView] = useState<"month" | "week" | "day" | "agenda">(
-    "agenda"
-  );
-  const tabs = [
-    "Students List",
-    "Scheduled Class",
-    "Earnings",
-    "Payments",
-    "Wages",
-    "Working Hours",
-  ];
+
   const searchParams = useSearchParams();
   const employeeId = searchParams.get("teacherId");
 
@@ -244,43 +188,13 @@ const page = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [searchScheduledClass, setSearchScheduledClass] = useState("");
-  const [searchPayments, setSearchPayments] = useState("");
-  const [searchWages, setSearchWages] = useState("");
-  const [searchWorkingHours, setSearchWorkingHours] = useState("");
-  const [searchEarnings, setSearchEarnings] = useState("");
+
 
   // Place filter state hooks before filteredStudents logic
   const [filterStudentName, setFilterStudentName] = useState("");
   const [filterCountry, setFilterCountry] = useState("");
   const [filterSubject, setFilterSubject] = useState("");
 
-  const [earningsPage, setEarningsPage] = useState(1);
-  const earningsPerPage = 5;
-
-  const events = [
-    {
-      title: "Evaluation Class (20)",
-      start: new Date(2024, 0, 2),
-      end: new Date(2024, 0, 2),
-    },
-    {
-      title: "To-Do Task (01)",
-      start: new Date(2024, 0, 2),
-      end: new Date(2024, 0, 2),
-    },
-    {
-      title: "Meeting (01)",
-      start: new Date(2024, 0, 17),
-      end: new Date(2024, 0, 17),
-    },
-  ];
-
-  const statusStyle = {
-    Complete: "bg-[#002F56] text-white",
-    Pending: "bg-gray-300 text-gray-700",
-    Rescheduled: "bg-yellow-300 text-black",
-  };
 
   useEffect(() => {
     const token =
@@ -351,19 +265,6 @@ const page = () => {
     } catch (error) {
       console.error("Failed to fetch classes", error);
     }
-  };
-
-  const router = useRouter();
-
-  const formatTime = (timeStr: string): string => {
-    const [hour, minute] = timeStr.split(":");
-    const date = new Date();
-    date.setHours(Number(hour), Number(minute));
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false, // disables AM/PM
-    });
   };
 
   const handleSearch = (query: string) => {

@@ -486,7 +486,7 @@ export default function Dashboard() {
           <div className="bg-white rounded-xl shadow-lg dark:bg-[#343434]">
             <h2 className="text-[16px] font-semibold text-[#000] dark:text-[#fff] mb-0 px-5 py-3">Student Evaluation</h2>
             <div className="overflow-x-auto scrollbar-none h-full">
-              <div className="overflow-y-auto h-[335px] rounded-b-xl scrollbar-none">
+              <div className="overflow-y-auto h-[325px] rounded-b-xl scrollbar-none">
                 <table className="min-w-full text-xs border-collapse table-fixed px-4">
                   <thead className=" text-[12px] bg-[#4C6993] text-white dark:bg-[#44699d]">
                     <tr>

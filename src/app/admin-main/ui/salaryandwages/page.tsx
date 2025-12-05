@@ -11,9 +11,6 @@ import AdminHeader from "../../components/AdminHeader";
 import axios from "axios";
 import moment from "moment";
 
-
-
-
 export interface ISalaryWage {
   _id?: string;
   employeeId: string;
@@ -37,16 +34,13 @@ interface SalaryCardCounts {
   balanceSalary: number;
 }
 const SalaryCard = () => {
-  const [duration, setDuration] = useState("Last month");
   const [currentPage, setCurrentPage] = useState(1);
-  const [openPopup, setOpenPopup] = useState<number | null>(null);
   const itemsPerPage = 10;
 
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [searchText, setSearchText] = useState("");
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [selectedSalary, setSelectedSalary] = useState<ISalaryWage | null>(
     null
   );
@@ -78,9 +72,6 @@ const SalaryCard = () => {
     }`;
   };
   
-  
-  
-
   const [salaryCardData, setSalaryCardData] = useState<SalaryCardCounts>({
     totalSalaryPaid: 0,
     totalPendingSalary: 0,
@@ -161,22 +152,6 @@ const SalaryCard = () => {
 
   const handleCancel = (_id: string) => {
     setActionOpenId(null);
-  };
-
-  const handlePayNow = (id: string) => {
-    const selected = salaryWages.find((s) => s._id === id);
-    if (selected) {
-      setSelectedSalarys(selected);
-      setEditForm({
-        salaryAmount: selected.salaryAmount,
-        deductionAmount: selected.deductionAmount,
-        paymentStatus: selected.paymentStatus,
-        paymentDate: selected.paymentDate.split("T")[0], // YYYY-MM-DD
-      });
-      setActionOpenId(null); // Close the action dropdown
-
-      setShowPopups(true);
-    }
   };
 
   // Filter logic: filter salaryData before pagination

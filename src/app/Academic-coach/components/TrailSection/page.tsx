@@ -968,7 +968,7 @@ const TrailSection = () => {
         <div className="fixed inset-0  bg-opacity-40 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg w-[320px] relative dark:bg-[#252525]">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-sm font-semibold text-gray-800 dark:text-white">
+              <h2 className="text-[16px] font-semibold text-gray-800 dark:text-white">
                 Filter by
               </h2>
               <button
@@ -989,7 +989,7 @@ const TrailSection = () => {
                   Country
                 </label>
                 <select
-                  className="w-full px-3 py-2 border rounded text-sm text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  className="w-full px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                   value={filters.country}
                   onChange={(e) =>
                     setFilters({ ...filters, country: e.target.value })
@@ -1013,7 +1013,7 @@ const TrailSection = () => {
                   Course
                 </label>
                 <select
-                  className="w-full px-3 py-2 border rounded text-sm text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  className="w-full px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                   value={filters.course}
                   onChange={(e) =>
                     setFilters({ ...filters, course: e.target.value })
@@ -1037,7 +1037,7 @@ const TrailSection = () => {
                   Teachers
                 </label>
                 <select
-                  className="w-full px-3 py-2 border rounded text-sm text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  className="w-full px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                   value={filters.teacher}
                   onChange={(e) =>
                     setFilters({ ...filters, teacher: e.target.value })
@@ -1061,7 +1061,7 @@ const TrailSection = () => {
                   Status
                 </label>
                 <select
-                  className="w-full px-3 py-2 border rounded text-sm text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  className="w-full px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                   value={filters.trialClassStatus}
                   onChange={(e) =>
                     setFilters({ ...filters, trialClassStatus: e.target.value })
@@ -1077,40 +1077,15 @@ const TrailSection = () => {
               <div className="flex justify-between items-center pt-4 ">
                 <button
                   onClick={handleReset}
-                  className="w-[45%] py-2 border border-[#576CBC] text-[#576CBC] rounded-md text-sm font-medium hover:bg-blue-50"
+                  className="px-3 py-1 text-[12px] rounded-md border border-[#576CBC] text-[#576CBC] font-medium hover:bg-[#EEF1FF] dark:hover:bg-[#343434]"
                 >
                   Reset
                 </button>
                 <button
                   onClick={handleApply}
-                  className="w-[50%] py-2 bg-[#576CBC] text-white rounded-md text-sm font-medium"
+                  className="px-3 py-1 text-[12px] rounded-md bg-[#576CBC] text-white font-medium hover:bg-[#455bb1]"
                 >
-                  Show{" "}
-                  {
-                    users.filter((user) => {
-                      return (
-                        (!filters.country ||
-                          user.country === filters.country) &&
-                        (!filters.course || user.course === filters.course) &&
-                        (!filters.teacher ||
-                          user.preferredTeacher === filters.teacher) &&
-                        (!filters.status ||
-                          user.trialClassStatus === filters.status) &&
-                        (!filters.trailId ||
-                          user.studentId.includes(filters.trailId)) &&
-                        (!filters.studentName ||
-                          `${user.studentFirstName} ${user.studentLastName}`
-                            .toLowerCase()
-                            .includes(filters.studentName.toLowerCase())) &&
-                        (!filters.mobile ||
-                          user.number.includes(filters.mobile)) &&
-                        (!filters.time || user.time.includes(filters.time)) &&
-                        (!filters.trialClassStatus ||
-                          user.trialClassStatus === filters.trialClassStatus)
-                      );
-                    }).length
-                  }{" "}
-                  results
+                  Apply
                 </button>
               </div>
             </div>
@@ -1629,7 +1604,7 @@ const TrailSection = () => {
                                   <button
                                     className="block w-full px-3 py-2 text-left text-[11px] text-[#010E30E5] hover:bg-gray-100 dark:text-white dark:hover:bg-[#3A3A3A]"
                                     onClick={() => {
-                                      handleClick(item._id.toString());
+                                      handleClick(item.trialId.toString());
                                       setOpenActionMenuForId(null);
                                     }}
                                   >

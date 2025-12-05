@@ -1120,7 +1120,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                     <input
                       type="date"
                       id="ugcuc"
-                      className="border rounded text-sm px-1 bg-white dark:bg-gray-800 border-[#555] dark:border-gray-600 text-gray-900 dark:text-gray-200"
+                      className="border rounded text-xs px-1 py-1 bg-white dark:bg-gray-800 border-[#555] dark:border-gray-600 text-gray-900 dark:text-gray-200 dark:[color-scheme:dark]"
                       value={trailStartDate}
                       onChange={(e) => setTrailStartDate(e.target.value)}
                     />
@@ -1141,12 +1141,12 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                     >
                       <div className="relative mt-1 mb-1">
                         {/* Button */}
-                        <ListboxButton className="h-8 w-16 border rounded px-2 text-left text-sm border-[#555] dark:border-[#666] text-[#010E30] dark:text-white bg-white dark:bg-[#343434]">
+                        <ListboxButton className="h-8 w-16 rounded px-2 text-left text-sm rounded border border-[#555] dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 appearance-none focus:outline-none focus:ring-1 focus:ring-[#555]">
                           {fromHour || "HH"}
                         </ListboxButton>
 
                         {/* Options */}
-                        <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#343434] shadow-lg scrollbar-none">
+                        <ListboxOptions className="absolute z-10 mt-1 max-h-60 overflow-auto scrollbar-none w-full text-sm rounded border border-[#555] dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 appearance-none focus:outline-none focus:ring-1 focus:ring-[#555]">
                           {Array.from({ length: 24 }, (_, i) => {
                             const hour = i.toString().padStart(2, "0");
                             return (
@@ -1169,7 +1169,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                       onChange={(e) =>
                         handleTimeChange1(fromHour, e.target.value)
                       }
-                      className="h-8 w-16 text-sm px-2 rounded border border-[#555] dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="h-8 w-16 text-sm px-2 rounded border border-[#555] dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 appearance-none focus:outline-none focus:ring-1 focus:ring-[#555]"
                     >
                       <option value="">MM</option>
                       <option value="00">00</option>
@@ -1191,7 +1191,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                     >
                       <div className="relative">
                         {/* Button */}
-                        <ListboxButton className="relative w-full cursor-default rounded-lg border border-[#555] dark:border-gray-600 bg-white dark:bg-gray-800 py-1 pl-3 pr-10 text-left text-xs text-gray-900 dark:text-gray-200">
+                        <ListboxButton className="relative w-full cursor-default rounded border border-[#555] dark:border-gray-600 bg-white dark:bg-gray-800 py-1 pl-3 pr-10 text-left text-xs text-gray-900 dark:text-gray-200">
                           <span className="block truncate">
                             {selectedTeacher
                               ? selectedTeacher.teacherName
@@ -1262,7 +1262,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                     <input
                       type="date"
                       id="ugcuc"
-                      className="border rounded text-sm px-1 bg-white dark:bg-gray-800 border-[#555] dark:border-gray-600 text-gray-900 dark:text-gray-200"
+                      className="border rounded text-xs px-1 py-1 bg-white dark:bg-gray-800 border-[#555] dark:border-gray-600 text-gray-900 dark:text-gray-200 dark:[color-scheme:dark]"
                       value={startDate}
                       disabled={isGroupClass}
                       onChange={(e) => setStartDate(e.target.value)}
