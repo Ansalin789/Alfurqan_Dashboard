@@ -95,6 +95,8 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
     const [cities, setCities] = useState<ICity[]>([]);
     const [imageError, setImageError] = useState("");
     const [isActive, setIsActive] = useState(true);
+    const [selectedFileName, setSelectedFileName] = useState("");
+
 
 
     const generateTimeOptions = () => {
@@ -387,7 +389,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                     name="dateOfBirth"
                                     value={formData.dateOfBirth}
                                     onChange={handleChange}
-                                    className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                                    className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C] dark:[color-scheme:dark]"
                                 />
                             </div>
                             <div>
@@ -605,13 +607,13 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                     <div>
                                         <label
                                             htmlFor="designation"
-                                            className="block text-sm font-normal text-left justify-between flex items-center text-black mb-1 dark:text-[#FFFFFF]"
+                                            className="block text-sm font-normal text-left justify-between flex items-center text-[#576cbc] mb-1 dark:text-[#FFFFFF]"
                                         >
                                             Previous Designation
 
                                             {/* Toggle */}
                                             <span
-                                                className="flex items-center gap-2 cursor-pointer"
+                                                className="flex items-center gap-2 cursor-pointer text-[#576cbc] "
                                                 onClick={() => setIsActive(!isActive)}
                                             >
                                                 <span className={isActive ? "text-green-600" : "text-red-500"}>
@@ -631,22 +633,22 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                             name="designation"
                                             value={formData.designation}
                                             onChange={handleChange}
-                                            className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                                            className="w-full border border-[#576cbc] rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                         />
                                     </div>
 
                                     <div>
                                         <label
                                             htmlFor="previousDepartment"
-                                            className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]"
+                                            className="block text-sm font-normal text-left text-[#576cbc] mb-1 dark:text-[#FFFFFF]"
                                         >
-                                            Previous Department
+                                            New Designation
                                         </label>
                                         <select
                                             name="previousDepartment"
                                             value={formData.department}
                                             onChange={handleChange}
-                                            className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                                            className="w-full border border-[#576cbc] rounded px-3 py-2 text-xs text-[#576cbc] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                         >
                                             <option value="">Select Designation</option>
                                             <option value="SUPERVISOR">SUPERVISOR</option>
@@ -659,7 +661,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                             </div>
                             <div>
                                 <label htmlFor="preferedWorkingHours" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
-                                    Preferred Working Hours
+                                    Preferred Working Hours / Week
                                 </label>
                                 <input
                                     type="number"
@@ -677,7 +679,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                     name="preferedShiftFrom"
                                     value={formData.preferedShiftFrom}
                                     onChange={handleChange}
-                                    className="w-full dark:bg-[#343434] border border-gray-300 dark:border-[#5c5c5c] rounded-lg px-4 py-2 text-xs text-gray-900 dark:text-gray-100"
+                                    className="w-full dark:bg-[#343434] border border-gray-300 dark:border-[#5c5c5c] rounded px-4 py-2 text-xs text-gray-900 dark:text-gray-100"
                                 >
                                     <option value="">Select Time</option>
                                     {timeOptions.map((time) => (
@@ -695,7 +697,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                     name="preferedShiftTo"
                                     value={formData.preferedShiftTo}
                                     onChange={handleChange}
-                                    className="w-full dark:bg-[#343434] border border-gray-300 dark:border-[#5C5C5C] rounded-lg px-4 py-2 text-xs text-gray-900 dark:text-gray-100"
+                                    className="w-full dark:bg-[#343434] border border-gray-300 dark:border-[#5C5C5C] rounded px-4 py-2 text-xs text-gray-900 dark:text-gray-100"
                                 >
                                     <option value="">Select Time</option>
                                     {timeOptions.map((time) => (
@@ -752,41 +754,76 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 </div>
                             </div>
                             <div>
-                                <label htmlFor="profileImage" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
+                                <label
+                                    htmlFor="profileImage"
+                                    className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]"
+                                >
                                     Profile Image
                                 </label>
-                                <input
-                                    type="file"
-                                    name="profileImage"
-                                    accept="image/png, image/jpeg, image/jpg"
-                                    onChange={handleFileChange}
-                                    className="w-full text-[10px] dark:bg-[#343434] border dark:border-[#5C5C5C] rounded-lg px-4 py-2"
-                                />
+
+                                <div className="relative">
+                                    <label
+                                        htmlFor="profileImage"
+                                        className="flex items-center justify-between w-full cursor-pointer bg-[#f5f7fa] dark:bg-[#343434] border dark:border-[#5C5C5C] rounded px-3 py-[7px] text-xs text-gray-600 dark:text-white"
+                                    >
+                                        <span className="text-[10px]">{selectedFileName || "Upload Image"}</span>
+                                        <span className="bg-[#4C6993] text-white px-2 py-0.5 rounded text-[8px]">
+                                            Browse
+                                        </span>
+                                    </label>
+
+                                    <input
+                                        id="profileImage"
+                                        type="file"
+                                        name="profileImage"
+                                        accept="image/png, image/jpeg, image/jpg"
+                                        onChange={handleFileChange}
+                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                    />
+                                </div>
+
                                 <p className="text-[8px] text-gray-400 mt-1">
-                                    Allowed formats: JPG, PNG &nbsp; | &nbsp;  Max size: 2MB
+                                    Allowed formats: JPG, PNG &nbsp; | &nbsp; Max size: 2MB
                                 </p>
+
                                 {imageError && (
                                     <p className="text-[10px] text-red-500 mt-1">{imageError}</p>
                                 )}
                             </div>
+
                             <div>
                                 <label htmlFor="preferedWorkingDays" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
                                     Preferred Working Days
                                 </label>
-                                <div className="flex flex-wrap gap-3 flex-col-6">
-                                    {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(day => (
-                                        <label key={day} className="flex items-center space-x-2 text-xs">
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.preferedWorkingDays.includes(day)}
-                                                onChange={() => handleCheckboxChange(day)}
-                                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                            />
-                                            <span>{day}</span>
-                                        </label>
-                                    ))}
+
+                                <div className="flex flex-wrap gap-2 dark:bg-[#343434] py-2 px-1 rounded border dark:border-[#5C5C5C]">
+                                    {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => {
+                                        const id = `day-${day}`;
+
+                                        return (
+                                            <div key={day} className="inline-flex items-center dark:bg-[#292929] rounded px-2.5 gap-1 py-0.5">
+                                                <input
+                                                    id={id}
+                                                    type="checkbox"
+                                                    checked={formData.preferedWorkingDays.includes(day)}
+                                                    onChange={() => handleCheckboxChange(day)}
+                                                    className="h-3 w-3 appearance-none focus:ring-2 focus:ring-brand-soft border border-gray-400 checked:bg-[#576cbc] checked:border-[#576cbc] rounded"
+
+                                                />
+
+                                                <label
+                                                    htmlFor={id}
+                                                >
+
+                                                    <span className="text-[12px]">{day}</span>
+                                                </label>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
+
                             </div>
+
                             <div>
                                 <label htmlFor="comments" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
                                     Additional Comments *
@@ -795,7 +832,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                     name="comments"
                                     value={formData.comments}
                                     onChange={handleChange}
-                                    className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                                    className="w-full border rounded px-3 py-2 h-[80px] text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                     placeholder="Enter comments here..."
                                     required
                                 />

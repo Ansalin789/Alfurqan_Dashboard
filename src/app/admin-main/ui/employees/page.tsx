@@ -1058,7 +1058,7 @@ const Page = () => {
     <BaseLayout4>
       <AdminHeader
         currentSection="Employees"
-        employeeActiveTab={activeTab} // Pass the activeTab state from your page
+        employeeActiveTab={activeTab}
       />
       <div className="h-full w-full p-2 md:mr-10 scrollbar-none">
         <div className="max-w-7xl w-full mx-auto scrollbar-none">
@@ -1570,56 +1570,11 @@ const Page = () => {
                               {teacher.userName}
                             </h3>
                             <p className="text-[#717579] text-[10px] dark:text-[#fff]">
-                              {teacher.position}
+                              {teacher.position
+                                ? teacher.position.charAt(0).toUpperCase() +
+                                  teacher.position.slice(1).toLowerCase()
+                                : ""}
                             </p>
-                            <div className="flex justify-center mb-2">
-                              {/* Star rating placeholder */}
-                              <svg
-                                className="text-[#faab3c] text-[10px]"
-                                width="12"
-                                height="12"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.045 9.394c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" />
-                              </svg>
-                              <svg
-                                className="text-[#faab3c] text-[10px] mx-1"
-                                width="12"
-                                height="12"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.045 9.394c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" />
-                              </svg>
-                              <svg
-                                className="text-[#faab3c] text-[10px]"
-                                width="12"
-                                height="12"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.045 9.394c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" />
-                              </svg>
-                              <svg
-                                className="text-gray-300 text-[10px] mx-1"
-                                width="12"
-                                height="12"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.045 9.394c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" />
-                              </svg>
-                              <svg
-                                className="text-gray-300 text-[10px]"
-                                width="12"
-                                height="12"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.045 9.394c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" />
-                              </svg>
-                            </div>
                             <div className="flex flex-col justify-center gap-2 px-5 mt-2">
                               <button
                                 className="text-[12px] border border-[#576CBC] text-[#576CBC] dark:text-[#fff] px-2 py-1 rounded-lg"
@@ -2113,10 +2068,7 @@ const Page = () => {
                                 {employee.userName}
                               </h3>
                               <p className="text-[#717579] text-[10px] dark:text-[#fff]">
-                                Role: {employee.role.join(", ")}
-                              </p>
-                              <p className="text-[#717579] text-[10px] dark:text-[#fff]">
-                                {employee.gender}
+                                {employee.role.map((role) => role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()).join(", ")}
                               </p>
                               <div className="flex flex-col justify-center gap-2 px-5 mt-2">
                                 <div className="flex justify-center gap-2">
