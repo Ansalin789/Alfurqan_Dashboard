@@ -201,7 +201,7 @@ const NextScheduledClass = () => {
       setIsPopupVisible(true);
       return;
     }
-window.open(`/teacher/ui/liveclass?id=${classData._id}`, "_blank");
+window.open(`/teacher/ui/liveclass?id=${classData.classLink}`, "_blank");
   };
 
   if (loading)

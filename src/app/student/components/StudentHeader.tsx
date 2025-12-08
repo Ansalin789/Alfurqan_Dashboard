@@ -36,12 +36,25 @@ export default function StudentHeader({
   const [showNotification, setShowNotification] = useState(false);
   const router = useRouter();
   const notificationRef = useRef(null);
+  const courseListRef = useRef(null);
   const [activeTab, setActiveTab] = useState<"Seen" | "Unseen">("Unseen");
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
   const [dashboardWrite, setDashboardWrite] = useState(false); // For Notifications
   const [showNewCousre, setShowNewCousre] = useState(false);
+  const [showCourseList, setShowCourseList] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [courseList, setCourseList] = useState<any[]>([]);
   useEffect(() => {
+    const course = localStorage.getItem("StudentcourseName");
+    if (course) {
+      setSelectedCourse(course);
+    }
+    const courseLists = localStorage.getItem("StudentPortalData");
+    if (courseLists) {
+      const courseList = JSON.parse(courseLists) || [];
+      setCourseList(courseList);
+    }
     const roleAccessRaw = localStorage.getItem("StudentRolePermission");
     if (roleAccessRaw) {
       try {
@@ -117,7 +130,19 @@ export default function StudentHeader({
 
   const handleNewCourse = () => {
     setShowNewCousre(true);
-  }
+  };
+
+  const handleCourseSelect = (course: string) => {
+    setSelectedCourse(course);
+    setShowCourseList(false);
+    const matched = courseList.find((c) => c.course === course);
+    if (matched) {
+      localStorage.setItem("StudentcourseName", matched.course);
+      localStorage.setItem("StudentPackage", matched.package);
+      localStorage.setItem("StudentPortalId", matched.studentId);
+      window.location.reload();
+    }
+  };
 
   // Mark as Seen
   const handleNotificationClick = async (notificationId: string) => {
@@ -209,25 +234,23 @@ export default function StudentHeader({
         return "🔔";
     }
   };
-   const handleNotificationRedirect = (notification : NotificationType) => {
-  const { notificationType, senderId } = notification;
+  const handleNotificationRedirect = (notification: NotificationType) => {
+    const { notificationType, senderId } = notification;
 
-  switch (notificationType) {
-   
+    switch (notificationType) {
+      case "ADMIN_NOTIFICATION":
+        router.push(`/admin/alerts/${senderId}`);
+        break;
 
-    case "ADMIN_NOTIFICATION":
-      router.push(`/admin/alerts/${senderId}`);
-      break;
+      case "REQUEST_RESCHEDULE_TEACHER":
+        router.push(`/student/ui/schedule`);
+        break;
 
-    case "REQUEST_RESCHEDULE_TEACHER":
-      router.push(`/student/ui/schedule`);
-      break;
-      
-    default:
-      console.warn("Unknown notification type:", notificationType);
-      break;
-  }
-};
+      default:
+        console.warn("Unknown notification type:", notificationType);
+        break;
+    }
+  };
 
   return (
     <div>
@@ -245,6 +268,52 @@ export default function StudentHeader({
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <button
+            onClick={() => setShowCourseList((prev) => !prev)}
+            className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg min-w-48 flex justify-between items-center"
+          >
+            {selectedCourse || courseList?.[0]?.name || "Select Course"}
+
+            <span className="ml-2">▼</span>
+          </button>
+          {showCourseList && (
+            <div
+              ref={courseListRef}
+              className="absolute mt-36 w-48 
+               bg-white dark:bg-[#1e1e1e] 
+               border border-gray-200 dark:border-gray-700 
+               rounded-lg shadow-[0px_6px_20px_rgba(0,0,0,0.12)]
+               overflow-hidden z-20 transition-all"
+            >
+              {courseList?.length > 1 ? (
+                courseList.map((course) => {
+                  const isSelected = selectedCourse === course.course;
+
+                  return (
+                    <button
+                      key={course.studentId}
+                      onClick={() => handleCourseSelect(course.course)}
+                      className={`w-full px-4 py-2 text-sm text-left 
+                        transition-colors duration-150
+                        ${
+                          isSelected
+                            ? "bg-[#576CBC] text-white font-medium"
+                            : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                        }
+                      `}
+                    >
+                      {course.course}
+                    </button>
+                  );
+                })
+              ) : (
+                <p className="px-4 py-3 text-sm text-gray-500">
+                  No courses available
+                </p>
+              )}
+            </div>
+          )}
+
+          <button
             onClick={() => router.push("/student/ui/schedule")}
             className="p-2.5 bg-white dark:bg-gray-700 rounded-lg"
           >
@@ -254,7 +323,7 @@ export default function StudentHeader({
             onClick={() => setShowNotification(true)}
             className="relative p-2.5 bg-white dark:bg-gray-700 rounded-lg"
           >
-            <Bell className="w-5 h-5 text-gray-800 dark:text-white" />
+            <Bell className="w-4 h-4 text-gray-800 dark:text-white" />
 
             {notificationCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 bg-[#6C78F5] text-white text-[10px] font-normal w-5 h-5 flex items-center justify-center rounded-full animate-bounce shadow-md">
@@ -287,12 +356,13 @@ export default function StudentHeader({
             {userName}
           </div>
           <hr className="border-gray-300 dark:border-gray-600 my-1" />
-          <button 
-          onClick={handleNewCourse}
-           className="w-full text-left px-4 py-2 text-sm text-[#576CBC] hover:bg-gray-100 dark:hover:bg-gray-700">
+          <button
+            onClick={handleNewCourse}
+            className="w-full text-left px-4 py-2 text-sm text-[#576CBC] hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
             Add New Course
           </button>
-                    <hr className="border-gray-300 dark:border-gray-600 my-1" />
+          <hr className="border-gray-300 dark:border-gray-600 my-1" />
           <button
             onClick={handleLogOut}
             className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -302,123 +372,124 @@ export default function StudentHeader({
         </div>
       )}
 
-       {showNotification && (
-              <div
-                ref={notificationRef}
-                className="absolute pb-6 ml-[810px] w-[90vw] sm:w-[470px] max-w-[95vw] -mt-1 bg-white/90 dark:bg-[#252525]/80 backdrop-blur-md border rounded-lg shadow-2xl z-30 animate-fade-in-up animation-transition-all duration-300"
-              >
-                <div className="pt-3 pb-2 pl-4 border-b border-white flex justify-between items-center dark:border-[#252525]">
-                  <h4 className="font-semibold text-[#010E30] text-lg dark:text-[#FFFFFF]">
-                    Notifications
-                  </h4>
-                  <button
-                    onClick={() => setShowNotification(false)}
-                    className="text-white hover:text-gray-200"
-                  >
-                    <X
-                      size={18}
-                      className="text-red-600 mr-3 font-semibold dark:text-white"
-                    />
-                  </button>
-                </div>
-      
-                <div className="flex justify-start backdrop-blur-md px-5">
-                  <div className="flex w-full justify-start gap-3">
-                    {["Unseen", "Seen"].map((tab) => (
-                      <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab as "Seen" | "Unseen")}
-                        className={`relative text-sm px-2 py-1 font-medium transition-all text-black ${
-                          activeTab === tab
-                            ? "text-[#576CBC] dark:text-[#576CBC]"
-                            : "dark:text-white"
-                        }`}
-                      >
-                        {tab}
-                        {activeTab === tab && (
-                          <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#576CBC] rounded-full"></span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-      
-                <div className="h-64 overflow-y-auto scrollbar-hide p-1 px-5">
-                  {notifications && notifications.length > 0 ? (
-                    notifications
-                      .filter((n) =>
-                        activeTab === "Seen"
-                          ? n.notificationStatus === "Seen"
-                          : n.notificationStatus !== "Seen"
-                      )
-                      .map((notification) => (
-                        <button
-                          key={notification._id}
-                          onClick={() => {
-                            if (notification.notificationStatus !== "Seen") {
-                              handleNotificationClick(notification._id);
-                            }
-                          }}
-                          disabled={!dashboardWrite}
-                          className={`w-full text-left p-2   flex items-start gap-3 transition-all duration-200 border-b border-[#D9D9D9]  ${
-                            notification.notificationStatus === "Seen"
-                              ? "bg-white/20 text-gray-900 hover:bg-white/50 dark:bg-[#252525]"
-                              : " text-gray-900 font-medium hover:bg-[#bfc5e8] dark:bg-[#252525] dark:hover:bg-[#5a5858]"
-                          }`}
-                        >
-                          <div className="w-8 h-8 rounded-lg bg-[#E4E7F4] flex items-center justify-center relative shrink-0 dark:bg-[#343434] ">
-                            <span className="text-sm font-semibold text-[#576CBC] ">
-                              {notification.senderName?.[0] || "N"}
-                            </span>
-                            {!notification.isRead && (
-                              <span className="absolute bottom-0 right-0 w-2 h-2 bg-[#68D391] rounded-full border-2 border-white dark:bg-[#68D391]"></span>
-                            )}
-                          </div>
-      
-                          <div className="flex-1">
-                            <div className="flex justify-between">
-                              <h4 className="text-xs font-semibold dark:text-white">
-                                {notification.senderName.toLowerCase() || "Unknown"}
-                              </h4>
-                              <span className="text-xs text-gray-500 dark:text-[#bbb0b099]">
-                                {new Date(notification.createdDate)
-                                  .toLocaleString("en-GB", {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                  })
-                                  .replace(",", "")}
-                              </span>
-                            </div>
-                            <div className="text-xs mt-0.5 text-gray-800 flex items-center gap-1">
-                              <span>
-                                {getNotificationIcon(notification.notificationType)}
-                              </span>
-                              <span
-                                onClick={() =>
-                                  handleNotificationRedirect(notification)
-                                }
-                                className="text-xs text-[#43424299] dark:text-[#bbb0b099] dark:hover:text-white cursor-pointer hover:underline transition"
-                              >
-                                {notification.messages}
-                              </span>
-                            </div>
-                          </div>
-                        </button>
-                      ))
-                  ) : (
-                    <div className="p-6 text-center text-gray-800">
-                      <Bell size={40} className="mx-auto text-gray-300 mb-2" />
-                      <p className="text-gray-700">No notifications found</p>
-                    </div>
+      {showNotification && (
+        <div
+          ref={notificationRef}
+          className="absolute pb-6 ml-[810px] w-[90vw] sm:w-[470px] max-w-[95vw] -mt-1 bg-white/90 dark:bg-[#252525]/80 backdrop-blur-md border rounded-lg shadow-2xl z-30 animate-fade-in-up animation-transition-all duration-300"
+        >
+          <div className="pt-3 pb-2 pl-4 border-b border-white flex justify-between items-center dark:border-[#252525]">
+            <h4 className="font-semibold text-[#010E30] text-lg dark:text-[#FFFFFF]">
+              Notifications
+            </h4>
+            <button
+              onClick={() => setShowNotification(false)}
+              className="text-white hover:text-gray-200"
+            >
+              <X
+                size={18}
+                className="text-red-600 mr-3 font-semibold dark:text-white"
+              />
+            </button>
+          </div>
+
+          <div className="flex justify-start backdrop-blur-md px-5">
+            <div className="flex w-full justify-start gap-3">
+              {["Unseen", "Seen"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab as "Seen" | "Unseen")}
+                  className={`relative text-sm px-2 py-1 font-medium transition-all text-black ${
+                    activeTab === tab
+                      ? "text-[#576CBC] dark:text-[#576CBC]"
+                      : "dark:text-white"
+                  }`}
+                >
+                  {tab}
+                  {activeTab === tab && (
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#576CBC] rounded-full"></span>
                   )}
-                </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="h-64 overflow-y-auto scrollbar-hide p-1 px-5">
+            {notifications && notifications.length > 0 ? (
+              notifications
+                .filter((n) =>
+                  activeTab === "Seen"
+                    ? n.notificationStatus === "Seen"
+                    : n.notificationStatus !== "Seen"
+                )
+                .map((notification) => (
+                  <button
+                    key={notification._id}
+                    onClick={() => {
+                      if (notification.notificationStatus !== "Seen") {
+                        handleNotificationClick(notification._id);
+                      }
+                    }}
+                    disabled={!dashboardWrite}
+                    className={`w-full text-left p-2   flex items-start gap-3 transition-all duration-200 border-b border-[#D9D9D9]  ${
+                      notification.notificationStatus === "Seen"
+                        ? "bg-white/20 text-gray-900 hover:bg-white/50 dark:bg-[#252525]"
+                        : " text-gray-900 font-medium hover:bg-[#bfc5e8] dark:bg-[#252525] dark:hover:bg-[#5a5858]"
+                    }`}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-[#E4E7F4] flex items-center justify-center relative shrink-0 dark:bg-[#343434] ">
+                      <span className="text-sm font-semibold text-[#576CBC] ">
+                        {notification.senderName?.[0] || "N"}
+                      </span>
+                      {!notification.isRead && (
+                        <span className="absolute bottom-0 right-0 w-2 h-2 bg-[#68D391] rounded-full border-2 border-white dark:bg-[#68D391]"></span>
+                      )}
+                    </div>
+
+                    <div className="flex-1">
+                      <div className="flex justify-between">
+                        <h4 className="text-xs font-semibold dark:text-white">
+                          {notification.senderName.toLowerCase() || "Unknown"}
+                        </h4>
+                        <span className="text-xs text-gray-500 dark:text-[#bbb0b099]">
+                          {new Date(notification.createdDate)
+                            .toLocaleString("en-GB", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            })
+                            .replace(",", "")}
+                        </span>
+                      </div>
+                      <div className="text-xs mt-0.5 text-gray-800 flex items-center gap-1">
+                        <span>
+                          {getNotificationIcon(notification.notificationType)}
+                        </span>
+                        <span
+                          onClick={() =>
+                            handleNotificationRedirect(notification)
+                          }
+                          className="text-xs text-[#43424299] dark:text-[#bbb0b099] dark:hover:text-white cursor-pointer hover:underline transition"
+                        >
+                          {notification.messages}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                ))
+            ) : (
+              <div className="p-6 text-center text-gray-800">
+                <Bell size={40} className="mx-auto text-gray-300 mb-2" />
+                <p className="text-gray-700">No notifications found</p>
               </div>
             )}
-            {showNewCousre && (<NewCourse onClose={() => setShowNewCousre(false)} />)}
+          </div>
+        </div>
+      )}
+
+      {showNewCousre && <NewCourse onClose={() => setShowNewCousre(false)} />}
     </div>
   );
 }

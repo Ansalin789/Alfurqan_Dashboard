@@ -168,7 +168,7 @@ const ManageStudents = () => {
         return;
       }
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/alstudents`,
+        `http://localhost:5001/alstudents`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -199,7 +199,7 @@ const ManageStudents = () => {
       return (
         s?.student?.course === first?.student?.course &&
         s?.student?.package === first?.student?.package &&
-        evalData?.accomplishmentTime === firstEval?.accomplishmentTime
+        evalData?.hours === firstEval?.hours
       );
     });
 
@@ -219,7 +219,7 @@ const ManageStudents = () => {
       setTotalCourses(first?.student?.course || "");
 
       const accomplishmentHours =
-        Number(first?.evaluation?.[0]?.accomplishmentTime) || 0;
+        Number(first?.evaluation?.[0]?.hours) || 0;
 
       setTotalHours(accomplishmentHours);
       console.log("✅ All matched, totals set.");
@@ -732,7 +732,7 @@ const ManageStudents = () => {
                         <td className="px-3 py-2">
                           {(() => {
                             const val = item.evaluation?.[0]?.subscription?.subscriptionName;
-                            const val1 = item.evaluation?.[0]?.accomplishmentTime;
+                            const val1 = item.evaluation?.[0]?.hours;
                             return val
                               ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()} - ${val1}hrs`
                               : "-";

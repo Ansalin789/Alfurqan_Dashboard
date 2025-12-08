@@ -46,6 +46,8 @@ export interface StudentDetails {
   referralSource: string;
   startDate: string;
   evaluationStatus: string;
+  familyId : string;
+  familyEmail : string;
   refernceId: string;
   referredBy: string;
   status: string;
@@ -71,7 +73,7 @@ export default function newCourse({ onClose }: LeaveFormProps) {
 
   const [phoneNumber, setPhoneNumber] = useState("");
   const [familyId, setFamilyId] = useState("");
-  const [familyMailId, setFamilyMailId] = useState("");
+  const [familyMail, setFamilyMail] = useState("");
 
   const [country, setCountry] = useState("");
   const [city, setCity] = useState("");
@@ -81,8 +83,6 @@ export default function newCourse({ onClose }: LeaveFormProps) {
   const [timeZone, setTimeZone] = useState("");
 
   const [course, setCourse] = useState("");
-  const [packageType, setPackageType] = useState("");
-  const [privousPreferredTeacher, setPrivousPreferredTeacher] = useState("");
   const [startDate, setStartDate] = useState(new Date());
   const [previousStartDate, setPreviousStartDate] = useState(new Date());
 
@@ -133,6 +133,8 @@ export default function newCourse({ onClose }: LeaveFormProps) {
         setPreferredFromTime(s.preferredFromTime || "");
         setPreferredToTime(s.preferredToTime || "");
         setTimeZone(s.timeZone || "");
+        setFamilyId(s.familyId || "");
+        setFamilyMail(s.familyEmail || "");
         setReferralCode(s.refernceId || "");
         setPreviousStartDate(s.startDate ? new Date(s.startDate) : new Date());
       } catch (err) {
@@ -238,118 +240,94 @@ export default function newCourse({ onClose }: LeaveFormProps) {
     setStep(step - 1);
   };
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      // Validate required fields before submission
-      if (!validateStep2() || !validateStep3()) {
-        // alert("Please fill in all required fields");
-        setIsLoading(false);
-        return;
-      }
-      // Clean and format the phone number - remove any non-numeric characters
-      // const cleanPhoneNumber = phoneNumber.toString().replace(/\D/g, '');
-      //  function formatDateLocal(date) {
-      //    // Returns yyyy-mm-dd in local time
-      //    const year = date.getFullYear();
-      //    const month = String(date.getMonth() + 1).padStart(2, "0");
-      //    const day = String(date.getDate()).padStart(2, "0");
-      //    return `${year}-${month}-${day}`;
-      //  }
-
-      //  const formattedData = {
-      //    id: uuidv4(),
-      //    firstName: firstName.trim().padEnd(3),
-      //    lastName: lastName.trim().padEnd(3),
-      //    email: email.trim().toLowerCase(),
-      //    gender: gender,
-      //    phoneNumber: Number(phoneNumber),
-      //    country: country.length >= 3 ? country : country.padEnd(3, " "),
-      //    city: city,
-      //    learningInterest: learningInterest[0],
-      //    // numberOfStudents: Number(numberOfStudents),
-      //    preferredTeacher: preferredTeacher,
-      //    preferredFromTime: preferredFromTime,
-      //    preferredToTime: preferredToTime,
-
-      //    startDate: formatDateLocal(startDate),
-      //    endDate: formatDateLocal(toDate),
-      //    evaluationStatus: "PENDING",
-
-      //    status: "Active",
-      //    createdBy: "SYSTEM",
-      //    lastUpdatedBy: "SYSTEM",
-      //    timeZone: timeZone,
-      //    academicCoach: {
-      //      academicCoachId: availableTimes[selectedCoachIndex].academicCoachId,
-      //    },
-      //  };
-
-      //  console.log("Form data with AC ID:", formattedData);
-      //  console.log("Selected AC ID at submission:", selectedACId);
-
-      //  // Debug log to check the data being sent
-      //  console.log("Sending data:", formattedData);
-      //  const response = await fetch(
-      //    `https://api.blackstoneinfomaticstech.com/student`,
-      //    {
-      //      method: "POST",
-      //      headers: {
-      //        "Content-Type": "application/json",
-      //        Accept: "application/json",
-      //      },
-      //      body: JSON.stringify(formattedData, null, 2),
-      //      mode: "cors",
-      //    }
-      //  );
-
-      //  // Log the raw response
-      //  console.log("Raw response:", response);
-
-      //  if (!response.ok) {
-      //    const errorData = await response.json();
-      //    console.error("Error response:", errorData);
-      //    throw new Error(
-      //      errorData.message || `Server returned ${response.status}`
-      //    );
-      //  }
-
-      //  const data = await response.json();
-      //  console.log("Success response:", data);
-
-      // Reset form and redirect on success
-
-      setTimeout(() => {
-        onClose();
-      }, 3000);
-    } catch (err) {
-      const error = err as AxiosError;
-      const status = error.response?.status;
-      if (Number(status === 400)) {
-        setFailedMessage("Please check the form inputs.");
-        setFailed(true);
-      } else if (status === 401) {
-        setFailedMessage("Please login again.");
-        setFailed(true);
-      } else if (status === 403) {
-        setFailedMessage("You don't have permission to perform this action.");
-        setFailed(true);
-      } else if (status === 500) {
-        setFailedMessage("Server error");
-        setFailed(true);
-      } else {
-        setFailed(true);
-        console.error(`Unexpected error: ${status}`);
-      }
-      setTimeout(() => {
-        onClose();
-      }, 3000);
-    } finally {
-      setIsLoading(false);
+   function formatDateLocal(date: Date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
     }
-  };
+
+ const handleSubmit = async (e: any) => {
+  e.preventDefault();
+  setIsLoading(true);
+
+  try {
+    if (!validateStep2() || !validateStep3()) {
+      setIsLoading(false);
+      return;
+    }
+
+    const formattedData = {
+      learningInterest: learningInterest,
+      preferredTeacher: preferredTeacher,
+      preferredFromTime: preferredFromTime,
+      preferredToTime: preferredToTime,
+      startDate: formatDateLocal(startDate),
+      academicCoach: {
+        academicCoachId: selectedACId
+      }
+    };
+
+    console.log("Sending formatted data:", formattedData);
+
+    const response = await fetch(
+      `http://localhost:5001/student/addcourse/${studentId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify(formattedData)
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Backend error:", errorData);
+       setFailedMessage(errorData.message || `Error ${response.status}`);
+       setFailed(true);
+       return;
+    }
+
+    const data = await response.json();
+    console.log("Success:", data);
+ if ([200, 201].includes(response.status)) {
+        
+         
+        setTimeout(() => {
+          onClose();
+        }, 3000);
+        setSucces(true);
+      }
+   
+
+  } catch (err: any) {
+    const status = err?.response?.status;
+
+    if (status === 400) {
+      setFailedMessage("Please check the form inputs.");
+    } else if (status === 401) {
+      setFailedMessage("Please login again.");
+    } else if (status === 403) {
+      setFailedMessage("You don't have permission.");
+    } else if (status === 500) {
+      setFailedMessage("Server error.");
+    } else {
+      setFailedMessage("Something went wrong.");
+    }
+
+    setFailed(true);
+
+    setTimeout(() => {
+      onClose();
+    }, 3000);
+
+  } finally {
+    setIsLoading(false);
+  }
+};
+
   const inputClass =
     "w-full p-2 rounded-lg text-[13px] text-[#010E30] bg-gray-50 border border-[#5C5C5C] \
 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C] \
@@ -516,7 +494,7 @@ focus:outline-none focus:ring-1 focus:ring-[#293552]";
                       Family Mail Id
                     </label>
                     <input
-                      value={familyMailId}
+                      value={familyMail}
                       disabled
                       className={disabledInputClass}
                     />
@@ -592,7 +570,7 @@ focus:outline-none focus:ring-1 focus:ring-[#293552]";
 
                   <div>
                     <label className="text-[14px] dark:text-white">
-                      Academic Coach Preference
+                      Prefferred Teacher
                     </label>
                     <input
                       value={previousPreferredTeacher}
@@ -642,7 +620,7 @@ focus:outline-none focus:ring-1 focus:ring-[#293552]";
                       onClick={() => setLearningInterest(option)}
                       className={`w-full rounded-xl p-3 shadow-sm text-[#010E30] dark:text-white border border-[#5C5C5C] dark:border-[#5C5C5C] bg-gray-100 dark:bg-[#343434] hover:bg-gray-200 dark:hover:bg-[#444] font-medium ${
                         learningInterest === option
-                          ? "bg-[#374374] dark:bg-[#576CBC] font-semibold text-[#fff]"
+                          ? "bg-[#495998] dark:bg-[#576CBC] font-semibold text-[#fff]"
                           : ""
                       }`}
                     >
@@ -664,7 +642,7 @@ focus:outline-none focus:ring-1 focus:ring-[#293552]";
                       onClick={() => setPreferredTeacher(preference)}
                       className={`w-full p-3 shadow-sm rounded-xl text-[#010E30] dark:text-white border border-[#5C5C5C] dark:border-[#5C5C5C] bg-gray-100 dark:bg-[#343434] hover:bg-gray-200 dark:hover:bg-[#444] ${
                         preferredTeacher === preference
-                          ? "bg-[#374374] dark:bg-[#576CBC] font-semibold text-[#fff] "
+                          ? "bg-[#495998] dark:bg-[#576CBC] font-semibold text-[#fff] "
                           : ""
                       }`}
                     >

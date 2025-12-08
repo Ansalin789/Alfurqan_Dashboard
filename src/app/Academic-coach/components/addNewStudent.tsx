@@ -1141,7 +1141,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
                     >
                       <div className="relative mt-1 mb-1">
                         {/* Button */}
-                        <ListboxButton className="h-8 w-16 rounded px-2 text-left text-sm rounded border border-[#555] dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 appearance-none focus:outline-none focus:ring-1 focus:ring-[#555]">
+                        <ListboxButton className="h-8 w-16  px-2 text-left text-sm rounded border border-[#555] dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 appearance-none focus:outline-none focus:ring-1 focus:ring-[#555]">
                           {fromHour || "HH"}
                         </ListboxButton>
 

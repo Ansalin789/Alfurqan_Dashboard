@@ -357,7 +357,7 @@ const NextClass = () => {
           {isCountdownFinished ? (
             <button
               onClick={() =>
-                window.open(`/student/ui/liveclass?id=${classData._id}`, "_blank")
+                window.open(`/student/ui/liveclass?id=${classData.classLink}`, "_blank")
               }
               className="relative px-5 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-semibold 
               text-white bg-gradient-to-r from-[#576CBC] to-[#576CBC] 
