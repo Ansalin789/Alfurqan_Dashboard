@@ -24,6 +24,8 @@ interface TransformedUser {
   course: string; // Assuming this corresponds to `learningInterest`
   preferredTeacher: string;
   time: string;
+  familyId: string;
+  familyEmail: string;
   classStatus?: string;
   status?: string;
   trialClassStatus: string;
@@ -41,6 +43,8 @@ interface User {
   email: string;
   number: string;
   country: string;
+  familyId: string;
+  familyEmail: string;
   course: string;
   preferredTeacher: string;
   date: string;
@@ -147,7 +151,7 @@ const getAllUser = async (): Promise<{
       console.error("❌ AdminAuthToken not found");
     }
     const response = await axios.get(
-      `https://api.blackstoneinfomaticstech.com/evaluationlist`,
+      `http://localhost:5001/evaluationlist`,
       {
         params: { academicCoachId: academicId },
         headers: {
@@ -216,7 +220,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
       console.error("❌ AdminAuthToken not found");
     }
     const response = await axios.get(
-      `https://api.blackstoneinfomaticstech.com/studentlist`,
+      `http://localhost:5001/studentlist`,
       {
         params: { academicCoachId: academicId },
         headers: {
@@ -548,6 +552,8 @@ const TrailManagement = () => {
           fname: user.fname,
           lname: user.lname,
           email: user.email,
+          familyEmail: user.familyEmail,
+          familyId: user.familyId,
           number: user.number,
           country: user.country,
           city: user.city,
@@ -802,6 +808,7 @@ const TrailManagement = () => {
                         {[
                           { label: "Student ID", width: "w-[10%]" },
                           { label: "Student Name", width: "w-[12%]" },
+                          { label: "Family ID", width: "w-[10%]" },
                           { label: "Date", width: "w-[12%]" },
                           { label: "Mobile", width: "w-[10%]" },
                           { label: "Country", width: "w-[8%]" },
@@ -845,6 +852,9 @@ const TrailManagement = () => {
                             <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] whitespace-nowrap w-[12%]">
                               {item.fname} {item.lname}
                             </td>
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
+                              {item.familyId}
+                            </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[15%]">
                               {new Date(item.createdDate).toLocaleDateString(
                                 "en-US",
@@ -855,6 +865,7 @@ const TrailManagement = () => {
                                 }
                               )}
                             </td>
+                        
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.number}
                             </td>
