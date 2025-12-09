@@ -24,8 +24,8 @@ interface TransformedUser {
   course: string; // Assuming this corresponds to `learningInterest`
   preferredTeacher: string;
   time: string;
-  familyId: string;
-  familyEmail: string;
+  familyId?: string;
+  familyEmail?: string;
   classStatus?: string;
   status?: string;
   trialClassStatus: string;
@@ -132,6 +132,8 @@ interface ClassPayload {
   createdBy: string;
   updatedDate: Date;
   updatedBy: string;
+  familyId: string; 
+  familyEmail: string;
 }
 
 const getAllUser = async (): Promise<{
@@ -151,7 +153,7 @@ const getAllUser = async (): Promise<{
       console.error("❌ AdminAuthToken not found");
     }
     const response = await axios.get(
-      `http://localhost:5001/evaluationlist`,
+      `https://api.blackstoneinfomaticstech.com/evaluationlist`,
       {
         params: { academicCoachId: academicId },
         headers: {
@@ -186,6 +188,8 @@ const getAllUser = async (): Promise<{
           assignedTeacher: item.assignedTeacher,
           paymentLink: item.paymentLink,
           studentStatus: item.studentStatus,
+          familyId: item.familyId,
+          familyEmail: item.familyEmail,
         };
       }
     );
@@ -220,7 +224,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
       console.error("❌ AdminAuthToken not found");
     }
     const response = await axios.get(
-      `http://localhost:5001/studentlist`,
+      `https://api.blackstoneinfomaticstech.com/studentlist`,
       {
         params: { academicCoachId: academicId },
         headers: {
@@ -255,6 +259,8 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
         phoneNumber: string;
         city: string;
         country: string;
+        familyId: string;
+        familyEmail: string;
         learningInterest: string;
         preferredTeacher: string;
         startDate: string;
@@ -275,6 +281,8 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
           lname: item.lastName,
           email: item.email,
           city: item.city,
+          familyId: item.familyId,
+          familyEmail: item.familyEmail,
           number: item.phoneNumber.toString(),
           country: item.country,
           course: item.learningInterest,

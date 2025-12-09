@@ -24,16 +24,45 @@ interface Teacher {
   teacherEmail: string;
 }
 
+interface AlfStudent {
+  student: {
+    studentId: string;
+    studentEmail: string;
+    studentPhone: number;
+    course: string;
+    package: string;
+    city: string;
+    country: string;
+    gender: string;
+  };
+  _id: string;
+  refernceId: string;
+  referredBy: string;
+  username: string;
+  password: string;
+  sessionClassType: string;
+  role: string;
+  familyId: string;
+  familyEmail: string;
+  level: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  __v: number;
+}
+
 interface Schedule {
   student: Student;
   teacher: Teacher;
+  familyId?: string;      // Optional if you want, but backend sends it inside alfstudent
   _id: string;
   classDay: string[];
   package: string;
   course: {
     courseName: string;
   };
-  preferedTeacher: string;
+  preferedTeacher?: string;
   totalHourse: number;
   startDate: string;
   endDate: string;
@@ -47,6 +76,8 @@ interface Schedule {
   createdDate: string;
   lastUpdatedDate: string;
   __v: number;
+
+  alfstudent: AlfStudent;  
 }
 
 interface ClassScheduleResponse {
@@ -54,10 +85,12 @@ interface ClassScheduleResponse {
   classSchedule: Schedule[];
 }
 
+
 interface SimpleStudent {
   studentId: string;
   name: string;
   level?: string;
+  familyId?: string;
   studentDetails: {
     student: {
       studentFirstName?: string;
@@ -527,6 +560,7 @@ function Analytics() {
     students: [
       { label: "Student ID", width: "w-[10%]" },
       { label: "Student Name", width: "w-[14%]" },
+      { label: "Family Id", width: "w-[10%]" },
       { label: "Course", width: "w-[14%]" },
       { label: "Class Type", width: "w-[10%]" },
       { label: "Joined Date", width: "w-[14%]" },
@@ -536,6 +570,7 @@ function Analytics() {
     classes: [
       { label: "Student ID", width: "w-[10%]" },
       { label: "Student Name", width: "w-[14%]" },
+      { label: "Family Id", width: "w-[10%]" },
       { label: "Courses", width: "w-[14%]" },
       { label: "Class Type", width: "w-[12%]" },
       { label: "Course Duration", width: "w-[10%]" },
@@ -546,6 +581,7 @@ function Analytics() {
     earnings: [
       { label: "Student Id", width: "w-[10%]" },
       { label: "Student Name", width: "w-[14%]" },
+      { label: "Family Id", width: "w-[10%]" },
       { label: "Course", width: "w-[12%]" },
       { label: "Class Type", width: "w-[12%]" },
       { label: "Course Duration", width: "w-[10%]" },
@@ -731,7 +767,11 @@ function Analytics() {
                                 "-"}
                             </div>
                           </td>
-
+                          <td className="px-3 py-2 text-left">
+                            <div className="text-[#3D8FDE] font-medium">
+                              {schedule.familyId || "-"}
+                            </div>
+                          </td>
                           {/* Course / Learning Interest */}
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
                             {schedule.studentDetails.student
@@ -809,7 +849,9 @@ function Analytics() {
                             <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left break-words">
                               {cls.student.studentFirstName}
                             </td>
-
+                              <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left break-words">
+                              {cls.alfstudent.familyId}
+                            </td> 
                             <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
                               {cls.course.courseName}
                             </td>
@@ -878,7 +920,9 @@ function Analytics() {
                             <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left break-words">
                               {earning.student.studentFirstName}
                             </td>
-
+                            <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left break-words">
+                              {earning.alfstudent.familyId}
+                            </td>
                             <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
                               {earning.course.courseName}
                             </td>

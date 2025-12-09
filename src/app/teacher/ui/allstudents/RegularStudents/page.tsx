@@ -1183,11 +1183,10 @@ const RegularStudents = () => {
                           }`}
                       >
                         <td className="px-3 py-2 break-words">
-                          {student?.studentId}
+                          {student?.studentDetails.student?.studentId || "-"}
                         </td>
                         <td className="px-3 py-2 text-[#3D8FDE] font-medium break-words">
-                          {studentInfo?.studentFirstName}{" "}
-                          {studentInfo?.studentLastName}
+                          {studentInfo?.studentFirstName}
                         </td>
                         <td className="px-3 py-2 break-words">-</td>
                         <td className="px-3 py-2 break-words">
@@ -1422,11 +1421,10 @@ const RegularStudents = () => {
                             }`}
                         >
                           <td className="px-3 py-2 break-words">
-                            {student?.studentId}
+                          {student?.studentDetails.student?.studentId || "-"}
                           </td>
                           <td className="px-3 py-2 text-[#3D8FDE] font-medium break-words">
                             {studentInfo?.studentFirstName}{" "}
-                            {studentInfo?.studentLastName}
                           </td>
                           <td className="px-3 py-2 break-words">
                             {assignmentItem.assignmentId || "-"}

@@ -36,6 +36,8 @@ export interface Student {
     gender: string;
   };
   evaluation?: Evaluation[];
+  familyId?: string;
+  familyEmail?: string;
 }
 
 export interface Evaluation {
@@ -168,7 +170,7 @@ const ManageStudents = () => {
         return;
       }
       const response = await fetch(
-        `http://localhost:5001/alstudents`,
+        `https://api.blackstoneinfomaticstech.com/alstudents`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -646,6 +648,9 @@ const ManageStudents = () => {
                         Teacher Name
                       </th>
                       <th className="text-left px-3 py-2 text-[12px] font-medium border border-[#4C6993] dark:border-[#6087C0] w-[140px]">
+                        Family Id
+                      </th>
+                      <th className="text-left px-3 py-2 text-[12px] font-medium border border-[#4C6993] dark:border-[#6087C0] w-[140px]">
                         Course
                       </th>
                       <th className="text-left px-3 py-2 text-[12px] font-medium border border-[#4C6993] dark:border-[#6087C0] w-[140px]">
@@ -720,6 +725,9 @@ const ManageStudents = () => {
                               ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
                               : "-";
                           })()}
+                        </td>
+                        <td className="px-3 py-2">
+                          {item.familyId || "-"}
                         </td>
                         <td className="px-3 py-2">
                           {(() => {

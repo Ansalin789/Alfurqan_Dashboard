@@ -8,49 +8,78 @@ import { Search, X } from "lucide-react";
 import React, { useEffect, useState, useMemo } from "react";
 import { MdTune } from "react-icons/md";
 
-interface ClassScheduleResponse {
-  totalCount: number;
-  classSchedule: Schedule[];
-}
-
-interface Schedule {
-  _id: string;
+interface AlfStudent {
   student: {
     studentId: string;
-    studentFirstName: string;
-    studentLastName: string;
     studentEmail: string;
+    studentPhone: number;
+    course: string;
+    package: string;
+    city: string;
+    country: string;
     gender: string;
   };
-  teacher: {
-    teacherId: string;
-    teacherName: string;
-    teacherEmail: string;
-  };
-  course: {
-    courseId: string;
-    courseName: string;
-  };
+  _id: string;
+  refernceId: string;
+  referredBy: string;
+  username: string;
+  password: string;
+  sessionClassType: string;
+  role: string;
+  familyId: string;
+  familyEmail: string;
+  level: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  __v: number;
+}
+interface Student {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+}
+
+interface Teacher {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+}
+interface Schedule {
+  student: Student;
+  teacher: Teacher;
+  familyId?: string;      // Optional if you want, but backend sends it inside alfstudent
+  _id: string;
   classDay: string[];
   package: string;
+  course: {
+    courseName: string;
+  };
+  preferedTeacher?: string;
   totalHourse: number;
   startDate: string;
   endDate: string;
   startTime: string[];
   endTime: string[];
+  amount: string;
   scheduleStatus: string;
-  classLink: string;
+  sessionClassType: string;
   status: string;
   createdBy: string;
-  sessionClassType: string;
-  sessionStarttime: string;
-  sessionsEndtime: string;
   createdDate: string;
   lastUpdatedDate: string;
   __v: number;
-  amount: string;
-  sessionStatus: string;
+
+  alfstudent: AlfStudent;   // 🔥 ADD THIS
 }
+
+interface ClassScheduleResponse {
+  totalCount: number;
+  classSchedule: Schedule[];
+}
+
 
 const Classes = () => {
   const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<Schedule[]>([]);
@@ -218,6 +247,7 @@ const Classes = () => {
                     {[
                       "Student ID",
                       "Student Name",
+                      "Family Id",
                       "Courses",
                       "Class Type",
                       "Course Duration",
@@ -247,6 +277,7 @@ const Classes = () => {
                         <td className="px-4 py-2 text-left font-medium text-[#3D8FDE] ">
                           {student.studentFirstName}
                         </td>
+                        <td className="px-4 py-2 text-left">{schedule.alfstudent.familyId||"-"}</td>
                         <td className="px-4 py-2 text-left">{schedule.course.courseName}</td>
                         <td className="px-4 py-2 text-left">{schedule.sessionClassType}</td>
                         <td className="px-4 py-2 text-left">

@@ -7,55 +7,106 @@ import axios from "axios";
 import { Search, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { MdTune } from "react-icons/md";
-import { useRouter } from "next/navigation";
 
-interface ClassScheduleResponse {
+
+export interface StudentListResponse {
   totalCount: number;
-  classSchedule: Schedule[];
+  classSchedule: StudentListItem[];
 }
 
-interface Schedule {
+export interface StudentListItem {
+  student: StudentInfo;
+  teacher: TeacherInfo;
+  course: CourseInfo;
   _id: string;
-  student: {
-    studentId: string;
-    studentFirstName: string;
-    studentLastName: string;
-    studentEmail: string;
-    gender: string;
-  };
-  teacher: {
-    teacherId: string;
-    teacherName: string;
-    teacherEmail: string;
-  };
-  course: {
-    courseId: string;
-    courseName: string;
-  };
+  classId: string;
   classDay: string[];
   package: string;
   totalHourse: number;
   startDate: string;
   endDate: string;
-  startTime: string[]; // ["09:30"]
+  startTime: string[];
   endTime: string[];
   scheduleStatus: string;
   classLink: string;
   status: string;
   createdBy: string;
+  teacherAttendee: string;
+  studentAttendee: string;
+  classhour: string;
+  currency: string;
+  amount: string;
+  earnings: number;
+  isSalaryProcessed: boolean;
   sessionClassType: string;
   sessionStarttime: string;
   sessionsEndtime: string;
+  sessionStatus: string;
   createdDate: string;
   lastUpdatedDate: string;
   __v: number;
-  amount: string;
-  sessionStatus: string;
+
+  alfstudent: AlfStudentInfo;
+}
+
+export interface StudentInfo {
+  id: string;
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+  gender: string;
+  level: string;
+  studnetSessionStart: string | null;
+  studnetSessionEnd: string | null;
+}
+
+export interface TeacherInfo {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+  teacherSessionStart: string | null;
+  teacherSessionEnd: string | null;
+}
+
+export interface CourseInfo {
+  courseId: string;
+  courseName: string;
+}
+
+export interface AlfStudentInfo {
+  student: AlfStudentProfile;
+  _id: string;
+  refernceId: string;
+  referredBy: string;
+  username: string;
+  password: string;
+  sessionClassType: string;
+  role: string;
+  familyId: string;         // <-- 🎯 Your familyId is here
+  familyEmail: string;
+  level: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  __v: number;
+}
+
+export interface AlfStudentProfile {
+  studentId: string;
+  studentEmail: string;
+  studentPhone: number;
+  course: string;
+  package: string;
+  city: string;
+  country: string;
+  gender: string;
 }
 
 const Earnings = () => {
   const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<
-    Schedule[]
+    StudentListItem[]
   >([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -85,7 +136,7 @@ const Earnings = () => {
           return;
         }
 
-        const response = await axios.get<ClassScheduleResponse>(
+        const response = await axios.get<StudentListResponse>(
           `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${teacherIdToFilter}`,
           {
             headers: {
@@ -211,6 +262,7 @@ const filteredData = uniqueStudentSchedules.filter((row) => {
                       [
                         "Student ID",
                         "Name",
+                        "Family ID",
                         "Courses",
                         "Course Type",
                         "Course Duration",
@@ -246,6 +298,9 @@ const filteredData = uniqueStudentSchedules.filter((row) => {
                         </td>
                         <td className="px-4 py-2 text-left font-medium text-[#3D8FDE]">
                           {student.studentFirstName}
+                        </td>
+                         <td className="px-4 py-2 text-left font-medium text-[#3D8FDE]">
+                        {row.alfstudent.familyId || "-"}
                         </td>
                         <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
                           {row.course.courseName}
