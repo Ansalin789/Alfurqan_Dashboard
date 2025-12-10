@@ -20,6 +20,7 @@ interface TransformedUser {
   studentEmail: string;
   number: string;
   country: string;
+  familyId:string;
   city: string;
   course: string; // Assuming this corresponds to `learningInterest`
   preferredTeacher: string;
@@ -43,6 +44,8 @@ interface User {
   number: string;
   country: string;
   course: string;
+  familyId:string;
+
   preferredTeacher: string;
   date: string;
   time: string;
@@ -91,6 +94,8 @@ interface ClassPayload {
   classDay?: string[]; // assuming it's an array of days like ['Monday', 'Wednesday']
   startTime?: string[];
   endTime?: string[];
+  familyId:string;
+
   isLanguageLevel: boolean;
   languageLevel: string;
   isReadingLevel: boolean;
@@ -176,6 +181,7 @@ const getAllUser = async (): Promise<{
             : "",
           country: item.student.studentCountry,
           city: item.city,
+          familyId:item.familyId,
           course: item.student.learningInterest,
           preferredTeacher: item.student.preferredTeacher,
           time: item.student.preferredFromTime,
@@ -256,6 +262,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
         email: string;
         phoneNumber: string;
         city: string;
+  familyId:string;
         country: string;
         learningInterest: string;
         preferredTeacher: string;
@@ -277,6 +284,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
           lname: item.lastName,
           email: item.email,
           city: item.city,
+          familyId:item.familyId,
           number: item.phoneNumber.toString(),
           country: item.country,
           course: item.learningInterest,
@@ -720,6 +728,7 @@ const TrailSection = () => {
           number: user.number,
           country: user.country,
           city: user.city,
+          familyId:user.familyId,
           course: user.course,
           preferredTeacher: user.preferredTeacher,
           date: new Date(user.date).toLocaleDateString(),
@@ -963,6 +972,7 @@ const TrailSection = () => {
                   {[
                     { label: "Student ID", width: "w-[10%]" },
                     { label: "Student Name", width: "w-[12%]" },
+                    { label: "Family ID", width: "w-[10%]" },
                     { label: "Date", width: "w-[12%]" },
                     { label: "Mobile", width: "w-[10%]" },
                     { label: "Country", width: "w-[8%]" },
@@ -1011,6 +1021,9 @@ const TrailSection = () => {
                       </td>
                       <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] whitespace-nowrap w-[12%]">
                         {item.fname} {item.lname}
+                      </td>
+                       <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] whitespace-nowrap w-[12%]">
+                        {item.familyId} 
                       </td>
                       <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[15%]">
                         {new Date(item.createdDate).toLocaleDateString(

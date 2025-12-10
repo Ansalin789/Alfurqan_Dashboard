@@ -27,6 +27,7 @@ interface StudentItem {
   __v: number;
   classScheduleCount: number;
   student: StudentDetails;
+  familyId:string;
 }
 
 interface StudentDetails {
@@ -170,8 +171,8 @@ export default function StudentList() {
                 </span>
               </div>
 
-              <div className="flex flex-col md:w-1/2 gap-4 px-3 border-r border-[#BCBCBC]">
-                <h4 className="text-[14px] font-semibold mb-2">
+              <div className="flex flex-col md:w-1/2 gap-4 px-3 border-r border-[#BCBCBC] ">
+                <h4 className="text-[14px] font-semibold mb-2 mt-2">
                   Contact & Details
                 </h4>
                 <div className="text-xs">
@@ -197,6 +198,12 @@ export default function StudentList() {
                     <span className="text-gray-200">Courses:</span>{" "}
                     <span className="text-gray-200 px-2 text-[11px]">
                       {student.student.course}
+                    </span>
+                  </div>
+                  <div className="py-2 flex flex-row justify-between">
+                    <span className="text-gray-200">Family Id:</span>{" "}
+                    <span className="text-gray-200 px-2 text-[11px]">
+                      {student.familyId}
                     </span>
                   </div>
                 </div>

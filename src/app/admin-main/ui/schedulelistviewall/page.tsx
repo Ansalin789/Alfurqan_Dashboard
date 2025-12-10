@@ -101,26 +101,26 @@ const SalaryCard = () => {
   };
 
   const now = new Date();
-const completedData = classData
-  .filter(cls  => {
-    const endDate = new Date(cls.endDate);
-    return (
-      ["Completed", "BothAbsent", "StudentAbsent", "TeacherAbsent"].includes(cls.scheduleStatus) &&
-      endDate < now
-    );
-  })
-  .sort((a , b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()); // descending
-  
+  const completedData = classData
+    .filter(cls => {
+      const endDate = new Date(cls.endDate);
+      return (
+        ["Completed", "BothAbsent", "StudentAbsent", "TeacherAbsent"].includes(cls.scheduleStatus) &&
+        endDate < now
+      );
+    })
+    .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()); // descending
 
-const upcomingData = classData
-  .filter(cls => {
-    const endDate = new Date(cls.endDate);
-    return (
-      ["Scheduled", "Rescheduled", "Reschedulerequested"].includes(cls.scheduleStatus) &&
-      endDate >= now
-    );
-  })
-  .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()); // descending
+
+  const upcomingData = classData
+    .filter(cls => {
+      const endDate = new Date(cls.endDate);
+      return (
+        ["Scheduled", "Rescheduled", "Reschedulerequested"].includes(cls.scheduleStatus) &&
+        endDate >= now
+      );
+    })
+    .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()); // descending
   const baseData = activeTab === "Upcoming" ? upcomingData : completedData;
 
   const studentNames = Array.from(
@@ -218,21 +218,20 @@ const upcomingData = classData
 
   return (
     <BaseLayout4>
-    <AdminHeader currentSection={" All Classes"} showBackButton={true} showBackPath="classes" >
-      
-    </AdminHeader>
-     
+      <AdminHeader currentSection={" All Classes"} showBackButton={true} showBackPath="classes" >
+
+      </AdminHeader>
+
       <div className="md:p-0 mt-4 mx-auto">
         <div className="h-full w-full flex flex-col justify-between">
           <div className="p-0 justify-between flex flex-col">
             <div className="flex space-x-6 px-4 py-2 rounded-md">
               <button
                 onClick={() => setActiveTab("Upcoming")}
-                className={`relative text-[14px] transition font-medium ${
-                  activeTab === "Upcoming"
+                className={`relative text-[14px] transition font-medium ${activeTab === "Upcoming"
                     ? "text-[#576CBC] font-semibold"
                     : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-                }`}
+                  }`}
               >
                 Scheduled ({upcomingData.length})
                 {activeTab === "Upcoming" && (
@@ -241,11 +240,10 @@ const upcomingData = classData
               </button>
               <button
                 onClick={() => setActiveTab("completed")}
-                className={`relative text-[14px] transition font-medium ${
-                  activeTab === "completed"
+                className={`relative text-[14px] transition font-medium ${activeTab === "completed"
                     ? "text-[#576CBC] font-semibold"
                     : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-                }`}
+                  }`}
               >
                 Completed ({completedData.length})
                 {activeTab === "completed" && (
@@ -255,29 +253,33 @@ const upcomingData = classData
             </div>
             <div className="mt-2">
               {/* Search + Filter Header */}
-              <div className="w-full h-11 bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
-              <div className="flex justify-between gap-2 items-center px-4 py-0">
-                  <Search className="w-4 h-4 text-gray-400  dark:text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search by keyword"
-                    className="bg-transparent outline-none text-sm w-52"
-                    value={searchQuery}
-                    onChange={(e) => handleSearch(e.target.value)}
-                  />
-                </div>
-                <div
-                  className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer"
-                  onClick={() => setIsFilterModalOpen(true)}
-                >
-                  <MdTune className="w-4 h-4" />
-                  <span>Filter</span>
-                </div>
-                <div className="text-sm text-gray-500">
-                  Showing {paginatedCourseData.length} of{" "}
-                  {filteredClasses.length}
-                </div>
+             <div className="w-full h-11 bg-[#FAFAFB] dark:bg-[#343434]  dark:text-[#fff] rounded-t-lg flex justify-between items-center px-4 py-0">
+              <div className="flex items-center gap-2">
+                <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by keyword"
+                  className="bg-transparent outline-none text-sm w-52 py-3"
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                />
               </div>
+
+              <div
+                className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                onClick={() => setIsFilterModalOpen(true)}
+              >
+                <MdTune className="w-4 h-4" />
+                <span>Filter</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                <span className="text-left -ml-60">
+                  Showing {paginatedCourseData.length} Of{" "}
+                  {filteredClasses.length}
+                </span>
+              </div>
+            </div>
             </div>
             {/* Table */}
             <div className="overflow-x-auto scrollbar-none">
@@ -287,7 +289,10 @@ const upcomingData = classData
               >
                 <thead className="text-[12px] bg-[#4C6993] text-white">
                   <tr>
-                    <th className="text-left px-4 py-3 w-[190px]">Class ID</th>
+                    <th className="text-left px-4 py-3 w-[140px]">Class ID</th>
+                    <th className="text-left px-4 py-3 w-[140px]">
+                      Student Id
+                    </th>
                     <th className="text-left px-4 py-3 w-[180px]">
                       Student Name
                     </th>
@@ -295,27 +300,28 @@ const upcomingData = classData
                       Teacher Name
                     </th>
                     <th className="text-left px-4 py-3  w-[150px]">Course</th>
-                    <th className="text-left px-4 py-3 w-[150px]">Class</th>
-                    <th className="text-left px-4 py-3 w-[150px]">Date</th>
+                    <th className="text-left px-4 py-3 w-[160px]">Class</th>
+                    <th className="text-left px-4 py-3 w-[160px]">Date</th>
                     <th className="text-left px-4 py-3 w-[150px]">Scheduled</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedCourseData.map((row, index) => (
-                     <tr
+                    <tr
                       key={row._id}
-                      className={`text-[12px] ${
-                        index % 2 === 0
+                      className={`text-[12px] ${index % 2 === 0
                           ? "bg-[#fff] dark:bg-[#2C2C2C]"
                           : "bg-[#F8F8F8] dark:bg-[#303030]"
-                      }`}
+                        }`}
                     >
                       <td className="px-3 py-3 text-[11px] text-left break-words whitespace-normal">
                         {row.classId}
                       </td>
+                      <td className=" px-3 py-3 text-left  break-words whitespace-normal">
+                        {row.student.studentId}
+                      </td>
                       <td className=" text-[#3D8FDE] px-3 py-3 text-left  break-words whitespace-normal">
-                        {row.student?.studentFirstName}{" "}
-                        {row.student?.studentLastName}
+                        {row.student?.studentFirstName}
                       </td>
                       <td className="px-3 py-3 text-left w-[180px] break-words whitespace-normal">
                         {row.teacher?.teacherName || "N/A"}
@@ -328,21 +334,20 @@ const upcomingData = classData
                         {row.sessionClassType}
                       </td>
                       <td className="px-3 py-3 text-left break-words whitespace-normal">
-  {new Date(row.startDate).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })}
-</td>
+                        {new Date(row.startDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </td>
                       <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[180px] break-words whitespace-normal">
                         <span
-                          className={`px-3 py-2 font-semibold text-[11px] text-center  rounded-md ${
-                            row.scheduleStatus === "Scheduled"
+                          className={`px-3 py-2 font-semibold text-[11px] text-center  rounded-md ${row.scheduleStatus === "Scheduled"
                               ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
                               : row.scheduleStatus === "Rescheduled"
-                              ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE]"
-                              : "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
-                          }`}
+                                ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE]"
+                                : "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
+                            }`}
                         >
                           {row.scheduleStatus || "UNKNOWN"}
                         </span>
@@ -363,116 +368,116 @@ const upcomingData = classData
         </div>
       </div>
       {/* Filter Modal */}
-    <Modal
-    isOpen={isFilterModalOpen}
-    onRequestClose={() => setIsFilterModalOpen(false)}
-    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white dark:bg-[#343434] w-[650px]"
-    overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-40"
-  >
-    <h2 className="text-lg font-semibold mb-4 text-[#2D2D2D] dark:text-white">Filter by</h2>
-    
-    <div className="space-y-4 mb-6">
-      {/* Student Section */}
-      <div>
-        <h3 className="text-sm font-medium text-[#444] dark:text-white mb-2">Select Student</h3>
-        <select
-          value={filters.studentName}
-          onChange={(e) => setFilters({ ...filters, studentName: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
-        >
-          <option value="">Select Student</option>
-          {studentNames.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-      </div>
-  
-      {/* Course Section */}
-      <div>
-        <h3 className="text-sm font-medium text-[#444] dark:text-white mb-2">Select Course</h3>
-        <select
-          value={filters.courseName}
-          onChange={(e) => setFilters({ ...filters, courseName: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
-        >
-          <option value="">Select Course</option>
-          {courseNames.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-      </div>
-  
-      {/* Files by Student Section */}
-      <div>
-        <h3 className="text-sm font-medium text-[#444] dark:text-white mb-2">Files by Student</h3>
-        <select
-          value={filters.teacherName}
-          onChange={(e) => setFilters({ ...filters, teacherName: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
-        >
-          <option value="">Select Student</option>
-          {teacherNames.map((name) => (
-            <option key={name} value={name}>{name}</option>
-          ))}
-        </select>
-      </div>
-  
-      {/* From Date Section */}
-      <div>
-        <h3 className="text-sm font-medium text-[#444] dark:text-white mb-2">From Date</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <input
-            type="date"
-            value={filters.fromDate}
-            onChange={(e) => setFilters({ ...filters, fromDate: e.target.value })}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
-            placeholder="dd-mm-yyyy"
-          />
-          <input
-            type="date"
-            value={filters.toDate}
-            onChange={(e) => setFilters({ ...filters, toDate: e.target.value })}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
-            placeholder="dd-mm-yyyy"
-          />
+      <Modal
+        isOpen={isFilterModalOpen}
+        onRequestClose={() => setIsFilterModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white dark:bg-[#343434] w-[650px]"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-40"
+      >
+        <h2 className="text-lg font-semibold mb-4 text-[#2D2D2D] dark:text-white">Filter by</h2>
+
+        <div className="space-y-4 mb-6">
+          {/* Student Section */}
+          <div>
+            <h3 className="text-sm font-medium text-[#444] dark:text-white mb-2">Select Student</h3>
+            <select
+              value={filters.studentName}
+              onChange={(e) => setFilters({ ...filters, studentName: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
+            >
+              <option value="">Select Student</option>
+              {studentNames.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Course Section */}
+          <div>
+            <h3 className="text-sm font-medium text-[#444] dark:text-white mb-2">Select Course</h3>
+            <select
+              value={filters.courseName}
+              onChange={(e) => setFilters({ ...filters, courseName: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
+            >
+              <option value="">Select Course</option>
+              {courseNames.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Files by Student Section */}
+          <div>
+            <h3 className="text-sm font-medium text-[#444] dark:text-white mb-2">Files by Student</h3>
+            <select
+              value={filters.teacherName}
+              onChange={(e) => setFilters({ ...filters, teacherName: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
+            >
+              <option value="">Select Student</option>
+              {teacherNames.map((name) => (
+                <option key={name} value={name}>{name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* From Date Section */}
+          <div>
+            <h3 className="text-sm font-medium text-[#444] dark:text-white mb-2">From Date</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <input
+                type="date"
+                value={filters.fromDate}
+                onChange={(e) => setFilters({ ...filters, fromDate: e.target.value })}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
+                placeholder="dd-mm-yyyy"
+              />
+              <input
+                type="date"
+                value={filters.toDate}
+                onChange={(e) => setFilters({ ...filters, toDate: e.target.value })}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
+                placeholder="dd-mm-yyyy"
+              />
+            </div>
+          </div>
+
+          {/* Status Section */}
+          <div>
+            <h3 className="text-sm font-medium text-[#444] dark:text-white mb-2">Status</h3>
+            <select
+              value={filters.scheduleStatus}
+              onChange={(e) => setFilters({ ...filters, scheduleStatus: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
+            >
+              <option value="">Select Status</option>
+              <option value="Scheduled">Scheduled</option>
+              <option value="Rescheduled">Rescheduled</option>
+            </select>
+          </div>
         </div>
-      </div>
-  
-      {/* Status Section */}
-      <div>
-        <h3 className="text-sm font-medium text-[#444] dark:text-white mb-2">Status</h3>
-        <select
-          value={filters.scheduleStatus}
-          onChange={(e) => setFilters({ ...filters, scheduleStatus: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
-        >
-          <option value="">Select Status</option>
-          <option value="Scheduled">Scheduled</option>
-          <option value="Rescheduled">Rescheduled</option>
-        </select>
-      </div>
-    </div>
-  
-    <div className="flex justify-between items-center mt-6">
-      <div className="text-sm text-[#5C5C5C] dark:text-[#FDFDFD]">
-        Showing {filteredClasses.length} results
-      </div>
-      <div className="flex gap-2">
-        <button
-          onClick={handleResetFilters}
-          className="px-4 py-2 border text-[#576CBC] border-[#576CBC] rounded"
-        >
-          Reset
-        </button>
-        <button
-          onClick={handleApplyFilters}
-          className="px-4 py-2 bg-[#576CBC] text-white rounded"
-        >
-          Show results
-        </button>
-      </div>
-    </div>
-  </Modal>
+
+        <div className="flex justify-between items-center mt-6">
+          <div className="text-sm text-[#5C5C5C] dark:text-[#FDFDFD]">
+            Showing {filteredClasses.length} results
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleResetFilters}
+              className="px-4 py-2 border text-[#576CBC] border-[#576CBC] rounded"
+            >
+              Reset
+            </button>
+            <button
+              onClick={handleApplyFilters}
+              className="px-4 py-2 bg-[#576CBC] text-white rounded"
+            >
+              Show results
+            </button>
+          </div>
+        </div>
+      </Modal>
     </BaseLayout4>
   );
 };

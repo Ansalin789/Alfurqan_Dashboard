@@ -31,6 +31,7 @@ export interface Student {
   createdDate: string;
   createdBy: string;
   updatedDate: string;
+  familyId:string;
   __v: number;
   classScheduleCount: number;
   level: number;
@@ -333,6 +334,7 @@ const TrailManagement = () => {
                 {[
                   "Student ID",
                   "Student Name",
+                  "Family ID",
                   "Package",
                   "Date of Joining",
                   "Teacher Name",
@@ -394,6 +396,9 @@ const TrailManagement = () => {
                       </td>
                       <td className="py-3 px-2 text-blue-600 cursor-pointer">
                         {student.username}
+                      </td>
+                      <td className="py-3 px-2 break-words">
+                        {student.familyId}
                       </td>
                       <td className="py-3 px-2 text-blue-600 cursor-pointer">
                         {student.student.package}
