@@ -87,6 +87,7 @@ const StudentProfile = () => {
     _id: string;
     username: string;
     role: string;
+    familyId?: string;
     status: string;
     createdDate: string;
     createdBy: string;
@@ -325,6 +326,7 @@ const StudentProfile = () => {
                 <p className="text-[12px] text-[#C9C9C9] mt-0">
                   {studentData?.student?.studentEmail}
                 </p>
+                
               </div>
             </div>
 

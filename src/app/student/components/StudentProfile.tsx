@@ -46,6 +46,7 @@ const StudentProfile = () => {
   const router = useRouter();
 
   const [invoices, setInvoices] = useState<IStudentInvoice[]>([]);
+  const [familyId, setFamilyId] = useState<string | null>(null);
 
   const paymentStatus = "Pending";
 
@@ -118,7 +119,15 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
 
     // Fetch student details from API and set name/email
     const fetchStudentDetails = async () => {
-      if (!studentId || !token || !courseName) return;
+      if (!studentId || !token) {
+        console.warn("Missing studentId or token for fetching student details", {
+          studentId,
+          tokenPresent: !!token,
+          courseName,
+        });
+        return;
+      }
+
       try {
         const res = await axios.get(
           `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
@@ -128,15 +137,42 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
             },
           }
         );
-        // Defensive: check for studentDetails and student
-        const details = res.data?.studentDetails;
-        setStudentName(details?.username || null);
-        setStudentEmail(details?.student?.studentEmail || null);
+
+        // API sometimes returns the student document directly or wrapped
+        const payload = res.data?.studentDetails ?? res.data;
+        console.log("Using student payload:", payload);
+        setStudentName(payload?.username || null);
+        setStudentEmail(payload?.student?.studentEmail || payload?.studentEmail || null);
       } catch (err) {
         console.error("Failed to fetch student details", err);
       }
     };
+
     fetchStudentDetails();
+
+    // Also try to fetch only familyId from local backend (useful during local dev)
+    const fetchFamilyIdLocal = async () => {
+      if (!studentId) return;
+      try {
+        const localToken = localStorage.getItem("StudentAuthToken");
+        const res = await axios.get(
+          `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
+          {
+            headers: localToken ? { Authorization: `Bearer ${localToken}` } : {},
+          }
+        );
+
+        // Response may be the student doc or wrapped. Try both.
+        const payload = res.data?.studentDetails ?? res.data;
+        console.log("Local student payload:", payload);
+        const fid = payload?.familyId ?? payload?.student?.familyId ?? null;
+        if (fid) setFamilyId(fid);
+      } catch (err) {
+        console.warn("Failed to fetch familyId from local API", err);
+      }
+    };
+
+    fetchFamilyIdLocal();
 
     const fetchStudentInvoices = async () => {
       try {
@@ -146,7 +182,7 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
         }
 
         const response = await axios.get(
-          "http://localhost:5001/studentinvoiceById",
+          "https://api.blackstoneinfomaticstech.com/studentinvoiceById",
           {
             params: { studentId, paymentStatus, courseName }, // Include paymentStatus here
             headers: {
@@ -238,7 +274,10 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
             {studentEmail ?? "Loading..."}
           </p>
           <p className="text-[#4b5563] text-[13px] mb-2 text-center mt-2">
-            Level {dashboardCounts.totalLevel}
+           <span className="font-bold">Level</span>  : &nbsp;{dashboardCounts.totalLevel}
+          </p>
+          <p className="text-[#4b5563] text-[13px] mb-2 text-center mt-2">
+            <span className="font-bold">Family Id</span> :&nbsp;{familyId ?? "-"}
           </p>
 
           <div className="flex justify-center space-x-1 mb-2">
