@@ -362,6 +362,12 @@ const StudentProfile = () => {
                     {studentData?.student?.course}
                   </span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-white text-[14px]">Family Id</span>
+                  <span className="text-[#DADADACC] text-[12px]">
+                    {studentData?.familyId}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
