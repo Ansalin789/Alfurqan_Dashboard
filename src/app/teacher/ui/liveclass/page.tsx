@@ -2,8 +2,11 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { JitsiMeeting } from "@jitsi/react-sdk";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useSearchParams, useRouter } from "next/navigation";
+import SuccessPopup from "@/app/supervisor/components/successPopup";
+import FailedPopup from "@/app/supervisor/components/failedPopup";
+import { toast, ToastContainer } from "react-toastify";
 
 interface Student {
   studentId: string;
@@ -76,6 +79,9 @@ export default function LiveClass() {
   const [roomName, setRoomName] = useState("");
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const params = useSearchParams();
+  const [success, setSucces] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [failedMessage, setFailedMessage] = useState("");
   const [editableLevel, setEditableLevel] = useState(
     classData?.student.level || ""
   );
@@ -89,7 +95,7 @@ export default function LiveClass() {
     [
       classData?.teacher?.teacherName,
       classData?.teacher?.teacherId,
-      classData?.teacher?.teacherEmail
+      classData?.teacher?.teacherEmail,
     ]
   );
   useEffect(() => {
@@ -192,15 +198,15 @@ export default function LiveClass() {
     const sessionStartTime = now.toTimeString().slice(0, 5);
     console.log("Joined at:", sessionStartTime);
 
-    if (classData?.sessionClassType === 'GROUPCLASS') {
+    if (classData?.sessionClassType === "GROUPCLASS") {
       await fetch(
         `https://api.blackstoneinfomaticstech.com/groupclassschedule/bulkupdate/${classData.classLink}`,
         {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            teacher: { teacherSessionStart: sessionStartTime }
-          })
+            teacher: { teacherSessionStart: sessionStartTime },
+          }),
         }
       );
     } else {
@@ -209,23 +215,27 @@ export default function LiveClass() {
       });
     }
   };
-
+const notify = (msg: string) => toast.info(msg, { position: "top-center" });
+const successPopup = (msg: string) => toast.success(msg, { position: "top-center" });
+const error = (msg: string) => toast.error(msg, { position: "top-center" });
   const handleEndCall = async () => {
+       notify("Click 'Stop Sharing' in your browser to finish the recording.");
     const now = new Date();
     const sessionEndTime = now.toTimeString().slice(0, 5);
     console.log("Left at:", sessionEndTime);
-
+    
     let res;
+console.log("Teacher left: Stopping auto recording");
 
-    if (classData?.sessionClassType === 'GROUPCLASS') {
+    if (classData?.sessionClassType === "GROUPCLASS") {
       res = await fetch(
         `https://api.blackstoneinfomaticstech.com/groupclassschedule/bulkupdate/${classData.classLink}`,
         {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            teacher: { teacherSessionEnd: sessionEndTime }
-          })
+            teacher: { teacherSessionEnd: sessionEndTime },
+          }),
         }
       );
     } else {
@@ -233,11 +243,10 @@ export default function LiveClass() {
         teacherSessionEnd: sessionEndTime,
       });
     }
-    if (res && (res.status === 200)) {
+    if (res && res.status === 200) {
       setShowFeedback(true);
     }
   };
-
 
   const StarRating = ({
     value,
@@ -251,8 +260,9 @@ export default function LiveClass() {
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
-            className={`cursor-pointer text-xl ${star <= value ? "text-[#FAAB3C]" : "text-gray-300"
-              }`}
+            className={`cursor-pointer text-xl ${
+              star <= value ? "text-[#FAAB3C]" : "text-gray-300"
+            }`}
             onClick={() => onChange(star)}
           >
             ★
@@ -272,6 +282,91 @@ export default function LiveClass() {
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [showPopup]);
+ 
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<BlobPart[]>([]);
+  const [recording, setRecording] = useState(false);
+   const startScreenRecording = async () => {
+    try {
+       notify("Please choose a screen or window to share.");
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+         video: { cursor: "always" } as any,
+        audio: true, // optional if you want system audio
+      });
+  notify("Screen sharing started.");
+      const recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+      chunksRef.current = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+
+      recorder.onstop = async () => {
+  const blob = new Blob(chunksRef.current, { type: "video/webm" });
+
+  const token = localStorage.getItem("AdminAuthToken") || "";
+
+  const formData = new FormData();
+  formData.append("courseName", classData?.course.courseName || "");
+  formData.append("level", String(classData?.student.level || "1"));
+  formData.append("teacherId", classData?.teacher.teacherId || "");
+  formData.append("subjectTitle", "Session Recording Class");
+
+  formData.append("uploadedFormat", "Video");
+
+  // THE IMPORTANT FIX: send the real file, not base64
+  formData.append("uploadedFile", blob, "recording.webm");
+
+  formData.append("status", "Active");
+  formData.append("createdDate", new Date().toISOString());
+  formData.append("createdBy", "Teacher");
+  formData.append("updatedBy", "Teacher");
+  formData.append("updatedDate", new Date().toISOString());
+
+  console.log("Uploading blob file...");
+
+  try {
+    const response = await fetch("http://localhost:5001/knowledgebase", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (response.ok) {
+      console.log("Uploaded to backend!");
+      setSucces(true);
+    } else {
+      console.error("Upload failed", response.status);
+      setFailed(true);
+    }
+  } catch (err) {
+    console.error("Upload error", err);
+    setFailed(true);
+  }
+};
+
+
+      recorder.start();
+      recorderRef.current = recorder;
+      setRecording(true);
+      console.log("✅ Screen recording started!");
+    } catch (err) {
+       error("Screen sharing cancelled or failed.");
+      console.error("Error starting screen recording", err);
+    }
+  };
+
+  // Stop recording
+  const stopScreenRecording = () => {
+    if (recorderRef.current && recording) {
+      recorderRef.current.stop();
+      setRecording(false);
+      console.log("🛑 Screen recording stopped");
+    }
+  };
+
 
   const handleSubmit = async () => {
     const feedbackData = {
@@ -338,7 +433,9 @@ export default function LiveClass() {
 
       if (response.status === 201 || response.status === 200) {
         setShowPopup(true);
-        setTimeout(() => { setShowPopup(false) }, 3000);
+        setTimeout(() => {
+          setShowPopup(false);
+        }, 3000);
       } else {
         console.log("Failed to submit feedback. Please try again.");
       }
@@ -448,8 +545,7 @@ export default function LiveClass() {
                         <div className="flex justify-between">
                           <span>Time</span>
                           <p className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
-                            {classData?.startTime[0]} to{" "}
-                            {classData?.endTime[0]}
+                            {classData?.startTime[0]} to {classData?.endTime[0]}
                           </p>
                         </div>
                         <div className="flex justify-between">
@@ -494,7 +590,10 @@ export default function LiveClass() {
                       </div>
                     ))}
                     <div className="mt-4">
-                      <label htmlFor="ytcyuc" className="text-sm font-medium text-[#010E30] dark:text-white mb-2 block">
+                      <label
+                        htmlFor="ytcyuc"
+                        className="text-sm font-medium text-[#010E30] dark:text-white mb-2 block"
+                      >
                         Student Current Level:
                       </label>
                       <input
@@ -530,16 +629,16 @@ export default function LiveClass() {
                 {/* Student Info */}
                 <div className="flex justify-between items-start mb-4">
                   <div className="mt-2">
-                    {classData?.sessionClassType === 'REGULARCLASS' ?
+                    {classData?.sessionClassType === "REGULARCLASS" ? (
                       <h2 className="text-lg font-medium">
                         {classData?.student.studentFirstName}{" "}
                         {classData?.student.studentLastName}
                       </h2>
-                      :
+                    ) : (
                       <h2 className="text-lg font-medium">
                         {classData?.sessionClassType}
                       </h2>
-                    }
+                    )}
                     <span className="text-sm  text-gray-500">
                       {classData?.course.courseName}
                     </span>
@@ -576,7 +675,7 @@ export default function LiveClass() {
                 </div>
 
                 {/* Jitsi Video Box */}
-                <div className="flex-1 min-w-0 w-full h-[50vh] md:h-[60vh] rounded-md overflow-hidden shadow-inner border border-gray-300">
+                <div className="flex-1 min-w-0 w-full h-[70vh] md:h-[90vh] rounded-md overflow-hidden shadow-inner border border-gray-300">
                   {roomName && (
                     <JitsiMeeting
                       roomName={roomName}
@@ -585,6 +684,11 @@ export default function LiveClass() {
                       configOverwrite={{
                         startWithAudioMuted: false,
                         startWithVideoMuted: false,
+                        localRecording: {
+                          enabled: true,
+                          format: "webm",
+                        },
+                       
                         toolbarButtons: [
                           "microphone",
                           "camera",
@@ -603,7 +707,21 @@ export default function LiveClass() {
                           "tileview",
                           "recording",
                         ],
-                      }}
+                      brandingRoomAlias: false,
+    branding: {
+      disableDeepLinking: true,
+    },
+    disableDeepLinking: true,
+  }}
+  interfaceConfigOverwrite={{
+    SHOW_JITSI_WATERMARK: false,
+    SHOW_BRAND_WATERMARK: false,
+    SHOW_POWERED_BY: false,
+    SHOW_PROMOTIONAL_CLOSE_PAGE: false,
+    SHOW_WATERMARK_FOR_GUESTS: false,
+    HIDE_DEEP_LINKING_LOGO: true,
+    MOBILE_APP_PROMO: false,
+  }}
                       onApiReady={(externalApi) => {
                         type ParticipantLog = {
                           id: string;
@@ -616,14 +734,11 @@ export default function LiveClass() {
                         externalApi.addListener(
                           "participantJoined",
                           (event: { id: string; displayName?: string }) => {
-                            const joinTime = new Date().toLocaleTimeString(
-                              [],
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: false,
-                              }
-                            );
+                            const joinTime = new Date().toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            });
                             const parts = event.displayName?.split("| ID :");
                             const name = parts?.[0]?.trim() ?? "Unknown";
                             const studentId = parts?.[1]?.trim() ?? "N/A";
@@ -634,12 +749,12 @@ export default function LiveClass() {
                             const updated = attendanceRef.current.map((a) =>
                               a.studentId === studentId
                                 ? {
-                                  ...a,
-                                  id: event.id,
-                                  joined: true,
-                                  joinTime: joinTime,
-                                  startTime: joinTime,
-                                }
+                                    ...a,
+                                    id: event.id,
+                                    joined: true,
+                                    joinTime: joinTime,
+                                    startTime: joinTime,
+                                  }
                                 : a
                             );
                             setAttendance(updated);
@@ -678,41 +793,62 @@ export default function LiveClass() {
                           }
                         );
                         // 🎥 Host/Teacher Joined
-                        externalApi.addListener("videoConferenceJoined", async () => {
-                          // 1. Store teacher join time
-                          const startCallTime = new Date().toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                          });
-                          startTimeRef.current = startCallTime;
-                          console.log("✅ Teacher joined, call started at", startCallTime);
-                          // 2. Mark teacher as joined (if you're tracking them in state/backend)
-                          handleJoinCall(); // your existing attendance update logic
-                          // 3. Get already-present participants (likely students who joined before teacher)
-                          const existingParticipants = externalApi.getParticipantsInfo();
-                          console.log("🎯 Checking existing participants:", existingParticipants);
-                          existingParticipants.forEach((participant: any) => {
-                            const parts = participant.displayName?.split("| ID :");
-                            const name = parts?.[0]?.trim() ?? "Unknown";
-                            const studentId = parts?.[1]?.trim() ?? "N/A";
-                            console.log("👀 Already present:", { name, studentId });
-                            // 4. Mark only presence; don’t overwrite joinTime
-                            setAttendance((prev) =>
-                              prev.map((a) =>
-                                a.studentId === studentId && !a.joined
-                                  ? {
-                                    ...a,
-                                    id: participant.participantId,
-                                    joined: true,
-                                    joinTime: a.joinTime || "", // don't overwrite if already set
-                                  }
-                                  : a
-                              )
+                        externalApi.addListener(
+                          "videoConferenceJoined",
+                          async () => {
+                            await startScreenRecording();
+                            // 1. Store teacher join time
+                            const startCallTime = new Date().toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                              }
                             );
-                          });
-                        });
-                        externalApi.addListener("videoConferenceLeft", () => {
+                            startTimeRef.current = startCallTime;
+                            console.log(
+                              "✅ Teacher joined, call started at",
+                              startCallTime
+                            );
+                            // 2. Mark teacher as joined (if you're tracking them in state/backend)
+                            handleJoinCall(); // your existing attendance update logic
+                            // 3. Get already-present participants (likely students who joined before teacher)
+                            const existingParticipants =
+                              externalApi.getParticipantsInfo();
+                            console.log(
+                              "🎯 Checking existing participants:",
+                              existingParticipants
+                            );
+                            existingParticipants.forEach((participant: any) => {
+                              const parts =
+                                participant.displayName?.split("| ID :");
+                              const name = parts?.[0]?.trim() ?? "Unknown";
+                              const studentId = parts?.[1]?.trim() ?? "N/A";
+                              console.log("👀 Already present:", {
+                                name,
+                                studentId,
+                              });
+                              // 4. Mark only presence; don’t overwrite joinTime
+                              setAttendance((prev) =>
+                                prev.map((a) =>
+                                  a.studentId === studentId && !a.joined
+                                    ? {
+                                        ...a,
+                                        id: participant.participantId,
+                                        joined: true,
+                                        joinTime: a.joinTime || "", // don't overwrite if already set
+                                      }
+                                    : a
+                                )
+                              );
+                            });
+                          }
+                        );
+                        externalApi.addListener("videoConferenceLeft", async() => {
+                          await stopScreenRecording();
+                          console.log(
+                            "⛔ Teacher left, call ended at");
                           handleEndCall();
                         });
                       }}
@@ -724,15 +860,19 @@ export default function LiveClass() {
                     />
                   )}
                 </div>
-                <div className="mt-3 bg-blue-100 text-yellow-900 dark:bg-blue-900 dark:text-yellow-100 px-4 py-2 text-center rounded shadow text-sm font-medium border border-blue-300 dark:border-blue-700">
-                  ⚠ Please don’t switch the tab or leave this page. The video
-                  call will end.
-                </div>
+               
               </div>
             )}
           </div>
         </div>
       </div>
+      {success && (
+        <SuccessPopup onClose={() => setSucces(false)} title="class video Recorded upload" />
+      )}
+      {failed && (
+        <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
+      )}
+      <ToastContainer autoClose={2500} theme="dark" />
     </div>
   );
 }

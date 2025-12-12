@@ -157,6 +157,22 @@ export default function KnowledgeBase() {
       return null;
     }
   };
+  const fetchAndOpenFile1 = async (fileId: string) => {
+  const token = localStorage.getItem('StudentAuthToken');
+      if (!token) return;
+  const res = await fetch(`http://localhost:5001/files/videoview/${fileId}`, {
+  method: "GET",
+  headers: {
+    Authorization: `Bearer ${token}`,
+    Range: "bytes=0-"
+  }
+});
+
+  const blob = await res.blob();
+  console.log("res",res);
+  const blobUrl = URL.createObjectURL(blob);
+  setVideoUrl(blobUrl);
+};
    const fetchAndOpenFile = async (fileId: string) => {
   try {
     console.log("file ",fileId)
@@ -182,7 +198,7 @@ console.log("res", blob.type);
   const fetchKnowledgeBaseList = async (token: string) => {
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/knowledgebase/list",
+        "http://localhost:5001/knowledgebase/list",
         {
           method: "GET",
           headers: {
@@ -255,40 +271,7 @@ console.log("res", blob.type);
 
   const [videoUrl, setVideoUrl] = useState("");
 
-  useEffect(() => {
-    if (selectedVideo?.uploadedFile?.data) {
-      // Convert Buffer to base64 if it's a Buffer
-      const base64String = Buffer.from(
-        selectedVideo.uploadedFile.data
-      ).toString("base64");
-
-      try {
-        const byteCharacters = atob(base64String); // Decode base64
-        const byteArrays = [];
-
-        for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
-          const slice = byteCharacters.slice(offset, offset + 1024);
-          const byteNumbers = new Array(slice.length);
-          for (let i = 0; i < slice.length; i++) {
-            byteNumbers[i] = slice.charCodeAt(i);
-          }
-          byteArrays.push(new Uint8Array(byteNumbers));
-        }
-
-        const blob = new Blob(byteArrays, { type: "video/mp4" });
-        const url = URL.createObjectURL(blob);
-
-        setVideoUrl(url);
-
-        return () => {
-          URL.revokeObjectURL(url);
-        };
-      } catch (error) {
-        console.error("Error decoding base64:", error);
-      }
-    }
-  }, [selectedVideo]);
- 
+  
   const itemsPerPage = 5;
 
   const totalPages = Math.ceil(filteredClass.length / itemsPerPage);
@@ -585,12 +568,9 @@ console.log("res", blob.type);
                         </td>
                         <td className="px-4 py-3 text-center">
                           <button
-                            // onClick={() =>
-                            //   setSelectedVideo({
-                            //     title: video.courseName,
-                            //     uploadedFile: video.uploadedFile,
-                            //   })
-                            // }
+                            onClick={() =>
+                             fetchAndOpenFile1(video.uploadedFile)
+                            }
                             className="text-xs px-4 py-1 rounded-md transition bg-[#4459A9] text-white hover:bg-[#3a4c90]"
                           >
                             View file
@@ -615,11 +595,13 @@ console.log("res", blob.type);
               {selectedVideo && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                   <div className="bg-white rounded-lg overflow-hidden max-w-2xl w-full">
-                    <video
-                      src={videoUrl}
-                      controls
-                      className="w-full h-[300px]"
-                    />
+                     <video
+        controls
+        autoPlay
+        className="w-full h-[300px]"
+      >
+        <source src={videoUrl} type="video/webm" />
+        </video>
                     <div className="flex justify-end p-3">
                       <button
                         onClick={() => setSelectedVideo(null)}
@@ -696,11 +678,11 @@ console.log("res", blob.type);
             )}
 
             {/* Video Playback Modal */}
-            {selectedVideo && (
+            {videoUrl && (
               <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
                 <div className="bg-white rounded-xl p-6 max-w-3xl dark:bg-[#1D1D1D] h-[600px] w-full shadow-lg relative">
                   <button
-                    onClick={() => setSelectedVideo(null)}
+                    onClick={() => setVideoUrl("")}
                     className="absolute top-2 right-2 text-gray-700 hover:text-black dark:hover:text-blue-900 text-xl"
                   >
                     &times;

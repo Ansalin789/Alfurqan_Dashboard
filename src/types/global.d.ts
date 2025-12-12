@@ -7,3 +7,7 @@ declare global {
     google: any;
   }
 }
+declare interface HTMLVideoElement {
+  captureStream?: (frameRate?: number) => MediaStream;
+}
+

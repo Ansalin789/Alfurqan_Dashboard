@@ -194,14 +194,14 @@ const NextScheduledClass = () => {
 
 
   const handleJoinClass = () => {
-    if (!classData?.classLink) return;
+    if (!classData?._id) return;
 
     const isCountdownFinished = timeRemaining <= 0;
     if (!isCountdownFinished) {
       setIsPopupVisible(true);
       return;
     }
-window.open(`/teacher/ui/liveclass?id=${classData.classLink}`, "_blank");
+window.open(`/teacher/ui/liveclass?id=${classData._id}`, "_blank");
   };
 
   if (loading)

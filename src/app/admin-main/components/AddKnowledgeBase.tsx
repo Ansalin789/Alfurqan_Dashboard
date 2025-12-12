@@ -10,6 +10,8 @@ type LeaveFormProps = {
 };
 interface KnowledgeBaseEntry {
   courseName: string;
+  level:string;
+  teacherId : string;
   subjectTitle: string;
   uploadedFormat: string;
   uploadedFile: string;
@@ -43,6 +45,8 @@ export default function KnowledgeBaseForm({ onClose }: LeaveFormProps) {
       courseName: "",
       subjectTitle: "",
       uploadedFormat: "",
+      level:"",
+      teacherId:"",
       uploadedFile: "",
       status: "Active",
       createdDate: new Date().toISOString(),
@@ -152,6 +156,8 @@ export default function KnowledgeBaseForm({ onClose }: LeaveFormProps) {
      const formData = new FormData();
 
 formData.append("courseName", knowledgeBaseData.courseName);
+formData.append("teacherId","");
+formData.append("level",knowledgeBaseData.level);
 formData.append("subjectTitle", knowledgeBaseData.subjectTitle);
 formData.append("uploadedFormat", knowledgeBaseData.uploadedFormat);
 formData.append("uploadedFile", knowledgeBaseData.uploadedFile); // <- File object
@@ -159,9 +165,12 @@ formData.append("status", knowledgeBaseData.status);
 formData.append("createdDate", knowledgeBaseData.createdDate);
 formData.append("createdBy", knowledgeBaseData.createdBy);
 formData.append("updatedBy", knowledgeBaseData.updatedBy || "");
+
+
+
 formData.append("updatedDate", knowledgeBaseData.updatedDate || "");
 
-const response = await fetch("https://api.blackstoneinfomaticstech.com/knowledgebase", {
+const response = await fetch("http://localhost:5001/knowledgebase", {
   method: "POST",
   headers: {
     Authorization: `Bearer ${token}`, 
@@ -181,6 +190,8 @@ const response = await fetch("https://api.blackstoneinfomaticstech.com/knowledge
           courseName: "",
           subjectTitle: "",
           uploadedFormat: "",
+          level:"",
+          teacherId:"",
           uploadedFile: "",
           status: "Active",
           createdDate: new Date().toISOString(),
@@ -268,6 +279,22 @@ const response = await fetch("https://api.blackstoneinfomaticstech.com/knowledge
               value={knowledgeBaseData.subjectTitle}
               onChange={handleInputChange}
               placeholder="Mercy"
+              className="w-full border rounded-md px-4 py-2 bg-white dark:bg-[#343434] dark:border-[#5C5C5C] text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#002b4d]"
+            />
+          </div>
+           <div className="mb-4">
+            <label
+              htmlFor="hvyvuhvhy"
+              className="block font-medium text-gray-700 dark:text-gray-200 mb-1"
+            >
+             level
+            </label>
+            <input
+              type="text"
+              name="level"
+              value={knowledgeBaseData.level}
+              onChange={handleInputChange}
+              placeholder="1"
               className="w-full border rounded-md px-4 py-2 bg-white dark:bg-[#343434] dark:border-[#5C5C5C] text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#002b4d]"
             />
           </div>
