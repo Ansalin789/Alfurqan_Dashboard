@@ -2,265 +2,194 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation";
-import { Country, State, City, ICountry, ICity } from "country-state-city";
 import { IoToggle, IoToggleOutline } from "react-icons/io5";
+import { FaCloudUploadAlt } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
+export interface Employee {
+    _id: string;
+    employeeId: string;
 
-interface EmployeeFormData {
     firstName: string;
     lastName: string;
     email: string;
-    phoneNumber: number | string;
+
+    phoneNumber: number;
     nationality: string;
     country: string;
     city: string;
     dateOfBirth: string;
+
     gender: string;
     residentialAddress: string;
+
     higherQualification: string;
     universityName: string;
     previousJob: string;
     experience: string;
+
     bankName: string;
-    accountNumber: number | string;
+    accountNumber: number;
     bankCode: string;
+
     passportNumber: string;
-    languagesKnown: string[];
-    emergencyContactNumber: number | string;
+    languagesKnown: string;
+
+    emergencyContactNumber: number;
     relationshipWithEmployee: string;
+
     address: string;
+
     designation: string;
     department: string;
-    preferedWorkingHours: number | string;
+
+    preferedWorkingHours: number;
+
     preferedShiftFrom: string;
     preferedShiftTo: string;
+
     comments: string;
-    profileImage: string | null;
+    profileImage: string;
+
     applicationDate: string;
     currency: string;
-    expectedSalary: number | string;
+    expectedSalary: number;
+
     applicationStatus: string;
-    preferedWorkingDays: string[];
+    preferedWorkingDays: string;
+
     status: string;
+    __v: number;
 }
 
 interface NewDesignationProps {
+    id?: string | null;
     onClose: () => void;
-    onSuccess?: () => void;
 }
 
-const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) => {
-    const [formData, setFormData] = useState<EmployeeFormData>({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phoneNumber: "",
-        nationality: "",
-        country: "",
-        city: "",
-        dateOfBirth: "",
-        gender: "",
-        residentialAddress: "",
-        higherQualification: "",
-        universityName: "",
-        previousJob: "",
-        experience: "",
-        bankName: "",
-        accountNumber: "",
-        bankCode: "",
-        passportNumber: "",
-        languagesKnown: [],
-        emergencyContactNumber: "",
-        relationshipWithEmployee: "",
-        address: "",
-        designation: "",
-        department: "",
-        preferedWorkingHours: 8,
-        preferedShiftFrom: "09:00",
-        preferedShiftTo: "17:00",
-        comments: "", // Make sure this is initialized as empty string, not null
-        profileImage: null,
-        applicationDate: new Date().toISOString(),
-        currency: "USD",
-        expectedSalary: "",
-        applicationStatus: "Pending",
-        preferedWorkingDays: [],
-        status: "Active",
-    });
-
-    const [errors, setErrors] = useState<Partial<EmployeeFormData>>({});
+const NewDesignation: React.FC<NewDesignationProps> = ({
+    onClose,
+    id,
+}) => {
+    const [formData, setFormData] = useState<Employee | null>(null);
+      const [employee, setEmployee] = useState<Employee | null>(null);
+    const [newDesignation, setNewDesignation] = useState<Employee | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [countries, setCountries] = useState<ICountry[]>([]);
-    const [cities, setCities] = useState<ICity[]>([]);
-    const [imageError, setImageError] = useState("");
     const [isActive, setIsActive] = useState(true);
-    const [selectedFileName, setSelectedFileName] = useState("");
+    const [showRoleSection, setShowRoleSection] = useState(false);
 
-
-
-    const generateTimeOptions = () => {
-        const times: string[] = [];
-        for (let hour = 0; hour < 24; hour++) {
-            ["00", "30"].forEach((minute) => {
-                const h = hour.toString().padStart(2, "0");
-                times.push(`${h}:${minute}`);
-            });
-        }
-        return times;
-    };
-
-    const timeOptions = generateTimeOptions();
-
+    
+    
+  const [toast, setToast] = useState<{ type: string; message: string } | null>(
+    null
+  );
     useEffect(() => {
-        const allCountries = Country.getAllCountries();
-        setCountries(allCountries);
-    }, []);
-
-    useEffect(() => {
-        if (formData.country) {
-            const selectedCountry = countries.find(c => c.name === formData.country);
-            if (selectedCountry) {
-                const allStates = State.getStatesOfCountry(selectedCountry.isoCode);
-                const allCities = allStates.flatMap(state => City.getCitiesOfState(selectedCountry.isoCode, state.isoCode));
-                setCities(allCities);
-            } else {
-                setCities([]);
-            }
-        }
-    }, [formData.country, countries]);
-
-    const validateForm = (): boolean => {
-        const newErrors: Partial<EmployeeFormData> = {};
-
-        if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
-        if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
-        if (!formData.email.trim()) {
-            newErrors.email = "Email is required";
-        } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-            newErrors.email = "Email is invalid";
-        }
-        if (!formData.phoneNumber) newErrors.phoneNumber = "Phone number is required";
-        if (!formData.designation) newErrors.designation = "Designation is required";
-        if (!formData.department) newErrors.department = "Department is required";
-        if (!formData.comments.trim()) newErrors.comments = "Comments are required"; // Add comments validation
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
+      if (toast) {
+        const timer = setTimeout(() => setToast(null), 2500);
+        return () => clearTimeout(timer);
+      }
+    }, [toast]);
+    //   const [employee, setEmployee] = useState<Employee | null>(null);
 
     const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+        e: React.ChangeEvent<
+            HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+        >
     ) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({
+
+        setFormData((prev: any) => ({
             ...prev,
             [name]: value,
         }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
 
-        if (!validateForm()) return;
-
-        setIsSubmitting(true);
-
+    const fetchEmployee = async (_id: string) => {
         try {
-            const token = localStorage.getItem("AdminAuthToken");
+            const token =
+                typeof window !== "undefined"
+                    ? localStorage.getItem("AdminAuthToken")
+                    : null;
+
             if (!token) {
-                throw new Error("Authentication token not found");
+                console.error("No token");
+                return;
             }
 
-            const formPayload = new FormData();
-
-            // Add all fields individually to ensure proper formatting
-            Object.entries(formData).forEach(([key, value]) => {
-                if (Array.isArray(value)) {
-                    formPayload.append(key, JSON.stringify(value));
-                } else if (value !== null && value !== undefined) {
-                    // Ensure comments field is always sent as string, even if empty
-                    if (key === 'comments') {
-                        formPayload.append(key, value.toString() || ''); // Always send comments
-                    } else {
-                        formPayload.append(key, value.toString());
-                    }
-                }
-            });
-
-            // Debug: log what we're sending
-            console.log("Form data being sent:", Object.fromEntries(formPayload));
-
-            await axios.post(
-                "https://api.blackstoneinfomaticstech.com/otheremployee",
-                formPayload,
+            const response = await axios.get<Employee>(
+                `https://api.blackstoneinfomaticstech.com/otheremp/${_id}`,
                 {
                     headers: {
-                        "Content-Type": "multipart/form-data",
+                        "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
                 }
             );
 
-            alert("Employee added successfully!");
-            onSuccess?.();
-            onClose();
+              setEmployee(response.data);
+              console.log("employee", employee);
+            setFormData(response.data);
+            console.log("haiiiii", response.data);
         } catch (error: any) {
-            console.error("Error adding employee:", error);
-            if (error.response) {
-                alert(`Error: ${error.response.data?.message || 'Failed to add employee'}`);
-            } else {
-                alert("Error adding employee. Please try again.");
-            }
-        } finally {
-            setIsSubmitting(false);
+            console.error("Fetch error:", error.response?.data);
         }
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
-        setImageError("")
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData((prev) => ({
-                    ...prev,
-                    profileImage: reader.result as string,
-                }));
-            };
-            reader.readAsDataURL(file);
+    useEffect(() => {
+        if (id) {
+            fetchEmployee(id);
         }
+    }, [id]);
 
-        if (!allowedTypes.includes(file.type)) {
-            setImageError("Only JPG and PNG formats are allowed.");
-            return;
+
+  const handleUpdate = async () => {
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AdminAuthToken")
+          : null;
+
+      if (!token) {
+        setToast({ type: "error", message: "Auth token not found" });
+        return;
+      }
+
+      const res = await fetch(
+        `https://api.blackstoneinfomaticstech.com/otheremployee/${employee?._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
         }
+      );
 
-        if (file.size > 2 * 1024 * 1024) {
-            setImageError("File size must be less than 2MB.");
-            return;
-        }
-    };
+      const result = await res.json();
 
-    const handleCheckboxChange = (day: string) => {
-        setFormData((prev) => {
-            const currentDays = Array.isArray(prev.preferedWorkingDays)
-                ? prev.preferedWorkingDays
-                : [];
-            const days = new Set(currentDays);
-            if (days.has(day)) {
-                days.delete(day);
-            } else {
-                days.add(day);
-            }
-            return {
-                ...prev,
-                preferedWorkingDays: Array.from(days),
-            };
+      if (!res.ok) {
+        setToast({
+          type: "error",
+          message: result.message || "Failed to update employee",
         });
-    };
+        return;
+      }
+
+      setToast({
+        type: "success",
+        message: "Employee updated successfully!",
+      });
+
+    //   setIsEditOpen(false);
+    } catch (error) {
+      console.error(error);
+      setToast({ type: "error", message: "Something went wrong!" });
+    }
+  };
+
+
 
 
     return (
@@ -290,7 +219,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                         </button>
                     </div>
 
-                    <form onSubmit={handleSubmit}>
+                    <form>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label htmlFor="firstName" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
@@ -299,7 +228,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="text"
                                     name="firstName"
-                                    value={formData.firstName}
+                                    value={formData?.firstName}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
@@ -311,7 +240,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="text"
                                     name="lastName"
-                                    value={formData.lastName}
+                                    value={formData?.lastName}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
@@ -323,7 +252,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="email"
                                     name="email"
-                                    value={formData.email}
+                                    value={formData?.email}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
@@ -335,7 +264,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="number"
                                     name="phoneNumber"
-                                    value={formData.phoneNumber}
+                                    value={formData?.phoneNumber}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
@@ -345,49 +274,34 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <label htmlFor="city" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
                                     City
                                 </label>
-                                <select
+                                <input
+                                    type="text"
                                     name="city"
-                                    value={formData.city}
+                                    value={formData?.city}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                                >
-                                    <option value="">Select City</option>
-                                    {cities.map(city => (
-                                        <option
-                                            key={`${city.name}-${city.stateCode}-${city.countryCode}`}
-                                            value={city.name}
-                                        >
-                                            {city.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                />
                             </div>
                             <div>
                                 <label htmlFor="country" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
                                     Country
                                 </label>
-                                <select
+                                <input
+                                    type="text"
                                     name="country"
-                                    value={formData.country}
+                                    value={formData?.country}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                                >
-                                    <option value="">Select Country</option>
-                                    {countries.map(country => (
-                                        <option key={country.isoCode} value={country.name}>
-                                            {country.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                />
                             </div>
                             <div>
                                 <label htmlFor="dateOfBirth" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
                                     Date of Birth
                                 </label>
                                 <input
-                                    type="date"
+                                    type="text"
                                     name="dateOfBirth"
-                                    value={formData.dateOfBirth}
+                                    value={formData?.dateOfBirth}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C] dark:[color-scheme:dark]"
                                 />
@@ -396,17 +310,13 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <label htmlFor="gender" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
                                     Gender
                                 </label>
-                                <select
+                                <input
+                                    type="text"
                                     name="gender"
-                                    value={formData.gender}
+                                    value={formData?.gender}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                                >
-                                    <option value="">Select Gender</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
-                                </select>
+                                />
                             </div>
                             <div className="md:col-span-2">
                                 <label htmlFor="residentialAddress" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
@@ -415,7 +325,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="text"
                                     name="residentialAddress"
-                                    value={formData.residentialAddress}
+                                    value={formData?.residentialAddress}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
@@ -427,7 +337,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="text"
                                     name="higherQualification"
-                                    value={formData.higherQualification}
+                                    value={formData?.higherQualification}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
@@ -439,7 +349,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="text"
                                     name="universityName"
-                                    value={formData.universityName}
+                                    value={formData?.universityName}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
@@ -451,7 +361,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="text"
                                     name="previousJob"
-                                    value={formData.previousJob}
+                                    value={formData?.previousJob}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
@@ -463,7 +373,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="text"
                                     name="experience"
-                                    value={formData.experience}
+                                    value={formData?.experience}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
@@ -475,7 +385,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="text"
                                     name="bankName"
-                                    value={formData.bankName}
+                                    value={formData?.bankName}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
@@ -487,7 +397,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="number"
                                     name="accountNumber"
-                                    value={formData.accountNumber}
+                                    value={formData?.accountNumber}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
@@ -499,7 +409,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="text"
                                     name="bankCode"
-                                    value={formData.bankCode}
+                                    value={formData?.bankCode}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
@@ -514,7 +424,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="text"
                                     name="passportNumber"
-                                    value={formData.passportNumber}
+                                    value={formData?.passportNumber}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
@@ -526,14 +436,8 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="text"
                                     name="languagesKnown"
-                                    value={formData.languagesKnown.join(", ")}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            languagesKnown: value ? value.split(",").map(lang => lang.trim()) : [],
-                                        }));
-                                    }}
+                                    value={formData?.languagesKnown}
+                                    onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
                             </div>
@@ -544,7 +448,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="number"
                                     name="emergencyContactNumber"
-                                    value={formData.emergencyContactNumber}
+                                    value={formData?.emergencyContactNumber}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
@@ -556,7 +460,7 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="text"
                                     name="relationshipWithEmployee"
-                                    value={formData.relationshipWithEmployee}
+                                    value={formData?.relationshipWithEmployee}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
@@ -568,20 +472,29 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <input
                                     type="text"
                                     name="address"
-                                    value={formData.address}
+                                    value={formData?.address}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
                             </div>
-
                             <div>
-                                <label htmlFor="designation" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
-                                    Designation
-                                </label>
+                                <div className="flex justify-between">
+                                    <label htmlFor="designation" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
+                                        Designation
+                                    </label>
+                                    <span
+                                        className={`text-xs cursor-pointer ${showRoleSection ? "text-red-500" : "text-blue-500"
+                                            }`}
+                                        onClick={() => setShowRoleSection(!showRoleSection)}
+                                    >
+                                        {showRoleSection ? "Hide Role" : "Add Role"}
+                                    </span>
+
+                                </div>
                                 <input
                                     type="text"
                                     name="designation"
-                                    value={formData.designation}
+                                    value={formData?.designation}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
@@ -590,254 +503,82 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 <label htmlFor="department" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
                                     Department
                                 </label>
-                                <select
-                                    name="department"
-                                    value={formData.department}
-                                    onChange={handleChange}
-                                    className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                                >
-                                    <option value="">Select Designation</option>
-                                    <option value="SUPERVISOR">SUPERVISOR</option>
-                                    <option value="ACADEMICCOACH">ACADEMIC COACH</option>
-                                    <option value="TEACHER">TEACHER</option>
-                                </select>
-                            </div>
-                            <div className="md:col-span-2 bg-[#EFF1F9] dark:bg-[#B3C2FF] dark:opacity-60 p-4 rounded-md">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label
-                                            htmlFor="designation"
-                                            className="block text-sm font-normal text-left justify-between flex items-center text-[#576cbc] mb-1 dark:text-[#FFFFFF]"
-                                        >
-                                            Previous Designation
-
-                                            {/* Toggle */}
-                                            <span
-                                                className="flex items-center gap-2 cursor-pointer text-[#576cbc] "
-                                                onClick={() => setIsActive(!isActive)}
-                                            >
-                                                <span className={isActive ? "text-green-600" : "text-red-500"}>
-                                                    {isActive ? "Active" : "Inactive"}
-                                                </span>
-
-                                                {isActive ? (
-                                                    <IoToggle size={22} className="text-green-600" />
-                                                ) : (
-                                                    <IoToggle size={22} className="text-gray-400 rotate-180" />
-                                                )}
-                                            </span>
-                                        </label>
-
-                                        <input
-                                            type="text"
-                                            name="designation"
-                                            value={formData.designation}
-                                            onChange={handleChange}
-                                            className="w-full border border-[#576cbc] rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label
-                                            htmlFor="previousDepartment"
-                                            className="block text-sm font-normal text-left text-[#576cbc] mb-1 dark:text-[#FFFFFF]"
-                                        >
-                                            New Designation
-                                        </label>
-                                        <select
-                                            name="previousDepartment"
-                                            value={formData.department}
-                                            onChange={handleChange}
-                                            className="w-full border border-[#576cbc] rounded px-3 py-2 text-xs text-[#576cbc] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                                        >
-                                            <option value="">Select Designation</option>
-                                            <option value="SUPERVISOR">SUPERVISOR</option>
-                                            <option value="ACADEMICCOACH">ACADEMIC COACH</option>
-                                            <option value="TEACHER">TEACHER</option>
-                                        </select>
-                                    </div>
-
-                                </div>
-                            </div>
-                            <div>
-                                <label htmlFor="preferedWorkingHours" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
-                                    Preferred Working Hours / Week
-                                </label>
                                 <input
-                                    type="number"
-                                    name="preferedWorkingHours"
-                                    value={formData.preferedWorkingHours}
+                                    type="text"
+                                    name="department"
+                                    value={formData?.department}
                                     onChange={handleChange}
                                     className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                                 />
                             </div>
-                            <div>
-                                <label htmlFor="preferedShiftFrom" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
-                                    Preferred Shift From
-                                </label>
-                                <select
-                                    name="preferedShiftFrom"
-                                    value={formData.preferedShiftFrom}
-                                    onChange={handleChange}
-                                    className="w-full dark:bg-[#343434] border border-gray-300 dark:border-[#5c5c5c] rounded px-4 py-2 text-xs text-gray-900 dark:text-gray-100"
-                                >
-                                    <option value="">Select Time</option>
-                                    {timeOptions.map((time) => (
-                                        <option key={`from-${time}`} value={time}>
-                                            {time}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label htmlFor="preferedShiftTo" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
-                                    Preferred Shift To
-                                </label>
-                                <select
-                                    name="preferedShiftTo"
-                                    value={formData.preferedShiftTo}
-                                    onChange={handleChange}
-                                    className="w-full dark:bg-[#343434] border border-gray-300 dark:border-[#5C5C5C] rounded px-4 py-2 text-xs text-gray-900 dark:text-gray-100"
-                                >
-                                    <option value="">Select Time</option>
-                                    {timeOptions.map((time) => (
-                                        <option key={`to-${time}`} value={time}
-                                            disabled={time === formData.preferedShiftFrom}>
-                                            {time}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div>
-                                <label htmlFor="currency" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
-                                    Currency
-                                </label>
-                                <select
-                                    name="currency"
-                                    value={formData.currency}
-                                    onChange={handleChange}
-                                    className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                                >
-                                    <option value="">Select Currency</option>
-                                    <option value="USD">USD</option>
-                                    <option value="EUR">EUR</option>
-                                    <option value="INR">INR</option>
-                                    <option value="AED">AED</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label htmlFor="expectedSalary" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
-                                    Expected Salary
-                                </label>
-                                <div className="flex gap-2">
-                                    <select
-                                        name="currency"
-                                        value={formData.currency}
-                                        onChange={handleChange}
-                                        className="border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                                    >
-                                        <option value="USD"> $</option>
-                                        <option value="INR"> ₹</option>
-                                        <option value="EUR"> €</option>
-                                        <option value="GBP"> £</option>
-                                        <option value="AED"> د.إ</option>
-                                    </select>
-                                    <input
-                                        type="number"
-                                        name="expectedSalary"
-                                        value={formData.expectedSalary}
-                                        onChange={handleChange}
-                                        placeholder="Enter amount"
-                                        className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="profileImage"
-                                    className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]"
-                                >
-                                    Profile Image
-                                </label>
-
-                                <div className="relative">
-                                    <label
-                                        htmlFor="profileImage"
-                                        className="flex items-center justify-between w-full cursor-pointer bg-[#f5f7fa] dark:bg-[#343434] border dark:border-[#5C5C5C] rounded px-3 py-[7px] text-xs text-gray-600 dark:text-white"
-                                    >
-                                        <span className="text-[10px]">{selectedFileName || "Upload Image"}</span>
-                                        <span className="bg-[#4C6993] text-white px-2 py-0.5 rounded text-[8px]">
-                                            Browse
-                                        </span>
-                                    </label>
-
-                                    <input
-                                        id="profileImage"
-                                        type="file"
-                                        name="profileImage"
-                                        accept="image/png, image/jpeg, image/jpg"
-                                        onChange={handleFileChange}
-                                        className="absolute inset-0 opacity-0 cursor-pointer"
-                                    />
-                                </div>
-
-                                <p className="text-[8px] text-gray-400 mt-1">
-                                    Allowed formats: JPG, PNG &nbsp; | &nbsp; Max size: 2MB
-                                </p>
-
-                                {imageError && (
-                                    <p className="text-[10px] text-red-500 mt-1">{imageError}</p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label htmlFor="preferedWorkingDays" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
-                                    Preferred Working Days
-                                </label>
-
-                                <div className="flex flex-wrap gap-2 dark:bg-[#343434] py-2 px-1 rounded border dark:border-[#5C5C5C]">
-                                    {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => {
-                                        const id = `day-${day}`;
-
-                                        return (
-                                            <div key={day} className="inline-flex items-center dark:bg-[#292929] rounded px-2.5 gap-1 py-0.5">
-                                                <input
-                                                    id={id}
-                                                    type="checkbox"
-                                                    checked={formData.preferedWorkingDays.includes(day)}
-                                                    onChange={() => handleCheckboxChange(day)}
-                                                    className="h-3 w-3 appearance-none focus:ring-2 focus:ring-brand-soft border border-gray-400 checked:bg-[#576cbc] checked:border-[#576cbc] rounded"
-
-                                                />
-
+                            {showRoleSection && (
+                                <>
+                                    <div className="md:col-span-2 bg-[#EFF1F9] dark:bg-[#B3C2FF] dark:opacity-60 p-4 rounded-md">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
                                                 <label
-                                                    htmlFor={id}
+                                                    htmlFor="designation"
+                                                    className="block text-sm font-normal text-left justify-between flex items-center text-[#576cbc] mb-1 dark:text-[#FFFFFF]"
                                                 >
+                                                    Previous Designation
 
-                                                    <span className="text-[12px]">{day}</span>
+                                                    {/* Toggle */}
+                                                    <span
+                                                        className="flex items-center gap-2 cursor-pointer text-[#576cbc] "
+                                                        onClick={() => setIsActive(!isActive)}
+                                                    >
+                                                        <span className={isActive ? "text-green-600" : "text-red-500"}>
+                                                            {isActive ? "Active" : "Inactive"}
+                                                        </span>
+
+                                                        {isActive ? (
+                                                            <IoToggle size={22} className="text-green-600" />
+                                                        ) : (
+                                                            <IoToggle size={22} className="text-gray-400 rotate-180" />
+                                                        )}
+                                                    </span>
                                                 </label>
+
+                                                <input
+                                                    type="text"
+                                                    name="designation"
+                                                    value={formData?.designation}
+                                                    onChange={handleChange}
+                                                    className="w-full border border-[#576cbc] rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                                                />
                                             </div>
-                                        );
-                                    })}
-                                </div>
 
-                            </div>
+                                            <div>
+                                                <label
+                                                    htmlFor="previousDepartment"
+                                                    className="block text-sm font-normal text-left text-[#576cbc] mb-1 dark:text-[#FFFFFF]"
+                                                >
+                                                    New Designation
+                                                </label>
+                                                <select
+                                                    name="NewDepartment"
+                                                    value={formData?.designation || ""}
+onChange={(e) =>
+  setFormData((prev) => ({
+    ...prev!,
+    designation: e.target.value,
+  }))
+}
 
-                            <div>
-                                <label htmlFor="comments" className="block text-sm font-normal text-left text-black mb-1 dark:text-[#FFFFFF]">
-                                    Additional Comments *
-                                </label>
-                                <textarea
-                                    name="comments"
-                                    value={formData.comments}
-                                    onChange={handleChange}
-                                    className="w-full border rounded px-3 py-2 h-[80px] text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                                    placeholder="Enter comments here..."
-                                    required
-                                />
-                                {errors.comments && <p className="text-red-500 text-xs mt-1">{errors.comments}</p>}
-                            </div>
+                                                    className="w-full border border-[#576cbc] rounded px-3 py-2 text-xs text-[#576cbc] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                                                >
+                                                    <option value="">Select Designation</option>
+                                                    <option value="SUPERVISOR">SUPERVISOR</option>
+                                                    <option value="ACADEMICCOACH">ACADEMIC COACH</option>
+                                                    <option value="TEACHER">TEACHER</option>
+                                                </select>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
                         </div>
                         <div className="flex justify-end space-x-3 mt-6">
                             <button
@@ -849,12 +590,14 @@ const NewDesignation: React.FC<NewDesignationProps> = ({ onClose, onSuccess }) =
                                 Cancel
                             </button>
                             <button
-                                type="submit"
-                                className="px-6 py-2  text-sm bg-[#576CBC] text-white rounded-lg hover:bg-[#4459A9] disabled:opacity-50"
-                                disabled={isSubmitting}
-                            >
-                                {isSubmitting ? "Saving..." : "Save"}
-                            </button>
+  type="button"
+  onClick={handleUpdate}
+  className="px-6 py-2 text-sm bg-[#576CBC] text-white rounded-lg hover:bg-[#4459A9] disabled:opacity-50"
+  
+>
+  Save
+</button>
+
                         </div>
                     </form>
                 </div>

@@ -39,6 +39,7 @@ import Pagination from "@/components/Pagination";
 import ReactDOM from "react-dom";
 import AdminHeader from "../../components/AdminHeader";
 import NewDesignation from "../../components/NewDesignation";
+import TeacherNewDesignation from "../../components/TeacherNewDesignation";
 
 // Register chart.js modules
 ChartJS.register(
@@ -278,6 +279,8 @@ const Page = () => {
   const [countryData, setCountryData] = useState<CountryStat[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
+  const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
 
   const openPopup = () => {
     setIsPopupOpen(true);
@@ -941,8 +944,8 @@ const Page = () => {
       return (
         <div
           className={`p-2 rounded shadow-md text-[12px] border ${isDark
-              ? "bg-[#22223b] text-white border-[#444]"
-              : "bg-white text-[#22223b] border-gray-200"
+            ? "bg-[#22223b] text-white border-[#444]"
+            : "bg-white text-[#22223b] border-gray-200"
             }`}
         >
           <div
@@ -1007,8 +1010,8 @@ const Page = () => {
           <div className="flex flex-wrap gap-2 sm:space-x-4 py-2 overflow-x-auto">
             <button
               className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${activeTab === "teachers"
-                  ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
-                  : ""
+                ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
+                : ""
                 }`}
               onClick={() => setActiveTab("teachers")}
             >
@@ -1016,8 +1019,8 @@ const Page = () => {
             </button>
             <button
               className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${activeTab === "otheremployees"
-                  ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
-                  : ""
+                ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
+                : ""
                 }`}
               onClick={() => setActiveTab("otheremployees")}
             >
@@ -1025,8 +1028,8 @@ const Page = () => {
             </button>
             <button
               className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${activeTab === "recruitment"
-                  ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
-                  : ""
+                ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
+                : ""
                 }`}
               onClick={() => setActiveTab("recruitment")}
             >
@@ -1034,8 +1037,8 @@ const Page = () => {
             </button>
             <button
               className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${activeTab === "leave"
-                  ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
-                  : ""
+                ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
+                : ""
                 }`}
               onClick={() => setActiveTab("leave")}
             >
@@ -1513,10 +1516,38 @@ const Page = () => {
                             <p className="text-[#717579] text-[10px] dark:text-[#fff]">
                               {teacher.position
                                 ? teacher.position.charAt(0).toUpperCase() +
-                                  teacher.position.slice(1).toLowerCase()
+                                teacher.position.slice(1).toLowerCase()
                                 : ""}
                             </p>
                             <div className="flex flex-col justify-center gap-2 px-5 mt-2">
+                              <div className="flex justify-center gap-2">
+                              <button
+                                className="text-[12px] bg-[#576CBC] text-white px-2 py-1 rounded-lg"
+                                onClick={() =>
+                                  handleViewTeacher(teacher.userId)
+                                }
+                              >
+                                <FaEye size={16} />
+                              </button>
+                              <div>
+                                <button
+                                  className="text-[12px] bg-[#576CBC] text-white px-[8px] py-[6px] rounded-md"
+                                  onClick={() => {
+                                    setSelectedTeacherId(teacher.userId);
+                                    openPopup();
+                                  }}
+                                >
+                                  <FaRegEdit size={16} />
+                                </button>
+
+                                {isPopupOpen && (
+                                      <TeacherNewDesignation
+                                        id={selectedTeacherId}
+                                        onClose={closePopup}
+                                      />
+                                    )}
+                              </div>
+                              </div>
                               <button
                                 className="text-[12px] border border-[#576CBC] text-[#576CBC] dark:text-[#fff] px-2 py-1 rounded-lg"
                                 onClick={() =>
@@ -1529,14 +1560,7 @@ const Page = () => {
                               >
                                 Portal Access
                               </button>
-                              <button
-                                className="text-[12px] bg-[#576CBC] text-white px-2 py-1 rounded-lg"
-                                onClick={() =>
-                                  handleViewTeacher(teacher.userId)
-                                }
-                              >
-                                View Profile
-                              </button>
+
                             </div>
                           </div>
                         </div>
@@ -1839,7 +1863,7 @@ const Page = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="py-3">   
+                  <div className="py-3">
                     <div className="mt-3 w-full h-full shadow bg-[#f5f5f5] rounded-lg dark:bg-[#343434] dark:text-[#dedede]">
                       <div className="flex justify-between bg-[#fafafb] items-center px-4 py-0 rounded-md dark:bg-[#343434] h-12">
                         <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -2018,17 +2042,22 @@ const Page = () => {
                                   <div>
                                     <button
                                       className="text-[12px] bg-[#576CBC] text-white px-[8px] py-[6px] rounded-md"
-                                      onClick={openPopup}
+                                      onClick={() => {
+                                        setSelectedEmployeeId(employee.userId);
+                                        openPopup();
+                                      }}
                                     >
                                       <FaRegEdit size={16} />
                                     </button>
 
                                     {isPopupOpen && (
                                       <NewDesignation
+                                        id={selectedEmployeeId}
                                         onClose={closePopup}
                                       />
                                     )}
                                   </div>
+
                                 </div>
 
                                 <button
@@ -2234,8 +2263,8 @@ const Page = () => {
                               <tr
                                 key={item._id}
                                 className={`text-[12px] ${index % 2 === 0
-                                    ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                    : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
                                   }`}
                               >
                                 <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
@@ -2300,7 +2329,6 @@ const Page = () => {
                                   >
                                     <MoreVertical size={16} />
                                   </button>
-                                  {/* Portal dropdown */}
                                   {actionDropdown === item._id &&
                                     dropdownPos &&
                                     typeof window !== "undefined" &&

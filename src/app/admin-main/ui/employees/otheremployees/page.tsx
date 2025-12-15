@@ -648,7 +648,6 @@ const EmployeePage = () => {
         message: "Employee updated successfully!",
       });
 
-      // fetchEmployee(employee?._id);
       setIsEditOpen(false);
     } catch (error) {
       console.error(error);
