@@ -1,27 +1,13 @@
 "use client";
 
-import BaseLayout4 from "@/components/BaseLayout4";
-import { Star } from "lucide-react";
-import AdminHeader from "../../components/AdminHeader";
 import { useState } from "react";
 import { MoreVertical, Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import Pagination from "@/components/Pagination";
 import { IoCloseOutline } from "react-icons/io5";
-
-
-export default function DashboardPage() {
-  const teacher = {
-    candidateFirstName: "Will Jonto",
-    candidateEmail: "willjonto@gmail.com",
-    candidatePhoneNumber: "(1) 2345 6789 3245",
-    candidateCountry: "UAE",
-    positionApplied: "Senior Arabic Tutor",
-    overallRating: 4,
-    profileImage:
-      "/assets/images/portrait-happy-smiling-young-businessman-blue-suit-isolated-white-wall.svg",
-  };
+import TeacherHeader from "../../components/TeacherHeader";
+import BaseLayout from "@/components/BaseLayout";
 
 const ASSESSMENTS = [
   {
@@ -78,9 +64,77 @@ const ASSESSMENTS = [
     lesson: "Surah Al-Fatihah",
     reviewDate: "2020-01-25T00:00:00Z",
     status: "Pending",
-  }
+  },
+  {
+    _id: "a6",
+    assessmentId: "#0938872",
+    assessmentDate: "2020-01-20T00:00:00Z",
+    studentName: "Mary Jane",
+    course: "Arabic",
+    level: 5,
+    lesson: "Surah Al-Fatihah",
+    reviewDate: "2020-01-25T00:00:00Z",
+    status: "Completed",
+  },
+  {
+    _id: "a7",
+    assessmentId: "#0938873",
+    assessmentDate: "2020-01-20T00:00:00Z",
+    studentName: "Ali Ahmed",
+    course: "Quran",
+    level: 4,
+    lesson: "Surah Al-Fatihah",
+    reviewDate: "2020-01-25T00:00:00Z",
+    status: "Completed",
+  },
+  {
+    _id: "a8",
+    assessmentId: "#0938874",
+    assessmentDate: "2020-01-20T00:00:00Z",
+    studentName: "Sara Lee",
+    course: "Arabic",
+    level: 5,
+    lesson: "Surah Al-Fatihah",
+    reviewDate: "2020-01-25T00:00:00Z",
+    status: "Pending",
+  },
+  {
+    _id: "a9",
+    assessmentId: "#0938875",
+    assessmentDate: "2020-01-20T00:00:00Z",
+    studentName: "Omar Faruk",
+    course: "Quran",
+    level: 2,
+    lesson: "Surah Al-Fatihah",
+    reviewDate: "2020-01-25T00:00:00Z",
+    status: "Completed",
+  },
+  {
+    _id: "a10",
+    assessmentId: "#0938876",
+    assessmentDate: "2020-01-20T00:00:00Z",
+    studentName: "Lina Gomez",
+    course: "Arabic",
+    level: 1,
+    lesson: "Surah Al-Fatihah",
+    reviewDate: "2020-01-25T00:00:00Z",
+    status: "Pending",
+  },
+  {
+    _id: "a11",
+    assessmentId: "#0938876",
+    assessmentDate: "2020-01-20T00:00:00Z",
+    studentName: "Lina Gomez",
+    course: "Arabic",
+    level: 1,
+    lesson: "Surah Al-Fatihah",
+    reviewDate: "2020-01-25T00:00:00Z",
+    status: "Pending",
+  },
 ];
- const router = useRouter();
+
+export default function AssessmentPage() {
+  const router = useRouter();
   const [openMenu, setOpenMenu] = useState<number | null>(null);
   const [assessments, setAssessments] = useState<any[]>(ASSESSMENTS);
   const [viewItem, setViewItem] = useState<any | null>(null);
@@ -127,136 +181,13 @@ const ASSESSMENTS = [
       ? "bg-green-100 text-green-700"
       : "bg-red-100 text-red-600";
   const getStatusClass = statusClass;
- const handleView = () => {
-    router.push("/admin-main/ui/assessment");
-  };
+
   return (
-    <BaseLayout4>
-      <AdminHeader
-        currentSection="Assessment"
-        showBackButton={true}
-        showBackPath="courses"
-      />
-      <div className="min-h-100vh flex flex-col  p-1 w-full overflow-x-hidden">
-        {/* Top Panel */}
-        {/* Top Panel */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-2">
-          {/* LEFT : Large Student Profile */}
-          <div className=" h-[246px] bg-[#54638C] rounded-lg text-white p-4 sm:p-6 flex flex-col sm:flex-row items-center sm:items-start">
-            {/* Profile Image + Name */}
-            <div className="flex flex-col items-center px-5 py-6">
-              <div className="relative">
-                <img
-                  src={"/assets/images/stportfolio.svg"}
-                  alt="profile"
-                  className="w-[112px] h-[112px] rounded-full object-cover bg-center"
-                />
-                {/* Edit Icon */}
-
-                <h2 className="text-center text-[18px] font-semibold mt-2">
-                  jani{" "}
-                </h2>
-                <p className="text-[12px] text-[#C9C9C9] mt-0">
-                  Jani@gmail.com{" "}
-                </p>
-              </div>
-            </div>
-
-            {/* Personal Info */}
-            <div className=" pl-8 ml-6 w-full sm:border-l border-[#BCBCBC] h-full ">
-              <h3 className="text-[16px] font-semibold ">Personal Info</h3>
-              <br/>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-white text-[14px]">Contact</span>
-                  <span className="text-[#DADADACC] text-[12px]">
-                    9876374334
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white text-[14px]">Level</span>
-                  <span className="text-[#DADADACC] text-[12px]">1</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white text-[14px]">Package</span>
-                  <span className="text-[#DADADACC] text-[12px]">PRO</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white text-[14px]">Course</span>
-                  <span className="text-[#DADADACC] text-[12px]">Quran </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white text-[14px]">Family Id</span>
-                  <span className="text-[#DADADACC] text-[12px]">FAM-10</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT SIDE */}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  {/* LEFT SIDE – Teachers */}
-  <div className="flex flex-col gap-3">
-    {/* Andrew */}
-    <div className="bg-[#6B7A9D] text-white rounded-xl shadow-lg p-4 h-[116px] relative">
-      <div className="absolute top-3 right-3 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold">
-        2
-      </div>
-
-      <div className="flex items-center gap-3 mb-2">
-        <img src={teacher.profileImage} className="w-12 h-12 rounded-full" />
-        <div>
-          <p className="text-sm font-semibold">Andrew Williams</p>
-          <p className="text-xs text-gray-200">93 marks</p>
-        </div>
-      </div>
-
-      <div className="flex gap-0.5">
-        {[...Array(5)].map((_, i) => (
-          <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-        ))}
-      </div>
-    </div>
-
-    {/* Will Cooper */}
-    <div className="bg-[#6B7A9D] text-white rounded-xl shadow-lg p-4 h-[116px] relative">
-      <div className="absolute top-3 right-3 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold">
-        3
-      </div>
-
-      <div className="flex items-center gap-3 mb-2">
-        <img src={teacher.profileImage} className="w-12 h-12 rounded-full" />
-        <div>
-          <p className="text-sm font-semibold mt-1">Will Cooper</p>
-          <p className="text-xs text-gray-200">90 marks</p>
-        </div>
-      </div>
-
-      <div className="flex gap-0.5 text-center ">
-        {[...Array(5)].map((_, i) => (
-          <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-        ))}
-      </div>
-    </div>
-  </div>
-
-  {/* RIGHT SIDE – Stats */}
-  <div className="flex flex-col gap-3">
-    <div className="bg-[#7689BD] text-white rounded-xl p-3 shadow-lg h-[116px]">
-      <h3 className="text-lg font-semibold mb-1">Total Assessments</h3>
-      <p className="text-[20px] font-bold mt-8">62</p>
-    </div>
-
-    <div className="bg-[#7689BD] text-white rounded-xl p-3 shadow-lg h-[116px]">
-      <h3 className="text-lg font-semibold mb-1">Total Pending</h3>
-      <p className="text-[20px] font-bold mt-8">12</p>
-    </div>
-  </div>
-</div>
-
-        </div>
-
- <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-4 py-4">
+    <BaseLayout>
+      <>
+        <div className="mx-auto max-w-screen-2xl px-2 sm:px-4 lg:px-6">
+          <TeacherHeader currentSection="Assessments" />
+          <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-4 py-4">
             {/* Table */}
             <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
               {/* Header Search & Filter */}
@@ -493,7 +424,7 @@ const ASSESSMENTS = [
                                   <button
                                     onClick={() => {
                                       router.push(
-                                        `/admin-main/ui/assessment/${a._id}`
+                                        `/teacher/ui/assessment/${a._id}`
                                       );
                                       setOpenMenu(null);
                                     }}
@@ -505,7 +436,7 @@ const ASSESSMENTS = [
                                   <button
                                     onClick={() => {
                                       router.push(
-                                        `/admin-main/ui/assessment/${a._id}?mode=edit`
+                                        `/teacher/ui/assessment/${a._id}?mode=edit`
                                       );
                                       setOpenMenu(null);
                                     }}
@@ -532,14 +463,6 @@ const ASSESSMENTS = [
                     )}
                   </tbody>
                 </table>
-                  <div className="flex justify-end">
-              <button
-                className="text-[#576CBC] mt-3 text-[12px] bg-[#576CBC]/10 cursor-pointer rounded-md border-[#576CBC] px-3 py-2 "
-                onClick={handleView}
-              >
-                View all
-              </button>
-            </div>
               </div>
             </div>
           </div>
@@ -550,10 +473,8 @@ const ASSESSMENTS = [
               setCurrentPage(Math.max(1, Math.min(totalPages, p)))
             }
           />
-      </div>
-    </BaseLayout4>
+        </div>
+      </>
+    </BaseLayout>
   );
 }
-
-
-

@@ -8,6 +8,7 @@ import {
   MdContactSupport,
   MdOutlinePayment,
   MdAssignment,
+  MdAnalytics,
 } from "react-icons/md";
 import { IoPeopleSharp } from "react-icons/io5";
 import { TbLayoutDashboardFilled } from "react-icons/tb";
@@ -31,6 +32,11 @@ const SidebarItems = [
     name: "Assignment",
     href: "/student/ui/assignment",
     icon: MdAssignment,
+  },
+  {
+    name: "Assessments",
+    href: "/student/ui/assessment",
+    icon: MdAnalytics,
   },
   {
     name: "Payments",
@@ -60,20 +66,29 @@ export default function Sidebar2() {
   return (
     <div className="sidebar__wrapper bg-[#012A4A] h-[100vh]">
       <aside className="sidebar bg-[#012A4A] shadow-lg">
-        <div className='flex justify-center align-middle p-4 gap-2'>
-          <Image src="/assets/images/alfwhite.png" width={150} height={150} className='bg-cover bg-center w-8 h-12' alt='logo' />
+        <div className="flex justify-center align-middle p-4 gap-2">
+          <Image
+            src="/assets/images/alfwhite.png"
+            width={150}
+            height={150}
+            className="bg-cover bg-center w-8 h-12"
+            alt="logo"
+          />
           <div className="text-white">
             <h3 className="font-bold text-[19px]">AL FURQAN</h3>
-            <h4 className="font-light text-[17px] justify-end ml-8 -mt-3 font-sans">academy</h4>
+            <h4 className="font-light text-[17px] justify-end ml-8 -mt-3 font-sans">
+              academy
+            </h4>
           </div>
         </div>
         <ul>
           {SidebarItems.map(({ name, href, icon: Icon }) => (
             <li
-              className={`text-center justify-center ml-6 ${currentPath === href
+              className={`text-center justify-center ml-6 ${
+                currentPath === href
                   ? "bg-[#476a9b] text-[#fff] rounded-lg"
                   : ""
-                }`}
+              }`}
               key={name}
             >
               <Link

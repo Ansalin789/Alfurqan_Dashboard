@@ -8,7 +8,7 @@ import { RiDashboardFill } from 'react-icons/ri';
 import { FaBookOpenReader } from 'react-icons/fa6';
 import { LuMessagesSquare } from 'react-icons/lu';
 import { SiGoogleclassroom } from "react-icons/si";
-import { CircleHelp } from 'lucide-react';
+import { CircleHelp, NewspaperIcon } from 'lucide-react';
 import { PermissionsContext } from "./contexts/PermissionsContext";
 import { BsFileBarGraphFill } from "react-icons/bs";
 import { IoPeopleOutline } from "react-icons/io5";
@@ -29,6 +29,7 @@ const SidebarItems = [
   { name: 'Classes', href: '/student/ui/classes', icon: IoPeopleOutline  },
   { name: 'Meeting', href: '/student/ui/meeting', icon: PiVideoConference },
   { name: 'Assignments', href: '/student/ui/assignment', icon: MdBookmarks },
+  {name:'Assessments', href:'/student/ui/assessment', icon: NewspaperIcon},
   { name: 'Payments', href: '/student/ui/payment', icon: FaBookOpenReader },
   { name: 'Knowledge Base', href: '/student/ui/knowledge', icon: RiCalendar2Fill },
   { name: 'Messages', href: '/student/ui/message', icon: LuMessagesSquare },

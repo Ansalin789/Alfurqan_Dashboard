@@ -32,6 +32,11 @@ const SidebarItems = [
         href: '/teacher/ui/assignment',
         icon: MdAssignment,
     },
+     {
+        name: 'Aessessments',
+        href: '/teacher/ui/assessment',
+        icon: MdAnalytics,
+    },
     {
         name: 'Messages',
         href: '/teacher/ui/message',
