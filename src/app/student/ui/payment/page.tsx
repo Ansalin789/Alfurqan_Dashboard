@@ -329,25 +329,14 @@ const Invoice = () => {
     const fetchInvoices = async () => {
       try {
         const studentId = localStorage.getItem("StudentPortalId");
-
-        if (!studentId) {
+        const courseName = localStorage.getItem("StudentcourseName");
+        if (!studentId || !courseName) {
           console.error("❌ No studentId found in localStorage");
           alert("No studentId found. Please log in again.");
           return;
         }
 
-        // Attempt to read human-readable student code (e.g., ALFST-004) from stored studentData
-        let studentCodeForApi: string | null = null;
-        try {
-          const sd = localStorage.getItem("studentData");
-          if (sd) {
-            const parsed = JSON.parse(sd);
-            studentCodeForApi =
-              parsed?.student?.studentId || parsed?.studentId || null;
-          }
-        } catch {}
-
-        const studentIdQuery = studentCodeForApi || studentId;
+        const studentIdQuery = studentId;
 
         // Token check
         let token =
@@ -377,7 +366,7 @@ const Invoice = () => {
         const response = await axios.get(
           `https://api.blackstoneinfomaticstech.com/studentinvoiceById`,
           {
-            params: { studentId: studentIdQuery },
+            params: { studentId: studentIdQuery , courseName: courseName},
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,

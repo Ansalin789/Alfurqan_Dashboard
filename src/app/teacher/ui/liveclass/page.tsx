@@ -474,13 +474,13 @@ export default function LiveClass() {
 
                   {/* Student Performance Card */}
                   <div className=" rounded-2xl flex-col w-full xl:w-1/2 p-6 text-[#010E30] dark:text-[#FFFFFF]">
-                    <h3 className="text-lg font-semibold mb-6">
+                    <h3 className="text-lg font-semibold mb-6 text-[#010E30] dark:text-[#FFFFFF]">
                       Student Performance
                     </h3>
 
                     {categories.map((category, index) => (
                       <div key={category} className="mb-4">
-                        <p className="text-base font-medium text-gray-700 mb-1 dark:text-white">
+                        <p className="text-base font-medium  text-[#010E30] dark:text-[#FFFFFF]">
                           {category}
                         </p>
                         <StarRating
@@ -494,7 +494,7 @@ export default function LiveClass() {
                       </div>
                     ))}
                     <div className="mt-4">
-                      <label htmlFor="ytcyuc" className="text-sm font-medium text-[#010E30] dark:text-white mb-2 block">
+                      <label htmlFor="ytcyuc" className="text-sm font-medium text-[#010E30] dark:text-[#FFFFFF] mb-2 block">
                         Student Current Level:
                       </label>
                       <input
