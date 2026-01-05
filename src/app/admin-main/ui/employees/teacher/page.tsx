@@ -259,7 +259,7 @@ interface SalaryWageRecord {
 }
 
 const Teacher = () => {
-  const [activeTab, setActiveTab] = useState("Studentsl List");
+  const [activeTab, setActiveTab] = useState("Students List");
   const [view, setView] = useState<"month" | "week" | "day" | "agenda">(
     "agenda"
   );
@@ -280,8 +280,7 @@ const Teacher = () => {
   const [wagesResponse, setWagesResponse] = useState<WagesResponse | null>(
     null
   );
-  const [editingWageId, setEditingWageId] = useState<string | null>(null);
-  const [editingRate, setEditingRate] = useState<string>("");
+
   const [students, setStudents] = useState<StudentData[]>([]);
   const [teacherCounts, setTeacherCounts] = useState<TeacherCounts>({
     totalclasses: 0,
@@ -1559,18 +1558,7 @@ const Teacher = () => {
                         ))}
                       </div>
 
-                      <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-                        Showing{" "}
-                        {filteredEarningsMonths.length === 0
-                          ? 0
-                          : (earningsPage - 1) * earningsPerPage + 1}{" "}
-                        to{" "}
-                        {Math.min(
-                          earningsPage * earningsPerPage,
-                          filteredEarningsMonths.length
-                        )}{" "}
-                        of {filteredEarningsMonths.length}
-                      </span>
+<br />
 
                       {/* Table */}
                       <div className="overflow-x-auto max-h-none">

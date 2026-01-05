@@ -1,10 +1,11 @@
 'use client';
 import { MdTune } from "react-icons/md";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation"; // Import useSearchParams
 import BaseLayout2 from "@/components/BaseLayout2";
 import BaseLayout4 from "@/components/BaseLayout4";
 import AdminHeader from "../../components/AdminHeader";
+import Pagination from "@/components/Pagination";
 // Interfaces
 interface Assignment {
   _id?: string;
@@ -17,10 +18,10 @@ interface Assignment {
   assignedDate?: string;
   dueDate?: string;
   assignmentStatus: string;
-  questions?: any[]; // Added questions property based on linter error
+  questions?: any[]; 
 }
 
-type AssignmentType = Assignment; // Alias for Assignment interface
+type AssignmentType = Assignment; 
 
 interface AssignmentFilters {
   assignmentName: string;
@@ -35,8 +36,7 @@ interface AssignmentFilters {
 }
 
 const mapStatus = (status: string) => {
-  // This function would map backend status to display status
-  return status; // For now, just return the status as is
+  return status; 
 };
 
 const StudentClassAssignmentsPage = () => {
@@ -57,12 +57,8 @@ const StudentClassAssignmentsPage = () => {
   const [isAssignmentFilterModalOpen, setIsAssignmentFilterModalOpen] = useState(false); // For Assignments tab filter modal
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
-  const [filteredClassData, setFilteredClassData] = useState<any[]>([]); // Assuming 'any[]' for now
-  const [searchKeyword, setSearchKeyword] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<string>("assignments");
-  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const searchParams = useSearchParams(); // Initialize searchParams
 
   useEffect(() => {
@@ -114,20 +110,7 @@ const StudentClassAssignmentsPage = () => {
     }
   }, [studentId]); // Depend on studentId to re-fetch when it changes
 
-  // Filtered data for Assignments
-  const filteredAssignmentData = assignments.filter((assignment) => {
-    const searchTerm = searchAssignment.toLowerCase();
-
-    return (
-      (assignment.assignmentId && assignment.assignmentId.toLowerCase().includes(searchTerm)) || // Match Assignment ID
-      (assignment.assignedTeacher && assignment.assignedTeacher.toLowerCase().includes(searchTerm)) || // Match Assigned By
-      (assignment.course && assignment.course.toLowerCase().includes(searchTerm)) || // Match Course
-      (assignment.level && assignment.level.toLowerCase().includes(searchTerm)) || // Match Level
-      (assignment.title && assignment.title.toLowerCase().includes(searchTerm)) || // Match Assignment Name
-      (assignment.sessionClassType && assignment.sessionClassType.toLowerCase().includes(searchTerm)) // Match Class Type
-
-    );
-  });
+ 
   useEffect(() => {
     const fetchAssignments = async () => {
       setLoading(true);
@@ -168,99 +151,84 @@ const StudentClassAssignmentsPage = () => {
   }, [studentId]); // Ensure studentId is in the dependency array
 
   // Filter assignments based on current filters
-  const filterAssignments = (assignments: AssignmentType[]) => {
-    return assignments.filter(assignment => {
-      // Search by keyword in all table data (case-insensitive)
+  const filterAssignments = (data: Assignment[]) => {
+    return data.filter((a) => {
+
       if (
-        searchKeyword &&
-        !Object.values(assignment)
-          .map(val => (typeof val === 'string' ? val.toLowerCase() : ''))
-          .join(' ')
-          .includes(searchKeyword.toLowerCase())
-      ) {
-        return false;
+        filters.assignmentName &&
+        !a.title.toLowerCase().includes(filters.assignmentName.toLowerCase())
+      ) return false;
+
+      if (
+        filters.course &&
+        !a.course.toLowerCase().includes(filters.course.toLowerCase())
+      ) return false;
+
+      if (
+        filters.level &&
+        !a.level.toLowerCase().includes(filters.level.toLowerCase())
+      ) return false;
+
+      if (
+        filters.classType &&
+        a.sessionClassType !== filters.classType
+      ) return false;
+
+      if (
+        filters.status &&
+        mapStatus(a.assignmentStatus) !== filters.status
+      ) return false;
+
+      if (filters.assignedDateFrom && a.assignedDate) {
+        if (new Date(a.assignedDate) < new Date(filters.assignedDateFrom)) return false;
       }
-      // Assignment Name filter
-      if (filters.assignmentName && !assignment.title?.toLowerCase().includes(filters.assignmentName.toLowerCase())) {
-        return false;
+
+      if (filters.assignedDateTo && a.assignedDate) {
+        const to = new Date(filters.assignedDateTo);
+        to.setHours(23, 59, 59, 999);
+        if (new Date(a.assignedDate) > to) return false;
       }
-      // Course filter
-      if (filters.course && assignment.course !== filters.course) {
-        return false;
+
+      if (filters.dueDateFrom && a.dueDate) {
+        if (new Date(a.dueDate) < new Date(filters.dueDateFrom)) return false;
       }
-      // Level filter
-      if (filters.level && assignment.level !== filters.level) {
-        return false;
+
+      if (filters.dueDateTo && a.dueDate) {
+        const to = new Date(filters.dueDateTo);
+        to.setHours(23, 59, 59, 999);
+        if (new Date(a.dueDate) > to) return false;
       }
-      // Status filter (use mapped status)
-      if (filters.status && mapStatus(assignment.assignmentStatus) !== filters.status) {
-        return false;
-      }
-      // Assigned Date range filter
-      if (filters.assignedDateFrom && assignment.assignedDate) {
-        const assignedDate = new Date(assignment.assignedDate);
-        const fromDate = new Date(filters.assignedDateFrom);
-        if (assignedDate < fromDate) {
-          return false;
-        }
-      }
-      if (filters.assignedDateTo && assignment.assignedDate) {
-        const assignedDate = new Date(assignment.assignedDate);
-        const toDate = new Date(filters.assignedDateTo);
-        if (assignedDate > toDate) {
-          return false;
-        }
-      }
-      // Due Date range filter
-      if (filters.dueDateFrom && assignment.dueDate) {
-        const dueDate = new Date(assignment.dueDate);
-        const fromDate = new Date(filters.dueDateFrom);
-        if (dueDate < fromDate) {
-          return false;
-        }
-      }
-      if (filters.dueDateTo && assignment.dueDate) {
-        const dueDate = new Date(assignment.dueDate);
-        const toDate = new Date(filters.dueDateTo);
-        if (dueDate > toDate) {
-          return false;
-        }
-      }
-      // Class Type filter
-      if (filters.classType && assignment.sessionClassType !== filters.classType) {
-        return false;
-      }
+
       return true;
     });
   };
 
-  // Tab logic (if you want to filter by assignmentStatus)
-  const pendingAssignments = assignments.filter(a => mapStatus(a.assignmentStatus) !== "Completed");
-  const completedAssignments = assignments.filter(a => {
-    const isAssignmentCompleted = mapStatus(a.assignmentStatus) === "Completed";
-    // If there are questions, check that none are "ASSIGNED"
-    const allQuestionsNotAssigned = !a.questions || a.questions.every(q => mapStatus(q.status) !== "Assigned");
-    return isAssignmentCompleted && allQuestionsNotAssigned;
-  });
 
-  const getStatusStyle = (status: string) => {
-    switch (status?.toUpperCase()) {
-      case "COMPLETED":
-        return "bg-[#ECFDF3] text-[#377E36] dark:bg-[#2E3D2E] dark:text-[#377E36]";
-      case "INPROGRESS":
-        return "bg-[#FDF6EC] text-[#F0AD4E] dark:bg-[#534634] dark:text-[#F0AD4E]";
-      case "ASSIGNED":
-        return "bg-[#FDECEC] text-[#D34645] dark:bg-[#4D3131] dark:text-[#D34645]";
-      default:
-        return "bg-gray-100 text-gray-600";
-    }
-  };
+ const finalFilteredAssignments = useMemo(() => {
+    const modalFiltered = filterAssignments(assignments);
 
-  const handleFilterChange = (filterName: keyof AssignmentFilters, value: string) => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      [filterName]: value,
-    }));
+    if (!searchAssignment) return modalFiltered;
+
+    const term = searchAssignment.toLowerCase();
+
+    return modalFiltered.filter((a) =>
+      [
+        a.assignmentId,
+        a.assignedTeacher,
+        a.course,
+        a.level,
+        a.title,
+        a.sessionClassType,
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(term)
+    );
+  }, [assignments, filters, searchAssignment]);
+
+
+  const handleFilterChange = (key: keyof AssignmentFilters, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const resetFilters = () => {
@@ -275,15 +243,21 @@ const StudentClassAssignmentsPage = () => {
       dueDateTo: "",
       status: "",
     });
-    // Close filter modal after reset
     setIsAssignmentFilterModalOpen(false);
   };
 
-  const handleViewDetailsAssignments = (id: string) => {
-    console.log("View details for assignment id:", id);
-    // Implement navigation or modal display here
+   const getStatusStyle = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case "COMPLETED":
+        return "bg-[#ECFDF3] text-[#377E36] dark:bg-[#2E3D2E] dark:text-[#377E36]";
+      case "INPROGRESS":
+        return "bg-[#FDF6EC] text-[#F0AD4E] dark:bg-[#534634] dark:text-[#F0AD4E]";
+      case "ASSIGNED":
+        return "bg-[#FDECEC] text-[#D34645] dark:bg-[#4D3131] dark:text-[#D34645]";
+      default:
+        return "bg-gray-100 text-gray-600";
+    }
   };
-
 return (
     <BaseLayout4>
     <AdminHeader currentSection="Student Class Assignments" showBackPath={`/admin-main/ui/studentlist?studentId=${studentId}`} showBackButton/>
@@ -297,7 +271,6 @@ return (
       value={searchAssignment}
       onChange={(e) => {
         setSearchAssignment(e.target.value);
-        // Reset pagination if needed
       }}
     />
     
@@ -309,7 +282,7 @@ return (
       <span>Filter</span>
     </div>
     <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-      Showing {filteredAssignmentData.length} of {assignments.length}
+          Showing {finalFilteredAssignments.length} of {assignments.length}
     </span>
   </div>
   <div className="overflow-x-auto max-h-none">
@@ -337,8 +310,8 @@ return (
         </tr>
       </thead>
       <tbody className="text-[10px] text-[#1D2939]">
-        {filteredAssignmentData.length > 0 ? (
-          filteredAssignmentData.map((assignment, index) => (
+                 {finalFilteredAssignments.map((assignment, index) => (
+
             <tr key={assignment._id || index} className={`text-left dark:text-white ${index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"}`}>
               <td className="p-3">{assignment.assignmentId}</td>
               <td className="p-3">{assignment.assignedTeacher}</td>
@@ -354,25 +327,19 @@ return (
                 </span>
               </td>
             </tr>
-          ))
-        ) : (
+          ))}
           <tr>
             <td colSpan={9} className="p-4 text-center">
               No data available
             </td>
           </tr>
-        )}
-      </tbody>
+        </tbody>
     </table>
-    <div className="flex justify-end mt-4">
-        <button
-          className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
-          onClick={()=>handleViewDetailsAssignments(studentId)}
-        >
-          View All
-        </button>
-      </div>
-  </div>
+   <Pagination
+        currentPage={currentPage}
+        totalPages={Math.ceil(finalFilteredAssignments.length / itemsPerPage)}
+        onPageChange={setCurrentPage}
+      />  </div>
 </div>
 
 {/* Filter Modal for Assignments */}
