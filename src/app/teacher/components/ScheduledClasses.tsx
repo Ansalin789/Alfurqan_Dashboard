@@ -661,7 +661,7 @@ const ScheduledClasses = () => {
           }`}
         >
           <td className="px-3 py-2 text-[10px] text-left w-[200px] break-words whitespace-normal">
-            {isTrial ? item.trialclass?.trialId || item.classId : item.classId || "N/A"}
+            {isTrial ? item.trialclass?.trialId || item.classId : item.classId || item.classLink}
           </td>
           <td className="text-[#3D8FDE] px-3 py-2 text-left w-[180px] break-words whitespace-normal">
             {studentName || "N/A"}
