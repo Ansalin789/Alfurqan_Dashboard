@@ -10,6 +10,8 @@ import { Document } from "mongoose";
 import { IoLocationSharp } from "react-icons/io5";
 import { MdEmail } from "react-icons/md";
 import { BsTelephoneFill } from "react-icons/bs";
+import SuccessPopup from "@/app/admin-main/components/successPopup";
+import FailedPopup from "@/app/admin-main/components/failedPopup";
 
 
 interface IStudent {
@@ -146,6 +148,8 @@ export default function InvoicePage() {
   const [selectedStudent, setSelectedStudent] = useState<
     (typeof students)[0] | null
   >(null);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [showFailedPopup, setShowFailedPopup] = useState(false);
 
   useEffect(() => {
     const token =
@@ -285,6 +289,9 @@ export default function InvoicePage() {
           autoClose: 3000, // Toast will auto-close after 3 seconds
         });
 
+        // Show success popup
+        setShowSuccessPopup(true);
+
         // Reset the form data to initial state
         setInvoiceData({
           student: {
@@ -321,6 +328,8 @@ export default function InvoicePage() {
         position: "top-right",
         autoClose: 3000, // Toast will auto-close after 3 seconds
       });
+      // Show failed popup
+      setShowFailedPopup(true);
     }
   };
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
@@ -675,6 +684,20 @@ export default function InvoicePage() {
               </button>
             </div>
             <ToastContainer />
+
+            {/* Success / Failed Popups */}
+            {showSuccessPopup && (
+              <SuccessPopup
+                title="Invoice"
+                onClose={() => setShowSuccessPopup(false)}
+              />
+            )}
+            {showFailedPopup && (
+              <FailedPopup
+                title="Error creating invoice. Please try again."
+                onClose={() => setShowFailedPopup(false)}
+              />
+            )}
           </div>
         </div>
       </div>
