@@ -17,11 +17,17 @@ interface Meeting {
   description: string;
   createdDate: string;
   createdBy: string;
-  supervisor: {
+  supervisor?: {
     supervisorId: string;
     supervisorName: string;
     supervisorEmail: string;
     supervisorRole: string;
+  };
+  admin?: {
+    adminId: string;
+    adminName: string;
+    adminEmail: string;
+    adminRole: string;
   };
   teacher: {
     teacherId: string;
@@ -78,18 +84,52 @@ const SchedulePage = () => {
           return;
         }
 
-        const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/allMeetings",
-          {
+        const [supervisorResponse, adminResponse] = await Promise.all([
+          axios.get("http://localhost:5001/allMeetings", {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-          }
-        );
+          }),
+          axios.get("https://api.blackstoneinfomaticstech.com/allAdminMeeting", {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }).catch(err => {
+            console.error("Error fetching admin meetings:", err);
+            return { data: { data: { meetings: [] } } }; // Fallback
+          })
+        ]);
 
-        if (response.data?.meetings) {
-          const sortedMeetings = response.data.meetings.sort(
+        const supervisorMeetings = supervisorResponse.data?.meetings || [];
+
+        // Parse admin meetings: data.data.meetings[].records
+        const adminMeetingsData = adminResponse.data?.data?.meetings || [];
+        const adminMeetings = adminMeetingsData.flatMap((group: any) => group.records || []);
+
+        const allMeetings = [...supervisorMeetings, ...adminMeetings];
+
+        if (allMeetings.length > 0) {
+          // Deduplicate meetings based on a composite key of date, time, and name
+          // This handles cases where _id might be different but the meeting content is identical
+          const uniqueMeetingsMap = new Map();
+
+          allMeetings.forEach((m: Meeting) => {
+            // Create a unique key for the meeting content
+            // We use meetingId if available and reliable, otherwise we fallback to content
+            // unique key: date_start_end_name
+            const compositeKey = `${m.selectedDate}_${m.startTime}_${m.endTime}_${m.meetingName}`;
+
+            // Only add if we haven't seen this meeting content before
+            if (!uniqueMeetingsMap.has(compositeKey)) {
+              uniqueMeetingsMap.set(compositeKey, m);
+            }
+          });
+
+          const uniqueMeetings = Array.from(uniqueMeetingsMap.values());
+
+          const sortedMeetings = (uniqueMeetings as Meeting[]).sort(
             (a: Meeting, b: Meeting) =>
               new Date(a.selectedDate).getTime() -
               new Date(b.selectedDate).getTime()
@@ -136,7 +176,7 @@ const SchedulePage = () => {
     const today = new Date();
     return (
       day === today.getDate() &&
-      currentDate.getMonth() === today.getMonth() && 
+      currentDate.getMonth() === today.getMonth() &&
       currentDate.getFullYear() === today.getFullYear()
     );
   };
@@ -173,7 +213,7 @@ const SchedulePage = () => {
     // Create an array of days in the week with their dates
     const daysInWeek = [];
     let currentDay = startOfWeek.clone();
-    
+
     while (currentDay <= endOfWeek) {
       daysInWeek.push({
         name: currentDay.format("dddd"),
@@ -221,32 +261,29 @@ const SchedulePage = () => {
               <div key={dayInfo.name} className="flex flex-col">
                 <button
                   onClick={() => handleDayClick(dayInfo.name)}
-                  className={`w-full p-4 rounded-xl cursor-pointer transition-all duration-200 ${
-                    isSelected
-                      ? "dark:bg-[#414141] bg-[#f7f7f7] dark:text-white text-black"
-                      : dayMeetings.length > 0
+                  className={`w-full p-4 rounded-xl cursor-pointer transition-all duration-200 ${isSelected
+                    ? "dark:bg-[#414141] bg-[#f7f7f7] dark:text-white text-black"
+                    : dayMeetings.length > 0
                       ? "dark:bg-[#414141] bg-[#f7f7f7] hover:shadow-lg text-black"
                       : "bg-[#f7f7f7] dark:bg-[#414141] text-black"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div>
                         <div
-                          className={`text-base font-semibold ${
-                            isSelected
-                              ? "dark:text-white text-black"
-                              : "text-gray-800 dark:text-white"
-                          }`}
+                          className={`text-base font-semibold ${isSelected
+                            ? "dark:text-white text-black"
+                            : "text-gray-800 dark:text-white"
+                            }`}
                         >
                           {dayInfo.name}
                         </div>
                         <div
-                          className={`text-[10px] ${
-                            isSelected
-                              ? "bg:text-white/80"
-                              : "text-gray-500 dark:text-gray-400"
-                          }`}
+                          className={`text-[10px] ${isSelected
+                            ? "bg:text-white/80"
+                            : "text-gray-500 dark:text-gray-400"
+                            }`}
                         >
                           {dayInfo.formattedDate}
                         </div>
@@ -254,11 +291,10 @@ const SchedulePage = () => {
                     </div>
                     {dayMeetings.length > 0 && (
                       <div
-                        className={`text-[10px] px-3 py-1 rounded-lg ${
-                          isSelected
-                            ? "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]"
-                            : "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]"
-                        }`}
+                        className={`text-[10px] px-3 py-1 rounded-lg ${isSelected
+                          ? "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]"
+                          : "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]"
+                          }`}
                       >
                         {dayMeetings.length}{" "}
                         {dayMeetings.length === 1 ? "Meeting" : "Meetings"}
@@ -343,7 +379,7 @@ const SchedulePage = () => {
   const MonthlyView = () => {
     const daysInMonth = getDaysInMonth(currentDate);
     const firstDayOfMonth = getFirstDayOfMonth(currentDate);
-    
+
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
     const emptyCells = Array.from({ length: firstDayOfMonth }, (_, i) => null);
     const totalDays = [...emptyCells, ...days];
@@ -351,7 +387,7 @@ const SchedulePage = () => {
     return (
       <>
         <div className="flex items-end justify-end mb-4 -mt-10 gap-2">
-          <button 
+          <button
             onClick={handlePrevMonth}
             className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
           >
@@ -360,7 +396,7 @@ const SchedulePage = () => {
           <h2 className="text-[16px] font-semibold">
             {formatMonthYear(currentDate)}
           </h2>
-          <button 
+          <button
             onClick={handleNextMonth}
             className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
           >
@@ -395,23 +431,21 @@ const SchedulePage = () => {
               date.getDate() === selectedDate.getDate() &&
               date.getMonth() === selectedDate.getMonth() &&
               date.getFullYear() === selectedDate.getFullYear();
-            
+
             return (
               <button
                 key={i}
                 onClick={() => handleDateClick(date)}
-                className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${
-                  hasMeetings
-                    ? `${colors?.border} ${colors?.text} ${colors?.bg} border text-[10px]`
-                    : isToday(day)
+                className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${hasMeetings
+                  ? `${colors?.border} ${colors?.text} ${colors?.bg} border text-[10px]`
+                  : isToday(day)
                     ? "bg-[#27176518] text-white"
                     : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"
-                } ${isSelected ? "ring-2 ring-[#576cbc]" : ""}`}
+                  } ${isSelected ? "ring-2 ring-[#576cbc]" : ""}`}
               >
                 <div
-                  className={`font-semibold ${
-                    isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""
-                  }`}
+                  className={`font-semibold ${isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""
+                    }`}
                 >
                   {day}
                 </div>
@@ -444,11 +478,10 @@ const SchedulePage = () => {
                 <button
                   key={tab}
                   onClick={() => setActiveView(tab)}
-                  className={`capitalize ${
-                    activeView === tab
-                      ? "text-[#576cbc] border-b-2 border-[#576cbc]"
-                      : "text-gray-400"
-                  } pb-1`}
+                  className={`capitalize ${activeView === tab
+                    ? "text-[#576cbc] border-b-2 border-[#576cbc]"
+                    : "text-gray-400"
+                    } pb-1`}
                 >
                   {tab}
                 </button>

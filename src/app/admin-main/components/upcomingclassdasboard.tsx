@@ -8,7 +8,11 @@ interface ClassItem {
   date: string;
   time: string;
   title: string;
-  color: string;
+  color: {
+    bg: string;
+    text: string;
+    dot: string;
+  };
   startTime: string;
 }
 
@@ -29,14 +33,19 @@ const UpcomingClasses: React.FC = () => {
 
   const fetchMeetings = async (token: string) => {
     try {
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/allAdminMeeting", {
+      const response = await axios.get("http://localhost:5001/allAdminMeeting", {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
       });
 
-      const meetings = response.data?.data?.meetings || [];
+      const meetingsData = response.data?.data?.meetings || [];
+      // The API response groups duplicates by meetingId within 'records'.
+      // We take only the first record from each group to display unique meetings.
+      const meetings = meetingsData.flatMap((group: any) =>
+        group.records && group.records.length > 0 ? [group.records[0]] : []
+      );
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -47,21 +56,27 @@ const UpcomingClasses: React.FC = () => {
         return meetingDate >= today;
       });
 
-      const colorMap: Record<string, string> = {
-        REGULARCLASS: "red-500",
-        GROUPCLASS: "blue-500",
-        QURAN: "purple-500",
-        ARABIC: "green-500",
-        ISLAMIC: "yellow-500",
-      };
+      const colorVariants = [
+        { bg: "bg-red-50", text: "text-red-500", dot: "bg-red-500" },
+        { bg: "bg-blue-50", text: "text-blue-500", dot: "bg-blue-500" },
+        { bg: "bg-purple-50", text: "text-purple-500", dot: "bg-purple-500" },
+        { bg: "bg-yellow-50", text: "text-yellow-600", dot: "bg-yellow-500" },
+        { bg: "bg-pink-50", text: "text-pink-500", dot: "bg-pink-500" },
+        { bg: "bg-indigo-50", text: "text-indigo-500", dot: "bg-indigo-500" },
+        { bg: "bg-green-50", text: "text-green-500", dot: "bg-green-500" },
+        { bg: "bg-teal-50", text: "text-teal-500", dot: "bg-teal-500" },
+      ];
 
-      const mappedMeetings: ClassItem[] = filteredMeetings.map((meeting: any) => {
+      const mappedMeetings: ClassItem[] = filteredMeetings.map((meeting: any, index: number) => {
         const start = meeting.startTime;
         const end = meeting.endTime;
-        const title = meeting.meetingName || "Untitled";
+        const rawTitle = meeting.meetingName || "Untitled";
+        // Format title: First letter capital, rest lowercase
+        const title = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1).toLowerCase();
+
         const date = new Date(meeting.selectedDate).toLocaleDateString();
-        const classType = meeting.classType?.trim().toUpperCase() || "DEFAULT";
-        const color = colorMap[classType] || "gray-400";
+        // Select color sequentially to ensure variety
+        const color = colorVariants[index % colorVariants.length];
 
         return {
           id: meeting._id,
@@ -112,15 +127,14 @@ const UpcomingClasses: React.FC = () => {
 
                 {/* Dot */}
                 <div className="absolute left-[44px] top-[12px] z-10">
-                  <div className={`w-[10px] h-[10px] rounded-full bg-${classItem.color}`} />
+                  <div className={`w-[10px] h-[10px] rounded-full ${classItem.color.dot}`} />
                 </div>
 
                 {/* Card */}
-                <div className="ml-[24px] flex-1 bg-[#f4f4f4] dark:bg-[#404040] rounded-md px-3 py-2 flex justify-between items-center">
-                  <span className={`text-[13px] font-bold uppercase text-${classItem.color}`}>
+                <div className={`ml-[24px] flex-1 bg-[#f4f4f4] dark:bg-[#404040] rounded-md px-3 py-2 flex justify-between items-center`}>
+                  <span className={`text-[11px] font-medium ${classItem.color.text} dark:text-white`}>
                     {classItem.title}
                   </span>
-                  
                 </div>
               </div>
             ))}

@@ -4,7 +4,7 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "./Calendar.css";
 import axios from "axios";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 interface Event {
   title: string;
   start: Date;
@@ -36,7 +36,7 @@ interface Meeting {
 }
 
 const Academic: React.FC = () => {
-    const router = useRouter(); 
+  const router = useRouter();
 
   const [events, setEvents] = useState<Event[]>([]);
   const [value, setValue] = useState<Date>(new Date());
@@ -60,7 +60,7 @@ const Academic: React.FC = () => {
         }
 
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/allMeetings",
+          "http://localhost:5001/allMeetings",
           {
             headers: {
               "Content-Type": "application/json",
@@ -69,8 +69,18 @@ const Academic: React.FC = () => {
           }
         );
 
-        const allMeetings: Meeting[] = response.data.data.meetings;
-        console.log("✅ Full Meetings Data:", allMeetings);
+        const allMeetingsResponse: Meeting[] = response.data?.meetings || [];
+        console.log("✅ Full Meetings Data:", allMeetingsResponse);
+
+        // Deduplicate meetings
+        const uniqueMeetingsMap = new Map();
+        allMeetingsResponse.forEach((m: Meeting) => {
+          const compositeKey = `${m.selectedDate}_${m.startTime}_${m.endTime}_${m.meetingName}`;
+          if (!uniqueMeetingsMap.has(compositeKey)) {
+            uniqueMeetingsMap.set(compositeKey, m);
+          }
+        });
+        const allMeetings = Array.from(uniqueMeetingsMap.values()) as Meeting[];
 
         // Filter out past meetings
         const now = new Date();
@@ -148,8 +158,8 @@ const Academic: React.FC = () => {
           setValue(activeStartDate as Date);
         }}
         onClickDay={() => {
-      router.push(`/supervisor/ui/calendar`);
-    }}
+          router.push(`/supervisor/ui/calendar`);
+        }}
         locale="en-GB"
         calendarType="iso8601"
         showNeighboringMonth={true} // Keep full calendar structure
@@ -172,7 +182,7 @@ const Academic: React.FC = () => {
               date.getFullYear() === activeStartDate.getFullYear();
 
             if (isSameMonth && isSameYear && isMeetingDate(date)) {
-              return "react-calendar__tile--active";
+              return "has-event";
             }
           }
           return undefined;

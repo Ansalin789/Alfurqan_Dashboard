@@ -54,7 +54,7 @@ const Academic: React.FC = () => {
 
   const fetchMeetings = async (token: string) => {
     try {
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/allAdminMeeting", {
+      const response = await fetch("http://localhost:5001/allAdminMeeting", {
         method: "GET",
         headers: {
           'Content-Type': 'application/json',
@@ -67,14 +67,20 @@ const Academic: React.FC = () => {
       }
 
       const data: MeetingsResponse = await response.json();
-      
+
       if (!data?.data?.meetings) {
         console.warn("No meetings data found in response");
         setEvents([]);
         return;
       }
 
-      const mappedEvents: Event[] = data.data.meetings
+      const meetingsData = data.data.meetings || [];
+      // Flatten the nested structure (meetings -> records) and take the first record to avoid duplicates
+      const meetings = meetingsData.flatMap((group: any) =>
+        group.records && group.records.length > 0 ? [group.records[0]] : []
+      );
+
+      const mappedEvents: Event[] = meetings
         .filter((item) => {
           if (!item.startTime || !item.endTime || !item.selectedDate) {
             console.warn("Skipping meeting with missing time data");
@@ -130,7 +136,7 @@ const Academic: React.FC = () => {
   return (
     <div className="dark:bg-[#343434] w-full rounded-xl h-[280px]">
       <Calendar
-        onChange={() => {}} // Empty function since we don't need the functionality
+        onChange={() => { }} // Empty function since we don't need the functionality
         value={value}
         navigationLabel={({ date }) =>
           `${date.toLocaleString("default", { month: "short" }).toUpperCase()}, ${date.getFullYear()}`
