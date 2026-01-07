@@ -63,19 +63,63 @@ const fetchMeetings = async () => {
 
     const data = await response.json();
 
-    // Correct mapping
-    const mappedEvents = data.data.meetings.flatMap((meetingGroup: any) =>
-      meetingGroup.records.map((meeting: any) => ({
-        id: meeting._id,
-        title: meeting.meetingName,
-        start: meeting.startTime,
-        end: meeting.endTime,
-        description: meeting.description,
-        date: moment(meeting.selectedDate).format("YYYY-MM-DD"),
-        meetingStatus: meeting.meetingStatus,
-        teachers: meeting.teacher,
-      }))
-    );
+    // Aggregate records by meeting id so a single meeting contains all teachers
+    const meetingsMap: Record<string, any> = {};
+
+    (data.data.meetings || []).forEach((meetingGroup: any) => {
+      (meetingGroup.records || []).forEach((meeting: any) => {
+        const dateStr = moment(meeting.selectedDate).format("YYYY-MM-DD");
+
+        // Build a stable key: prefer backend id, then meetingId, then composite of name+date+start
+        const meetingKey =
+        meeting.meetingId ||
+        `${(meeting.meetingName || "").trim()}_${dateStr}_${meeting.startTime}`;
+      
+        const teacherArray = Array.isArray(meeting.teacher)
+          ? meeting.teacher
+          : meeting.teacher
+          ? [meeting.teacher]
+          : [];
+
+        if (!meetingsMap[meetingKey]) {
+          meetingsMap[meetingKey] = {
+            id: meetingKey,
+            title: meeting.meetingName,
+            start: meeting.startTime,
+            end: meeting.endTime,
+            description: meeting.description,
+            date: dateStr,
+            meetingStatus: meeting.meetingStatus,
+            teachers: [...teacherArray],
+          };
+        } else {
+          const existing = meetingsMap[meetingKey];
+          existing.teachers = existing.teachers || [];
+          existing.teachers = [...existing.teachers, ...teacherArray];
+
+          // Deduplicate teachers by teacherId, fallback to email/name
+          const seen = new Set();
+          const unique: any[] = [];
+          for (const t of existing.teachers) {
+            const key = t?.teacherId ?? t?._id ?? t?.teacherEmail ?? t?.teacherName;
+            if (!seen.has(key)) {
+              seen.add(key);
+              unique.push(t);
+            }
+          }
+          existing.teachers = unique;
+
+          // Merge other meeting-level fields conservatively
+          existing.title = existing.title || meeting.meetingName;
+          existing.start = existing.start || meeting.startTime;
+          existing.end = existing.end || meeting.endTime;
+          existing.description = existing.description || meeting.description;
+          existing.meetingStatus = existing.meetingStatus || meeting.meetingStatus;
+        }
+      });
+    });
+
+    const mappedEvents = Object.values(meetingsMap);
 
     setEvents(mappedEvents);
     setIsLoading(false);
@@ -88,6 +132,17 @@ const fetchMeetings = async () => {
   fetchMeetings();
 }, []);
 
+const getUniqueMeetingsById = (list: Event[]) => {
+  const map = new Map<string, Event>();
+
+  list.forEach((item) => {
+    if (!map.has(item.id)) {
+      map.set(item.id, item);
+    }
+  });
+
+  return Array.from(map.values());
+};
 
   // Filter events for selected date
   useEffect(() => {
@@ -380,7 +435,7 @@ const fetchMeetings = async () => {
                 <div className="text-center py-4">Loading meetings...</div>
               ) : eventsForSelectedDate.length > 0 ? (
                 <div className="space-y-3 md:space-y-4">
-                  {eventsForSelectedDate.map((item, index) => {
+{getUniqueMeetingsById(eventsForSelectedDate).map((item, index) => {
                     const textColors = ["text-[#d77277]","text-[#72B0D7]","text-[#BF63B3]","text-[#BFBC63]","text-[#BF8C63]","text-[#6EBF63]"];
                     const currentTextColor = textColors[index % textColors.length];
                     
@@ -401,14 +456,15 @@ const fetchMeetings = async () => {
                           </div>
                         </div>
 
-                        <p className="text-[10px] font-light text-[#333] dark:text-[#fff] mt-2">{item.description || ""}</p>
+                        <p className="text-[11px] font-light text-[#333] dark:text-[#fff] mt-2">{item.description || ""}</p>
 
 {/* View List Toggle Button */}
+{/* View List Toggle */}
 <button
   onClick={() => toggleMeetingDetails(item.id)}
-  className="mt-2 text-[10px] text-blue-600 dark:text-blue-300 underline"
+  className="mt-2 text-[11px] text-blue-600 dark:text-blue-300 underline"
 >
-  {expandedMeetingId === item.id ? "Hide List ▲" : "View List ▼"}
+  {expandedMeetingId === item.id ? "Hide List " : "View List "}
 </button>
 
 {/* Teacher List */}
@@ -416,19 +472,20 @@ const fetchMeetings = async () => {
   <div className="mt-2">
     <p className="text-[10px] font-semibold mb-1">Teachers:</p>
 
-    {Array.isArray(item.teachers) && item.teachers.length > 0 ? (
-      <ul className="text-[10px] space-y-1 mt-1 list-disc list-inside">
+    {item.teachers && item.teachers.length && item.teachers.length > 0 ? (
+      <ul className="text-[10px] space-y-1 list-disc list-inside">
         {item.teachers.map((t) => (
-          <li key={t.teacherId}>
+          <li key={t.teacherId || t._id || t.teacherEmail}>
             {t.teacherName} ({t.teacherEmail})
           </li>
         ))}
-      </ul>
+      </ul> 
     ) : (
-      <p className="text-[9px] text-gray-500 italic mt-1">No Teachers</p>
+      <p className="text-[9px] text-gray-500 italic">No Teachers</p>
     )}
   </div>
 )}
+
 
 
                         {item.meetingStatus && (
