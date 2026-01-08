@@ -38,10 +38,7 @@ export interface AcademicModules {
   students: RoleModuleAccess;
   teachers: RoleModuleAccess;
   messages: RoleModuleAccess;
-  support: {
-    read: boolean;
-    write: boolean;
-  };
+  support: RoleModuleAccess;
 }
 
 export interface SupervisorModules {
@@ -69,7 +66,10 @@ export interface TeacherModules {
   assignments: RoleModuleAccess;
   messages: RoleModuleAccess;
   analytics: RoleModuleAccess;
-  support: RoleModuleAccess;
+  support: {
+    read: boolean;
+    write: boolean;
+  };
 }
 
 export interface RoleAccess {
@@ -191,7 +191,7 @@ const SignIn: React.FC = () => {
       const response = await signIn(username, password);
       const data = response.data;
       const { accessToken, role, _id, userName, userId } = data;
-      alert(data);
+      // alert(data);
       const userEmail: string = data.email ?? data.userEmail ?? "";
 
       if (!role?.includes("TEACHER")) {

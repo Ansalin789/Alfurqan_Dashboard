@@ -48,7 +48,11 @@ export interface SupervisorModules {
   meeting: RoleModuleAccess;
   teachers: RoleModuleAccess;
   messages: RoleModuleAccess;
-  support: RoleModuleAccess;
+  support: {
+    read: boolean;
+    write: boolean;
+    delete: boolean;
+  };
 }
 
 export interface StudentModules {
@@ -68,10 +72,7 @@ export interface TeacherModules {
   assignment: RoleModuleAccess;
   messages: RoleModuleAccess;
   analytics: RoleModuleAccess;
-  support: {
-    read: boolean;
-    write: boolean;
-  };
+  support: RoleModuleAccess;
 }
 
 export interface RoleAccess {
@@ -168,6 +169,7 @@ const SignIn: React.FC = () => {
             "SupervisorRolePermission",
             JSON.stringify(roleAccess.supervisormodules)
           );
+          console.log("SupervisorRolePermission", roleAccess.supervisormodules);
 
           console.log("Stored only supervisormodules after overriding admin flag");
         } else {

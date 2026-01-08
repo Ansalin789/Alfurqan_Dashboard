@@ -12,21 +12,6 @@ import "react-toastify/dist/ReactToastify.css";
 
 type PermissionType = "read" | "write" | "delete";
 
-interface EmployeeAccessData {
-  _id: string;
-  employeeId: string;
-  employeeName: string;
-  contact: string;
-  designation: string[];
-  dateOfJoining: string;
-  roleAccess: any;
-  status: string;
-  createdDate: string;
-  createdBy: string;
-  updatedDate: string;
-  updatedBy: string;
-  __v: number;
-}
 
 type Permission = {
   read: boolean;
@@ -38,10 +23,10 @@ type ModuleAccess = {
   [key: string]: Permission;
 };
 
-type RoleAccess = {
-  teacher: boolean;
-  teachermodules: ModuleAccess;
-};
+// type RoleAccess = {
+//   teacher: boolean;
+//   teachermodules: ModuleAccess;
+// };
 
 const TeacherModuleAccess = () => {
   const searchParams = useSearchParams();
@@ -94,7 +79,7 @@ const TeacherModuleAccess = () => {
   const fetchEmployeeData = async (token: string) => {
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
+        `http://localhost:5001/update-access/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -104,8 +89,9 @@ const TeacherModuleAccess = () => {
       );
 
       const json = await res.json();
-      const access = json?.data?.roleAccess;
-      const teacherModules = access?.teachermodules ?? {};
+      console.log("Fetched data:", json);
+      // const access = json?.data?.roleAccess;
+      const teacherModules = json?.data?.roleAccess?.teachermodules ?? {};
 
       const selected: Record<string, boolean> = {};
       const modulePermissions: ModuleAccess = {};
@@ -141,20 +127,22 @@ const TeacherModuleAccess = () => {
   }, [isRedirecting, router]);
 
   const toggleModule = (module: string, permission?: PermissionType) => {
+    const key = getModuleKey(module);
+
     if (!permission) {
       setSelectedModules((prev) => ({
         ...prev,
-        [module]: !prev[module],
+        [key]: !prev[key],
       }));
 
       setPermissions((prev) => ({
         ...prev,
         teachermodules: {
           ...prev.teachermodules,
-          [module]: {
-            read: !prev[module]?.read,
-            write: !prev[module]?.write,
-            delete: !prev[module]?.delete,
+          [key]: {
+            read: !prev.teachermodules[key]?.read,
+            write: !prev.teachermodules[key]?.write,
+            delete: !prev.teachermodules[key]?.delete,
           },
         },
       }));
@@ -163,9 +151,9 @@ const TeacherModuleAccess = () => {
         ...prev,
         teachermodules: {
           ...prev.teachermodules,
-          [module]: {
-            ...prev.teachermodules[module],
-            [permission]: !prev.teachermodules[module]?.[permission],
+          [key]: {
+            ...prev.teachermodules[key],
+            [permission]: !prev.teachermodules[key]?.[permission],
           },
         },
       }));
@@ -173,7 +161,7 @@ const TeacherModuleAccess = () => {
   };
 
   const handleUpdateAccess = async () => {
-    const roleAccess: RoleAccess = {
+    const roleAccess = {
       teacher: true,
       teachermodules: permissions.teachermodules,
     };
@@ -190,7 +178,7 @@ const TeacherModuleAccess = () => {
       }
 
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
+        `http://localhost:5001/update-access/${employeeId}`,
         { roleAccess },
         {
           headers: {
@@ -201,6 +189,7 @@ const TeacherModuleAccess = () => {
       );
 
       toast.success("Access updated successfully!");
+      console.log("Access updated successfully:", response.data);
 
       setTimeout(() => {
         router.push("/admin-main/ui/settings");
@@ -213,7 +202,7 @@ const TeacherModuleAccess = () => {
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Teacher Module Access" showBackButton showBackPath="/admin-main/ui/settings"/>
+      <AdminHeader currentSection="Teacher Module Access" showBackButton showBackPath="/admin-main/ui/settings" />
       <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} />
 
       <div className="mt-4">
@@ -256,7 +245,7 @@ const TeacherModuleAccess = () => {
                             type="checkbox"
                             checked={
                               permissions.teachermodules[moduleKey]?.[
-                                perm as PermissionType
+                              perm as PermissionType
                               ] || false
                             }
                             onChange={() =>

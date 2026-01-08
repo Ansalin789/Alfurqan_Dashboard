@@ -14,7 +14,7 @@ import { FaRegMinusSquare } from "react-icons/fa";
 
 type PermissionType = 'read' | 'write' | 'delete';
 
-interface Permission {
+type Permission = {
   read: boolean;
   write: boolean;
   delete: boolean;
@@ -39,7 +39,7 @@ const SupervisorModuleAccess = () => {
   const modules = [
     'Dashboard',
     'Recruitment',
-    'Meeting&Training',
+    'Meeting and Training',
     'Teachers',
     'Messages',
     'Support',
@@ -57,14 +57,17 @@ const SupervisorModuleAccess = () => {
 
     const token =
       typeof window !== 'undefined' ? localStorage.getItem('AdminAuthToken') : null;
-
-    if (token) fetchEmployeeData(token);
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+      return;
+    }
+    fetchEmployeeData(token);
   }, [employeeId]);
 
   const fetchEmployeeData = async (token: string) => {
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
+        `http://localhost:5001/update-access/${employeeId}`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -74,8 +77,8 @@ const SupervisorModuleAccess = () => {
       );
 
       const json = await res.json();
-      const access = json?.data?.roleAccess;
-      const supervisorModules = access?.supervisormodules ?? {};
+      console.log("Fetched data:", json);
+      const supervisorModules = json?.data?.roleAccess?.supervisormodules ?? {};
 
       const selected: Record<string, boolean> = {};
       const modulePermissions: ModuleAccess = {};
@@ -89,7 +92,10 @@ const SupervisorModuleAccess = () => {
       });
 
       setSelectedModules(selected);
-      setPermissions({ supervisormodules: modulePermissions });
+      setPermissions((prev) => ({
+        ...prev,
+        supervisormodules: modulePermissions,
+      }));
     } catch (error) {
       toast.error('Error loading employee access data');
     }
@@ -102,20 +108,22 @@ const SupervisorModuleAccess = () => {
   }, [isRedirecting, router]);
 
   const toggleModule = (module: string, permission?: PermissionType) => {
+    const key = getModuleKey(module);
+
     if (!permission) {
       setSelectedModules((prev) => ({
         ...prev,
-        [module]: !prev[module],
+        [key]: !prev[key],
       }));
 
       setPermissions((prev) => ({
         ...prev,
         supervisormodules: {
           ...prev.supervisormodules,
-          [module]: {
-            read: !prev.supervisormodules[module]?.read,
-            write: !prev.supervisormodules[module]?.write,
-            delete: !prev.supervisormodules[module]?.delete,
+          [key]: {
+            read: !prev.supervisormodules[key]?.read,
+            write: !prev.supervisormodules[key]?.write,
+            delete: !prev.supervisormodules[key]?.delete,
           },
         },
       }));
@@ -124,9 +132,9 @@ const SupervisorModuleAccess = () => {
         ...prev,
         supervisormodules: {
           ...prev.supervisormodules,
-          [module]: {
-            ...prev.supervisormodules[module],
-            [permission]: !prev.supervisormodules[module]?.[permission],
+          [key]: {
+            ...prev.supervisormodules[key],
+            [permission]: !prev.supervisormodules[key]?.[permission],
           },
         },
       }));
@@ -138,15 +146,18 @@ const SupervisorModuleAccess = () => {
       supervisor: true,
       supervisormodules: permissions.supervisormodules,
     };
-
-    const token =
-      typeof window !== 'undefined' ? localStorage.getItem('AdminAuthToken') : null;
-
-    if (!token) return;
-
     try {
-      await axios.put(
-        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
+      const token =
+        typeof window !== 'undefined' ? localStorage.getItem('AdminAuthToken') : null;
+
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
+
+
+      const response = await axios.put(
+        `http://localhost:5001/update-access/${employeeId}`,
         { roleAccess },
         {
           headers: {
@@ -155,7 +166,7 @@ const SupervisorModuleAccess = () => {
           },
         }
       );
-
+      console.log("Access updated successfully:", response.data);
       toast.success('Access updated successfully!');
       setTimeout(() => router.push('/admin-main/ui/settings'), 2000);
     } catch (error) {
@@ -163,9 +174,33 @@ const SupervisorModuleAccess = () => {
     }
   };
 
+
+  const handleCancel = () => {
+    const clearedSelected: Record<string, boolean> = {};
+    const clearedPermissions: ModuleAccess = {};
+
+    modules.forEach((module) => {
+      const key = getModuleKey(module);
+
+      clearedSelected[key] = false;
+
+      clearedPermissions[key] = {
+        read: false,
+        write: false,
+        delete: false,
+      };
+    });
+
+    setSelectedModules(clearedSelected);
+
+    setPermissions({
+      supervisormodules: clearedPermissions,
+    });
+  };
+
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Supervisor Module Access" showBackButton showBackPath="/admin-main/ui/settings"/>
+      <AdminHeader currentSection="Supervisor Module Access" showBackButton showBackPath="/admin-main/ui/settings" />
       <ToastContainer />
 
       <div className="mt-4">
@@ -184,44 +219,42 @@ const SupervisorModuleAccess = () => {
             </thead>
 
             <tbody>
-  {modules.map((module) => {
-    const moduleKey = getModuleKey(module);  // ✅ FIXED
+              {modules.map((module) => {
+                return (
+                  <tr key={module} className="border-t">
+                    <td className="p-4 flex items-center w-[74%] space-x-3 ">
+                      <input
+                        type="checkbox"
+                        checked={selectedModules[getModuleKey(module)] || false}
+                        onChange={() => toggleModule(module)}
+                        className="h-3 w-3 text-[#012A4A] border-gray-300 rounded focus:ring-[#012A4A]"
+                      />
+                      <span className="text-[12px] text-[#344054] dark:text-[#fff]">{module}</span>
+                    </td>
 
-    return (
-      <tr key={module} className="border-t">
-        <td className="p-4 flex items-center w-[74%] space-x-3 ">
-          <input
-            type="checkbox"
-            checked={selectedModules[moduleKey] || false}
-            onChange={() => toggleModule(moduleKey)}
-            className="h-3 w-3 text-[#012A4A] border-gray-300 rounded focus:ring-[#012A4A]"
-          />
-          <span className="text-[12px] text-[#344054] dark:text-[#fff]">{module}</span>
-        </td>
-
-        {['read', 'write', 'delete'].map((perm) => (
-          <td key={perm} className="p-2 text-center w-[20%]">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={
-                  permissions.supervisormodules[moduleKey]?.[
-                    perm as PermissionType
-                  ] || false
-                }
-                onChange={() => toggleModule(moduleKey, perm as PermissionType)}
-                className="h-3 w-3 text-[#012A4A] border-gray-300 rounded focus:ring-[#012A4A]"
-              />
-              <span className="ml-2 text-[12px] text-[#344054] dark:text-[#fff]">
-                {perm.charAt(0).toUpperCase() + perm.slice(1)}
-              </span>
-            </label>
-          </td>
-        ))}
-      </tr>
-    );
-  })}
-</tbody>
+                    {['read', 'write', 'delete'].map((perm) => (
+                      <td key={perm} className="p-2 text-center w-[20%]">
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={
+                              permissions.supervisormodules[getModuleKey(module)]?.[
+                              perm as PermissionType
+                              ] || false
+                            }
+                            onChange={() => toggleModule(module, perm as PermissionType)}
+                            className="h-3 w-3 text-[#012A4A] border-gray-300 rounded focus:ring-[#012A4A]"
+                          />
+                          <span className="ml-2 text-[12px] text-[#344054] dark:text-[#fff]">
+                            {perm.charAt(0).toUpperCase() + perm.slice(1)}
+                          </span>
+                        </label>
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
 
           </table>
         </div>
@@ -229,26 +262,7 @@ const SupervisorModuleAccess = () => {
         {/* ✅ UPDATED CANCEL BUTTON LOGIC */}
         <div className="flex justify-end mt-4">
           <button
-            onClick={() => {
-              const clearedSelectedModules: Record<string, boolean> = {};
-              const clearedPermissions: ModuleAccess = {};
-
-              modules.forEach((module) => {
-                const key = getModuleKey(module);
-                clearedSelectedModules[key] = false;
-                clearedPermissions[key] = {
-                  read: false,
-                  write: false,
-                  delete: false,
-                };
-              });
-
-              setSelectedModules(clearedSelectedModules);
-
-              setPermissions({
-                supervisormodules: clearedPermissions,
-              });
-            }}
+            onClick={handleCancel}
             className="bg-[#e4e7f4] border border-[#576CBC] text-[#576CBC] text-[13px] px-6 py-1 rounded-lg shadow-md"
           >
             Cancel
