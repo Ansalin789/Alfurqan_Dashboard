@@ -338,7 +338,7 @@ export default function LiveClass() {
 
       if (response.status === 201 || response.status === 200) {
         setShowPopup(true);
-        setTimeout(() => { setShowPopup(false) }, 3000);
+        setTimeout(() => { setShowPopup(false),window.close() }, 3000);
       } else {
         console.log("Failed to submit feedback. Please try again.");
       }
