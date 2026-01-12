@@ -190,7 +190,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
     } else if (paymentIntent?.status === "succeeded") {
       try {
         const response = await axios.post(
-          "https://api.blackstoneinfomaticstech.com/student/create-payment-intent",
+          "https://api.alfurqanapp.com/student/create-payment-intent",
           {
             amount,
             currency,
@@ -381,7 +381,7 @@ const Invoice = () => {
 
         // ✅ API call with query param
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/studentinvoiceById`,
+          `https://api.alfurqanapp.com/studentinvoiceById`,
           {
             params: { studentId: studentIdQuery, courseName: courseName },
             headers: {
@@ -444,7 +444,7 @@ const Invoice = () => {
 
     try {
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/student/create-payment-intent",
+        "https://api.alfurqanapp.com/student/create-payment-intent",
         {
           amount: totalprice * 100,
           currency: "usd",

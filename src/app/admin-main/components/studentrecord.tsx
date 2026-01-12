@@ -55,7 +55,7 @@ const StudentsRecord = () => {
   const fetchStudentCounts = async (token: string) => {
     try {
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/alstudents/studentsrecordcount",
+        "https://api.alfurqanapp.com/alstudents/studentsrecordcount",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -100,7 +100,7 @@ const StudentsRecord = () => {
   const fetchGenderData = async (token: string) => {
     try {
       const response = await axios.get<GenderResponse>(
-        "https://api.blackstoneinfomaticstech.com/alstudents/studentsGender",
+        "https://api.alfurqanapp.com/alstudents/studentsGender",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -188,7 +188,7 @@ const StudentsRecord = () => {
   const fetchCountryStats = async (token: string) => {
     try {
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/alstudents/studentscountrycount",
+        "https://api.alfurqanapp.com/alstudents/studentscountrycount",
         {
           headers: {
             Authorization: `Bearer ${token}`,

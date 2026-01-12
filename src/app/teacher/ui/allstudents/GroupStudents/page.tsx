@@ -443,7 +443,7 @@ const GroupStudents = () => {
         console.log("Fetching data for teacherId:", teacherId);
 
         const res = await axios.get<StudentWithAssignments[]>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list",
+          "https://api.alfurqanapp.com/classShedule/teacher/list",
           {
             headers: {
               "Content-Type": "application/json",
@@ -599,7 +599,7 @@ const GroupStudents = () => {
       setOpenModal(true);
 
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/adminassignment/assignment",
+        "https://api.alfurqanapp.com/adminassignment/assignment",
         {
           params: {
             courseName: course,
@@ -959,7 +959,7 @@ const GroupStudents = () => {
 
       // Submit to API
       const res = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/groupAssignments",
+        "https://api.alfurqanapp.com/groupAssignments",
         formData,
         {
           headers: {

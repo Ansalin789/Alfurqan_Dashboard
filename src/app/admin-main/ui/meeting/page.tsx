@@ -129,7 +129,7 @@ const Meetings = () => {
     
     axios
       .get<{ totalCount: number; applicants: ApiResponse[] }>(
-        "https://api.blackstoneinfomaticstech.com/otheremployees",
+        "https://api.alfurqanapp.com/otheremployees",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -176,7 +176,7 @@ const Meetings = () => {
     const fetchMeetings = async () => {
       try {
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/allAdminMeeting",
+          "https://api.alfurqanapp.com/allAdminMeeting",
           {
             headers: {
               "Content-Type": "application/json",
@@ -355,7 +355,7 @@ const Meetings = () => {
       );
       const meetingIdToSend = selectedMeeting?.meetingId;
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/allAdminMeeting/${meetingIdToSend}`,
+        `https://api.alfurqanapp.com/allAdminMeeting/${meetingIdToSend}`,
         {
           method: "PUT",
           headers: {

@@ -150,7 +150,7 @@ const TeachersSchedule = () => {
         }
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${teacherId}`,
+          `https://api.alfurqanapp.com/classShedule?teacherId=${teacherId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -381,9 +381,9 @@ const TeachersSchedule = () => {
         lastUpdatedDate: new Date().toISOString(),
       }
       console.log("PUT Request Payload:", payload)
-      console.log("PUT Request URL:", `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`)
+      console.log("PUT Request URL:", `https://api.alfurqanapp.com/classShedule/teacherreschedule/${meetingToReschedule._id}`)
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`,
+        `https://api.alfurqanapp.com/classShedule/teacherreschedule/${meetingToReschedule._id}`,
         payload,
         {
           headers: {
@@ -408,7 +408,7 @@ const TeachersSchedule = () => {
       }
 
       const refreshResponse = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${meetingToReschedule.teacher.teacherId}`,
+        `https://api.alfurqanapp.com/classShedule?teacherId=${meetingToReschedule.teacher.teacherId}`,
         { headers: { Authorization: `Bearer ${token}` } },
       )
 

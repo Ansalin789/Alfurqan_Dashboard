@@ -32,7 +32,7 @@ const ClassAnalyticsChart = () => {
       if (!teacherId || !token) throw new Error("Authentication info missing");
 
       const response = await axios.get<StatsData>(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacher/count?teacherId=${teacherId}`,
+        `https://api.alfurqanapp.com/classShedule/teacher/count?teacherId=${teacherId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

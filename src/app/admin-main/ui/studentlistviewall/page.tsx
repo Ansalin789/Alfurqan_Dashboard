@@ -147,7 +147,7 @@ const [meetingFilters, setMeetingFilters] = useState({
   const fetchStudents = async (token: string) => {
     try {
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/alstudents",
+        "https://api.alfurqanapp.com/alstudents",
         {
           headers: {
             "Content-Type": "application/json",

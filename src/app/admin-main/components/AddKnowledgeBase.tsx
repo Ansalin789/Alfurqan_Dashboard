@@ -65,7 +65,7 @@ export default function KnowledgeBaseForm({ onClose }: LeaveFormProps) {
   const fetchCourses = async (token: string) => {
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/courses",
+        "https://api.alfurqanapp.com/courses",
         {
           method: "GET",
           headers: {
@@ -161,7 +161,7 @@ formData.append("createdBy", knowledgeBaseData.createdBy);
 formData.append("updatedBy", knowledgeBaseData.updatedBy || "");
 formData.append("updatedDate", knowledgeBaseData.updatedDate || "");
 
-const response = await fetch("https://api.blackstoneinfomaticstech.com/knowledgebase", {
+const response = await fetch("https://api.alfurqanapp.com/knowledgebase", {
   method: "POST",
   headers: {
     Authorization: `Bearer ${token}`, 

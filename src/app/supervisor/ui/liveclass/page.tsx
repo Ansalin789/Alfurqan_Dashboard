@@ -78,7 +78,7 @@ function LiveClass() {
         }
         console.log(classScheduleid);
         const response = await axios.get<ClassData>(
-          `https://api.blackstoneinfomaticstech.com/classShedule/${classScheduleid}`,
+          `https://api.alfurqanapp.com/classShedule/${classScheduleid}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -152,7 +152,7 @@ function LiveClass() {
         return;
       }
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/supervisorfeedback",
+        "https://api.alfurqanapp.com/supervisorfeedback",
         feedbackData,
         {
           headers: {
@@ -324,7 +324,7 @@ function LiveClass() {
                     {roomName && (
                       <JitsiMeeting
                         roomName={roomName}
-                        domain="meet.blackstoneinfomaticstech.com"
+                        domain="meet.alfurqanapp.com"
                         configOverwrite={{
                         startWithAudioMuted: false,
                         startWithVideoMuted: false,

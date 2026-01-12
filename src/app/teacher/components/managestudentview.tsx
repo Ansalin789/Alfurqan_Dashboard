@@ -107,7 +107,7 @@ const ManageStudentView = () => {
     console.error("❌ TeacherAuthToken not found");
     return;
   }
-          const response = await fetch(`https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
+          const response = await fetch(`https://api.alfurqanapp.com/alstudents/${studentId}`,
             {
                 headers:{
                  'Content-Type': 'application/json',

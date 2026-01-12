@@ -53,7 +53,7 @@ export default function Academic() {
   }
         const teacherId = "some_teacher_id";
         const response = await axios.get<ApiResponse>(
-          `https://api.blackstoneinfomaticstech.com/teacher-student-count`,
+          `https://api.alfurqanapp.com/teacher-student-count`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

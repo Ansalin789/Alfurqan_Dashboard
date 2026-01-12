@@ -179,7 +179,7 @@ export default function GenerateInvoice({ onClose }: { onClose: () => void }) {
 
   const fetchStudents = async (token: string) => {
     try {
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/alstudents", {
+      const response = await axios.get("https://api.alfurqanapp.com/alstudents", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -236,7 +236,7 @@ export default function GenerateInvoice({ onClose }: { onClose: () => void }) {
       });
 
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/invoice/send",
+        "https://api.alfurqanapp.com/invoice/send",
         payload,
         {
           headers: {

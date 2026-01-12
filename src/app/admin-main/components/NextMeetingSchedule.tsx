@@ -53,7 +53,7 @@ const NextMeetingSchedule = () => {
           return;
         }
 
-        const res = await axios.get("https://api.blackstoneinfomaticstech.com/allAdminMeeting", {
+        const res = await axios.get("https://api.alfurqanapp.com/allAdminMeeting", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

@@ -74,7 +74,7 @@ function LiveClass() {
         }
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/classShedule/${id}`,
+          `https://api.alfurqanapp.com/classShedule/${id}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -131,7 +131,7 @@ function LiveClass() {
       });
 
       navigator.sendBeacon(
-        `https://api.blackstoneinfomaticstech.com/classShedule/attendanceupdate/${id}`,
+        `https://api.alfurqanapp.com/classShedule/attendanceupdate/${id}`,
         blob
       );
     };
@@ -155,7 +155,7 @@ function LiveClass() {
         return;
       }
       const res = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/classShedule/attendanceupdate/${id}`,
+        `https://api.alfurqanapp.com/classShedule/attendanceupdate/${id}`,
         { student: data },
         {
           headers: {
@@ -239,7 +239,7 @@ function LiveClass() {
         return;
       }
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/feedback",
+        "https://api.alfurqanapp.com/feedback",
         feedbackData,
         {
           headers: {
@@ -475,7 +475,7 @@ function LiveClass() {
                   {roomName && (
                     <JitsiMeeting
                       roomName={roomName}
-                      domain="meet.blackstoneinfomaticstech.com"
+                      domain="meet.alfurqanapp.com"
                       userInfo={userInfo}
                       configOverwrite={{
                         startWithAudioMuted: false,

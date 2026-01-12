@@ -74,7 +74,7 @@ export default function StudentHeader({
           ? localStorage.getItem("StudentPortalId")
           : null;
       const { data } = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/notification/getlist?receiverId=${userId}`,
+        `https://api.alfurqanapp.com/notification/getlist?receiverId=${userId}`,
         {
           method: "GET",
           headers: {
@@ -128,7 +128,7 @@ export default function StudentHeader({
       }
 
       await axios.put(
-        `https://api.blackstoneinfomaticstech.com/notification/${notificationId}`,
+        `https://api.alfurqanapp.com/notification/${notificationId}`,
         {
           isRead: true,
           notificationStatus: "Seen",

@@ -40,7 +40,7 @@ const ApplicationChart = () => {
       
       const fetchMonthlyInvoices = async (token: string) => {
           try {
-            const res = await fetch("https://api.blackstoneinfomaticstech.com/totalinvoice",
+            const res = await fetch("https://api.alfurqanapp.com/totalinvoice",
               {
                 method: "GET",
                 headers: {

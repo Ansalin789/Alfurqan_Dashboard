@@ -88,7 +88,7 @@ useEffect(() => {
 
 const fetchInvoice = (token: string) => {
   axios
-    .get("https://api.blackstoneinfomaticstech.com/studentinvoice/list", {
+    .get("https://api.alfurqanapp.com/studentinvoice/list", {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,

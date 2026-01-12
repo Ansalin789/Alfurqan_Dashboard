@@ -114,7 +114,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret, evaluationId 
         };
 
         const backendRes = await fetch(
-          `https://api.blackstoneinfomaticstech.com/create-payment-intent`,
+          `https://api.alfurqanapp.com/create-payment-intent`,
           {
             method: 'POST',
             headers: {

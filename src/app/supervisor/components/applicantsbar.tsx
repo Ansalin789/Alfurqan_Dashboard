@@ -49,7 +49,7 @@ const ApplicationChart = () => {
       }
 
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/application?fromDate=${from}&toDate=${to}`,
+        `https://api.alfurqanapp.com/application?fromDate=${from}&toDate=${to}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

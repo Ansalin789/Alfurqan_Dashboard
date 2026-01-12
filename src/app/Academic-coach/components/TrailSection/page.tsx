@@ -169,7 +169,7 @@ const getAllUsers = async (): Promise<{
     if (!token) {
       console.error("❌ AdminAuthToken not found");
     }
-    const response = await axios.get(`https://api.blackstoneinfomaticstech.com/evaluationlist`, {
+    const response = await axios.get(`https://api.alfurqanapp.com/evaluationlist`, {
       params: { academicCoachId: academicId },
       headers: {
         "Content-Type": "application/json",
@@ -427,7 +427,7 @@ const TrailSection = () => {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const response = await fetch("https://api.blackstoneinfomaticstech.com/meetinglist");
+        const response = await fetch("https://api.alfurqanapp.com/meetinglist");
         if (!response.ok) throw new Error("Failed to fetch meetings");
         const data = await response.json();
         setMeetings(data);
@@ -576,7 +576,7 @@ const TrailSection = () => {
 
       // 🔹 Send update request
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/evaluation/${formData._id}`,
+        `https://api.alfurqanapp.com/evaluation/${formData._id}`,
         payload,
         {
           headers: {
@@ -854,7 +854,7 @@ const TrailSection = () => {
         return;
       }
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/evaluationlist/${id}`,
+        `https://api.alfurqanapp.com/evaluationlist/${id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -881,7 +881,7 @@ const TrailSection = () => {
       setStudentStatus(data.studentStatus);
       setPaymentStatus(data.paymentStatus);
       setPaymentLink(
-        `https://api.blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(data._id)}`
+        `https://api.alfurqanapp.com/invoice?id=${encodeURIComponent(data._id)}`
       );
       setFormData(data);
       console.log(data);
@@ -1297,7 +1297,7 @@ const TrailSection = () => {
         console.error("❌ AdminAuthToken not found");
         return;
       }
-      const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation/${id}`, {
+      const response = await fetch(`https://api.alfurqanapp.com/evaluation/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

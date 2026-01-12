@@ -247,7 +247,7 @@ const TeacherDetails = () => {
         }
 
         const response = await fetch(
-          `https://api.blackstoneinfomaticstech.com/applicants/${teacherId}`,
+          `https://api.alfurqanapp.com/applicants/${teacherId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -280,7 +280,7 @@ const TeacherDetails = () => {
         }
 
         const response = await fetch(
-          `https://api.blackstoneinfomaticstech.com/classstudentsattendancecounts?teacherId=${teacherId}`,
+          `https://api.alfurqanapp.com/classstudentsattendancecounts?teacherId=${teacherId}`,
           {
             method: "GET",
             headers: {
@@ -319,7 +319,7 @@ const TeacherDetails = () => {
 
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${finalTeacherId}`,
+        `https://api.alfurqanapp.com/classShedule/teacher?teacherId=${finalTeacherId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

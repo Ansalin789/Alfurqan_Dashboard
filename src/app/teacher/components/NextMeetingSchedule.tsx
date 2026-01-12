@@ -129,7 +129,7 @@ const [timeRemaining, setTimeRemaining] = useState(0);
           return;
         }
 
-        const res = await axios.get("https://api.blackstoneinfomaticstech.com/teacherMeetinglist", {
+        const res = await axios.get("https://api.alfurqanapp.com/teacherMeetinglist", {
           params: { teacherId },
           headers: {
             "Content-Type": "application/json",

@@ -121,7 +121,7 @@ const TrailManagement = () => {
     try {
       setIsLoading(true);
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/alltrialclass",
+        "https://api.alfurqanapp.com/alltrialclass",
         {
           headers: {
             "Content-Type": "application/json",

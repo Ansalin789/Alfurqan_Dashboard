@@ -608,7 +608,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
           : null;
       console.log("submit", submitData);
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/evaluation",
+        "https://api.alfurqanapp.com/evaluation",
         submitData,
         {
           headers: {

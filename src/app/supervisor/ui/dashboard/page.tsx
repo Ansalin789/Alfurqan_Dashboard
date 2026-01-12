@@ -214,7 +214,7 @@ export default function Dashboard() {
     };
 
     const fetchApplicants = axios.get(
-      "https://api.blackstoneinfomaticstech.com/applicants",
+      "https://api.alfurqanapp.com/applicants",
       {
         headers: {
           "Content-Type": "application/json",
@@ -224,7 +224,7 @@ export default function Dashboard() {
     );
 
     const fetchDashboardCounts = axios.get(
-      "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts",
+      "https://api.alfurqanapp.com/dashboard/supervisor/counts",
       {
         headers: {
           "Content-Type": "application/json",
@@ -345,7 +345,7 @@ export default function Dashboard() {
           return;
         }
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/allMeetings",
+          "https://api.alfurqanapp.com/allMeetings",
           {
             headers: {
               "Content-Type": "application/json",
@@ -413,7 +413,7 @@ export default function Dashboard() {
         return;
       }
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/applicants",
+        "https://api.alfurqanapp.com/applicants",
         {
           headers: {
             "Content-Type": "application/json",

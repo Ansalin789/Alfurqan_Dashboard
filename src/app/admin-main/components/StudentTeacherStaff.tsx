@@ -46,7 +46,7 @@ const StudentTeacherStaff = () => {
   const fetchData = async (token: string) => {
     try {
       const res = await fetch(
-        "https://api.blackstoneinfomaticstech.com/dashboard/admin/count",
+        "https://api.alfurqanapp.com/dashboard/admin/count",
         {
           method: "GET",
           headers: {

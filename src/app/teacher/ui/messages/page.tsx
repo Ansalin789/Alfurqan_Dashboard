@@ -135,7 +135,7 @@ const Message = () => {
     console.error("❌ AdminAuthToken not found");
   }
       const response = await axios.get<IStudentResponse>(
-        "https://api.blackstoneinfomaticstech.com/alstudents",{
+        "https://api.alfurqanapp.com/alstudents",{
           headers: {
             'Authorization': `Bearer ${token}`
           },
@@ -159,7 +159,7 @@ const Message = () => {
     console.error("❌ AdminAuthToken not found");
   }
       const response = await axios.get<{ users: IUser[] }>(
-        "https://api.blackstoneinfomaticstech.com/users",
+        "https://api.alfurqanapp.com/users",
         {
           params: { role },
           headers: {
@@ -224,7 +224,7 @@ const Message = () => {
       }
 
       const { data } = await axios.get<IMessageResponse>(
-        `https://api.blackstoneinfomaticstech.com/realtimemessage/${userId}/${receiverId}`,
+        `https://api.alfurqanapp.com/realtimemessage/${userId}/${receiverId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 10000,
@@ -339,7 +339,7 @@ const Message = () => {
   }
       // Send the new message to the backend API
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/realtimemessage",
+        "https://api.alfurqanapp.com/realtimemessage",
         newMessage,
         {
           headers: {

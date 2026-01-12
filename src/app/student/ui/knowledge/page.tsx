@@ -77,7 +77,7 @@ const Knowledge: React.FC = () => {
         if (!token) return;
 
         const response = await fetch(
-          'https://api.blackstoneinfomaticstech.com/knowledgebase/list',
+          'https://api.alfurqanapp.com/knowledgebase/list',
           {
             headers: {
               'Content-Type': 'application/json',
@@ -118,7 +118,7 @@ const Knowledge: React.FC = () => {
         }
 
         const response = await axios.get(
-          'https://api.blackstoneinfomaticstech.com/knowledgebase/list',
+          'https://api.alfurqanapp.com/knowledgebase/list',
           {
             headers: { Authorization: `Bearer ${token}` },
           }

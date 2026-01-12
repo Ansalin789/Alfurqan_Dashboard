@@ -127,7 +127,7 @@ export default function Page() {
 
   const fetchInvoice = (token: string) => {
     axios
-      .get("https://api.blackstoneinfomaticstech.com/studentinvoice/list", {
+      .get("https://api.alfurqanapp.com/studentinvoice/list", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -241,7 +241,7 @@ export default function Page() {
   const fetchInvoiceCounts = async (token: string) => {
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/invoicecounts",
+        "https://api.alfurqanapp.com/invoicecounts",
         {
           method: "GET",
           headers: {

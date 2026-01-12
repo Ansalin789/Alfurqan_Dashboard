@@ -81,7 +81,7 @@ const Classes = () => {
         }
 
         const response = await axios.get<ClassScheduleResponse>(
-          `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${teacherIdToFilter}`,
+          `https://api.alfurqanapp.com/classShedule/teacher?teacherId=${teacherIdToFilter}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

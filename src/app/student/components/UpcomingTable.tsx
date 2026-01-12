@@ -67,7 +67,7 @@ const UpcomingTable = () => {
         }
 
         const response = await axios.get<ApiResponse>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/students",
+          "https://api.alfurqanapp.com/classShedule/students",
           {
             params: { studentId },
             headers: {

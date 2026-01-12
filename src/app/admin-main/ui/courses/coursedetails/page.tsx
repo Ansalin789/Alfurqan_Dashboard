@@ -100,7 +100,7 @@ const Page = () => {
     console.log("📥 Fetching courses...");
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/courses",
+        "https://api.alfurqanapp.com/courses",
         {
           method: "GET",
           headers: {
@@ -217,7 +217,7 @@ const Page = () => {
       }
       // API call to create course
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/courses",
+        "https://api.alfurqanapp.com/courses",
         {
           method: "POST",
           headers: {

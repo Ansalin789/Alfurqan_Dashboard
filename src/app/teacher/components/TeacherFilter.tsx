@@ -127,7 +127,7 @@ const TeacherFilter = () => {
         if (!token || !teacherId) return;
 
         const response = await axios.get<MeetingResponse>(
-          `https://api.blackstoneinfomaticstech.com/teacherMeetinglist`,
+          `https://api.alfurqanapp.com/teacherMeetinglist`,
           {
             params: { teacherId },
             headers: {
@@ -299,7 +299,7 @@ const TeacherFilter = () => {
     console.log("Sending payload:", payload);
     try {
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${meetingId}`,
+        `https://api.alfurqanapp.com/updateTeacherMeeting/${meetingId}`,
         payload,
         {
           headers: {

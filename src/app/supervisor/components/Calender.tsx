@@ -60,7 +60,7 @@ const Academic: React.FC = () => {
         }
 
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/allMeetings",
+          "https://api.alfurqanapp.com/allMeetings",
           {
             headers: {
               "Content-Type": "application/json",

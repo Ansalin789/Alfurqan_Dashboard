@@ -132,7 +132,7 @@ const TeachersSchedule = () => {
         }
 
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
+          "https://api.alfurqanapp.com/classShedule/teacher",
           {
             params: { teacherId },
             headers: {
@@ -318,7 +318,7 @@ const TeachersSchedule = () => {
       };
 
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/classShedule/requestReshedule`,
+        `https://api.alfurqanapp.com/classShedule/requestReshedule`,
         payload,
         {
           headers: {

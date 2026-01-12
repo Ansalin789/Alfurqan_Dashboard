@@ -49,7 +49,7 @@ const fetchMeetings = async () => {
 
   try {
     const response = await fetch(
-      "https://api.blackstoneinfomaticstech.com/allAdminMeeting",
+      "https://api.alfurqanapp.com/allAdminMeeting",
       {
         headers: {
           Authorization: `Bearer ${token}`,

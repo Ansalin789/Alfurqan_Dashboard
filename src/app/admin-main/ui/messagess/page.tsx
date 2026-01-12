@@ -101,7 +101,7 @@ const Message = () => {
       }
 
       const response = await axios.get<{ users: IUser[] }>(
-        "https://api.blackstoneinfomaticstech.com/users",
+        "https://api.alfurqanapp.com/users",
         {
           headers: {
             "Content-Type": "application/json",
@@ -160,7 +160,7 @@ const Message = () => {
       }
 
       const { data } = await axios.get<IMessageResponse>(
-        `https://api.blackstoneinfomaticstech.com/realtimemessage/${userId}/${receiverId}`,
+        `https://api.alfurqanapp.com/realtimemessage/${userId}/${receiverId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -234,7 +234,7 @@ const Message = () => {
   // Initialize socket connection
   useEffect(() => {
     if (!socketRef.current) {
-      socketRef.current = io("https://api.blackstoneinfomaticstech.com", {
+      socketRef.current = io("https://api.alfurqanapp.com", {
         transports: ["websocket"],
         withCredentials: true,
         reconnection: true,
@@ -381,7 +381,7 @@ const Message = () => {
         return;
       }
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/realtimemessage",
+        "https://api.alfurqanapp.com/realtimemessage",
         newMessage,
         {
           headers: {

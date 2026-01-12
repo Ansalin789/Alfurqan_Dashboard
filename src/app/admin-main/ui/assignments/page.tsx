@@ -80,7 +80,7 @@ const Page = () => {
   const fetchCourses = async (token: string) => {
     console.log("📥 Fetching courses...");
     try {
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/courses", {
+      const response = await fetch("https://api.alfurqanapp.com/courses", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

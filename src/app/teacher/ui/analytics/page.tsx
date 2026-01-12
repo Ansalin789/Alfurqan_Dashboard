@@ -195,7 +195,7 @@ function Analytics() {
 
       try {
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts?teacherId=${teacherId}`,
+          `https://api.alfurqanapp.com/dashboard/teacher/counts?teacherId=${teacherId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -234,7 +234,7 @@ function Analytics() {
         }
 
         const response = await axios.get<SimpleStudent[]>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list",
+          "https://api.alfurqanapp.com/classShedule/teacher/list",
           {
             params: { teacherId },
             headers: {
@@ -269,7 +269,7 @@ function Analytics() {
         }
 
         const response = await axios.get<ClassScheduleResponse>(
-          `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${teacherIdToFilter}`,
+          `https://api.alfurqanapp.com/classShedule/teacher?teacherId=${teacherIdToFilter}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

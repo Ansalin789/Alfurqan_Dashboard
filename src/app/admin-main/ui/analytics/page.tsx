@@ -124,7 +124,7 @@ const CountriesCard = () => {
 
   const fetchData = async (token: string) => {
     try {
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/amountbycountry", {
+      const response = await fetch("https://api.alfurqanapp.com/amountbycountry", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -179,7 +179,7 @@ const CoursesChart = () => {
   useEffect(() => {
     const fetchData = async (token: string) => {
       try {
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/amountbycourse", {
+        const response = await axios.get("https://api.alfurqanapp.com/amountbycourse", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -295,7 +295,7 @@ useEffect(()=>{
 
   useEffect(() => {
     if (!socketRef.current) {
-      socketRef.current = io("https://api.blackstoneinfomaticstech.com", {
+      socketRef.current = io("https://api.alfurqanapp.com", {
         transports: ["websocket"],
         withCredentials: true,
         reconnection: true,
@@ -336,7 +336,7 @@ useEffect(()=>{
   useEffect(() => {
     const fetchMeetings = async (token: string) => {
       try {
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/amountbycourse", {
+        const response = await axios.get("https://api.alfurqanapp.com/amountbycourse", {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
@@ -386,7 +386,7 @@ useEffect(()=>{
   useEffect(() => {
     const fetchInvoices = async (token: string) => {
       try {
-        const response = await fetch("https://api.blackstoneinfomaticstech.com/studentinvoice", {
+        const response = await fetch("https://api.alfurqanapp.com/studentinvoice", {
           method: "GET",
           headers: {
             'Content-Type': 'application/json',
@@ -422,7 +422,7 @@ useEffect(()=>{
 
   const fetchVisitorData = async (token: string) => {
     try {
-      const res = await fetch("https://api.blackstoneinfomaticstech.com/studentvisitor", {
+      const res = await fetch("https://api.alfurqanapp.com/studentvisitor", {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -449,7 +449,7 @@ useEffect(()=>{
   const fetchRevenueData = async (year: number, token: string) => {
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/studentrevenue?year=${year}`,
+        `https://api.alfurqanapp.com/studentrevenue?year=${year}`,
         {
           method: "GET",
           headers: {

@@ -185,7 +185,7 @@ const ApplicantsList: React.FC = () => {
   const fetchApplicants = async (token: string) => {
     try {
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/applicants",
+        "https://api.alfurqanapp.com/applicants",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -221,7 +221,7 @@ const ApplicantsList: React.FC = () => {
       }
 
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/admin/${id}`,
+        `https://api.alfurqanapp.com/admin/${id}`,
         {
           applicationStatus: status,
         },

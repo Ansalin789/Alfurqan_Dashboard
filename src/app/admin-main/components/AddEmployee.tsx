@@ -186,7 +186,7 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
       console.log("Form data being sent:", Object.fromEntries(formPayload));
 
       await axios.post(
-        "https://api.blackstoneinfomaticstech.com/otheremployee",
+        "https://api.alfurqanapp.com/otheremployee",
         formPayload,
         {
           headers: {

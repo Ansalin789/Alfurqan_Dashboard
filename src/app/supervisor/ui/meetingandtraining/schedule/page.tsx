@@ -156,7 +156,7 @@ const Schedules: React.FC = () => {
     console.error("❌ SupervisorAuthToken not found");
     return;
   } 
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings",
+        const response = await axios.get("https://api.alfurqanapp.com/allMeetings",
           {
             headers:{
               "Content-Type":"application/json",

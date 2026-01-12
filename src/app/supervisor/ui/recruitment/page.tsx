@@ -208,7 +208,7 @@ const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
 
      
     console.log("file " , resumeData)
-    const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${resumeData}`, {
+    const res = await fetch(`https://api.alfurqanapp.com/files/view/${resumeData}`, {
       method: "GET",
     });
 
@@ -409,7 +409,7 @@ export default function ApplicantsPage() {
     }
     try {
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/applicants",
+        "https://api.alfurqanapp.com/applicants",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -449,7 +449,7 @@ export default function ApplicantsPage() {
   const fetchAndOpenFile = async (fileId: string) => {
   try {
     console.log("file ",fileId)
-    const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${fileId}`, {
+    const res = await fetch(`https://api.alfurqanapp.com/files/view/${fileId}`, {
       method: "GET",
     });
 
@@ -621,7 +621,7 @@ export default function ApplicantsPage() {
       }
 
       const response = await axios.get<ApiResponse>(
-        `https://api.blackstoneinfomaticstech.com/applicants/${_id}`,
+        `https://api.alfurqanapp.com/applicants/${_id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -837,7 +837,7 @@ const handlesendupdate = async (id: string, status: string) => {
     }
 
     const response = await axios.put(
-      `https://api.blackstoneinfomaticstech.com/applicants/${id}`,
+      `https://api.alfurqanapp.com/applicants/${id}`,
       updateData,
       {
         headers: {

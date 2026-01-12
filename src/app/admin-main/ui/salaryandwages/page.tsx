@@ -91,7 +91,7 @@ const SalaryCard = () => {
     const fetchSalaryCardCounts = async () => {
       try {
         const response = await axios.get<SalaryCardCounts>(
-          "https://api.blackstoneinfomaticstech.com/salarywagesCardCount",
+          "https://api.alfurqanapp.com/salarywagesCardCount",
           {
             headers: {
               "Content-Type": "application/json",
@@ -121,7 +121,7 @@ const SalaryCard = () => {
     const fetchSalaryWages = async () => {
       try {
         const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/salarywages",
+          "https://api.alfurqanapp.com/salarywages",
           {
             method: "GET",
             headers: {
@@ -693,7 +693,7 @@ const SalaryCard = () => {
                         paymentStatus: editForm.paymentStatus,
                         paymentDate: editForm.paymentDate,
                       };
-                      const url = `https://api.blackstoneinfomaticstech.com/salarywages/${selectedSalarys.employeeId}`;
+                      const url = `https://api.alfurqanapp.com/salarywages/${selectedSalarys.employeeId}`;
                       console.log("PUT request to:", url);
                       console.log("Payload:", payload);
                       const response = await axios.put(url, payload, {

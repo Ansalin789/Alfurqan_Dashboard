@@ -84,7 +84,7 @@ const SalaryCard = () => {
   const fetchClassData = async (token: string) => {
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/classShedule",
+        "https://api.alfurqanapp.com/classShedule",
         {
           method: "GET",
           headers: {

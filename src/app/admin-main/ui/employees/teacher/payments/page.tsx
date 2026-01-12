@@ -83,7 +83,7 @@ const page = () => {
       }
       try {
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/salarywagesById?employeeId=${employeeId}`,
+          `https://api.alfurqanapp.com/salarywagesById?employeeId=${employeeId}`,
           {
             headers: {
               "Content-Type": "application/json",

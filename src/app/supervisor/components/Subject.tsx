@@ -42,7 +42,7 @@ const GenderPieChart: React.FC = () => {
         }
 
         const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/teacherfemalemale",
+          "https://api.alfurqanapp.com/teacherfemalemale",
           {
             headers: {
               "Content-Type": "application/json",

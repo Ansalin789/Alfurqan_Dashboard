@@ -5,7 +5,7 @@ let socket: Socket | null = null;
 
 export const getSocket = (userId: string): Socket => {
   if (!socket) {
-    socket = io('https://api.blackstoneinfomaticstech.com', {
+    socket = io('https://api.alfurqanapp.com', {
       transports: ['websocket'],
       withCredentials: true,
       reconnection: true,

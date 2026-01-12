@@ -33,7 +33,7 @@ export default function Countries() {
 
       try {
         const res = await fetch(
-          `https://api.blackstoneinfomaticstech.com/alstudents/studentscountrycount`,
+          `https://api.alfurqanapp.com/alstudents/studentscountrycount`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

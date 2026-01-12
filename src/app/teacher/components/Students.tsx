@@ -31,7 +31,7 @@ const StudentsCard: React.FC = () => {
       }
 
       const response = await axios.get<TeacherAnalyticsResponse>(
-        `https://api.blackstoneinfomaticstech.com/teacher-student-count?teacherId=${teacherId}`,
+        `https://api.alfurqanapp.com/teacher-student-count?teacherId=${teacherId}`,
         {
           headers: {
             'Content-Type': 'application/json',

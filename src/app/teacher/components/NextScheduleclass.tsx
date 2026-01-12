@@ -58,7 +58,7 @@ const NextScheduledClass = () => {
         return;
       }
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
+        "https://api.alfurqanapp.com/classShedule/teacher",
         {
           params: { teacherId },
           headers: {
@@ -162,7 +162,7 @@ const NextScheduledClass = () => {
 
         try {
           await axios.post(
-            "https://api.blackstoneinfomaticstech.com/classSession/triggerEnd",
+            "https://api.alfurqanapp.com/classSession/triggerEnd",
             { sessionId: classData._id },
             {
               headers: {

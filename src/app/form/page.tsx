@@ -214,7 +214,7 @@ const MultiStepForm = () => {
       // Debug log to check the data being sent
       console.log("Sending data:", formattedData);
     
-      const response = await fetch(`https://api.blackstoneinfomaticstech.com/student`, {
+      const response = await fetch(`https://api.alfurqanapp.com/student`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

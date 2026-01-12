@@ -377,7 +377,7 @@ const ManageStudentView = () => {
         }
 
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/assignments/questionlist`,
+          `https://api.alfurqanapp.com/assignments/questionlist`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -477,7 +477,7 @@ const ManageStudentView = () => {
         }
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/assignments/cardcount?studentId=${studentId}`,
+          `https://api.alfurqanapp.com/assignments/cardcount?studentId=${studentId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -631,7 +631,7 @@ const ManageStudentView = () => {
       }
 
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
+        `https://api.alfurqanapp.com/alstudents/${studentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

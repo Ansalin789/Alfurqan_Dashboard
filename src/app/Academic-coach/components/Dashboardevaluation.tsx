@@ -29,7 +29,7 @@ const StudentEvaluation = () => {
     return;
   }
     axios
-      .get(`https://api.blackstoneinfomaticstech.com/evaluationlist`, {
+      .get(`https://api.alfurqanapp.com/evaluationlist`, {
         params: { academicCoachId: academicId },
         headers: {
           "Content-Type": "application/json",

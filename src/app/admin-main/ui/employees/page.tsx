@@ -404,7 +404,7 @@ const Page = () => {
 
     // Fetch teacher status count
     axios
-      .get("https://api.blackstoneinfomaticstech.com/teacher/statuscount", {
+      .get("https://api.alfurqanapp.com/teacher/statuscount", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -452,7 +452,7 @@ const Page = () => {
     // Fetch teacher gender count
     axios
       .get<GenderResponse>(
-        "https://api.blackstoneinfomaticstech.com/teacher/gendercount",
+        "https://api.alfurqanapp.com/teacher/gendercount",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -482,7 +482,7 @@ const Page = () => {
     // Fetch student count by country
     axios
       .get(
-        "https://api.blackstoneinfomaticstech.com/applicants/countriescount",
+        "https://api.alfurqanapp.com/applicants/countriescount",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -498,7 +498,7 @@ const Page = () => {
     const fetchTeachers = async () => {
       try {
         const res = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/users?role=TEACHER",
+          "https://api.alfurqanapp.com/users?role=TEACHER",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -527,7 +527,7 @@ const Page = () => {
     const fetchDataemp = async () => {
       try {
         const res = await fetch(
-          "https://api.blackstoneinfomaticstech.com/otherempcount",
+          "https://api.alfurqanapp.com/otherempcount",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -554,7 +554,7 @@ const Page = () => {
     const fetchGenderData = async () => {
       try {
         const res = await fetch(
-          "https://api.blackstoneinfomaticstech.com/otheremp/gendercount",
+          "https://api.alfurqanapp.com/otheremp/gendercount",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -585,7 +585,7 @@ const Page = () => {
     const fetchEmployees = async () => {
       try {
         const res = await fetch(
-          "https://api.blackstoneinfomaticstech.com/otheremployees",
+          "https://api.alfurqanapp.com/otheremployees",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -605,7 +605,7 @@ const Page = () => {
     const fetchCounts = async () => {
       try {
         const response = await axios.get<DashboardCounts>(
-          "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts",
+          "https://api.alfurqanapp.com/dashboard/supervisor/counts",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -621,7 +621,7 @@ const Page = () => {
 
     // Fetch other employee count by country
     axios
-      .get("https://api.blackstoneinfomaticstech.com/otheremp/countriescount", {
+      .get("https://api.alfurqanapp.com/otheremp/countriescount", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -640,7 +640,7 @@ const Page = () => {
       if (!token) return;
       try {
         const res = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/leaverequest/card",
+          "https://api.alfurqanapp.com/leaverequest/card",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -661,7 +661,7 @@ const Page = () => {
       if (!token) return;
       try {
         const res = await axios.get<LeaveSummaryListResponse>(
-          "https://api.blackstoneinfomaticstech.com/leavesummary/list",
+          "https://api.alfurqanapp.com/leavesummary/list",
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const sortedData = res.data.leavesummary.sort(
@@ -757,7 +757,7 @@ const Page = () => {
   function handlePortalAccess(username: string, password: string) {
     const encodedUsername = encodeURIComponent(username);
     const encodedPassword = encodeURIComponent(password);
-    const portalURL = `https://blackstoneinfomaticstech.com/teacher/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
+    const portalURL = `https://alfurqanapp.com/teacher/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
     window.location.href = portalURL;
   }
   function handlePortalAccessforemployee(username: string, password: string, roles: string[]) {
@@ -767,11 +767,11 @@ const Page = () => {
     let portalURL = "";
 
     if (roles.includes("ACADEMICCOACH")) {
-      portalURL = `https://blackstoneinfomaticstech.com/Academic-coach/ui/login?username=${encodedUsername}&password=${encodedPassword}`;
+      portalURL = `https://alfurqanapp.com/Academic-coach/ui/login?username=${encodedUsername}&password=${encodedPassword}`;
     } else if (roles.includes("ADMIN")) {
-      portalURL = `https://blackstoneinfomaticstech.com/admin-main/ui/login?username=${encodedUsername}&password=${encodedPassword}`;
+      portalURL = `https://alfurqanapp.com/admin-main/ui/login?username=${encodedUsername}&password=${encodedPassword}`;
     } else {
-      portalURL = `https://blackstoneinfomaticstech.com/supervisor/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
+      portalURL = `https://alfurqanapp.com/supervisor/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
     }
 
     window.location.href = portalURL;
@@ -815,7 +815,7 @@ const Page = () => {
         return;
       }
       await axios.post(
-        "https://api.blackstoneinfomaticstech.com/otheremployee",
+        "https://api.alfurqanapp.com/otheremployee",
         form,
         {
           headers: {
@@ -852,7 +852,7 @@ const Page = () => {
 
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/leavesummary/${selectedLeave?.id}`,
+        `https://api.alfurqanapp.com/leavesummary/${selectedLeave?.id}`,
         {
           method: "PUT",
           headers: {

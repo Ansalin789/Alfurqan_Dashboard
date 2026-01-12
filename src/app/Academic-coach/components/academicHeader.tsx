@@ -129,7 +129,7 @@ export default function AcademicHeader({
             ? localStorage.getItem("AcademicCoachPortalId")
             : null;
         const { data } = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/notification/getlist?receiverId=${userId}`,
+          `https://api.alfurqanapp.com/notification/getlist?receiverId=${userId}`,
           {
             method: "GET",
             headers: {
@@ -163,7 +163,7 @@ export default function AcademicHeader({
       }
 
       await axios.put(
-        `https://api.blackstoneinfomaticstech.com/notification/${notificationId}`,
+        `https://api.alfurqanapp.com/notification/${notificationId}`,
         {
           isRead: true,
           notificationStatus: "Seen",
@@ -208,7 +208,7 @@ export default function AcademicHeader({
           ? localStorage.getItem("AcademicCoachAuthToken")
           : null;
       await axios.post(
-        "https://api.blackstoneinfomaticstech.com/signout",
+        "https://api.alfurqanapp.com/signout",
         {},
         {
           headers: {

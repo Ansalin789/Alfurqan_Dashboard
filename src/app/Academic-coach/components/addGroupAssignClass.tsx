@@ -168,7 +168,7 @@ export default function AddGroupAssignClass({
             ? localStorage.getItem("AcademicCoachAuthToken")
             : null;
 
-        const url = `https://api.blackstoneinfomaticstech.com/users?role=TEACHER`;
+        const url = `https://api.alfurqanapp.com/users?role=TEACHER`;
 
         const response = await axios.get(url, {
           headers: {
@@ -390,7 +390,7 @@ export default function AddGroupAssignClass({
       }
 
       const response = await axios.post(
-        " https://api.blackstoneinfomaticstech.com/groupclassschedule/bulkcreate",
+        " https://api.alfurqanapp.com/groupclassschedule/bulkcreate",
         requestData,
         {
           headers: {

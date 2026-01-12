@@ -443,7 +443,7 @@ const Teacher = () => {
 
       // Step 4: Send API request
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/empwages/${wageId}`,
+        `https://api.alfurqanapp.com/empwages/${wageId}`,
         updatedWage,
         {
           headers: {
@@ -492,7 +492,7 @@ const Teacher = () => {
   const fetchUsers = async (token: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/users/${employeeId}`,
+        `https://api.alfurqanapp.com/users/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -510,7 +510,7 @@ const Teacher = () => {
   const fetchSchedule = async (token: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`,
+        `https://api.alfurqanapp.com/classShedule/teacher?teacherId=${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -536,7 +536,7 @@ const Teacher = () => {
         );
 
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts`,
+          `https://api.alfurqanapp.com/dashboard/teacher/counts`,
           {
             params: { teacherId: employeeId },
             headers: {
@@ -561,7 +561,7 @@ const Teacher = () => {
   const fetchWages = async (token: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/empwages`,
+        `https://api.alfurqanapp.com/empwages`,
         {
           params: {
             employeeId: employeeId,
@@ -584,7 +584,7 @@ const Teacher = () => {
   const fetchClasses = async (token: string) => {
     try {
       const res = await axios.get<StudentData[]>(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacher/list?teacherId=${employeeId}`,
+        `https://api.alfurqanapp.com/classShedule/teacher/list?teacherId=${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -611,7 +611,7 @@ const Teacher = () => {
       }
       try {
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/shiftschedule/${employeeId}`,
+          `https://api.alfurqanapp.com/shiftschedule/${employeeId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -641,7 +641,7 @@ const Teacher = () => {
       }
       try {
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/teacheroverview?teacherId=${employeeId}`,
+          `https://api.alfurqanapp.com/teacheroverview?teacherId=${employeeId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -670,7 +670,7 @@ const Teacher = () => {
       }
       try {
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/salarywagesById?employeeId=${employeeId}`,
+          `https://api.alfurqanapp.com/salarywagesById?employeeId=${employeeId}`,
           {
             headers: {
               "Content-Type": "application/json",

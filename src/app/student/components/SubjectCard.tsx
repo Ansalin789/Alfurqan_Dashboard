@@ -35,7 +35,7 @@ const Subjectcard: React.FC = () => {
         if (!studentId || !token) return;
 
         const response = await axios.get<ApiResponse>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/students",
+          "https://api.alfurqanapp.com/classShedule/students",
           {
             params: { studentId },
             headers: {
@@ -118,7 +118,7 @@ const Subjectcard: React.FC = () => {
           return;
         }
 
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/dashboard/student/counts", {
+        const response = await axios.get("https://api.alfurqanapp.com/dashboard/student/counts", {
           params: { studentId, courseName },
           headers: {
             "Content-Type": "application/json",

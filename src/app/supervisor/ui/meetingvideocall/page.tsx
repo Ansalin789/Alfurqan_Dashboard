@@ -114,7 +114,7 @@ export default function Page() {
         }
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/meeting/${meetingId}`,
+          `https://api.alfurqanapp.com/meeting/${meetingId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -191,7 +191,7 @@ const payload = {
       }
 
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/meetingminutes/${meetingId}`,
+        `https://api.alfurqanapp.com/meetingminutes/${meetingId}`,
         {
           method: "PUT",
           headers: {
@@ -300,7 +300,7 @@ const payload = {
                   {roomName && (
                     <JitsiMeeting
                       roomName={roomName}
-                      domain="meet.blackstoneinfomaticstech.com"
+                      domain="meet.alfurqanapp.com"
                       configOverwrite={{
                         startWithAudioMuted: false,
                         startWithVideoMuted: false,

@@ -77,7 +77,7 @@ export default function Page() {
 
         // Use correct query string and expect array response
         const response = await axios.get<Meeting[]>(
-          `https://api.blackstoneinfomaticstech.com/allAdminMeeting/meetingId?meetingId=${meetingId}`,
+          `https://api.alfurqanapp.com/allAdminMeeting/meetingId?meetingId=${meetingId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -164,7 +164,7 @@ export default function Page() {
       }
 
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/allAdminMeeting/update/${meetingId}`,
+        `https://api.alfurqanapp.com/allAdminMeeting/update/${meetingId}`,
         {
           method: "PUT",
           headers: {
@@ -278,7 +278,7 @@ export default function Page() {
                   {roomName && (
                     <JitsiMeeting
                       roomName={roomName}
-                      domain="meet.blackstoneinfomaticstech.com"
+                      domain="meet.alfurqanapp.com"
                       configOverwrite={{
                         startWithAudioMuted: false,
                         startWithVideoMuted: false,

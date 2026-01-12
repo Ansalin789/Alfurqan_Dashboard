@@ -122,7 +122,7 @@ const Trailclasslist = () => {
   const getAllUsers = async (token: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/alltrialclass", {
+      const response = await fetch("https://api.alfurqanapp.com/alltrialclass", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

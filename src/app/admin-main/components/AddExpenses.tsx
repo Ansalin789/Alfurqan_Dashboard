@@ -31,7 +31,7 @@ interface AddExpensesProps {
 }
 
 const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) => {
-  const API_URL = "https://api.blackstoneinfomaticstech.com";
+  const API_URL = "https://api.alfurqanapp.com";
   const ADMIN_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IkFkbWluIiwic3ViIjoiNjgwNWRhOGMwNjU0MmFhMzM4NThiODg5IiwiaWF0IjoxNzUzMTYxMDQxLCJleHAiOjE3NTMyNDc0NDF9.EK8JgTJWzUDyQTY1ZReIAt0-LEhq2m1euQfPztK0-VE";
 
   const [formData, setFormData] = useState<ExpenseFormData>({

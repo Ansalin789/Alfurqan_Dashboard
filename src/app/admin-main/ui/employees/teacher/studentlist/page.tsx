@@ -219,7 +219,7 @@ const page = () => {
   const fetchUsers = async (token: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/users/${employeeId}`,
+        `https://api.alfurqanapp.com/users/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -236,7 +236,7 @@ const page = () => {
   const fetchSchedule = async (token: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`,
+        `https://api.alfurqanapp.com/classShedule/teacher?teacherId=${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -253,7 +253,7 @@ const page = () => {
   const fetchClasses = async (token: string) => {
     try {
       const res = await axios.get<StudentData[]>(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacher/list?teacherId=${employeeId}`,
+        `https://api.alfurqanapp.com/classShedule/teacher/list?teacherId=${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",

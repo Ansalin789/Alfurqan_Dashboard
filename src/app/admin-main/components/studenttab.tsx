@@ -6,7 +6,7 @@ import { PieChart, Pie, Cell } from "recharts";
 import { useRouter } from "next/navigation";
 import Pagination from "@/components/Pagination";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.blackstoneinfomaticstech.com";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.alfurqanapp.com";
 
 type TabbedTableProps = {
   studentId: string;
@@ -724,7 +724,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
           return;
         }
 
-        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/student/paymenthistory?userId=${applicationStudentId}`, { // Use applicationStudentId
+        const response = await axios.get(`https://api.alfurqanapp.com/student/paymenthistory?userId=${applicationStudentId}`, { // Use applicationStudentId
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

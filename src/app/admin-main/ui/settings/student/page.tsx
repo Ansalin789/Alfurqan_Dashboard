@@ -66,7 +66,7 @@ const StudentModuleAccess = () => {
   const fetchEmployeeData = async (token: string) => {
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
+        `https://api.alfurqanapp.com/update-access/${employeeId}`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -163,7 +163,7 @@ const StudentModuleAccess = () => {
       if (!token) return;
 
       await axios.put(
-        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
+        `https://api.alfurqanapp.com/update-access/${employeeId}`,
         { roleAccess },
         {
           headers: {

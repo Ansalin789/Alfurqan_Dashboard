@@ -68,7 +68,7 @@ const NextTrailSession = () => {
 
       try {
         const response = await axios.get<TrialClass[]>(
-          `https://api.blackstoneinfomaticstech.com/teachertrialclass`,
+          `https://api.alfurqanapp.com/teachertrialclass`,
           {
             params: { teacherId },
             headers: {

@@ -233,7 +233,7 @@ const ScheduledClasses = () => {
 
     axios
       .get<{ totalCount: number; applicants: ApiResponse[] }>(
-        "https://api.blackstoneinfomaticstech.com/applicants",
+        "https://api.alfurqanapp.com/applicants",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -283,7 +283,7 @@ const ScheduledClasses = () => {
 
       try {
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/allMeetings?supervisorId=${supervisorId}`,
+          `https://api.alfurqanapp.com/allMeetings?supervisorId=${supervisorId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -388,7 +388,7 @@ const handleRescheduleSubmit = async () => {
     const targetId = selectedItemId; // must be Mongo _id
 
     const response = await fetch(
-      `https://api.blackstoneinfomaticstech.com/meeting/${targetId}`,
+      `https://api.alfurqanapp.com/meeting/${targetId}`,
       {
         method: "PUT",
         headers: {
@@ -527,7 +527,7 @@ const handleRescheduleSubmit = async () => {
     if (status) params["meetingStatus"] = status;
 
     try {
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", {
+      const response = await axios.get("https://api.alfurqanapp.com/allMeetings", {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

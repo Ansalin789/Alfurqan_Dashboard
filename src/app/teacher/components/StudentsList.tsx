@@ -131,7 +131,7 @@ const Page = () => {
         console.log("Fetching data for teacherId:", teacherId);
 
         const res = await axios.get<StudentWithAssignments[]>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list",
+          "https://api.alfurqanapp.com/classShedule/teacher/list",
           {
             headers: {
               "Content-Type": "application/json",

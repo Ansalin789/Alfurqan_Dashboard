@@ -235,7 +235,7 @@ const minutes = ["00", "30"];
         return;
       }
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/recruit",
+        "https://api.alfurqanapp.com/recruit",
         formData,
         {
           headers: {

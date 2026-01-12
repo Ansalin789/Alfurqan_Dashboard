@@ -124,7 +124,7 @@ export default function ApplicantsPage() {
   const fetchLeaveRequests = async (token: string) => {
     try {
       const res = await axios.get<LeaveSummaryListResponse>(
-        "https://api.blackstoneinfomaticstech.com/leavesummary/list",
+        "https://api.alfurqanapp.com/leavesummary/list",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const sortedData = res.data.leavesummary.sort(
@@ -155,7 +155,7 @@ export default function ApplicantsPage() {
 
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/leavesummary/${selectedLeave?.summaryId}`,
+        `https://api.alfurqanapp.com/leavesummary/${selectedLeave?.summaryId}`,
         {
           method: "PUT",
           headers: {
@@ -203,7 +203,7 @@ export default function ApplicantsPage() {
 
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/leavesummary/${selectedLeave?.summaryId}`,
+        `https://api.alfurqanapp.com/leavesummary/${selectedLeave?.summaryId}`,
         {
           method: "PUT",
           headers: {

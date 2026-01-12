@@ -170,7 +170,7 @@ useEffect(() => {
         return;
       }
 
-      const res = await fetch(`https://api.blackstoneinfomaticstech.com/assignments/?assignmentId=${assignmentId}&studentId=${studentId}`, {
+      const res = await fetch(`https://api.alfurqanapp.com/assignments/?assignmentId=${assignmentId}&studentId=${studentId}`, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`

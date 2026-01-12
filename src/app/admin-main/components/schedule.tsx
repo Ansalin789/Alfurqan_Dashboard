@@ -74,7 +74,7 @@ const DashboardClasses = () => {
   const fetchClassData = async (token: string) => {
     try {
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/classShedule/totalclasses?dateRange=${duration}`,
+        `https://api.alfurqanapp.com/classShedule/totalclasses?dateRange=${duration}`,
         {
           method: "GET",
           headers: {
@@ -121,7 +121,7 @@ const DashboardClasses = () => {
           return;
         }
         const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/classShedule/classstatuscount",
+          "https://api.alfurqanapp.com/classShedule/classstatuscount",
           {
             headers: {
               "Content-Type": "application/json",
@@ -176,7 +176,7 @@ const DashboardClasses = () => {
 
       try {
         const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/classShedule/classwisecount",
+          "https://api.alfurqanapp.com/classShedule/classwisecount",
           {
             method: "GET",
             headers: {

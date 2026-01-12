@@ -59,7 +59,7 @@ const LiveMeeting = () => {
           return;
         }
 
-        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/teacherMeeting`, {
+        const response = await axios.get(`https://api.alfurqanapp.com/teacherMeeting`, {
           params: { meetingId },
           headers: {
             "Content-Type": "application/json",
@@ -136,7 +136,7 @@ const LiveMeeting = () => {
 
     try {
       const token = localStorage.getItem("TeacherAuthToken");
-      await axios.put(`https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${meetingId}`, payload, {
+      await axios.put(`https://api.alfurqanapp.com/updateTeacherMeeting/${meetingId}`, payload, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -187,7 +187,7 @@ const LiveMeeting = () => {
                 {roomName && (
                   <JitsiMeeting
                     roomName={roomName}
-                    domain="meet.blackstoneinfomaticstech.com"
+                    domain="meet.alfurqanapp.com"
                     configOverwrite={{
                       startWithAudioMuted: false,
                       startWithVideoMuted: false,

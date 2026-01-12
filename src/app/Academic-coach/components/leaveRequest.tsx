@@ -50,7 +50,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
     if (Id) {
       const token = typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
       axios
-        .get(`https://api.blackstoneinfomaticstech.com/leaverequest?employeeId=${Id}`, {
+        .get(`https://api.alfurqanapp.com/leaverequest?employeeId=${Id}`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -106,7 +106,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
           : null;
 
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/leaverequest",
+        "https://api.alfurqanapp.com/leaverequest",
         form,
         {
           headers: {

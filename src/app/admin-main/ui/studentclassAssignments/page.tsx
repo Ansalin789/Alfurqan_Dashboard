@@ -82,7 +82,7 @@ const StudentClassAssignmentsPage = () => {
           return;
         }
 
-        const res = await fetch(`https://api.blackstoneinfomaticstech.com/assignments/student?studentId=${studentId}`, { // Use the studentId state
+        const res = await fetch(`https://api.alfurqanapp.com/assignments/student?studentId=${studentId}`, { // Use the studentId state
           headers: {
             "Authorization": `Bearer ${token}`,
           },
@@ -124,7 +124,7 @@ const StudentClassAssignmentsPage = () => {
           return;
         }
 
-        const res = await fetch(`https://api.blackstoneinfomaticstech.com/assignments/student?studentId=${studentId}`, {
+        const res = await fetch(`https://api.alfurqanapp.com/assignments/student?studentId=${studentId}`, {
           headers: {
             "Authorization": `Bearer ${token}`,
           },

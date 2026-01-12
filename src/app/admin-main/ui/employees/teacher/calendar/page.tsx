@@ -76,7 +76,7 @@ const SchedulePage = () => {
     return;
     }
     axios.get(
-          `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`,
+          `https://api.alfurqanapp.com/classShedule/teacher?teacherId=${employeeId}`,
           {
             headers: {
           Authorization: `Bearer ${token}`,

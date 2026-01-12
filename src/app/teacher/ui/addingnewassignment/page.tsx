@@ -564,7 +564,7 @@ const NewAssignment = () => {
     }
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/assignments",
+        "https://api.alfurqanapp.com/assignments",
         {
           method: "POST",
           body: formData, // ✅ Use FormData directly
