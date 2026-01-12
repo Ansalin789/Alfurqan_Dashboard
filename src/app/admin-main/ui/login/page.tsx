@@ -132,7 +132,7 @@ const SignIn: React.FC = () => {
   }, [error]);
 
   const signIn = async (username: string, password: string) => {
-    return axios.post("http://localhost:5001/signin", {
+    return axios.post("https://api.blackstoneinfomaticstech.com/signin", {
       username,
       password,
     });
@@ -141,7 +141,7 @@ const SignIn: React.FC = () => {
   const fetchrolebasedaccesscontrol = async (id: string, token: string, role?: string) => {
     try {
       const response = await axios.get<AccessApiResponse>(
-        `http://localhost:5001/update-access/${id}`,
+        `https://api.blackstoneinfomaticstech.com/update-access/${id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -256,7 +256,7 @@ const SignIn: React.FC = () => {
     const checkEmail = async (email: string) => {
       try {
         const response = await axios.post(
-          `http://localhost:5001/allcheck-email`,
+          `https://api.blackstoneinfomaticstech.com/allcheck-email`,
           { email }
         );
 

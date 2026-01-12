@@ -33,7 +33,7 @@ const UpcomingClasses: React.FC = () => {
 
   const fetchMeetings = async (token: string) => {
     try {
-      const response = await axios.get("http://localhost:5001/allAdminMeeting", {
+      const response = await axios.get("https://api.blackstoneinfomaticstech.com/allAdminMeeting", {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,

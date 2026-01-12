@@ -162,7 +162,7 @@ const ScheduledClasses = () => {
       }
 
       const response = await axios.get(
-        "http://localhost:5001/classShedule/teacher",
+        "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
         {
           params: { teacherId },
           headers: {

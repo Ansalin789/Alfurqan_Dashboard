@@ -85,7 +85,7 @@ const SchedulePage = () => {
         }
 
         const [supervisorResponse, adminResponse] = await Promise.all([
-          axios.get("http://localhost:5001/allMeetings", {
+          axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,

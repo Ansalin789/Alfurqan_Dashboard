@@ -79,7 +79,7 @@ const TeacherModuleAccess = () => {
   const fetchEmployeeData = async (token: string) => {
     try {
       const res = await fetch(
-        `http://localhost:5001/update-access/${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -178,7 +178,7 @@ const TeacherModuleAccess = () => {
       }
 
       const response = await axios.put(
-        `http://localhost:5001/update-access/${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
         { roleAccess },
         {
           headers: {

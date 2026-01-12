@@ -48,7 +48,7 @@ const SignIn: React.FC = () => {
 
   const signIn = async (username: string, password: string) => {
     try {
-      const url = "http://localhost:5001/studentsignin";
+      const url = "https://api.blackstoneinfomaticstech.com/studentsignin";
       const payload = {
         username,
         password,
@@ -146,7 +146,7 @@ const SignIn: React.FC = () => {
 
   const checkEmail = async (email: string) => {
     try {
-      const response = await axios.post(`http://localhost:5001/check-email`, {
+      const response = await axios.post(`https://api.blackstoneinfomaticstech.com/check-email`, {
         email,
       });
 
@@ -235,7 +235,7 @@ const SignIn: React.FC = () => {
             console.log("Course missing in check-email, fetching full profile...");
             const studentId = result.data.id;
             const token = result.data.accessToken;
-            const detailRes = await axios.get(`http://localhost:5001/alstudents/${studentId}`, {
+            const detailRes = await axios.get(`https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`, {
               headers: { Authorization: `Bearer ${token}` }
             });
             console.log("Full profile response:", detailRes.data);

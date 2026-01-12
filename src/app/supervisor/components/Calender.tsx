@@ -60,7 +60,7 @@ const Academic: React.FC = () => {
         }
 
         const response = await axios.get(
-          "http://localhost:5001/allMeetings",
+          "https://api.blackstoneinfomaticstech.com/allMeetings",
           {
             headers: {
               "Content-Type": "application/json",
