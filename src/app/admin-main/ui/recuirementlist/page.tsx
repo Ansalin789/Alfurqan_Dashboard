@@ -56,7 +56,7 @@ const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const createBlobUrl = async(resumeData: any) => {
+  const createBlobUrl = async (resumeData: any) => {
     if (!resumeData) {
       console.error("No resume data provided");
       return null;
@@ -64,14 +64,14 @@ const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
 
     try {
 
-     
-    console.log("file " , resumeData)
-    const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${resumeData}`, {
-      method: "GET",
-    });
 
-    if (!res.ok) throw new Error("Failed to fetch file");
-    const blob = await res.blob();
+      console.log("file ", resumeData)
+      const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${resumeData}`, {
+        method: "GET",
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch file");
+      const blob = await res.blob();
       return URL.createObjectURL(blob);
     } catch (error) {
       console.error("Error creating blob URL:", error);
@@ -92,7 +92,7 @@ const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
       }
 
       // Create new blob URL on each click
-      const newBlobUrl =  await createBlobUrl(resumeData);
+      const newBlobUrl = await createBlobUrl(resumeData);
       if (!newBlobUrl) {
         setError("Failed to load resume");
         return;
@@ -161,7 +161,7 @@ export default function ApplicantsPage() {
   const tabs = ["All", "NewCandidates", "Shortlisted", "Rejected", "Waiting"];
   const itemsPerPage = 10;
 
- const tabStatusMap: Record<string, string | null> = {
+  const tabStatusMap: Record<string, string | null> = {
     All: null,
     NewCandidates: "NEW APPLICATION",
     Shortlisted: "SHORTLISTED",
@@ -200,7 +200,7 @@ export default function ApplicantsPage() {
       fetchApplicants(token);
     }
   }, []);
-   const createBlobUrl = async(resumeData: any) => {
+  const createBlobUrl = async (resumeData: any) => {
     if (!resumeData) {
       console.error("No resume data provided");
       return null;
@@ -208,16 +208,16 @@ export default function ApplicantsPage() {
 
     try {
 
-     
-    console.log("file " , resumeData)
-    const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${resumeData}`, {
-      method: "GET",
-    });
 
-    if (!res.ok) throw new Error("Failed to fetch file");
-    const blob = await res.blob();
- 
-    
+      console.log("file ", resumeData)
+      const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${resumeData}`, {
+        method: "GET",
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch file");
+      const blob = await res.blob();
+
+
       return URL.createObjectURL(blob);
     } catch (error) {
       console.error("Error creating blob URL:", error);
@@ -303,8 +303,8 @@ export default function ApplicantsPage() {
   return (
     <BaseLayout4>
       <div className="">
-        <AdminHeader currentSection="Employees" />
-        <div className="md:p-0 mx-auto">
+        <AdminHeader currentSection="Recuirement List" showBackButton={true} showBackPath="/admin-main/ui/employees"/>
+        <div className="md:p-2 mx-auto">
           <div className="h-full w-full  flex flex-col justify-between">
             <div className="p-0 justify-between flex flex-col">
               <div>
@@ -315,11 +315,10 @@ export default function ApplicantsPage() {
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={`px-3 py-1 md:px-3 md:py-1 text-[16px] font-medium
-                           ${
-                             activeTab === tab
-                               ? "text-[#576CBC] border-b-2 border-b-[#576CBC] mt-[2px] dark:text-[#576CBC]"
-                               : "text-[#010E30] mt-0 dark:text-[white]"
-                           }`}
+                           ${activeTab === tab
+                            ? "text-[#576CBC] border-b-2 border-b-[#576CBC] mt-[2px] dark:text-[#576CBC]"
+                            : "text-[#010E30] mt-0 dark:text-[white]"
+                          }`}
                       >
                         {tab}
                       </button>
@@ -493,11 +492,10 @@ export default function ApplicantsPage() {
                           return (
                             <tr
                               key={applicant._id}
-                              className={`text-[12px] ${
-                                index % 2 === 0
-                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
+                              className={`text-[12px] ${index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                }`}
                             >
                               <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                                 {formatDate(applicant.applicationDate)}
@@ -518,7 +516,7 @@ export default function ApplicantsPage() {
                                 {applicant.positionApplied}
                               </td>
                               <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                                                             <ResumeLink applicant={applicant} />
+                                <ResumeLink applicant={applicant} />
 
                               </td>
 
@@ -535,13 +533,12 @@ export default function ApplicantsPage() {
                               <td className="px-3 py-3 text-center">
                                 <button
                                   id={`action-btn-${applicant._id}`}
-                                  className={`text-[10px] font-semibold dark:text-white ${
-                                    ["APPROVED", "REJECTED"].includes(
-                                      applicant.applicationStatus
-                                    )
-                                      ? "cursor-not-allowed opacity-40"
-                                      : "cursor-pointer"
-                                  }`}
+                                  className={`text-[10px] font-semibold dark:text-white ${["APPROVED", "REJECTED"].includes(
+                                    applicant.applicationStatus
+                                  )
+                                    ? "cursor-not-allowed opacity-40"
+                                    : "cursor-pointer"
+                                    }`}
                                   disabled={["APPROVED", "REJECTED"].includes(
                                     applicant.applicationStatus
                                   )}

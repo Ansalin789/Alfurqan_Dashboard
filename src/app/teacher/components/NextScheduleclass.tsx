@@ -67,7 +67,7 @@ const NextScheduledClass = () => {
         }
       );
       const now = new Date();
-      const upcoming = response.data.classSchedule
+      const upcoming = (response.data.classSchedule || [])
         .map((item: ClassData) => {
           const startDate = new Date(item.startDate);
           const [startHour, startMin] = item.startTime[0]
@@ -195,7 +195,7 @@ const NextScheduledClass = () => {
       return;
     }
 
-   window.open(`/teacher/ui/liveclass?id=${classData._id}`, "_blank");
+    window.open(`/teacher/ui/liveclass?id=${classData._id}`, "_blank");
   };
 
   if (loading)
@@ -254,8 +254,8 @@ const NextScheduledClass = () => {
             <p className="text-[13px]">{classData.sessionClassType === 'REGULARCLASS' ? classData.student?.studentFirstName : "Group Class"}</p>
           </div>
           <div className="flex items-center space-x-2">
-           <MdDateRange className="text-white/90 text-base w-[10px]" />
-           <p className="text-[13px]">Session–01</p> 
+            <MdDateRange className="text-white/90 text-base w-[10px]" />
+            <p className="text-[13px]">Session–01</p>
           </div> {" "}
           <div className="flex items-center space-x-2">
             <AiOutlineClockCircle className="w-[10px]" />
