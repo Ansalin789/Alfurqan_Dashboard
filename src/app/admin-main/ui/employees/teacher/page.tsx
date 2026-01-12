@@ -259,7 +259,7 @@ interface SalaryWageRecord {
 }
 
 const Teacher = () => {
-  const [activeTab, setActiveTab] = useState("Studentsl List");
+  const [activeTab, setActiveTab] = useState("Students List");
   const [view, setView] = useState<"month" | "week" | "day" | "agenda">(
     "agenda"
   );
@@ -280,8 +280,7 @@ const Teacher = () => {
   const [wagesResponse, setWagesResponse] = useState<WagesResponse | null>(
     null
   );
-  const [editingWageId, setEditingWageId] = useState<string | null>(null);
-  const [editingRate, setEditingRate] = useState<string>("");
+
   const [students, setStudents] = useState<StudentData[]>([]);
   const [teacherCounts, setTeacherCounts] = useState<TeacherCounts>({
     totalclasses: 0,
@@ -519,7 +518,7 @@ const Teacher = () => {
           },
         }
       );
-      setScheduledClass(response.data.classSchedule);
+      setScheduledClass(response.data.classSchedule || []);
     } catch (error) {
       console.error("Error fetching schedule:", error);
     }
@@ -620,7 +619,7 @@ const Teacher = () => {
             },
           }
         );
-        setSchedule(res.data);
+        setSchedule(res.data || []);
       } catch (error) {
         console.error("Error fetching schedule:", error);
       }
@@ -761,7 +760,7 @@ const Teacher = () => {
   });
 
   // Filtered scheduled classes for search
-  const filteredScheduledClass = scheduledclass.filter((event) => {
+  const filteredScheduledClass = (scheduledclass || []).filter((event) => {
     const searchFields = [
       event.student.studentFirstName,
       event.student.studentId,
@@ -965,7 +964,7 @@ const Teacher = () => {
     .filter((v, i, a) => a.indexOf(v) === i && v !== null)
     .map((name) => ({ value: name!, label: name! }));
 
-  const scheduleStudentNameOptions = scheduledclass
+  const scheduleStudentNameOptions = (scheduledclass || [])
     .map((s) =>
       s.student
         ? `${s.student.studentFirstName} ${s.student.studentLastName}`
@@ -974,7 +973,7 @@ const Teacher = () => {
     .filter((v, i, a) => a.indexOf(v) === i && v !== null)
     .map((name) => ({ value: name!, label: name! }));
 
-  const scheduleStatusOptions = scheduledclass
+  const scheduleStatusOptions = (scheduledclass || [])
     .map((s) => s.scheduleStatus)
     .filter((v, i, a) => a.indexOf(v) === i && v !== null && v !== undefined)
     .map((status) => ({ value: status!, label: status! }));
@@ -1251,8 +1250,8 @@ const Teacher = () => {
               <button
                 key={tab}
                 className={`px-3 py-[7px] text-xs font-medium focus:outline-none transition-all duration-200 ${activeTab === tab
-                    ? "border-b border-b-[#576CBC] text-[#576CBC]"
-                    : "text-[#010E30] dark:text-white"
+                  ? "border-b border-b-[#576CBC] text-[#576CBC]"
+                  : "text-[#010E30] dark:text-white"
                   }`}
                 onClick={() => setActiveTab(tab)}
               >
@@ -1327,8 +1326,8 @@ const Teacher = () => {
                                 <tr
                                   key={item.studentId || index}
                                   className={`text-left dark:text-white ${index % 2 === 0
-                                      ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                      : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                    ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                    : "bg-[#F8F8F8] dark:bg-[#303030]"
                                     }`}
                                 >
                                   <td className="p-3">{student?.studentId}</td>
@@ -1379,8 +1378,8 @@ const Teacher = () => {
                 <div className="justify-end text-end">
                   <button
                     className={`font-medium text-[14px] ${view === "month"
-                        ? "text-black"
-                        : "text-white bg-[#576CBC] py-[4px] px-2 rounded"
+                      ? "text-black"
+                      : "text-white bg-[#576CBC] py-[4px] px-2 rounded"
                       }`}
                     onClick={handleclickcalender}
                   >
@@ -1451,8 +1450,8 @@ const Teacher = () => {
                               <tr
                                 key={event._id}
                                 className={`text-left dark:text-white ${index % 2 === 0
-                                    ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                    : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
                                   }`}
                               >
                                 <td className="p-3 text-blue-600 font-medium">
@@ -1486,7 +1485,7 @@ const Teacher = () => {
                                   <span
                                     className={`text-[9px] dark:bg-[#2E3C2E] dark:text-[#377E36] font-semibold px-3 py-[2px] rounded-md inline-block ${statusStyle[
                                       event.scheduleStatus as keyof typeof statusStyle
-                                      ]
+                                    ]
                                       }`}
                                   >
                                     {event.scheduleStatus}
@@ -1559,18 +1558,7 @@ const Teacher = () => {
                         ))}
                       </div>
 
-                      <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
-                        Showing{" "}
-                        {filteredEarningsMonths.length === 0
-                          ? 0
-                          : (earningsPage - 1) * earningsPerPage + 1}{" "}
-                        to{" "}
-                        {Math.min(
-                          earningsPage * earningsPerPage,
-                          filteredEarningsMonths.length
-                        )}{" "}
-                        of {filteredEarningsMonths.length}
-                      </span>
+                      <br />
 
                       {/* Table */}
                       <div className="overflow-x-auto max-h-none">
@@ -1593,8 +1581,8 @@ const Teacher = () => {
                                 <tr
                                   key={row.key}
                                   className={`text-left dark:text-white ${index % 2 === 0
-                                      ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                      : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                    ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                    : "bg-[#F8F8F8] dark:bg-[#303030]"
                                     }`}
                                 >
                                   <td className="p-3">{`${row.monthName} ${row.currentYear}`}</td>
@@ -1697,8 +1685,8 @@ const Teacher = () => {
                               <tr
                                 key={item._id}
                                 className={`text-left dark:text-white ${index % 2 === 0
-                                    ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                    : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
                                   }`}
                               >
                                 <td className="p-3">{item._id}</td>
@@ -1866,8 +1854,8 @@ const Teacher = () => {
                             <tr
                               key={item._id}
                               className={`text-left dark:text-white ${index % 2 === 0
-                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
                                 }`}
                             >
                               <td className="p-3">
@@ -2027,8 +2015,8 @@ const Teacher = () => {
                           <tr
                             key={index}
                             className={`text-left dark:text-white ${index % 2 === 0
-                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                              : "bg-[#F8F8F8] dark:bg-[#303030]"
                               }`}
                           >
                             <td className="p-3">{item.day}</td>

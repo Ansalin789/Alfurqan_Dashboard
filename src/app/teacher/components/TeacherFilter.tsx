@@ -49,17 +49,17 @@ interface Meeting {
 
   // Optional single or multiple teachers
   teacher:
-    | Array<{
-        teacherId: string;
-        teacherName: string;
-        teacherEmail: string;
-        attendee?: string;
-      }>
-    | {
-        teacherId: string;
-        teacherName: string;
-        teacherEmail: string;
-      };
+  | Array<{
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+    attendee?: string;
+  }>
+  | {
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+  };
 
   // Optional participants (student meetings)
   participants?: Array<{
@@ -122,22 +122,22 @@ const TeacherFilter = () => {
 
     const fetchClasses = async () => {
       try {
-        const teacherId = localStorage.getItem("TeacherPortalId");
+        const teacherId = localStorage.getItem("TeacherId");
         const token = localStorage.getItem("TeacherAuthToken");
         if (!token || !teacherId) return;
 
         const response = await axios.get<MeetingResponse>(
           `https://api.blackstoneinfomaticstech.com/teacherMeetinglist`,
           {
-            params: { teacherId, meetingId },
+            params: { teacherId },
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
           }
         );
-
         const meetings = response.data.meetings;
+        console.log("haii thi is meetings",response.data);
 
 
         // Only show as upcoming if end time is in the future and not completed
@@ -185,12 +185,12 @@ const TeacherFilter = () => {
       const dateIso = item.selectedDate?.slice(0, 10).toLowerCase() || ""; // YYYY-MM-DD
       const dateReadable = dateObj
         ? dateObj
-            .toLocaleDateString("en-US", {
-              month: "short",
-              day: "2-digit",
-              year: "numeric",
-            })
-            .toLowerCase()
+          .toLocaleDateString("en-US", {
+            month: "short",
+            day: "2-digit",
+            year: "numeric",
+          })
+          .toLowerCase()
         : "";
 
       return (
@@ -321,11 +321,10 @@ const TeacherFilter = () => {
     <>
       <div className="flex space-x-6 mt-4 px-4 py-2 rounded-md">
         <button
-          className={`relative text-[14px] transition font-medium ${
-            activeTab === "upcoming"
+          className={`relative text-[14px] transition font-medium ${activeTab === "upcoming"
               ? "text-[#576CBC] font-semibold"
               : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-          }`}
+            }`}
           onClick={() => setActiveTab("upcoming")}
         >
           Scheduled ({upcomingClasses.length})
@@ -334,11 +333,10 @@ const TeacherFilter = () => {
           )}
         </button>
         <button
-          className={`relative text-[14px] transition font-medium ${
-            activeTab === "completed"
+          className={`relative text-[14px] transition font-medium ${activeTab === "completed"
               ? "text-[#576CBC] font-semibold"
               : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-          }`}
+            }`}
           onClick={() => setActiveTab("completed")}
         >
           Completed ({completedData.length})
@@ -418,20 +416,19 @@ const TeacherFilter = () => {
                   </td>
                   <td className="px-4 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[180px] break-words whitespace-normal">
                     <span
-                      className={`px-2 font-semibold text-[10px] text-center py-[3px] rounded-md ${
-                        item.meetingStatus === "Scheduled"
+                      className={`px-2 font-semibold text-[10px] text-center py-[3px] rounded-md ${item.meetingStatus === "Scheduled"
                           ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
                           : item.meetingStatus === "Rescheduled"
-                          ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE]"
-                          : "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
-                      }`}
+                            ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE]"
+                            : "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
+                        }`}
                     >
                       {(item.meetingStatus || "UNKNOWN").toUpperCase()}
                     </span>
                   </td>
                   <td className="px-4 py-2 relative ">
                     {item.meetingStatus === "Scheduled" ||
-                    item.meetingStatus === "Rescheduled" ? (
+                      item.meetingStatus === "Rescheduled" ? (
                       <div className="relative inline-block text-left">
                         <button
                           onClick={() =>
@@ -715,7 +712,7 @@ const TeacherFilter = () => {
                     value={rescheduleTime}
                     onChange={(e) => setRescheduleTime(e.target.value)}
                     className="w-full text-sm px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white dark:[color-scheme:dark]"
-                  />     
+                  />
                 </div>
               </div>
             </div>

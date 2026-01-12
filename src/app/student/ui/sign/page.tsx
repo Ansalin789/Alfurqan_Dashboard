@@ -62,7 +62,7 @@ const SignIn: React.FC = () => {
       const response = await axios.post(url, payload);
       console.log("[Student SignIn] Response Status:", response.status);
       console.log("[Student SignIn] Response Data:", response.data);
-      
+
       if (response.status === 200) {
         return response.data;
       }
@@ -76,7 +76,7 @@ const SignIn: React.FC = () => {
         url: error?.config?.url,
         method: error?.config?.method,
       });
-      
+
       if (error.response && error.response.status === 404) {
         throw new Error("Email not found");
       }
@@ -93,23 +93,37 @@ const SignIn: React.FC = () => {
       username: username1,
       password: password ? `*** (len:${password.length})` : "<empty>",
     });
-    
+
     try {
       const data = await signIn(username1, password);
       const { accessToken, role, _id, username } = data;
+      const userEmail: string = data.email ?? data.userEmail ?? "";
       console.log("[Student SignIn] Parsed Response:", {
         hasAccessToken: Boolean(accessToken),
         role,
         _id,
         username,
       });
-      
+
+      const course = data.student.course || data.student.courseName || (Array.isArray(data.student.courses) ? data.student.courses[0] : "");
+
       localStorage.setItem("StudentAuthToken", accessToken);
       localStorage.setItem("StudentPortalId", _id);
-      localStorage.setItem("StudentcourseName", data.student.course);
+      localStorage.setItem("StudentcourseName", course);
       localStorage.setItem("StudentPortalName", username);
       localStorage.setItem("StudentPackage", data.student.package);
-      
+      localStorage.setItem("StudentPortalEmail", userEmail);
+      localStorage.setItem("StudentRole", role);
+      console.log("[Student SignIn] Setting localStorage:", {
+        StudentAuthToken: accessToken,
+        StudentPortalId: _id,
+        StudentcourseName: course,
+        StudentPortalName: username,
+        StudentPackage: data.student.package,
+        StudentPortalEmail: userEmail,
+        StudentRole: role,
+        FullStudentData: data.student 
+      });
       if (role?.includes("Student")) {
         router.push("/student/ui/dashboard");
       }
@@ -159,22 +173,38 @@ const SignIn: React.FC = () => {
   };
 
   const getGoogleUserInfo = async (accessToken: string) => {
-  try {
-    const response = await axios.get(
-      "https://www.googleapis.com/oauth2/v3/userinfo",
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    try {
+      const response = await axios.get(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
-    return response.data; // contains email, name, picture, etc.
-  } catch (err) {
-    console.error("Failed to fetch Google user:", err);
-    return null;
-  }
-};
+      return response.data; // contains email, name, picture, etc.
+    } catch (err) {
+      console.error("Failed to fetch Google user:", err);
+      // Fallback: Try to decode as JWT ID token
+      try {
+        const base64Url = accessToken.split('.')[1];
+        if (base64Url) {
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const jsonPayload = decodeURIComponent(
+            atob(base64)
+              .split('')
+              .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+              .join('')
+          );
+          return JSON.parse(jsonPayload);
+        }
+      } catch (decodeError) {
+        console.error("Failed to decode JWT:", decodeError);
+      }
+      return null;
+    }
+  };
 
   const handleGoogleSuccess = async (response: CredentialResponse) => {
     const { credential } = response;
@@ -182,19 +212,59 @@ const SignIn: React.FC = () => {
       console.error("Google login failed: No credential received");
       return;
     }
-    const emaildata =await getGoogleUserInfo(credential);
-    const email : any = emaildata.email;
-    
+    const emaildata = await getGoogleUserInfo(credential);
+
+    if (!emaildata) {
+      setError("Failed to retrieve user information from Google.");
+      return;
+    }
+
+    const email: any = emaildata.email;
+
     try {
       setLoading(true);
       const result = await checkEmail(email);
       const role = result?.data?.role;
-      
+
       if (result?.message === "Email exists" && role?.includes("Student")) {
+        let course = result.data.course || result.data.courseName || result.data.student?.course || result.data.student?.courseName || (Array.isArray(result.data.courses) ? result.data.courses[0] : "");
+        let portalName = result.data.username || result.data.username1 || result.data.student?.username || result.data.student?.studentName || "";
+
+        if (!course) {
+          try {
+            console.log("Course missing in check-email, fetching full profile...");
+            const studentId = result.data.id;
+            const token = result.data.accessToken;
+            const detailRes = await axios.get(`https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            console.log("Full profile response:", detailRes.data);
+
+            const details = detailRes.data?.studentDetails || detailRes.data;
+            course = details?.course || details?.courseName || details?.student?.course || details?.student?.courseName || "";
+
+            if (!portalName) {
+              portalName = details?.username || details?.student?.username || details?.student?.studentName || "";
+            }
+
+          } catch (fetchErr) {
+            console.error("Failed to fetch extra student details:", fetchErr);
+          }
+        }
+
         localStorage.setItem("StudentAuthToken", result.data.accessToken);
         localStorage.setItem("StudentPortalId", result.data.id);
-        localStorage.setItem("StudentPortalName", result.data.username);
+        localStorage.setItem("StudentPortalName", portalName);
         localStorage.setItem("StudentPackage", result.data.package);
+        localStorage.setItem("StudentcourseName", course);
+        console.log("student signinnnnnn] localStorage:", {
+          StudentAuthToken: result.data.accessToken,
+          StudentPortalId: result.data.id,
+          StudentPortalName: portalName,
+          StudentPackage: result.data.package,
+          StudentcourseName: course,
+          FullData: result.data // Log full object
+        });
         router.push("/student/ui/dashboard");
       } else {
         setError("Email not found");
@@ -208,7 +278,7 @@ const SignIn: React.FC = () => {
     }
   };
 
- 
+
 
   interface GoogleError {
     error: string;
@@ -258,37 +328,37 @@ const SignIn: React.FC = () => {
           </motion.div>
         </AnimatePresence>
       )}
-      
+
       {/* Left Section - Sign In Form */}
       <div className="w-full lg:w-1/2 h-auto lg:h-screen bg-white flex flex-col overflow-hidden order-2 lg:order-1">
         <div className="px-4 sm:px-6 lg:px-8 py-1">
-          <Image 
-            src="/assets/images/Logo - Website - big size 1.svg" 
-            alt="logo" 
-            width={150} 
-            height={160} 
-            priority 
-            style={{ height: 'auto' }} 
+          <Image
+            src="/assets/images/Logo - Website - big size 1.svg"
+            alt="logo"
+            width={150}
+            height={160}
+            priority
+            style={{ height: 'auto' }}
             className='justify-left ml-0 sm:ml-[38px] mt-4 sm:mt-5 p-0'
           />
         </div>
 
-<div
-  className="
+        <div
+          className="
     flex-1
     flex items-center justify-center
     px-4 sm:px-6 lg:px-8
     overflow-auto scrollbar-none
     py-6
   "
->          <div className="w-full max-w-md">
-            <h2 className="text-2xl sm:text-[32px] font-bold text-black mb-2 text-center lg:text-left">Sign in</h2>
-            <p className="text-[#718096] mb-6 sm:mb-8 text-sm sm:text-[14px] text-center lg:text-left">
+        >          <div className="w-full max-w-md">
+            <h2 className="text-2xl sm:text-[32px] font-bold text-black mb-10 text-center lg:text-left">Sign in</h2>
+            {/* <p className="text-[#718096] mb-6 sm:mb-8 text-sm sm:text-[14px] text-center lg:text-left">
               Don't have an account?{' '}
               <button onClick={newuserclick} className="text-[#5A73B3] hover:text-[#4d6295] underline">
                 Create now
               </button>
-            </p>
+            </p> */}
 
             <form onSubmit={handleFormSubmit}>
               <div className="mb-4">
@@ -351,9 +421,8 @@ const SignIn: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full bg-[#5A73B3] hover:bg-[#4d6299] text-white font-medium py-3 rounded-2xl transition-colors mb-4 text-sm sm:text-base ${
-                  loading ? 'opacity-70 cursor-not-allowed' : ''
-                }`}
+                className={`w-full bg-[#5A73B3] hover:bg-[#4d6299] text-white font-medium py-3 rounded-2xl transition-colors mb-4 text-sm sm:text-base ${loading ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
               >
                 {loading ? (
                   <div className="flex items-center justify-center gap-2">
@@ -392,9 +461,8 @@ const SignIn: React.FC = () => {
                     }
                   }}
                   disabled={loading}
-                  className={`w-full flex items-center justify-center gap-3 bg-white border border-[#CBD5E0] hover:bg-gray-50 text-[#67728A] font-medium py-3 rounded-2xl transition-all mb-4 shadow-sm text-sm sm:text-base ${
-                    loading ? "opacity-70 cursor-not-allowed" : "hover:shadow-md"
-                  }`}
+                  className={`w-full flex items-center justify-center gap-3 bg-white border border-[#CBD5E0] hover:bg-gray-50 text-[#67728A] font-medium py-3 rounded-2xl transition-all mb-4 shadow-sm text-sm sm:text-base ${loading ? "opacity-70 cursor-not-allowed" : "hover:shadow-md"
+                    }`}
                 >
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-[#4285F4] border-t-transparent rounded-full animate-spin" />
@@ -455,8 +523,8 @@ const SignIn: React.FC = () => {
         <div className="relative z-10 flex flex-col justify-between w-full h-full px-4 sm:px-6 lg:px-12 py-6 sm:py-8">
 
           {/* TOP CARD - Responsive */}
-{/* TOP CARD */}
-  <div className="
+          {/* TOP CARD */}
+          <div className="
     bg-white rounded-xl shadow-lg
     p-4 sm:p-5 lg:p-6
     w-full 
@@ -465,17 +533,17 @@ const SignIn: React.FC = () => {
     mt-14 sm:mt-28 lg:mt-32
   ">              <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-6">
               <div className="flex-1 text-left w-full">
-                <h2 className="text-lg sm:text-xl lg:text-[22px] font-extrabold leading-[1.2] text-[#576CBC] mb-4 sm:mb-6">
-                    Connecting You to Qur'an,<br />
-                    Arabic, and the Wisdom of<br />
-                    Islam
-                  </h2>
-                <p className="text-[#808080] text-sm sm:text-[15px] lg:text-[17px] leading-relaxed mb-4 sm:mb-6">
-                    And We have certainly made the Qur'an easy for remembrance, so is there is any who will remember ?
-                  </p>
-                <p className="text-[#808080] text-xs sm:text-sm lg:text-[16px] font-medium">
-                    Surah Al-Qamar (54:17)
-                  </p>
+                <h2 className="text-lg sm:text-xl lg:text-[19px] font-bold leading-snug text-[#576CBC] mb-4 sm:mb-6">
+                  Connecting You to Qur'an,<br />
+                  Arabic, and the Wisdom of<br />
+                  Islam
+                </h2>
+                <p className="text-[#808080] text-xs sm:text-[14px] lg:text-[14px] leading-relaxed mb-4 sm:mb-6">
+                  And We have certainly made the Qur'an easy for remembrance, so is there is any who will remember ?
+                </p>
+                <p className="text-[#808080] text-xs sm:text-[14px] lg:text-[14px] font-medium">
+                  Surah Al-Qamar (54:17)
+                </p>
               </div>
 
               <div className="flex-shrink-0 w-full sm:w-auto">
@@ -489,11 +557,11 @@ const SignIn: React.FC = () => {
           </div>
 
           {/* BOTTOM SECTION - Responsive */}
-             <div className="text-center text-white mx-auto mt-3 sm:mt-6 mb-10">
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-2">Student Dashboard</h2>
+          <div className="text-center text-white mx-auto mt-3 sm:mt-6 mb-10">
+            <h2 className="text-lg sm:text-xl lg:text-[22px] font-semibold mb-2">Student Dashboard</h2>
 
-            <p className="text-[#CFD9E0] text-[20px] sm:text-sm leading-relaxed max-w-xs sm:max-w-md mx-auto mb-2 sm:mb-4">
-              Access comprehensive learning resources, track your academic progress, 
+            <p className="text-[#CFD9E0] text-xs sm:text-sm leading-relaxed max-w-xs sm:max-w-md mx-auto mb-2 sm:mb-4">
+              Access comprehensive learning resources, track your academic progress,
               and engage with interactive educational content all in one platform.
             </p>
 

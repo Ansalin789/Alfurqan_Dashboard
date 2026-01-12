@@ -17,9 +17,9 @@ type Props = {
   readonly showBackButton?: boolean;
   readonly showBackPath?: string;
   readonly students?: Student[];
-  readonly course? : string;
-   readonly packageName? : string;
-  readonly totalHours? : number;
+  readonly course?: string;
+  readonly packageName?: string;
+  readonly totalHours?: number;
 };
 export interface Student {
   _id: string;
@@ -66,7 +66,7 @@ export default function AcademicHeader({
 }: Props) {
   const theme: any = useTheme();
   const darkMode = theme?.darkMode ?? false;
-  const toggleDarkMode = theme?.toggleDarkMode ?? (() => {});
+  const toggleDarkMode = theme?.toggleDarkMode ?? (() => { });
   const [showNotification, setShowNotification] = useState(false);
   const [showLeaveForm, setShowLeaveForm] = useState(false);
   const [showAddMeeting, setAddMeetings] = useState(false);
@@ -98,7 +98,7 @@ export default function AcademicHeader({
 
 
         setDashboardWrite(modules?.dashboard?.write !== false);
-        setLeaveWrite(modules?.leave !== false);
+        setLeaveWrite(modules?.leave ?? modules?.dashboard?.write ?? false);
         setTrailWrite(modules?.trailmanagement?.write !== false);
         setCalendarWrite(modules?.schedule?.write !== false);
         setStudentListWrite(modules?.managestudents?.write !== false);
@@ -264,40 +264,40 @@ export default function AcademicHeader({
     }
   };
 
-  const handleNotificationRedirect = (notification : NotificationType) => {
-  const { notificationType, senderId } = notification;
+  const handleNotificationRedirect = (notification: NotificationType) => {
+    const { notificationType, senderId } = notification;
 
-  switch (notificationType) {
-    case "STUDENT_NOTIFICATION":
-      router.push(`managestudentview?id=${senderId}`);
-      break;
+    switch (notificationType) {
+      case "STUDENT_NOTIFICATION":
+        router.push(`managestudentview?id=${senderId}`);
+        break;
 
-    case "TEACHER_ADDED":
-      router.push(`/Academic-coach/ui/teacherDetails?teacherId=${senderId}`);
-      break;
+      case "TEACHER_ADDED":
+        router.push(`/Academic-coach/ui/teacherDetails?teacherId=${senderId}`);
+        break;
 
-    case "ADMIN_NOTIFICATION":
-      router.push(`/admin/alerts/${senderId}`);
-      break;
+      case "ADMIN_NOTIFICATION":
+        router.push(`/admin/alerts/${senderId}`);
+        break;
 
-    case "REQUEST_RESCHEDULE_TEACHER":
-      router.push(`/Academic-coach/ui/teacherDetails?teacherId=${senderId}`);
-      break;
+      case "REQUEST_RESCHEDULE_TEACHER":
+        router.push(`/Academic-coach/ui/teacherDetails?teacherId=${senderId}`);
+        break;
 
       case "REQUEST_RESCHEDULE_STUDENT":
-      router.push(`managestudentview?id=${senderId}`);
-      break;
+        router.push(`managestudentview?id=${senderId}`);
+        break;
 
       case "ADMIN_MEETING_SCHEDULED":
-      router.push('');
-      break;
+        router.push('');
+        break;
 
 
-    default:
-      console.warn("Unknown notification type:", notificationType);
-      break;
-  }
-};
+      default:
+        console.warn("Unknown notification type:", notificationType);
+        break;
+    }
+  };
 
 
   const renderButton = () => {
@@ -471,11 +471,10 @@ export default function AcademicHeader({
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab as "Seen" | "Unseen")}
-                  className={`relative text-sm px-2 py-1 font-medium transition-all text-black ${
-                    activeTab === tab
+                  className={`relative text-sm px-2 py-1 font-medium transition-all text-black ${activeTab === tab
                       ? "text-[#576CBC] dark:text-[#576CBC]"
                       : "dark:text-white"
-                  }`}
+                    }`}
                 >
                   {tab}
                   {activeTab === tab && (
@@ -503,11 +502,10 @@ export default function AcademicHeader({
                       }
                     }}
                     disabled={!dashboardWrite}
-                    className={`w-full text-left p-2   flex items-start gap-3 transition-all duration-200 border-b border-[#D9D9D9]  ${
-                      notification.notificationStatus === "Seen"
+                    className={`w-full text-left p-2   flex items-start gap-3 transition-all duration-200 border-b border-[#D9D9D9]  ${notification.notificationStatus === "Seen"
                         ? "bg-white/20 text-gray-900 hover:bg-white/50 dark:bg-[#252525]"
                         : " text-gray-900 font-medium hover:bg-[#bfc5e8] dark:bg-[#252525] dark:hover:bg-[#5a5858]"
-                    }`}
+                      }`}
                   >
                     <div className="w-8 h-8 rounded-lg bg-[#E4E7F4] flex items-center justify-center relative shrink-0 dark:bg-[#343434] ">
                       <span className="text-sm font-semibold text-[#576CBC] ">

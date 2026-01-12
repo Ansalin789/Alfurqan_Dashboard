@@ -458,7 +458,7 @@ const page = () => {
             </table>
           </div>
         </div>
-        {totalPages > 1 && (
+        {totalPages >= 1 && (
             <div className="flex justify-end">
               <Pagination
                 currentPage={currentPage}
