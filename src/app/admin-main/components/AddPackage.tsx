@@ -3,9 +3,6 @@
 import { X, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 
-// Admin token for direct authentication
-const ADMIN_TOKEN =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IkFkbWluIiwic3ViIjoiNjgwNWRhOGMwNjU0MmFhMzM4NThiODg5IiwiaWF0IjoxNzU1NzYwMDcxLCJleHAiOjE3NTU4NDY0NzF9.8qgL7NmVcW5si91WT9ezAkbjuWG9a8dwHD86f85H4bM";
 
 export default function AddPackage({ onClose }: { onClose: () => void }) {
   const [formData, setFormData] = useState({
@@ -59,7 +56,12 @@ const handleSubmit = async (e: React.FormEvent) => {
     setIsLoading(false);
     return;
   }
-
+  const token = localStorage.getItem("AdminAuthToken");
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    setIsLoading(false);
+    return;
+  }
   try {
     const payload = {
       packageName: formData.packageName,
@@ -85,7 +87,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${ADMIN_TOKEN}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(payload),
     });
