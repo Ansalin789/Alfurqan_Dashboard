@@ -167,7 +167,7 @@ const AddEvaluationModal: React.FC<AddEvaluationModalProps> = ({
         console.error("❌ AdminAuthToken not found");
         return;
       }
-      const response = await fetch(`http://localhost:5001/evaluation`, {
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
