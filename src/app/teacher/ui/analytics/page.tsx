@@ -11,47 +11,108 @@ import { MdTune } from "react-icons/md";
 import Modal from "react-modal";
 import { clearScreenDown } from "node:readline";
 
-interface Student {
-  studentId: string;
-  studentFirstName: string;
-  studentLastName: string;
-  studentEmail: string;
-}
-
-interface Teacher {
-  teacherId: string;
-  teacherName: string;
-  teacherEmail: string;
-}
-
-interface Schedule {
-  student: Student;
-  teacher: Teacher;
+export interface UnifiedClassSchedule {
   _id: string;
-  classDay: string[];
-  package: string;
+  classId?: string;
+
+  classLink: string;
+  sessionClassType: "GROUPCLASS" | "REGULARCLASS" | "TRIALCLASS";
+  scheduleStatus: string;
+
   course: {
+    courseId: string;
     courseName: string;
   };
-  preferedTeacher: string;
-  totalHourse: number;
+
   startDate: string;
   endDate: string;
+
+  classDay: string[];
   startTime: string[];
   endTime: string[];
-  amount: string;
-  scheduleStatus: string;
-  sessionClassType: string;
-  status: string;
-  createdBy: string;
-  createdDate: string;
-  lastUpdatedDate: string;
-  __v: number;
+
+  /* ---------- STUDENTS (WORKS FOR BOTH) ---------- */
+  student: UnifiedStudent[];
+
+  /* ---------- TEACHER (NULL FOR GROUP IF NOT SENT) ---------- */
+  teacher?: {
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+    teacherSessionStart: string | null;
+    teacherSessionEnd: string | null;
+  };
+
+  /* ---------- OPTIONAL REGULAR CLASS FIELDS ---------- */
+  package?: string;
+  totalHourse?: number;
+
+  status?: string;
+  createdBy?: string;
+  teacherAttendee?: string;
+  studentAttendee?: string;
+
+  classhour?: string;
+  currency?: string;
+  amount?: string;
+  isSalaryProcessed?: boolean;
+
+  sessionStarttime?: string;
+  sessionsEndtime?: string;
+  sessionStatus?: string;
+
+  createdDate?: string;
+  lastUpdatedDate?: string;
+  __v?: number;
+}
+export interface UnifiedStudent {
+  student: {
+    id: string;
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    gender: string;
+    level: string;
+    studnetSessionStart: string[] | null;
+    studnetSessionEnd: string[] | null;
+  };
+
+  /* Group class fields */
+  status?: string;
+  sessionStatus?: string;
+  earnings?: number;
 }
 
-interface ClassScheduleResponse {
+export interface TrialClass {
+  id: string;
+  trialId: string;
+
+  student: {
+    id: string;
+    studentId: string;
+    studentName: string;
+  };
+
+  classType: string;
+  meetingLink: string;
+
+  course: {
+    courseId: string;
+    courseName: string;
+  };
+  scheduledStartDate: string;
+  scheduledEndDate: string;
+  scheduledFrom: string;
+  scheduledTo: string;
+
+  meetingStatus: string;
+}
+
+export interface ApiResponse {
   totalCount: number;
-  classSchedule: Schedule[];
+  classScheduleList: UnifiedClassSchedule[];
+  trialclasses: TrialClass[];
 }
 
 interface SimpleStudent {
@@ -92,15 +153,16 @@ function Analytics() {
   const [students, setStudents] = useState<SimpleStudent[]>([]);
 
   const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<
-    Schedule[]
+    UnifiedClassSchedule[]
   >([]);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredClasses, setFilteredClasses] = useState<Schedule[]>([]);
+  const [filteredClasses, setFilteredClasses] = useState<UnifiedClassSchedule[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredStudents, setFilteredStudents] = useState<SimpleStudent[]>([]);
+const [openEarningId, setOpenEarningId] = useState<string | null>(null);
 
   const [filters, setFilters] = useState({
     courseName: "",
@@ -244,7 +306,7 @@ function Analytics() {
           }
         );
 
-        setStudents(response.data);
+        setFilteredStudents(response.data);
         console.log("Students fetched:", response.data); // DEBUG
       } catch (error) {
         console.error("Error fetching students:", error);
@@ -253,45 +315,194 @@ function Analytics() {
 
     fetchStudents();
   }, []);
+useEffect(()=>{
+   const fetchClasses = async () => {
+    try {
+      const teacherId = localStorage.getItem("TeacherPortalId");
+      const token = localStorage.getItem("TeacherAuthToken");
 
-  useEffect(() => {
-    const fetchSchedulesByTeacher = async () => {
-      try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("TeacherAuthToken")
-            : null;
-        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
+      console.log("Fetching classes...");
+      console.log("Teacher ID:", teacherId);
+      console.log("Auth Token Present:", !!token);
 
-        if (!token || !teacherIdToFilter) {
-          console.error("Missing token or teacher ID");
-          return;
-        }
-
-        const response = await axios.get<ClassScheduleResponse>(
-          `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${teacherIdToFilter}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setUniqueStudentSchedules(response.data.classSchedule);
-        setFilteredClasses(response.data.classSchedule); // <-- initialize filteredClasses
-        setTotalCount(response.data.totalCount); // ✅ store total count
-      } catch (error) {
-        console.error("Error fetching class schedules:", error);
+      if (!token || !teacherId) {
+        console.warn("Missing token or teacher ID.");
+        return;
       }
-    };
 
-    fetchSchedulesByTeacher();
-  }, []);
+      const response = await axios.get(
+        "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
+        {
+          params: { teacherId },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
+      console.log("API Response:", response.data);
+
+      // Process regular classes
+      const regularClasses: UnifiedClassSchedule[] =
+        response.data.classScheduleList.map((cls: any) => {
+          // Normalize: if it's a regular class with a single student
+          if (cls.student && cls.sessionClassType !== "GROUPCLASS") {
+            cls.student = [{ student: cls.student }];
+          }
+          if (cls.sessionClassType === "GROUPCLASS" && !cls.student) {
+            cls.student = cls.student;
+            cls.amount = cls.student[0].earnings.toString();
+          }
+
+          // Ensure session arrays exist for each student
+          cls.student?.forEach((s: any) => {
+            s.student.studnetSessionStart ||= [];
+            s.student.studnetSessionEnd ||= [];
+          });
+
+          // Return the unified class object
+          return {
+            ...cls,
+            isTrial: false,
+          };
+        });
+
+      console.log("Processed Regular Classes:", regularClasses);
+
+      /* ---------------- TRIAL CLASSES ---------------- */
+
+      let trialClasses: UnifiedClassSchedule[] = [];
+
+      if (Array.isArray(response.data.trialclasses)) {
+        console.log("Raw Trial Classes Data:", response.data.trialclasses);
+
+        const now = new Date();
+
+        trialClasses = response.data.trialclasses.map((trialClass: any) => {
+          // Compute the class start datetime
+          const classStartDateTime =
+            trialClass.scheduledStartDate && trialClass.scheduledFrom
+              ? (() => {
+                  const date = new Date(trialClass.scheduledStartDate);
+                  const [hours, minutes] = trialClass.scheduledFrom
+                    .split(":")
+                    .map(Number);
+                  date.setHours(hours, minutes, 0, 0);
+                  return date;
+                })()
+              : null;
+
+          const now = new Date();
+
+          let sessionStatus = "Scheduled";
+          if (classStartDateTime && classStartDateTime < now) {
+            sessionStatus = "Completed";
+          }
+
+          return {
+            _id: trialClass.id || trialClass.trialId || "",
+            classId: "",
+            classLink: trialClass.trialId || "",
+            sessionClassType: "TRIALCLASS",
+            scheduleStatus: sessionStatus,
+            course: {
+              courseId: trialClass.course?.courseId || "",
+              courseName: trialClass.course?.courseName || "",
+            },
+            startDate: trialClass.scheduledStartDate || "",
+            endDate: trialClass.scheduledEndDate || "",
+            classDay: trialClass.scheduledStartDate
+              ? [
+                  new Date(trialClass.scheduledStartDate).toLocaleDateString(
+                    "en-US",
+                    {
+                      weekday: "long",
+                    }
+                  ),
+                ]
+              : [],
+            startTime: [trialClass.scheduledFrom || ""],
+            endTime: [trialClass.scheduledTo || ""],
+            student: [
+              {
+                student: {
+                  id: trialClass.student?.id || "",
+                  studentId: trialClass.student?.studentId || "",
+                  studentFirstName:
+                    trialClass.student?.studentName?.split(" ")[0] || "Trial",
+                  studentLastName:
+                    trialClass.student?.studentName
+                      ?.split(" ")
+                      .slice(1)
+                      .join(" ") || "Student",
+                  studentEmail: "",
+                  gender: "",
+                  level: "",
+                  studnetSessionStart: [],
+                  studnetSessionEnd: [],
+                },
+                status: "Active",
+                sessionStatus: sessionStatus,
+                earnings: 0,
+              },
+            ],
+            package: "",
+            totalHourse: 0.5,
+            status: "Active",
+            createdBy: "System",
+            classhour: "0.5",
+            currency: "$",
+            amount: "0",
+            earnings: 0,
+            isSalaryProcessed: false,
+            sessionStarttime: trialClass.scheduledFrom || "",
+            sessionsEndtime: trialClass.scheduledTo || "",
+          };
+        });
+
+        console.log("Processed Trial Classes:", trialClasses);
+      } else {
+        console.log("No trial classes found or incorrect format.");
+      }
+
+     
+     const getClassDateTime = (cls: any) => {
+  if (!cls.startDate) return 0;
+
+  const date = new Date(cls.startDate);
+
+  if (Array.isArray(cls.startTime) && cls.startTime[0]) {
+    const [h, m] = cls.startTime[0].split(":").map(Number);
+    date.setHours(h || 0, m || 0, 0, 0);
+  }
+
+  return date.getTime();
+};
+
+   
+const allClasses = [...regularClasses, ...trialClasses];
+
+// ✅ SORT ASCENDING (earliest → latest)
+const sortedClasses = allClasses.sort(
+  (a, b) => getClassDateTime(a) - getClassDateTime(b)
+);
+
+      setUniqueStudentSchedules(sortedClasses);
+      setFilteredClasses(sortedClasses);
+      console.log("Combined Classes Set. Total:", sortedClasses.length);
+      console.log("Class data successfully set to state.");
+    } catch (error) {
+      console.error("Error fetching class data:", error);
+    }
+  };
+   fetchClasses();
+  },[]);
   //filters
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
+    const lowerQuery = query.toLowerCase().trim();
 
     if (activeView === "students") {
       // Search in students data
@@ -314,20 +525,17 @@ function Analytics() {
       setFilteredStudents(filtered);
     } else {
       // Search in classes/earnings data
-      const filtered = uniqueStudentSchedules.filter((item) => {
-        const fullName =
-          `${item.student.studentFirstName} ${item.student.studentLastName}`.toLowerCase();
-        return (
-          item._id.toLowerCase().includes(query.toLowerCase()) ||
-          fullName.includes(query.toLowerCase()) ||
-          item.student.studentEmail
-            ?.toLowerCase()
-            .includes(query.toLowerCase()) ||
-          item.course.courseName?.toLowerCase().includes(query.toLowerCase()) ||
-          item.scheduleStatus?.toLowerCase().includes(query.toLowerCase()) ||
-          item.teacher.teacherName?.toLowerCase().includes(query.toLowerCase())
-        );
-      });
+      const filtered = uniqueStudentSchedules.filter((item : any ) =>
+      (item.students || []).some((s: any) => {
+        const fullName = `${s.student?.studentFirstName || ""} ${
+          s.student?.studentLastName || ""
+        }`
+          .toLowerCase()
+          .trim();
+
+        return fullName.includes(lowerQuery);
+      })
+    );
       setFilteredClasses(filtered);
     }
 
@@ -374,7 +582,7 @@ function Analytics() {
       setFilteredStudents(filtered);
     } else {
       // Filter classes/earnings data (Schedule[])
-      let filtered = [...uniqueStudentSchedules];
+      let filtered = [...filteredClasses];
 
       if (filters.courseName) {
         filtered = filtered.filter(
@@ -390,12 +598,19 @@ function Analytics() {
         );
       }
 
-      if (filters.studentName) {
-        filtered = filtered.filter((item) => {
-          const fullName = `${item.student.studentFirstName} ${item.student.studentLastName}`;
-          return fullName === filters.studentName;
-        });
-      }
+       if (filters.studentName) {
+      const search = filters.studentName.toLowerCase();
+
+      filtered = filtered.filter((c) =>
+        (c.student || []).some((s: any) => {
+          const fullName = `${s.student?.studentFirstName || ""}`
+            .toLowerCase()
+            .trim();
+
+          return fullName.includes(search);
+        })
+      );
+    }
 
       if (filters.fromDate && filters.toDate) {
         const from = new Date(filters.fromDate);
@@ -435,85 +650,9 @@ function Analytics() {
     setIsFilterModalOpen(false); // close modal
   };
 
-  useEffect(() => {
-    // Only apply filters to students view
-    if (activeView === "students") {
-      let filtered = [...students];
 
-      if (filters.courseName) {
-        filtered = filtered.filter((item) =>
-          item.studentDetails.course.courseName
-            ?.toLowerCase()
-            .includes(filters.courseName.toLowerCase())
-        );
-      }
 
-      if (filters.classType) {
-        filtered = filtered.filter((item) =>
-          item.studentDetails.classType
-            ?.toLowerCase()
-            .includes(filters.classType.toLowerCase())
-        );
-      }
-
-      if (filters.studentName) {
-        filtered = filtered.filter((item) => item.name === filters.studentName);
-      }
-
-      if (filters.fromDate && filters.toDate) {
-        const from = new Date(filters.fromDate);
-        const to = new Date(filters.toDate);
-        filtered = filtered.filter((item) => {
-          const dateStr = item.studentDetails.student.createdDate;
-          if (!dateStr) return false;
-          const date = new Date(dateStr);
-          return date >= from && date <= to;
-        });
-      }
-
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-
-        filtered = filtered.filter((item) => {
-          const name = item.name?.toLowerCase() || "";
-          const course =
-            item.studentDetails?.course?.courseName?.toLowerCase() || "";
-          const classType = item.studentDetails?.classType?.toLowerCase() || "";
-          const status =
-            item.studentDetails?.student.status?.toLowerCase() || "";
-          const studentId = item.studentId?.toLowerCase() || "";
-
-          return (
-            studentId.includes(query) ||
-            name.includes(query) ||
-            course.includes(query) ||
-            classType.includes(query) ||
-            status.includes(query)
-          );
-        });
-      }
-
-      setFilteredStudents(filtered);
-    }
-  }, [students, filters, searchQuery, activeView]);
-
-  // Get student names based on active view
-  const getStudentNames = () => {
-    if (activeView === "students") {
-      return Array.from(new Set(students.map((item) => item.name)));
-    } else {
-      return Array.from(
-        new Set(
-          uniqueStudentSchedules.map(
-            (item) =>
-              `${item.student.studentFirstName} ${item.student.studentLastName}`
-          )
-        )
-      );
-    }
-  };
-
-  const studentNames = getStudentNames();
+   
 
   const itemsPerPage = 10; // ✅ Add this line to fix the error
 
@@ -521,6 +660,31 @@ function Analytics() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredClasses.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
+  
+  // Get unique student names from filtered classes
+  const getStudentNames = () => {
+    const names = new Set<string>();
+    filteredClasses.forEach((schedule) => {
+      if (Array.isArray(schedule.student) && schedule.student.length > 0) {
+        schedule.student.forEach(({ student }) => {
+          if (student) {
+            const first = student.studentFirstName?.trim() || "";
+            const last = student.studentLastName?.trim() || "";
+            
+            if (first && last && first.toLowerCase() === last.toLowerCase()) {
+              names.add(first);
+            } else {
+              const fullName = `${first} ${last}`.trim() || "Student";
+              names.add(fullName);
+            }
+          }
+        });
+      }
+    });
+    return Array.from(names);
+  };
+
+  const studentNames = getStudentNames();
 
   // table header definitions + renderer
   const tableHeaders = {
@@ -534,7 +698,7 @@ function Analytics() {
       { label: "Status", width: "w-[8%]" },
     ],
     classes: [
-      { label: "Student ID", width: "w-[10%]" },
+      { label: "Class ID", width: "w-[10%]" },
       { label: "Student Name", width: "w-[14%]" },
       { label: "Courses", width: "w-[14%]" },
       { label: "Class Type", width: "w-[12%]" },
@@ -544,7 +708,7 @@ function Analytics() {
       { label: "Status", width: "w-[8%]" },
     ],
     earnings: [
-      { label: "Student Id", width: "w-[10%]" },
+      { label: "Class ID", width: "w-[10%]" },
       { label: "Student Name", width: "w-[14%]" },
       { label: "Course", width: "w-[12%]" },
       { label: "Class Type", width: "w-[12%]" },
@@ -624,7 +788,7 @@ function Analytics() {
                   </h3>
                   <div className="flex items-center gap-2">
                     <p className="text-[28px] font-bold text-[#0f172a] dark:text-[#fff]">
-                      {analytics?.totalclasses}
+                      {uniqueStudentSchedules.length}
                     </p>
                   </div>
                 </div>
@@ -796,19 +960,83 @@ function Analytics() {
                     {renderTableHeader(tableHeaders.classes)}
                     <tbody className="bg-white dark:bg-[#343434] dark:divide-gray-600">
                       {filteredClasses
-                        .slice(indexOfFirstItem, indexOfLastItem)
+                        .slice(0, 10)
                         .map((cls) => (
+                          
                           <tr
                             key={cls._id}
                             className="text-[12px] h-[50px] bg-[#fff] dark:bg-[#2C2C2C]"
                           >
                             <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
-                              {cls.student.studentId}
+                          {cls.classId || cls.classLink}
                             </td>
 
-                            <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left break-words">
-                              {cls.student.studentFirstName}
-                            </td>
+                         
+                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left relative">
+  {Array.isArray(cls.student) && cls.student.length > 0 ? (
+    cls.student.length === 1 ? (
+      // ✅ SINGLE STUDENT → SAME UI
+      (() => {
+        const student = cls.student[0]?.student;
+        const first = student?.studentFirstName?.trim() ?? "";
+        const last = student?.studentLastName?.trim() ?? "";
+        return (
+          `${first}`.trim() ||
+          first ||
+          "Student"
+        );
+      })()
+    ) : (
+      // ✅ MULTIPLE STUDENTS → CLICK TO SHOW LIST
+      <>
+        <button
+          onClick={() =>
+            setOpenEarningId(
+              openEarningId === `${cls._id}_${new Date(cls.startDate).getTime()}_${cls.startTime?.[0] || ''}` ? null : `${cls._id}_${new Date(cls.startDate).getTime()}_${cls.startTime?.[0] || ''}`
+            )
+          }
+          className="inline-flex items-center gap-1 px-2 py-1 rounded-md 
+                     bg-[#42609a] text-white text-xs hover:bg-blue-700"
+        >
+          {cls.student.length} Students
+        </button>
+
+        {openEarningId === `${cls._id}_${new Date(cls.startDate).getTime()}_${cls.startTime?.[0] || ''}` && (
+          <div
+            className="absolute z-50 mt-2 w-56 bg-white dark:bg-gray-900
+                       border border-gray-200 dark:border-gray-700
+                       rounded-md shadow-lg p-2"
+          >
+            <ul className="space-y-1">
+              {cls.student.map((item: any, idx: number) => {
+                const student = item?.student;
+                const first = student?.studentFirstName?.trim() ?? "";
+                const last = student?.studentLastName?.trim() ?? "";
+                const name =
+                  first && last && first.toLowerCase() === last.toLowerCase()
+                    ? first
+                    : `${first} ${last}`.trim() || "Student";
+
+                return (
+                  <li
+                    key={idx}
+                    className="px-2 py-1 text-sm rounded 
+                               hover:bg-gray-100 dark:hover:bg-gray-800"
+                  >
+                    {name}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+      </>
+    )
+  ) : (
+    "N/A"
+  )}
+</td>
+
 
                             <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
                               {cls.course.courseName}
@@ -865,19 +1093,83 @@ function Analytics() {
                         ? filteredClasses
                         : uniqueStudentSchedules
                       )
-                        .slice(indexOfFirstItem, indexOfLastItem)
+                        .slice(0, 10)
                         .map((earning) => (
-                          <tr
-                            key={earning._id}
-                            className="text-[12px] h-[50px] bg-[#fff] dark:bg-[#2C2C2C]"
-                          >
-                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
-                              {earning.student.studentId}
-                            </td>
+                        <tr
+                           key={`${earning._id}_${new Date(earning.startDate).getTime()}_${earning.startTime?.[0] || ''}`}
+                          className="text-[12px] h-[50px] bg-[#fff] dark:bg-[#2C2C2C]"
+                        >
+                             <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
+                            {earning.classId || earning.classLink}
 
-                            <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left break-words">
-                              {earning.student.studentFirstName}
-                            </td>
+</td>
+
+
+                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left relative">
+  {Array.isArray(earning.student) && earning.student.length > 0 ? (
+    earning.student.length === 1 ? (
+      // ✅ SINGLE STUDENT → SAME UI
+      (() => {
+        const student = earning.student[0]?.student;
+        const first = student?.studentFirstName?.trim() ?? "";
+        const last = student?.studentLastName?.trim() ?? "";
+        return (
+          `${first}`.trim() ||
+          first ||
+          "Student"
+        );
+      })()
+    ) : (
+      // ✅ MULTIPLE STUDENTS → CLICK TO SHOW LIST
+      <>
+        <button
+          onClick={() =>
+            setOpenEarningId(
+              openEarningId === `${earning._id}_${new Date(earning.startDate).getTime()}_${earning.startTime?.[0] || ''}` ? null : `${earning._id}_${new Date(earning.startDate).getTime()}_${earning.startTime?.[0] || ''}`
+            )
+          }
+          className="inline-flex items-center gap-1 px-2 py-1 rounded-md 
+                     bg-[#42609a] text-white text-xs hover:bg-blue-700"
+        >
+          {earning.student.length} Students
+        </button>
+
+        {openEarningId === `${earning._id}_${new Date(earning.startDate).getTime()}_${earning.startTime?.[0] || ''}` && (
+          <div
+            className="absolute z-50 mt-2 w-56 bg-white dark:bg-gray-900
+                       border border-gray-200 dark:border-gray-700
+                       rounded-md shadow-lg p-2"
+          >
+            <ul className="space-y-1">
+              {earning.student.map((item: any, idx: number) => {
+                const student = item?.student;
+                const first = student?.studentFirstName?.trim() ?? "";
+                const last = student?.studentLastName?.trim() ?? "";
+                const name =
+                  first && last && first.toLowerCase() === last.toLowerCase()
+                    ? first
+                    : `${first} ${last}`.trim() || "Student";
+
+                return (
+                  <li
+                    key={idx}
+                    className="px-2 py-1 text-sm rounded 
+                               hover:bg-gray-100 dark:hover:bg-gray-800"
+                  >
+                    {name}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+      </>
+    )
+  ) : (
+    "N/A"
+  )}
+</td>
+
 
                             <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
                               {earning.course.courseName}
