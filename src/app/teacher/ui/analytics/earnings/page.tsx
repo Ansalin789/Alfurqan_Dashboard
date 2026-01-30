@@ -151,6 +151,8 @@ const Earnings = () => {
         {
           params: { teacherId },
           headers: {
+
+
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
