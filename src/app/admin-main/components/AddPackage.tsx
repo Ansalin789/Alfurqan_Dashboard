@@ -1,11 +1,7 @@
 "use client";
 
 import { X, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
-
-// Admin token for direct authentication
-const ADMIN_TOKEN =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IkFkbWluIiwic3ViIjoiNjgwNWRhOGMwNjU0MmFhMzM4NThiODg5IiwiaWF0IjoxNzU1NzYwMDcxLCJleHAiOjE3NTU4NDY0NzF9.8qgL7NmVcW5si91WT9ezAkbjuWG9a8dwHD86f85H4bM";
+import { useState, useEffect } from "react";
 
 export default function AddPackage({ onClose }: { onClose: () => void }) {
   const [formData, setFormData] = useState({
@@ -18,6 +14,17 @@ export default function AddPackage({ onClose }: { onClose: () => void }) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [token, setToken] = useState<string | null>(null);
+
+  // Get token from localStorage on component mount
+  useEffect(() => {
+    const storedToken = localStorage.getItem("AdminAuthToken");
+    if (storedToken) {
+      setToken(storedToken);
+    } else {
+      setError("Please login first. No authentication token found.");
+    }
+  }, []);
 
   // Add a new description list item
   const addDescriptionItem = () => {
@@ -49,69 +56,134 @@ export default function AddPackage({ onClose }: { onClose: () => void }) {
     });
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsLoading(true);
-  setError("");
-
-  if (!formData.packageName.trim()) {
-    setError("Package name is required");
-    setIsLoading(false);
-    return;
-  }
-
-  try {
-    const payload = {
-      packageName: formData.packageName,
-      costPerHour: formData.costPerHour || "0", // string, not number
-      categories: {
-        Teacher: formData.category ? [formData.category] : [],
-        Academics: [],
-        PortalAcess: [],
-        Scheduling: [],
-        Dicount: []
-      },
-      descriptionPoint: formData.descriptionPoint,
-      status: "Active",
-      createdDate: new Date().toISOString(),
-      createdBy: "admin",
-      updatedDate: new Date().toISOString(),
-      updatedBy: "admin",
-    };
-
-    console.log("Payload being sent:", payload);
-
-    const response = await fetch("https://api.blackstoneinfomaticstech.com/package", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${ADMIN_TOKEN}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Server error: ${response.status}`);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Check if user is logged in
+    if (!token) {
+      setError("Please login first. No authentication token found.");
+      return;
     }
 
-    onClose();
-  } catch (err) {
-    setError(err instanceof Error ? err.message : "Failed to create package");
-    console.error("Error:", err);
-  } finally {
-    setIsLoading(false);
-  }
-};
+    setIsLoading(true);
+    setError("");
 
+    if (!formData.packageName.trim()) {
+      setError("Package name is required");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const payload = {
+        packageName: formData.packageName,
+        costPerHour: formData.costPerHour || "0",
+        categories: {
+          Teacher: formData.category ? [formData.category] : [],
+          Academics: [],
+          PortalAcess: [],
+          Scheduling: [],
+          Dicount: []
+        },
+        descriptionPoint: formData.descriptionPoint,
+        descriptionList: formData.descriptionList.filter(item => item.trim() !== ""),
+        status: "Active",
+        createdDate: new Date().toISOString(),
+        createdBy: "admin",
+        updatedDate: new Date().toISOString(),
+        updatedBy: "admin",
+      };
+
+      console.log("Using token from login:", token.substring(0, 20) + "...");
+      console.log("Payload being sent:", payload);
+
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/package", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      // Handle authentication errors
+      if (response.status === 401 || response.status === 403) {
+        setError("Session expired. Please login again.");
+        // Clear expired token
+        localStorage.removeItem("AdminAuthToken");
+        setToken(null);
+        setIsLoading(false);
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Server error: ${response.status}`);
+      }
+
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create package");
+      console.error("Error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // If no token, show login required message
+  if (!token) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold text-gray-800">
+              Authentication Required
+            </h3>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="text-center py-8">
+            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H9m3-6a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <h4 className="text-xl font-semibold text-gray-800 mb-2">
+              Login Required
+            </h4>
+            <p className="text-gray-600 mb-6">
+              You need to be logged in as an administrator to add packages.
+            </p>
+            <button
+              onClick={() => {
+                onClose();
+                // Redirect to login page
+                window.location.href = "/admin-main/ui/sign-in";
+              }}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            >
+              Go to Login Page
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-gray-800">
-            Add New Package
-          </h3>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800">
+              Add New Package
+            </h3>
+          </div>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
@@ -142,6 +214,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter package name"
                 required
+                disabled={isLoading}
               />
             </div>
 
@@ -160,6 +233,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 placeholder="0.00"
                 min="0"
                 step="0.01"
+                disabled={isLoading}
               />
             </div>
 
@@ -174,6 +248,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 }
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter category"
+                disabled={isLoading}
               />
             </div>
 
@@ -193,6 +268,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 }
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter description point"
+                disabled={isLoading}
               />
             </div>
 
@@ -205,7 +281,8 @@ const handleSubmit = async (e: React.FormEvent) => {
                 <button
                   type="button"
                   onClick={addDescriptionItem}
-                  className="text-blue-600 text-sm flex items-center"
+                  className="text-blue-600 text-sm flex items-center disabled:text-gray-400"
+                  disabled={isLoading}
                 >
                   <Plus size={16} className="mr-1" /> Add Item
                 </button>
@@ -220,14 +297,16 @@ const handleSubmit = async (e: React.FormEvent) => {
                       onChange={(e) =>
                         updateDescriptionItem(index, e.target.value)
                       }
-                      className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
                       placeholder={`List item ${index + 1}`}
+                      disabled={isLoading}
                     />
                     {formData.descriptionList.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeDescriptionItem(index)}
-                        className="ml-2 text-red-500 hover:text-red-700 p-2"
+                        className="ml-2 text-red-500 hover:text-red-700 p-2 disabled:text-gray-400"
+                        disabled={isLoading}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -243,7 +322,8 @@ const handleSubmit = async (e: React.FormEvent) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              disabled={isLoading}
             >
               Cancel
             </button>
@@ -252,7 +332,14 @@ const handleSubmit = async (e: React.FormEvent) => {
               disabled={isLoading}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
             >
-              {isLoading ? "Saving..." : "Save"}
+              {isLoading ? (
+                <span className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Saving...
+                </span>
+              ) : (
+                "Save Package"
+              )}
             </button>
           </div>
         </form>

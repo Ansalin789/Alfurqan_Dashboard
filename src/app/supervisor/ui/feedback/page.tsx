@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -5,7 +6,7 @@ import BaseLayout3 from "@/components/BaseLayout3";
 import SupervisorHeader from "../../components/supervisorHeader";
 import { FaStar } from "react-icons/fa";
 import { Search } from "lucide-react";
-import Pagination from "@/components/Pagination";
+import Pagination from "@/components/Pagination"; 
 import { MdTune } from "react-icons/md";
 import axios from "axios";
 import { IoPersonOutline } from "react-icons/io5";
@@ -110,12 +111,15 @@ const FeedbackDetails: React.FC = () => {
   const [tempCourse, setTempCourse] = useState("");
   const [openFeedbackDropdownId, setOpenFeedbackDropdownId] = useState<string | null>(null);
 
-  // Toggle feedback dropdown
+  // 🔹 UPDATED: Reset page when filter/search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCourse, searchQuery]);
+
   const toggleFeedbackDropdown = (id: string) => {
     setOpenFeedbackDropdownId((prev) => (prev === id ? null : id));
   };
 
-  // Group feedbacks by student-teacher pairs
   const groupFeedbacksByStudentTeacher = (feedbacks: FlattenedFeedbackItem[]): GroupedFeedback[] => {
     const groupedMap = new Map<string, GroupedFeedback>();
     
@@ -141,33 +145,32 @@ const FeedbackDetails: React.FC = () => {
       group.feedbacks.push(feedback);
     });
     
-    // Calculate average ratings for each group
     return Array.from(groupedMap.values()).map(group => {
       const totalRating = group.feedbacks.reduce((sum, feedback) => sum + feedback.level, 0);
       const averageRating = group.feedbacks.length > 0 ? totalRating / group.feedbacks.length : 0;
       
       return {
         ...group,
-        averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal place
+        averageRating: Math.round(averageRating * 10) / 10,
         totalFeedbacks: group.feedbacks.length
       };
     });
   };
+const resetFilters = () => {
+  setSelectedCourse("");    // Clear course filter
+  setSearchQuery("");       // Clear search input
+  setCurrentPage(1);        // Reset pagination
+};
 
-  // Calculate level for a single feedback item
   const calculateLevel = (item: RawFeedbackItem): number => {
     if (item.studentsRating) {
-      const values = Object.values(item.studentsRating).filter(
-        (n) => typeof n === "number"
-      );
+      const values = Object.values(item.studentsRating).filter(n => typeof n === "number");
       if (values.length === 0) return 0;
       const avg = values.reduce((a, b) => a + b, 0) / values.length;
       return Math.min(5, Math.max(0, Math.round(avg)));
     }
     if (item.teacherRatings) {
-      const values = Object.values(item.teacherRatings).filter(
-        (n) => typeof n === "number"
-      );
+      const values = Object.values(item.teacherRatings).filter(n => typeof n === "number");
       if (values.length === 0) return 0;
       const avg = values.reduce((a, b) => a + b, 0) / values.length;
       return Math.min(5, Math.max(0, Math.round(avg)));
@@ -175,7 +178,6 @@ const FeedbackDetails: React.FC = () => {
     return 0;
   };
 
-  // Fetch feedback data
   useEffect(() => {
     const fetchFeedback = async () => {
       try {
@@ -186,6 +188,7 @@ const FeedbackDetails: React.FC = () => {
           return;
         }
 
+        // 🔹 UPDATED: Send courseId or empty
         const url = selectedCourse 
           ? `https://api.blackstoneinfomaticstech.com/allfeedback?course=${selectedCourse}`
           : "https://api.blackstoneinfomaticstech.com/allfeedback";
@@ -197,54 +200,41 @@ const FeedbackDetails: React.FC = () => {
           },
         });
 
-        console.log("API Response:", response.data);
-
         if (!response.data || !response.data.feedbackRecords) {
-          console.error("Invalid API response structure:", response.data);
           setAllFeedbacks([]);
           return;
         }
 
         const feedbackArray: RawFeedbackItem[] = response.data.feedbackRecords;
 
-        if (feedbackArray.length === 0) {
-          console.log("No feedback records found");
-          setAllFeedbacks([]);
-          return;
-        }
-
-        const formattedData: FlattenedFeedbackItem[] = feedbackArray.map(
-          (item) => ({
-            _id: item._id,
-            Review: `${item.student?.studentFirstName || ''} ${item.student?.studentLastName || ''}`.trim(),
-            Teacher: item.teacher?.teacherName || "Unknown",
-            class: item.course?.courseName || "Unknown",
-            Feedback: item.feedbackmessage || "",
-            level: calculateLevel(item),
-            studentId: item.student?.studentId || "",
-            teacherId: item.teacher?.teacherId || "",
-            studentFirstName: item.student?.studentFirstName || "",
-            studentLastName: item.student?.studentLastName || "",
-            teacherName: item.teacher?.teacherName || "",
-            courseName: item.course?.courseName || "",
-            feedbackmessage: item.feedbackmessage || "",
-            studentsRating: item.studentsRating,
-            teacherRatings: item.teacherRatings,
-            classDay: item.classDay || "",
-            startDate: item.startDate || "",
-            endDate: item.endDate || "",
-            startTime: item.startTime || "",
-            endTime: item.endTime || "",
-            createdDate: item.createdDate || ""
-          })
-        );
+        const formattedData: FlattenedFeedbackItem[] = feedbackArray.map(item => ({
+          _id: item._id,
+          Review: `${item.student?.studentFirstName || ''} ${item.student?.studentLastName || ''}`.trim(),
+          Teacher: item.teacher?.teacherName || "Unknown",
+          class: item.course?.courseName || "Unknown",
+          Feedback: item.feedbackmessage || "",
+          level: calculateLevel(item),
+          studentId: item.student?.studentId || "",
+          teacherId: item.teacher?.teacherId || "",
+          studentFirstName: item.student?.studentFirstName || "",
+          studentLastName: item.student?.studentLastName || "",
+          teacherName: item.teacher?.teacherName || "",
+          courseName: item.course?.courseName || "",
+          feedbackmessage: item.feedbackmessage || "",
+          studentsRating: item.studentsRating,
+          teacherRatings: item.teacherRatings,
+          classDay: item.classDay || "",
+          startDate: item.startDate || "",
+          endDate: item.endDate || "",
+          startTime: item.startTime || "",
+          endTime: item.endTime || "",
+          createdDate: item.createdDate || ""
+        }));
 
         setAllFeedbacks(formattedData);
-        
-        // Group the feedbacks
         const grouped = groupFeedbacksByStudentTeacher(formattedData);
         setGroupedFeedbacks(grouped);
-        
+
       } catch (error) {
         console.error("Error fetching feedback:", error);
         setAllFeedbacks([]);
@@ -254,31 +244,28 @@ const FeedbackDetails: React.FC = () => {
     fetchFeedback();
   }, [selectedCourse]);
 
-  // Add this helper function for date formatting
-const formatDate = (dateString: string): string => {
-  if (!dateString) return 'Unknown date';
-  
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return 'Invalid date';
-    
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    }).replace(',', '');
-  } catch (error) {
-    return 'Invalid date';
-  }
-};
-  // Filter grouped feedbacks based on search query
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return 'Unknown date';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Invalid date';
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).replace(',', '');
+    } catch {
+      return 'Invalid date';
+    }
+  };
+
+  // 🔹 UPDATED: Client-side filter fallback
   const filteredGroupedFeedbacks = groupedFeedbacks.filter((group) => {
     const searchLower = searchQuery.toLowerCase();
     const studentMatch = group.studentName.toLowerCase().includes(searchLower);
     const teacherMatch = group.teacherName.toLowerCase().includes(searchLower);
     const classMatch = group.className.toLowerCase().includes(searchLower);
 
-    return studentMatch || teacherMatch || classMatch;
+    // Filter by course if selectedCourse exists
+    const courseMatch = selectedCourse ? group.className === selectedCourse : true;
+
+    return (studentMatch || teacherMatch || classMatch) && courseMatch;
   });
 
   const itemsPerPage = 10;
@@ -299,7 +286,6 @@ const formatDate = (dateString: string): string => {
     setSelectedGroup(null);
   };
 
-  // Calculate detailed average ratings for the modal
   const calculateDetailedRatings = (feedbacks: FlattenedFeedbackItem[]) => {
     let totalClassUnderstanding = 0;
     let totalEngagement = 0;
@@ -358,7 +344,7 @@ const formatDate = (dateString: string): string => {
               <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by Student, Teacher, or Class"
+                placeholder="Search by Keywords"
                 className="bg-transparent outline-none text-[15px] w-52 py-3"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -404,10 +390,10 @@ const formatDate = (dateString: string): string => {
 
                     <div className="flex justify-end gap-3">
                       <button
-                        onClick={() => setFilterOpen(false)}
+    onClick={resetFilters}
                         className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
                       >
-                        Cancel
+                        Reset
                       </button>
                       <button
                         onClick={() => {

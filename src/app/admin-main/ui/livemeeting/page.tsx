@@ -278,7 +278,7 @@ export default function Page() {
                   {roomName && (
                     <JitsiMeeting
                       roomName={roomName}
-                      domain="meet.blackstoneinfomaticstech.com"
+                      domain="meet.alfurqanapp.com"
                       configOverwrite={{
                         startWithAudioMuted: false,
                         startWithVideoMuted: false,

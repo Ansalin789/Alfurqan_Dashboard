@@ -61,10 +61,9 @@ export interface StudentModules {
 
 export interface TeacherModules {
   dashboard: RoleModuleAccess;
-  meeting: RoleModuleAccess;
-  schedule: RoleModuleAccess;
-  liveclass: RoleModuleAccess;
-  assignment: RoleModuleAccess;
+  liveclasses: RoleModuleAccess;
+  scheduledclasses: RoleModuleAccess;
+  assignments: RoleModuleAccess;
   messages: RoleModuleAccess;
   analytics: RoleModuleAccess;
   support: {
@@ -114,8 +113,8 @@ const SignIn: React.FC = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showError, setShowError] = useState(false);
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (error) {
@@ -124,11 +123,6 @@ const SignIn: React.FC = () => {
         setShowError(false);
       }, 5000);
     }
-    const user = searchParams.get("username");
-    const pass = searchParams.get("password");
-
-    if (user) setUsername(user);
-    if (pass) setPassword(pass);
   }, [error]);
 
   const signIn = async (username: string, password: string) => {
@@ -168,9 +162,13 @@ const SignIn: React.FC = () => {
             JSON.stringify(roleAccess.teachermodules)
           );
 
-          console.log("Stored only teachermodules after overriding admin flag");
+          console.log(
+            "Stored only teachermodules after overriding admin flag"
+          );
         } else {
-          console.warn("User is not a Teacher. Ignoring teachermodules.");
+          console.warn(
+            "User is not an Teacher. Ignoring teachermodules."
+          );
         }
       } else {
         throw new Error("Failed to fetch role-based access control");
@@ -193,6 +191,7 @@ const SignIn: React.FC = () => {
       const response = await signIn(username, password);
       const data = response.data;
       const { accessToken, role, _id, userName, userId } = data;
+      // alert(data);
       const userEmail: string = data.email ?? data.userEmail ?? "";
 
       if (!role?.includes("TEACHER")) {
@@ -231,23 +230,23 @@ const SignIn: React.FC = () => {
     }
   };
 
- const getGoogleUserInfo = async (accessToken: string) => {
-  try {
-    const response = await axios.get(
-      "https://www.googleapis.com/oauth2/v3/userinfo",
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+  const getGoogleUserInfo = async (accessToken: string) => {
+    try {
+      const response = await axios.get(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
-    return response.data; // contains email, name, picture, etc.
-  } catch (err) {
-    console.error("Failed to fetch Google user:", err);
-    return null;
-  }
-};
+      return response.data;
+    } catch (err) {
+      console.error("Failed to fetch Google user:", err);
+      return null;
+    }
+  };
 
   const handleGoogleSuccess = async (response: CredentialResponse) => {
     const { credential } = response;
@@ -256,8 +255,8 @@ const SignIn: React.FC = () => {
       setLoginError("Google login failed: No credential received");
       return;
     }
-    const emaildata =await getGoogleUserInfo(credential);
-    const email : any = emaildata.email;
+    const emaildata = await getGoogleUserInfo(credential);
+    const email: any = emaildata.email;
 
     const checkEmail = async (email: string) => {
       try {
@@ -283,7 +282,7 @@ const SignIn: React.FC = () => {
           }
         }
 
-        console.log("Error occurred:", error.message || "Unknown error");
+        console.log("Error occurred:", error.message ?? "Unknown error");
         return { message: "Unknown error occurred" };
       }
     };
@@ -297,12 +296,12 @@ const SignIn: React.FC = () => {
         localStorage.setItem("TeacherAuthToken", result.data.accessToken);
         localStorage.setItem("TeacherPortalId", result.data.userId);
         localStorage.setItem("TeacherPortalName", result.data.username);
-          localStorage.setItem("TeacherPortalEmail", result.data.userEmail);
+        localStorage.setItem("TeacherPortalEmail", result.data.userEmail);
         localStorage.setItem("TeacherPortalRole", role);
-      localStorage.setItem("TeacherId",result.data._id);
+        localStorage.setItem("TeacherId", result.data._id);
         router.push("/teacher/ui/dashboard");
       } else {
-        setLoginError("Access denied: Not a Teacher");
+        setLoginError("Access denied: Not an Teacher");
       }
     } catch (error) {
       console.error("Error during email verification:", error);
@@ -311,6 +310,8 @@ const SignIn: React.FC = () => {
       setLoading(false);
     }
   };
+
+
 
   const handleGoogleFailure = (error?: any) => {
     console.error("Google login failed:", error);
@@ -356,33 +357,34 @@ const SignIn: React.FC = () => {
         {/* Left Section - Sign In Form */}
         <div className="w-full lg:w-1/2 h-auto lg:h-screen bg-white flex flex-col overflow-hidden order-2 lg:order-1">
           <div className="px-4 sm:px-6 lg:px-8 py-1">
-            <Image 
-              src="/assets/images/Logo - Website - big size 1.svg" 
-              alt="logo" 
-              width={150} 
-              height={160} 
-              priority 
-              style={{ height: 'auto' }} 
+            <Image
+              src="/assets/images/Logo - Website - big size 1.svg"
+              alt="logo"
+              width={150}
+              height={160}
+              priority
+              style={{ height: 'auto' }}
               className='justify-left ml-0 sm:ml-[38px] mt-4 sm:mt-5 p-0'
             />
           </div>
 
-<div
-  className="
+          <div
+            className="
     flex-1
     flex items-center justify-center
     px-4 sm:px-6 lg:px-8
     overflow-auto scrollbar-none
     py-6
   "
->            <div className="w-full max-w-md">
-              <h2 className="text-2xl sm:text-[32px] font-bold text-black mb-2 text-center lg:text-left">Sign in</h2>
-              <p className="text-[#718096] mb-6 sm:mb-8 text-sm sm:text-[14px] text-center lg:text-left">
+          >
+            <div className="w-full max-w-md">
+              <h2 className="text-2xl sm:text-[32px] font-bold text-black mb-10 text-center lg:text-left">Sign in</h2>
+              {/* <p className="text-[#718096] mb-6 sm:mb-8 text-sm sm:text-[14px] text-center lg:text-left">
                 Don't have an account?{' '}
                 <a href="#" className="text-[#5A73B3] hover:text-[#4d6295] underline">
                   Create now
                 </a>
-              </p>
+              </p> */}
 
               <form onSubmit={handleFormSubmit}>
                 <div className="mb-4">
@@ -445,9 +447,8 @@ const SignIn: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full bg-[#5A73B3] hover:bg-[#4d6299] text-white font-medium py-3 rounded-2xl transition-colors mb-4 text-sm sm:text-base ${
-                    loading ? 'opacity-70 cursor-not-allowed' : ''
-                  }`}
+                  className={`w-full bg-[#5A73B3] hover:bg-[#4d6299] text-white font-medium py-3 rounded-2xl transition-colors mb-4 text-sm sm:text-base ${loading ? 'opacity-70 cursor-not-allowed' : ''
+                    }`}
                 >
                   {loading ? (
                     <div className="flex items-center justify-center gap-2">
@@ -472,9 +473,8 @@ const SignIn: React.FC = () => {
                   type="button"
                   onClick={() => login()}
                   disabled={loading}
-                  className={`w-full flex items-center justify-center gap-3 bg-white border border-[#CBD5E0] hover:bg-gray-50 text-[#67728A] font-medium py-3 rounded-2xl transition-all mb-4 shadow-sm text-sm sm:text-base ${
-                    loading ? "opacity-70 cursor-not-allowed" : "hover:shadow-md"
-                  }`}
+                  className={`w-full flex items-center justify-center gap-3 bg-white border border-[#CBD5E0] hover:bg-gray-50 text-[#67728A] font-medium py-3 rounded-2xl transition-all mb-4 shadow-sm text-sm sm:text-base ${loading ? "opacity-70 cursor-not-allowed" : "hover:shadow-md"
+                    }`}
                 >
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-[#4285F4] border-t-transparent rounded-full animate-spin" />
@@ -517,7 +517,6 @@ const SignIn: React.FC = () => {
 
         {/* Right Section */}
         <div className="relative w-full lg:w-1/2 h-96 lg:h-screen overflow-hidden order-1 lg:order-2">
-          {/* Background Image */}
           <Image
             src="/assets/images/Frame 2147226048.svg"
             alt="right-bg"
@@ -527,29 +526,26 @@ const SignIn: React.FC = () => {
             className="w-full h-full object-cover absolute inset-0"
           />
 
-          {/* Black overlay */}
           <div className="absolute inset-0 bg-black/25"></div>
 
-          {/* Content */}
-          <div className="relative z-10 flex flex-col justify-between w-full h-full px-4 sm:px-6 lg:px-12 py-6 sm:py-8">
+          <div className="relative z-10 flex flex-col justify-between w-full h-full px-4 sm:px-6 lg:px-10 py-6">
 
-            {/* TOP CARD - Responsive */}
-{/* TOP CARD */}
-  <div className="
+            {/* TOP CARD */}
+            <div className="
     bg-white rounded-xl shadow-lg
     p-4 sm:p-5 lg:p-6
     w-full 
     max-w-sm sm:max-w-md lg:max-w-xl
     mx-auto
     mt-14 sm:mt-28 lg:mt-32
-  ">               <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-6">
+  ">              <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-6">
                 <div className="flex-1 text-left w-full">
-                  <h2 className="text-lg sm:text-xl lg:text-[22px] font-extrabold leading-[1.2] text-[#576CBC] mb-4 sm:mb-6">
+                  <h2 className="text-lg sm:text-xl lg:text-[19px] font-bold leading-snug text-[#576CBC] mb-4 sm:mb-6">
                     Connecting You to Qur'an,<br />
                     Arabic, and the Wisdom of<br />
                     Islam
                   </h2>
-                  <p className="text-[#808080] text-sm sm:text-[15px] lg:text-[17px] leading-relaxed mb-4 sm:mb-6">
+                  <p className="text-[#808080] text-xs sm:text-[14px] lg:text-[14px] leading-relaxed mb-4 sm:mb-6">
                     And We have certainly made the Qur'an easy for remembrance, so is there is any who will remember ?
                   </p>
                   <p className="text-[#808080] text-xs sm:text-sm lg:text-[16px] font-medium">
@@ -567,12 +563,11 @@ const SignIn: React.FC = () => {
               </div>
             </div>
 
-            {/* BOTTOM SECTION - Responsive */}
-             <div className="text-center text-white mx-auto mt-3 sm:mt-6 mb-10">
-              <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-2">Teacher Dashboard</h2>
+            <div className="text-center text-white mx-auto mt-3 sm:mt-6 mb-10">
+              <h2 className="text-lg sm:text-xl lg:text-[22px] font-semibold mb-2">Teacher Dashboard</h2>
 
-              <p className="text-[#CFD9E0] text-[20px] sm:text-sm leading-relaxed max-w-xs sm:max-w-md mx-auto mb-2 sm:mb-4">
-                Access comprehensive teaching resources, schedule management tools, 
+              <p className="text-[#CFD9E0] text-xs sm:text-sm leading-relaxed max-w-xs sm:max-w-md mx-auto mb-2 sm:mb-4">
+                Access comprehensive teaching resources, schedule management tools
                 and student progress tracking all in one integrated platform.
               </p>
 

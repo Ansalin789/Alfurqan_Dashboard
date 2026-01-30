@@ -272,7 +272,7 @@ const CoursesChart = () => {
 
 export default function Home() {
   const socketRef = useRef<Socket | null>(null);
-  const userId = "6805da8c06542aa33858b889";
+  let userId = "";
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [barData, setBarData] = useState<ChartDataItem[]>([]);
   const [data, setData] = useState<StudentInvoice[]>([]);
@@ -281,7 +281,17 @@ export default function Home() {
   const [revenueDatas, setRevenueDatas] = useState<any[]>([]);
   const [selectedRevenueYear, setSelectedRevenueYear] = useState(new Date().getFullYear());
   const [selectedVisitorYear, setSelectedVisitorYear] = useState(new Date().getFullYear());
+useEffect(()=>{
+  const id =
+        typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
 
+      if (!id) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      } else {
+        userId = id;
+      }
+},[]);
 
   useEffect(() => {
     if (!socketRef.current) {
@@ -314,6 +324,7 @@ export default function Home() {
         setTotalRevenue(totalAllCourses.revenue);
       }
     };
+    
 
     socketRef.current.on("revenueUpdated", handleRevenueUpdate);
 

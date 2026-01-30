@@ -104,20 +104,6 @@ function LiveClass() {
     fetchClassData();
   }, []);
 
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        console.log("Tab inactive or switched — calling handleEndCall");
-        handleEndCall(); // ✅ Or partial save, pause session etc.
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -265,6 +251,9 @@ function LiveClass() {
 
       if ([200, 201].includes(response.status)) {
         setSuccess(true);
+        setTimeout(()=>{
+          window.close();
+        },3000);
       }
     } catch (err) {
       const error = err as AxiosError;
@@ -486,7 +475,7 @@ function LiveClass() {
                   {roomName && (
                     <JitsiMeeting
                       roomName={roomName}
-                      domain="meet.blackstoneinfomaticstech.com"
+                      domain="meet.alfurqanapp.com"
                       userInfo={userInfo}
                       configOverwrite={{
                         startWithAudioMuted: false,

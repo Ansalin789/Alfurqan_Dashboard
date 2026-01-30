@@ -121,19 +121,37 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
   const elements = useElements();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-   const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(false);
   const [cardBrand, setCardBrand] = useState("unknown");
   const [zip, setZip] = useState("");
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setIsDark(window.matchMedia("(prefers-color-scheme: dark)").matches);
-      window
-        .matchMedia("(prefers-color-scheme: dark)")
-        .addEventListener("change", (e) => {
-          setIsDark(e.matches);
-        });
-    }
+    // Initial check
+    const checkDarkMode = () => {
+      const isClassDark = document.documentElement.classList.contains("dark");
+      setIsDark(isClassDark);
+    };
+
+    checkDarkMode();
+
+    // Listen for system changes
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleSystemChange = (e: MediaQueryListEvent) => {
+      // Re-check both class and system to be safe, or just system if class isn't used
+      checkDarkMode();
+    };
+    mediaQuery.addEventListener("change", handleSystemChange);
+
+    // Listen for class changes on html element (Tailwind dark mode toggle)
+    const observer = new MutationObserver(() => {
+      checkDarkMode();
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleSystemChange);
+      observer.disconnect();
+    };
   }, []);
 
   const handleCardChange = (event: StripeCardNumberElementChangeEvent) => {
@@ -186,7 +204,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
           }
         );
 
-    
+
         setMessage("Payment successful!");
       } catch (error) {
         setMessage("Payment processing failed.");
@@ -210,9 +228,9 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
             options={{
               style: {
                 base: {
-                  color: isDark ? "#fff" : "#222",
+                  color: isDark ? "#ffffff" : "#222222",
                   fontSize: "14px",
-                  "::placeholder": { color: isDark ? "#ccc" : "#888" },
+                  "::placeholder": { color: isDark ? "#cccccc" : "#888888" },
                 },
                 invalid: {
                   color: "#ff6b6b",
@@ -241,9 +259,9 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
               options={{
                 style: {
                   base: {
-                    color: isDark ? "#fff" : "#222",
+                    color: isDark ? "#ffffff" : "#222222",
                     fontSize: "14px",
-                    "::placeholder": { color: isDark ? "#ccc" : "#888" },
+                    "::placeholder": { color: isDark ? "#cccccc" : "#888888" },
                   },
                   invalid: {
                     color: "#ff6b6b",
@@ -263,9 +281,9 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
               options={{
                 style: {
                   base: {
-                    color: isDark ? "#fff" : "#222",
+                    color: isDark ? "#ffffff" : "#222222",
                     fontSize: "14px",
-                    "::placeholder": { color: isDark ? "#ccc" : "#888" },
+                    "::placeholder": { color: isDark ? "#cccccc" : "#888888" },
                   },
                   invalid: {
                     color: "#ff6b6b",
@@ -280,11 +298,10 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
       <button
         type="submit"
         disabled={!stripe || loading}
-        className={`w-full py-2 px-4 rounded-lg text-white font-bold transition-colors text-[13px] ${
-          !stripe || loading
-            ? "bg-gray-400 cursor-not-allowed"
-            : "cursor-pointer bg-[#2D6AE0] hover:bg-[#1B4FA0]"
-        }`}
+        className={`w-full py-2 px-4 rounded-lg text-white font-bold transition-colors text-[13px] ${!stripe || loading
+          ? "bg-gray-400 cursor-not-allowed"
+          : "cursor-pointer bg-[#2D6AE0] hover:bg-[#1B4FA0]"
+          }`}
       >
         {loading ? "Processing..." : "Pay"}
       </button>
@@ -329,25 +346,14 @@ const Invoice = () => {
     const fetchInvoices = async () => {
       try {
         const studentId = localStorage.getItem("StudentPortalId");
-
-        if (!studentId) {
+        const courseName = localStorage.getItem("StudentcourseName");
+        if (!studentId || !courseName) {
           console.error("❌ No studentId found in localStorage");
           alert("No studentId found. Please log in again.");
           return;
         }
 
-        // Attempt to read human-readable student code (e.g., ALFST-004) from stored studentData
-        let studentCodeForApi: string | null = null;
-        try {
-          const sd = localStorage.getItem("studentData");
-          if (sd) {
-            const parsed = JSON.parse(sd);
-            studentCodeForApi =
-              parsed?.student?.studentId || parsed?.studentId || null;
-          }
-        } catch {}
-
-        const studentIdQuery = studentCodeForApi || studentId;
+        const studentIdQuery = studentId;
 
         // Token check
         let token =
@@ -377,7 +383,7 @@ const Invoice = () => {
         const response = await axios.get(
           `https://api.blackstoneinfomaticstech.com/studentinvoiceById`,
           {
-            params: { studentId: studentIdQuery },
+            params: { studentId: studentIdQuery, courseName: courseName },
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
@@ -393,10 +399,10 @@ const Invoice = () => {
         const list: Invoice[] = Array.isArray(payload?.data)
           ? payload.data
           : Array.isArray(payload?.invoice)
-          ? payload.invoice
-          : Array.isArray(payload)
-          ? payload
-          : [];
+            ? payload.invoice
+            : Array.isArray(payload)
+              ? payload
+              : [];
 
         // ✅ No filtering needed, backend already filters by studentId
         setInvoices(list);
@@ -435,7 +441,7 @@ const Invoice = () => {
     console.log("[DEBUG] totalprice:", totalprice);
     console.log("[DEBUG] evaluationid:", evaluationid);
 
- 
+
     try {
       const response = await axios.post(
         "https://api.blackstoneinfomaticstech.com/student/create-payment-intent",
@@ -512,9 +518,16 @@ const Invoice = () => {
     setIsGeneratingPDF(true);
 
     const receiptElement = document.getElementById("receipt-content");
+    const hideElements = [
+      document.getElementById("hideDuringReceiptDownload"),
+      document.getElementById("hideDuringReceiptDownloadClose")
+    ];
+
+    hideElements.forEach(el => el?.classList.add("hidden"));
+
     const options = {
       filename: "receipt.pdf",
-      html2canvas: { scale: 2 },
+      html2canvas: { scale: 2, backgroundColor: null }, // Preserve transparency/dark mode
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
     };
 
@@ -524,6 +537,7 @@ const Invoice = () => {
       .from(receiptElement)
       .save()
       .then(() => {
+        hideElements.forEach(el => el?.classList.remove("hidden"));
         setIsGeneratingPDF(false);
       });
   };
@@ -587,7 +601,7 @@ const Invoice = () => {
     return calculatedDue < 0 ? 0 : calculatedDue;
   };
 
- 
+
 
   // Filtering logic
   const handleFilter = () => {
@@ -656,6 +670,7 @@ const Invoice = () => {
           className="absolute top-3 right-3 text-gray-400 hover:text-gray-200 text-2xl font-bold focus:outline-none"
           aria-label="Close receipt modal"
           type="button"
+          id="hideDuringReceiptDownloadClose"
         >
           ×
         </button>
@@ -703,33 +718,30 @@ const Invoice = () => {
 
           {/* Title and subtext */}
           <h3
-            className={`text-xl font-bold mt-2 ${
-              paymentStatus === "succeeded"
-                ? "text-green-500 dark:text-green-400"
-                : "text-red-500 dark:text-red-400"
-            }`}
+            className={`text-xl font-bold mt-2 ${paymentStatus === "succeeded"
+              ? "text-green-500 dark:text-green-400"
+              : "text-red-500 dark:text-red-400"
+              }`}
           >
             {paymentStatus === "succeeded"
               ? "Payment Success"
               : "Payment Failed"}
           </h3>
           <p
-            className={`text-sm mt-1 ${
-              paymentStatus === "succeeded"
-                ? "text-green-500 dark:text-green-400"
-                : "text-red-500 dark:text-red-400"
-            }`}
+            className={`text-sm mt-1 ${paymentStatus === "succeeded"
+              ? "text-green-500 dark:text-green-400"
+              : "text-red-500 dark:text-red-400"
+              }`}
           >
             {paymentStatus === "succeeded"
               ? "Your payment has been successfully done"
               : "Your payment has been Failed"}
           </p>
           <div
-            className={`w-full border-b-2 my-4 ${
-              paymentStatus === "succeeded"
-                ? "border-green-500 dark:border-green-500"
-                : "border-red-500 dark:border-red-500"
-            }`}
+            className={`w-full border-b-2 my-4 ${paymentStatus === "succeeded"
+              ? "border-green-500 dark:border-green-500"
+              : "border-red-500 dark:border-red-500"
+              }`}
           ></div>
 
           {/* Total Payment */}
@@ -783,16 +795,16 @@ const Invoice = () => {
               <p className="text-xs font-medium text-gray-400 break-all dark:text-gray-400">
                 {paymentDetails?.paymentResponseId
                   ? (() => {
-                      const ref = paymentDetails.paymentResponseId;
-                      const mid = Math.ceil(ref.length / 2);
-                      return (
-                        <>
-                          {ref.slice(0, mid)}
-                          <br />
-                          {ref.slice(mid)}
-                        </>
-                      );
-                    })()
+                    const ref = paymentDetails.paymentResponseId;
+                    const mid = Math.ceil(ref.length / 2);
+                    return (
+                      <>
+                        {ref.slice(0, mid)}
+                        <br />
+                        {ref.slice(mid)}
+                      </>
+                    );
+                  })()
                   : "N/A"}
               </p>
             </div>
@@ -830,6 +842,7 @@ const Invoice = () => {
 
           {/* Button */}
           <button
+            id="hideDuringReceiptDownload"
             onClick={() => {
               downloadReceipt();
               setPaymentStatus(null);
@@ -960,7 +973,7 @@ const Invoice = () => {
                       <td className="p-2 border text-left">0.00</td>
                       <td className="p-2 border text-left">0.00</td>
                       <td className="p-2 border text-left">
-                      ${selectedInvoice ? getInvoiceDue(selectedInvoice) : 0}
+                        ${selectedInvoice ? getInvoiceDue(selectedInvoice) : 0}
                       </td>
                     </tr>
                     {/* Show payments if any */}
@@ -988,7 +1001,7 @@ const Invoice = () => {
                       </td>
                       <td colSpan={4} className="p-2 border"></td>
                       <td className="p-2 border text-left">
-                      ${selectedInvoice ? getInvoiceDue(selectedInvoice) : 0}
+                        ${selectedInvoice ? getInvoiceDue(selectedInvoice) : 0}
                       </td>
                     </tr>
                     <tr>
@@ -1248,11 +1261,10 @@ const Invoice = () => {
                             onClick={() => {
                               handleInvoiceClick(invoice);
                             }}
-                            className={`text-[12px] ${
-                              index % 2 === 0
-                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
-                            } cursor-pointer`}
+                            className={`text-[12px] ${index % 2 === 0
+                              ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                              : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              } cursor-pointer`}
                           >
                             <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 rounded-l-lg dark:text-[#ffffff]">
                               {formatDateDMY(invoice.createdDate) ||
@@ -1281,8 +1293,8 @@ const Invoice = () => {
                                   statusLower === "paid"
                                     ? "bg-[#ECFDF3] text-[#377E36] border border-green-600 dark:bg-[#377E3633] dark:text-[#377E36]"
                                     : statusLower === "pending"
-                                    ? "bg-[#FDF6EC] text-[#F0AD4E] border border-orange-600 dark:bg-[#F0AD4E33] dark:text-[#F0AD4E]"
-                                    : "bg-gray-100 text-gray-600 border border-gray-400";
+                                      ? "bg-[#FDF6EC] text-[#F0AD4E] border border-orange-600 dark:bg-[#F0AD4E33] dark:text-[#F0AD4E]"
+                                      : "bg-gray-100 text-gray-600 border border-gray-400";
                                 return (
                                   <span
                                     className={`${cls} py-0.5 px-1  rounded-sm text-[10px] min-w-[70px] inline-block text-center`}
@@ -1327,8 +1339,8 @@ const Invoice = () => {
                                           paymentResponseId: invoice._id,
                                           createdDate: invoice.paymentDate
                                             ? new Date(
-                                                invoice.paymentDate
-                                              ).toISOString()
+                                              invoice.paymentDate
+                                            ).toISOString()
                                             : new Date().toISOString(),
                                         });
                                         setPaymentStatus("succeeded");
@@ -1338,8 +1350,8 @@ const Invoice = () => {
                                       View Receipt
                                     </button>
                                   ) : (
-                                      invoice.invoiceStatus || ""
-                                    ).toLowerCase() === "failed" ? (
+                                    invoice.invoiceStatus || ""
+                                  ).toLowerCase() === "failed" ? (
                                     <button
                                       className="block w-full text-left px-4 py-2 text-xs dark:text-[#ffffff]"
                                       onClick={() => {
@@ -1349,8 +1361,8 @@ const Invoice = () => {
                                           paymentResponseId: invoice._id,
                                           createdDate: invoice.paymentDate
                                             ? new Date(
-                                                invoice.paymentDate
-                                              ).toISOString()
+                                              invoice.paymentDate
+                                            ).toISOString()
                                             : new Date().toISOString(),
                                         });
                                         setPaymentStatus("failed");

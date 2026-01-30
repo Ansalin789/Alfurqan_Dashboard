@@ -11,6 +11,7 @@ import AdminHeader from "../../components/AdminHeader";
 
 export interface TransformedUser {
   _id: string;
+  trialId: string;
   academicCoachId: string;
   student: {
     studentId: string;
@@ -106,12 +107,12 @@ const Trailclasslist = () => {
 
   useEffect(() => {
     const token =
-    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+      typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+      return;
+    }
     if (token) {
       getAllUsers(token); // Or call the function that performs the GET request
     } else {
@@ -121,7 +122,7 @@ const Trailclasslist = () => {
   const getAllUsers = async (token: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/alltrialclass",{
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/alltrialclass", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -198,7 +199,7 @@ const Trailclasslist = () => {
 
   return (
     <BaseLayout4>
-    <AdminHeader currentSection="Scheduled Trial Class" showBackButton showBackPath="trailmanagement"/>
+      <AdminHeader currentSection="Scheduled Trial Class" showBackButton showBackPath="trailmanagement" />
       <div className="py-2 px-4 mx-auto w-full ">
         <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
           <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
@@ -225,131 +226,127 @@ const Trailclasslist = () => {
               </span>
             </div>
           </div>
-            <table className="table-auto w-full"
-                    style={{ width: "100%", tableLayout: "fixed" }}>
-              <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
-                <tr className="font-medium">
-                  {[
-                    { label: "Trial ID", width: "w-[11%]" },
-                    { label: "Student Name", width: "w-[12%]" },
-                    { label: "Mobile", width: "w-[10%]" },
-                    { label: "Country", width: "w-[8%]" },
-                    { label: "Course", width: "w-[10%]" },
-                    { label: "Preferred Teacher", width: "w-[10%]" },
-                    { label: "Assigned Teacher", width: "w-[10%]" },
-                    { label: "Date", width: "w-[10%]" },
-                    { label: "Time", width: "w-[10%]" },
-                    { label: "Class Status", width: "w-[8%]" },
-                    { label: "Student Status", width: "w-[10%]" },
-                    { label: "Payment Status", width: "w-[8%]" },
+          <table className="table-auto w-full"
+            style={{ width: "100%", tableLayout: "fixed" }}>
+            <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+              <tr className="font-medium">
+                {[
+                  { label: "Trial ID", width: "w-[11%]" },
+                  { label: "Student Name", width: "w-[12%]" },
+                  { label: "Mobile", width: "w-[10%]" },
+                  { label: "Country", width: "w-[8%]" },
+                  { label: "Course", width: "w-[10%]" },
+                  { label: "Preferred Teacher", width: "w-[10%]" },
+                  { label: "Assigned Teacher", width: "w-[10%]" },
+                  { label: "Date", width: "w-[10%]" },
+                  { label: "Time", width: "w-[10%]" },
+                  { label: "Class Status", width: "w-[8%]" },
+                  { label: "Student Status", width: "w-[10%]" },
+                  { label: "Payment Status", width: "w-[8%]" },
 
-                  ].map((header, i) => (
-                    <th
-                      key={header.label}
-                      className={`text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] break-words ${header.width}`}
-                    >
-                      {header.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredItems.length > 0 ? (
-                  filteredItems.map((item, index) => (
-                    <tr
-                      key={item._id}
-                      className={`text-[11px] text-[#010E30E5]  ${
-                        index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C] "
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
+                ].map((header, i) => (
+                  <th
+                    key={header.label}
+                    className={`text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] break-words ${header.width}`}
+                  >
+                    {header.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredItems.length > 0 ? (
+                filteredItems.map((item, index) => (
+                  <tr
+                    key={item.trialId}
+                    className={`text-[11px] text-[#010E30E5]  ${index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C] "
+                        : "bg-[#F8F8F8] dark:bg-[#303030]"
                       }`}
-                    >
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white break-words w-[11%]">
-                        {item._id}
-                      </td>
-                      <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left break-words w-[12%]">
-                        {item.student.studentFirstName} {item.student.studentLastName}
-                      </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white break-words w-[10%]">
-                        {item.student.studentPhone}
-                      </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[8%]">
-                        {item.student.studentCountry}
-                      </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[10%]">
-                        {item.student.learningInterest}
-                      </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[10%]">
-                        {item.student.preferredTeacher}
-                      </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[10%]">
-                        {item.assignedTeacher}
-                      </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[8%]">
-                        {item.classStartDate
-                          ? new Date(item.classStartDate).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })
-                          : ""}
-                      </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[8%]">
-                        {item.classStartTime}
-                      </td>
-                      {/* Class Status */}
-                      <td className="px-3 py-2">
-                        <span
-                          className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
-                            item.trialClassStatus === "COMPLETED"
-                              ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-2"
-                              : item.trialClassStatus === "INPROGRESS"
+                  >
+                    <td className="px-3 py-3 text-[#010E30E5] dark:text-white break-words w-[11%]">
+                      {item.trialId}
+                    </td>
+                    <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left break-words w-[12%]">
+                      {item.student.studentFirstName} {item.student.studentLastName}
+                    </td>
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white break-words w-[10%]">
+                      {item.student.studentPhone}
+                    </td>
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[8%]">
+                      {item.student.studentCountry}
+                    </td>
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[10%]">
+                      {item.student.learningInterest}
+                    </td>
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[10%]">
+                      {item.student.preferredTeacher}
+                    </td>
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[10%]">
+                      {item.assignedTeacher}
+                    </td>
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[8%]">
+                      {item.classStartDate
+                        ? new Date(item.classStartDate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })
+                        : ""}
+                    </td>
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[8%]">
+                      {item.classStartTime}
+                    </td>
+                    {/* Class Status */}
+                    <td className="px-3 py-2">
+                      <span
+                        className={`px-1 text-[10px] text-center py-[3px] rounded-md ${item.trialClassStatus === "COMPLETED"
+                            ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-2"
+                            : item.trialClassStatus === "INPROGRESS"
                               ? "bg-[#FDECEC] dark:bg-[#D3464533] text-[#D34645] px-3"
                               : "bg-[#FDF6EC] dark:bg-[#F0AD4E33] text-[#F0AD4E] px-3"
                           }`}
-                        >
-                          {item.trialClassStatus}
-                        </span>
-                      </td>
-                      
-                      {/* Student Status */}
-                      <td className="px-3 py-2">
-                        <span
-                          className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
-                            item.status === "Active"
-                              ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-3"
-                              : item.status === "PENDING"
+                      >
+                        {item.trialClassStatus}
+                      </span>
+                    </td>
+
+                    {/* Student Status */}
+                    <td className="px-3 py-2">
+                      <span
+                        className={`px-1 text-[10px] text-center py-[3px] rounded-md ${item.status === "Active"
+                            ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-3"
+                            : item.status === "PENDING"
                               ? "bg-[#FDF6EC] dark:bg-[#F0AD4E33] text-[#F0AD4E] px-3"
                               : "bg-[#FDECEC] dark:bg-[#D3464533] text-[#D34645] px-3"
                           }`}
-                        >
-                          {item.status}
-                        </span>
-                      </td>
-                      {/* Payment Status */}
-                      <td className="px-3 py-2">
-                        <span
-                          className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
-                            item.paymentStatus === "PAID"
-                              ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-4"
-                              : item.paymentStatus === "PENDING"
+                      >
+                        {item.status}
+                      </span>
+                    </td>
+                    {/* Payment Status */}
+                    <td className="px-3 py-2">
+                      <span
+                        className={`px-1 text-[10px] text-center py-[3px] rounded-md ${item.paymentStatus === "PAID"
+                            ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-4"
+                            : item.paymentStatus === "PENDING"
                               ? "bg-[#FDF6EC] dark:bg-[#F0AD4E33] text-[#F0AD4E] px-3"
                               : "bg-[#FDECEC] dark:bg-[#D3464533] text-[#D34645] px-3"
                           }`}
-                        >
-                          {item.paymentStatus}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={12} className="p-4 text-center">
-                      No data available
+                      >
+                        {item.paymentStatus}
+                      </span>
                     </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={12} className="p-4 text-center">
+                    No data available
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
         <div className="mt-3">
           <Pagination
@@ -380,8 +377,8 @@ const Trailclasslist = () => {
             </select>
           </div>
           <div>
-          <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">country</label>
-          <select
+            <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">country</label>
+            <select
               className="w-full rounded border dark:border dark:border-[#5c5c5c] px-3 py-2 dark:bg-[#343434] dark:text-white text-[11px]"
               value={filter.country}
               onChange={e => setFilter(f => ({ ...f, country: e.target.value }))}
@@ -391,8 +388,8 @@ const Trailclasslist = () => {
             </select>
           </div>
           <div>
-          <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">preferred teacher</label>
-          <select
+            <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">preferred teacher</label>
+            <select
               className="w-full rounded border dark:border dark:border-[#5c5c5c] px-3 py-2 dark:bg-[#343434] dark:text-white text-[11px]"
               value={filter.preferredTeacher}
               onChange={e => setFilter(f => ({ ...f, preferredTeacher: e.target.value }))}
@@ -402,8 +399,8 @@ const Trailclasslist = () => {
             </select>
           </div>
           <div>
-          <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">Assigned Teacher</label>
-          <select
+            <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">Assigned Teacher</label>
+            <select
               className="w-full rounded border dark:border dark:border-[#5c5c5c] px-3 py-2 dark:bg-[#343434] dark:text-white text-[11px]"
               value={filter.assignedCoach}
               onChange={e => setFilter(f => ({ ...f, assignedCoach: e.target.value }))}
@@ -414,8 +411,8 @@ const Trailclasslist = () => {
           </div>
           <div className="flex gap-2">
             <div className="flex-1">
-            <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">From Date</label>
-            <input
+              <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">From Date</label>
+              <input
                 type="date"
                 className="w-full rounded border dark:border dark:border-[#5c5c5c] px-3 py-2 dark:bg-[#343434] dark:text-white text-[11px] [&::-webkit-calendar-picker-indicator]:dark:invert"
                 value={filter.fromDate}
@@ -423,8 +420,8 @@ const Trailclasslist = () => {
               />
             </div>
             <div className="flex-1">
-            <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">To Date</label>
-            <input
+              <label className="block text-[11px] font-medium mb-1 dark:text-gray-200">To Date</label>
+              <input
                 type="date"
                 className="w-full rounded border dark:border dark:border-[#5c5c5c] px-3 py-2 dark:bg-[#343434] dark:text-white text-[11px] [&::-webkit-calendar-picker-indicator]:dark:invert"
                 value={filter.toDate}
@@ -433,8 +430,8 @@ const Trailclasslist = () => {
             </div>
           </div>
           <div>
-          <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">Time</label>
-          <input
+            <label className="block text-[12px] font-medium mb-1 dark:text-gray-200">Time</label>
+            <input
               type="time"
               className="w-full rounded border dark:border dark:border-[#5c5c5c]  px-3 py-2 dark:bg-[#343434] dark:text-white text-[11px] [&::-webkit-calendar-picker-indicator]:dark:invert"
               value={filter.time}

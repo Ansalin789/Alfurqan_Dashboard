@@ -757,13 +757,23 @@ const Page = () => {
   function handlePortalAccess(username: string, password: string) {
     const encodedUsername = encodeURIComponent(username);
     const encodedPassword = encodeURIComponent(password);
-    const portalURL = `https://blackstoneinfomaticstech.com/teacher/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
+    const portalURL = `https://alfurqanapp.com/teacher/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
     window.location.href = portalURL;
   }
-  function handlePortalAccessforemployee(username: string, password: string) {
+  function handlePortalAccessforemployee(username: string, password: string, roles: string[]) {
     const encodedUsername = encodeURIComponent(username);
     const encodedPassword = encodeURIComponent(password);
-    const portalURL = `https://blackstoneinfomaticstech.com/supervisor/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
+
+    let portalURL = "";
+
+    if (roles.includes("ACADEMICCOACH")) {
+      portalURL = `https://alfurqanapp.com/Academic-coach/ui/login?username=${encodedUsername}&password=${encodedPassword}`;
+    } else if (roles.includes("ADMIN")) {
+      portalURL = `https://alfurqanapp.com/admin-main/ui/login?username=${encodedUsername}&password=${encodedPassword}`;
+    } else {
+      portalURL = `https://alfurqanapp.com/supervisor/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
+    }
+
     window.location.href = portalURL;
   }
   const handleChange = (
@@ -927,16 +937,14 @@ const Page = () => {
     if (active && payload && payload.length) {
       return (
         <div
-          className={`p-2 rounded shadow-md text-[12px] border ${
-            isDark
-              ? "bg-[#22223b] text-white border-[#444]"
-              : "bg-white text-[#22223b] border-gray-200"
-          }`}
+          className={`p-2 rounded shadow-md text-[12px] border ${isDark
+            ? "bg-[#22223b] text-white border-[#444]"
+            : "bg-white text-[#22223b] border-gray-200"
+            }`}
         >
           <div
-            className={`font-normal ${
-              isDark ? "text-white" : "text-[#22223b]"
-            }`}
+            className={`font-normal ${isDark ? "text-white" : "text-[#22223b]"
+              }`}
           >
             {payload[0].payload.name}
           </div>
@@ -995,41 +1003,37 @@ const Page = () => {
           {/* Tab Navigation */}
           <div className="flex flex-wrap gap-2 sm:space-x-4 py-2 overflow-x-auto">
             <button
-              className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
-                activeTab === "teachers"
-                  ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
-                  : ""
-              }`}
+              className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${activeTab === "teachers"
+                ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
+                : ""
+                }`}
               onClick={() => setActiveTab("teachers")}
             >
               Teachers
             </button>
             <button
-              className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
-                activeTab === "otheremployees"
-                  ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
-                  : ""
-              }`}
+              className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${activeTab === "otheremployees"
+                ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
+                : ""
+                }`}
               onClick={() => setActiveTab("otheremployees")}
             >
               Other Employees
             </button>
             <button
-              className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
-                activeTab === "recruitment"
-                  ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
-                  : ""
-              }`}
+              className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${activeTab === "recruitment"
+                ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
+                : ""
+                }`}
               onClick={() => setActiveTab("recruitment")}
             >
               Recruitment
             </button>
             <button
-              className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
-                activeTab === "leave"
-                  ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
-                  : ""
-              }`}
+              className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${activeTab === "leave"
+                ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
+                : ""
+                }`}
               onClick={() => setActiveTab("leave")}
             >
               Leave
@@ -1877,7 +1881,7 @@ const Page = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="py-3">   
+                  <div className="py-3">
                     <div className="mt-3 w-full h-full shadow bg-[#f5f5f5] rounded-lg dark:bg-[#343434] dark:text-[#dedede]">
                       <div className="flex justify-between bg-[#fafafb] items-center px-4 py-0 rounded-md dark:bg-[#343434] h-12">
                         <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -2049,7 +2053,8 @@ const Page = () => {
                                   onClick={() =>
                                     handlePortalAccessforemployee(
                                       employee.userName,
-                                      employee.password
+                                      employee.password,
+                                      employee.role
                                     )
                                   }
                                   disabled={!dashboardRead}
@@ -2256,11 +2261,10 @@ const Page = () => {
                             return (
                               <tr
                                 key={item._id}
-                                className={`text-[12px] ${
-                                  index % 2 === 0
-                                    ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                    : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                }`}
+                                className={`text-[12px] ${index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                  }`}
                               >
                                 <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                                   {item.employeeId}
@@ -2581,7 +2585,7 @@ const Page = () => {
                                   type="text"
                                   value={
                                     selectedLeave?.status === "APPROVED" ||
-                                    selectedLeave?.status === "REJECTED"
+                                      selectedLeave?.status === "REJECTED"
                                       ? selectedLeave?.approvedDays || ""
                                       : approvedDays
                                   }
@@ -2611,7 +2615,7 @@ const Page = () => {
                                   type="date"
                                   value={
                                     selectedLeave?.status === "APPROVED" ||
-                                    selectedLeave?.status === "REJECTED"
+                                      selectedLeave?.status === "REJECTED"
                                       ? selectedLeave.fromDate || ""
                                       : fromDate
                                   }
@@ -2640,7 +2644,7 @@ const Page = () => {
                                   type="date"
                                   value={
                                     selectedLeave?.status === "APPROVED" ||
-                                    selectedLeave?.status === "REJECTED"
+                                      selectedLeave?.status === "REJECTED"
                                       ? selectedLeave?.toDate || ""
                                       : toDate
                                   }
@@ -2669,7 +2673,7 @@ const Page = () => {
                                   type="text"
                                   value={
                                     selectedLeave?.status === "APPROVED" ||
-                                    selectedLeave?.status === "REJECTED"
+                                      selectedLeave?.status === "REJECTED"
                                       ? selectedLeave?.deductionDays || ""
                                       : deductionDays
                                   }
@@ -2801,8 +2805,8 @@ const Page = () => {
                                 value={
                                   leaveFilterFrom
                                     ? leaveFilterFrom
-                                        .toISOString()
-                                        .split("T")[0]
+                                      .toISOString()
+                                      .split("T")[0]
                                     : ""
                                 }
                                 onChange={(e) =>
@@ -2956,9 +2960,8 @@ const Page = () => {
                 ].map((field, index) => (
                   <div
                     key={index}
-                    className={`flex flex-col ${
-                      field.full ? "col-span-2" : ""
-                    }`}
+                    className={`flex flex-col ${field.full ? "col-span-2" : ""
+                      }`}
                   >
                     <label className="text-xs font-medium text-gray-700 mb-1">
                       {field.label}
@@ -2971,10 +2974,10 @@ const Page = () => {
                           formData[field.name as keyof OtherEmployeess]
                         )
                           ? (
-                              formData[
-                                field.name as keyof OtherEmployeess
-                              ] as string[]
-                            ).join(", ")
+                            formData[
+                            field.name as keyof OtherEmployeess
+                            ] as string[]
+                          ).join(", ")
                           : formData[field.name as keyof OtherEmployeess] ?? ""
                       }
                       onChange={(e) => {

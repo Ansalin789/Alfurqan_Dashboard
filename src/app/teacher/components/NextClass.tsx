@@ -34,6 +34,7 @@ interface ClassData {
   sessionStatus: string;
   classStart?: Date;
   classEnd?: Date;
+  sessionClassType?: string;
 }
 
 const NextScheduledClass = () => {
@@ -257,12 +258,12 @@ window.open(`/teacher/ui/liveclass?id=${classData._id}`, "_blank");
         <div className="flex items-center space-x-8 py-2">
           <div className="flex items-center space-x-2">
             <FaUser className="w-[10px]" />
-            <p className="text-[13px]">{classData.student?.studentFirstName}</p>
+            <p className="text-[13px]">{classData.sessionClassType === 'REGULARCLASS' ? classData.student?.studentFirstName : "Group Class"}</p>
           </div>
           <div className="flex items-center space-x-2">
            <MdDateRange className="text-white/90 text-base w-[10px]" />
            <p className="text-[13px]">Session–01</p> 
-          </div>{" "}
+          </div> {" "}
           <div className="flex items-center space-x-2">
             <AiOutlineClockCircle className="w-[10px]" />
             <p className="text-[13px]">{classData.startTime[0]}</p>

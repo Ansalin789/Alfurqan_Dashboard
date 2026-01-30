@@ -5,7 +5,7 @@ type TeacherAPI = {
   _id: string;
   teacherName: string;
   teacherEmail: string;
-  studentCount: number;
+  joinedStudentsCount: number;
   maleCount: number;
   femaleCount: number;
 };
@@ -74,15 +74,14 @@ export default function TeachersStudents() {
 
       <div className="max-h-40 overflow-y-auto pr-2">
         {teachers.map((teacher, index) => (
-          <div 
-            key={getTeacherKey(teacher, index)} 
+          <div
+            key={getTeacherKey(teacher, index)}
             className="flex items-center py-[2px] my-1"
           >
             <div className="w-5 flex-shrink-0">
               <div
-                className={`w-3 h-3 rounded-full ${
-                  colors[index % colors.length]
-                }`}
+                className={`w-3 h-3 rounded-full ${colors[index % colors.length]
+                  }`}
               ></div>
             </div>
             <div className="flex-grow truncate">
@@ -91,7 +90,7 @@ export default function TeachersStudents() {
               </span>
             </div>
             <div className="w-10 text-right">
-              <span className="text-xs">{teacher.studentCount}</span>
+              <span className="text-xs">{teacher.joinedStudentsCount}</span>
             </div>
           </div>
         ))}
