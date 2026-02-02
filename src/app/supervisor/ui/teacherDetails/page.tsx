@@ -59,12 +59,12 @@ const TeacherDetails = () => {
   }
 
   interface StatsResponse {
-    totalStudents: number;
-    totalClasses: number;
-    totalAttendance: number | string;
-    totalWorkingHours: number | string;
-    overallPerformance: number;
-    students: Student[];
+    totalstudents: number;
+    totalclasses: number;
+    totalhours: number;
+    totalearnings: number;
+    monthlyData: any[];
+    overallPerformance?: number; // Fetched from secondary API
   }
 
   const [stats, setStats] = useState<StatsResponse | null>(null);
@@ -114,7 +114,7 @@ const TeacherDetails = () => {
         }
 
         const response = await fetch(
-          `https://api.alfurqanapp.com/classstudentsattendancecounts?teacherId=${teacherId}`,
+          `https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts?teacherId=${teacherId}`,
           {
             method: "GET",
             headers: {
@@ -125,9 +125,31 @@ const TeacherDetails = () => {
         );
 
         if (!response.ok) throw new Error("Failed to fetch data");
-        const data: StatsResponse = await response.json();
-        console.log("Fetched stats:", data);
-        setStats(data);
+        const data = await response.json();
+
+        // Fetch Overall Performance from secondary API
+        let overallPerformance = 0;
+        try {
+          const perfResponse = await fetch(
+            `https://api.blackstoneinfomaticstech.com/classstudentsattendancecounts?teacherId=${teacherId}`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          if (perfResponse.ok) {
+            const perfData = await perfResponse.json();
+            overallPerformance = perfData.overallPerformance || 0;
+          }
+        } catch (perfError) {
+          console.warn("Failed to fetch overall performance:", perfError);
+        }
+
+        console.log("Merged stats:", { ...data, overallPerformance });
+        setStats({ ...data, overallPerformance });
       } catch (err: any) {
         console.log(err.message ?? "Unknown error");
       }
@@ -178,7 +200,7 @@ const TeacherDetails = () => {
   const handleResumeClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!teachers?.uploadResume) return;
-    
+
     const url = getResumeBlobUrl(teachers.uploadResume);
     if (url) {
       setResumeBlobUrl(url);
@@ -307,7 +329,7 @@ const TeacherDetails = () => {
               <h4 className="text-[24px] font-medium">Lecture Performance</h4>
               <div className="flex items-center space-x-4 mt-4">
                 <div className="text-center">
-                  <p className="text-[20px] font-medium">{stats?.overallPerformance?.toFixed(1)}%</p>
+                  <p className="text-[20px] font-medium">{stats?.overallPerformance?.toFixed(1) ?? 0}%</p>
                   <p className="text-[16px] font-normal">
                     Overall Performance Score
                   </p>
@@ -324,22 +346,22 @@ const TeacherDetails = () => {
               {[
                 {
                   title: "Total Students",
-                  value: stats?.totalStudents?.toString() ?? "-",
+                  value: stats?.totalstudents?.toString() ?? "-",
                   sub: "60% increase than Last Month",
                 },
                 {
                   title: "Total Classes",
-                  value: stats?.totalClasses?.toString() ?? "-",
+                  value: stats?.totalclasses?.toString() ?? "-",
                   sub: "80% increase than Last Month",
                 },
                 {
-                  title: "Total Attendance",
-                  value: stats?.totalAttendance?.toString() ?? "-",
+                  title: "Total Earnings",
+                  value: stats?.totalearnings?.toString() ?? "-",
                   sub: "90% Progressive than Last Month",
                 },
                 {
                   title: "Total Working Hours",
-                  value: formatWorkingHours(stats?.totalWorkingHours ?? "-"),
+                  value: formatWorkingHours(stats?.totalhours ?? "-"),
                   sub: "95% Progressive than Last Month",
                 },
               ].map((item) => (
