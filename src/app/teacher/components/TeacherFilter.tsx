@@ -122,7 +122,7 @@ const TeacherFilter = () => {
 
     const fetchClasses = async () => {
       try {
-        const teacherId = localStorage.getItem("TeacherId");
+        const teacherId = localStorage.getItem("TeacherPortalId");
         const token = localStorage.getItem("TeacherAuthToken");
         if (!token || !teacherId) return;
 

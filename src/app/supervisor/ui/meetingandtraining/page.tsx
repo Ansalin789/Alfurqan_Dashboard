@@ -29,6 +29,8 @@ interface ApiResponse {
 interface Teacher {
   teacherId: string;
   teacherName: string;
+  participantName: string;
+  participantEmail: string;
   teacherEmail: string;
   attendee?: string;
 }
@@ -120,79 +122,111 @@ const ScheduledClasses = () => {
   };
 
   // Safe teacher access helper functions
-  const getTeacherName = (teacher: any): string => {
-    if (!teacher || typeof teacher !== "object") return "No teacher";
+ // Safe teacher access helper functions
+  const getTeacherName = (participants: any): string => {
+    if (!participants || typeof participants !== "object") return "No teacher";
 
     // Handle array case
-    if (Array.isArray(teacher)) {
-      return teacher[0]?.teacherName || "No teacher";
+    if (Array.isArray(participants)) {
+      return participants[0]?.participantName || "No teacher";
     }
 
     // Handle single object case
-    return teacher.teacherName || "No teacher";
+    return participants.participantName || "No teacher";
   };
+  
 
   const getTeacherArray = (teacher: any): Teacher[] => {
     if (!teacher) return [];
     if (Array.isArray(teacher)) return teacher;
-    if (typeof teacher === "object" && teacher.teacherName) return [teacher];
+    if (typeof teacher === "object" && (teacher.participantName || teacher.teacherName))
+      return [teacher];
     return [];
   };
 
   // Group meetings function
-  const groupMeetingsByMeetingId = (meetings: Meeting[]): GroupedMeeting[] => {
+  const groupMeetingsByMeetingId = (meetings: Meeting[]): Meeting[] => {
     const groupedMap = new Map();
 
     meetings.forEach((meeting) => {
-      if (meeting.meetingId?.startsWith("auto-")) {
-        const key = `${meeting.meetingId}-${meeting.meetingName}`;
+      // Use meetingId as key if available; otherwise fallback to _id to keep unique
+      const key = meeting.meetingId || meeting._id;
 
-        if (!groupedMap.has(key)) {
-          groupedMap.set(key, {
-            type: "grouped" as const,
-            meetingId: meeting.meetingId,
-            meetingName: meeting.meetingName,
-            selectedDate: meeting.selectedDate,
-            startTime: meeting.startTime,
-            endTime: meeting.endTime,
-            meetingStatus: meeting.meetingStatus,
-            participants: [],
-            _id: meeting._id,
-            createdDate: meeting.createdDate,
-            description: meeting.description,
-            status: meeting.status,
-            createdBy: meeting.createdBy,
-          });
-        }
+      if (!groupedMap.has(key)) {
+        // Initialize with the meeting data, clearing the teacher array to accumulate participants
+        groupedMap.set(key, {
+          ...meeting,
+          teacher: [],
+        });
+      }
 
-        // Add participants (teachers)
-        if (Array.isArray(meeting.teacher)) {
-          groupedMap.get(key).participants.push(...meeting.teacher);
-        }
+      // Aggregate participants (teachers) into the grouped entry
+      const group = groupedMap.get(key);
+      if (Array.isArray(meeting.teacher)) {
+        group.teacher.push(...meeting.teacher);
       }
     });
 
     return Array.from(groupedMap.values());
   };
 
+  const filterMeetingsBySearch = (meetings: AnyMeeting[]) => {
+    if (!searchText.trim()) return meetings;
+
+    const searchLower = searchText.toLowerCase();
+    return meetings.filter((meeting) => {
+      const nameMatch = meeting.meetingName?.toLowerCase().includes(searchLower);
+      const idMatch = meeting.meetingId?.toLowerCase().includes(searchLower);
+      const dateMatch = new Date(meeting.selectedDate)
+        .toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        })
+        .toLowerCase()
+        .includes(searchLower);
+      const timingMatch = meeting.startTime?.toLowerCase().includes(searchLower);
+      const statusMatch = meeting.meetingStatus
+        ?.toLowerCase()
+        .includes(searchLower);
+
+      let attendeeMatch = false;
+      if (isGroupedMeeting(meeting)) {
+        attendeeMatch = meeting.participants.some(
+          (p) =>
+            p.participantName?.toLowerCase().includes(searchLower) ||
+            p.teacherName?.toLowerCase().includes(searchLower)
+        );
+      } else if (isRegularMeeting(meeting)) {
+        const teachers = getTeacherArray(meeting.teacher);
+        attendeeMatch = teachers.some(
+          (t) =>
+            t.participantName?.toLowerCase().includes(searchLower) ||
+            t.teacherName?.toLowerCase().includes(searchLower)
+        );
+      }
+
+      return (
+        nameMatch ||
+        idMatch ||
+        dateMatch ||
+        timingMatch ||
+        statusMatch ||
+        attendeeMatch
+      );
+    });
+  };
+
   // Get combined data for display
   const getDataToShow = (): AnyMeeting[] => {
     if (activeTab === "upcoming") {
-      const upcomingGrouped = groupedMeetings.filter(
-        (group) =>
-          group.meetingStatus === "Scheduled" ||
-          group.meetingStatus === "Rescheduled"
-      );
-      return [...upcomingGrouped, ...upcomingClasses];
+      return [...upcomingClasses];
     } else {
-      const completedGrouped = groupedMeetings.filter(
-        (group) => group.meetingStatus === "Completed"
-      );
-      return [...completedGrouped, ...completedData];
+      return [...completedData];
     }
   };
 
-  const dataToShow = getDataToShow();
+  const dataToShow = filterMeetingsBySearch(getDataToShow());
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = dataToShow.slice(indexOfFirstItem, indexOfLastItem);
@@ -273,11 +307,16 @@ const ScheduledClasses = () => {
 
   useEffect(() => {
     const fetchMeetings = async () => {
-      const supervisorId = "67a467bcc346aaaea402f760";
+      const supervisorId = localStorage.getItem("SupervisorPortalID");
       const token = localStorage.getItem("SupervisorAuthToken");
 
       if (!token) {
         console.error("❌ SupervisorAuthToken not found");
+        return;
+      }
+
+      if (!supervisorId) {
+        console.error("❌ SupervisorPortalID not found");
         return;
       }
 
@@ -292,40 +331,44 @@ const ScheduledClasses = () => {
         );
 
         const allMeetings: Meeting[] = response.data.meetings.map(
-          (meeting: any) => ({
-            ...meeting,
-            type: "regular" as const,
-            // Ensure teacher is always a properly formatted array
-            teacher: Array.isArray(meeting.teacher)
-              ? meeting.teacher.filter((t: any) => t && typeof t === "object")
-              : meeting.teacher && typeof meeting.teacher === "object"
-              ? [meeting.teacher]
-              : [],
-          })
+          (meeting: any) => {
+            // Determine source for teacher data: use 'teacher' array if present/non-empty, else 'participants'
+            let rawTeacher = meeting.teacher;
+            if ((!rawTeacher || (Array.isArray(rawTeacher) && rawTeacher.length === 0)) && meeting.participants) {
+              rawTeacher = meeting.participants;
+            }
+
+            return {
+              ...meeting,
+              type: "regular" as const,
+              // Ensure teacher is always a properly formatted array
+              teacher: Array.isArray(rawTeacher)
+                ? rawTeacher.filter((t: any) => t && typeof t === "object")
+                : rawTeacher && typeof rawTeacher === "object"
+                  ? [rawTeacher]
+                  : [],
+            };
+          }
         );
 
-        // Group auto-scheduled meetings
-        const grouped = groupMeetingsByMeetingId(allMeetings);
-        setGroupedMeetings(grouped);
+        // Group ALL meetings by ID
+        const unifiedMeetings = groupMeetingsByMeetingId(allMeetings);
 
-        // Filter non-auto meetings
-        const nonAutoMeetings = allMeetings.filter(
-          (meeting) => !meeting.meetingId?.startsWith("auto-")
-        );
-
-        const upcomingMeetings = nonAutoMeetings.filter((meeting) => {
+        const upcomingMeetings = unifiedMeetings.filter((meeting) => {
           const statusOk =
             meeting.meetingStatus === "Scheduled" ||
             meeting.meetingStatus === "Rescheduled";
           return statusOk;
         });
 
-        const completedMeetings = nonAutoMeetings.filter(
+        const completedMeetings = unifiedMeetings.filter(
           (meeting) => meeting.meetingStatus === "Completed"
         );
 
         setUpcomingClasses(upcomingMeetings);
         setCompletedData(completedMeetings);
+        // groupedMeetings state is no longer used
+        setGroupedMeetings([]);
       } catch (error) {
         console.error("Error fetching meetings:", error);
       }
@@ -334,58 +377,37 @@ const ScheduledClasses = () => {
     fetchMeetings();
   }, []);
 
-  const filterMeetingsBySearch = (meetings: any[]) => {
-    if (!searchText.trim()) return meetings;
 
-    const searchLower = searchText.toLowerCase();
-    return meetings.filter((meeting) => {
-      const nameMatch = meeting.meetingName.toLowerCase().includes(searchLower);
-      const dateMatch = new Date(meeting.selectedDate)
-        .toLocaleDateString("en-US", {
-          month: "short",
-          day: "2-digit",
-          year: "numeric",
-        })
-        .toLowerCase()
-        .includes(searchLower);
-      const timingMatch = meeting.startTime.toLowerCase().includes(searchLower);
-      const statusMatch = meeting.meetingStatus
-        .toLowerCase()
-        .includes(searchLower);
-
-      return nameMatch || dateMatch || timingMatch || statusMatch;
-    });
-  };
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentApplicants = currentItems.slice(startIndex, endIndex);
 
-const handleRescheduleSubmit = async () => {
-  if (
-    !rescheduleReason.trim() ||
-    !rescheduleDate ||
-    !rescheduleStartTime ||
-    !rescheduleEndTime ||
-    !selectedItemId
-  ) {
-    alert("Please fill all fields");
-    return;
-  }
-
-  try {
-    const token = localStorage.getItem("SupervisorAuthToken");
-    if (!token) {
-      setFailedMessage("Not authenticated. Please login.");
-      setFailed(true);
+  const handleRescheduleSubmit = async () => {
+    if (
+      !rescheduleReason.trim() ||
+      !rescheduleDate ||
+      !rescheduleStartTime ||
+      !rescheduleEndTime ||
+      !selectedItemId
+    ) {
+      alert("Please fill all fields");
       return;
     }
 
-    const isoDate = new Date(rescheduleDate).toISOString();
+    try {
+      const token = localStorage.getItem("SupervisorAuthToken");
+      if (!token) {
+        setFailedMessage("Not authenticated. Please login.");
+        setFailed(true);
+        return;
+      }
 
-    // Always use DB `_id` in URL to avoid ObjectId cast errors; include `meetingId` in body
-    const meetingObj = upcomingClasses.find((m) => m._id === selectedItemId);
-    const targetId = selectedItemId; // must be Mongo _id
+      const isoDate = new Date(rescheduleDate).toISOString();
+
+      // Always use DB `_id` in URL to avoid ObjectId cast errors; include `meetingId` in body
+      const meetingObj = upcomingClasses.find((m) => m._id === selectedItemId);
+      const targetId = selectedItemId; // must be Mongo _id
 
     const response = await fetch(
       `https://api.blackstoneinfomaticstech.com/meeting/${targetId}`,
@@ -403,30 +425,30 @@ const handleRescheduleSubmit = async () => {
 })
 
 
+        }
+      );
+
+      let result: any = null;
+      try {
+        result = await response.json();
+      } catch (e) {
+        console.warn("No JSON in reschedule response", e);
       }
-    );
 
-    let result: any = null;
-    try {
-      result = await response.json();
-    } catch (e) {
-      console.warn("No JSON in reschedule response", e);
-    }
+      console.log("Reschedule response:", response.status, result);
 
-    console.log("Reschedule response:", response.status, result);
+      if (!response.ok) {
+        const msg = result?.message || result || `Status ${response.status}`;
+        setFailedMessage(String(msg));
+        setFailed(true);
+        return;
+      }
 
-    if (!response.ok) {
-      const msg = result?.message || result || `Status ${response.status}`;
-      setFailedMessage(String(msg));
-      setFailed(true);
-      return;
-    }
-
-    // Update UI using _id (selectedItemId holds _id)
-    setUpcomingClasses((prevClasses) =>
-      prevClasses.map((item) =>
-        item._id === selectedItemId
-          ? {
+      // Update UI using _id (selectedItemId holds _id)
+      setUpcomingClasses((prevClasses) =>
+        prevClasses.map((item) =>
+          item._id === selectedItemId
+            ? {
               ...item,
               meetingStatus: "Rescheduled" as Meeting["meetingStatus"],
               selectedDate: isoDate,
@@ -434,22 +456,22 @@ const handleRescheduleSubmit = async () => {
               endTime: rescheduleEndTime,
               description: rescheduleReason,
             }
-          : item
-      )
-    );
+            : item
+        )
+      );
 
-    setSuccess(true);
-    setTimeout(() => {
-      setSuccess(false);
-      setIsRescheduleModalOpen(false);
-      setRescheduleReason("");
-    }, 2000);
-  } catch (error) {
-    console.error("Error during rescheduling:", error);
-    setFailedMessage("Could not update meeting. Please try again.");
-    setFailed(true);
-  }
-};
+      setSuccess(true);
+      setTimeout(() => {
+        setSuccess(false);
+        setIsRescheduleModalOpen(false);
+        setRescheduleReason("");
+      }, 2000);
+    } catch (error) {
+      console.error("Error during rescheduling:", error);
+      setFailedMessage("Could not update meeting. Please try again.");
+      setFailed(true);
+    }
+  };
 
   const getMeetingStatusClass = (status: string) => {
     switch (status) {
@@ -526,6 +548,10 @@ const handleRescheduleSubmit = async () => {
     if (timing) params["startTime"] = timing;
     if (status) params["meetingStatus"] = status;
 
+    // Use the same supervisor ID as in the initial fetch
+    const supervisorId = "67a467bcc346aaaea402f760";
+    if (supervisorId) params["supervisorId"] = supervisorId;
+
     try {
       const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", {
         headers: {
@@ -536,19 +562,48 @@ const handleRescheduleSubmit = async () => {
       });
 
       const meetings: Meeting[] = response.data.meetings || [];
-      const grouped = groupMeetingsByMeetingId(meetings);
-      setGroupedMeetings(grouped);
 
-      const nonAutoMeetings = meetings.filter(
-        (meeting) => !meeting.meetingId?.startsWith("auto-")
-      );
+      // 1. Normalize data (same as fetchMeetings)
+      const normalizedMeetings: Meeting[] = meetings.map((meeting: any) => {
+        let rawTeacher = meeting.teacher;
+        if ((!rawTeacher || (Array.isArray(rawTeacher) && rawTeacher.length === 0)) && meeting.participants) {
+          rawTeacher = meeting.participants;
+        }
+        return {
+          ...meeting,
+          type: "regular" as const,
+          teacher: Array.isArray(rawTeacher)
+            ? rawTeacher.filter((t: any) => t && typeof t === "object")
+            : rawTeacher && typeof rawTeacher === "object"
+              ? [rawTeacher]
+              : [],
+        };
+      });
+
+      // 2. Group meetings
+      const unifiedMeetings = groupMeetingsByMeetingId(normalizedMeetings);
+
+      // 3. Filter client-side to ensure accuracy (and handle auto- meetings)
+      const filteredMeetings = unifiedMeetings.filter((meeting) => {
+        const isAuto = meeting.meetingId?.startsWith("auto-");
+        if (isAuto) return false;
+
+        // Apply filters locally if provided (in case backend ignores them)
+        if (status && meeting.meetingStatus !== status) return false;
+        // Date/Time filters are harder to apply strictly client-side without more parsing logic,
+        // but status is critical for the "Rescheduled" bug.
+        // Assuming backend handles date/time generally okay, or we accept loose match there.
+
+        return true;
+      });
 
       setUpcomingClasses(
-        nonAutoMeetings.filter((m: Meeting) => m.meetingStatus !== "Completed")
+        filteredMeetings.filter((m) => m.meetingStatus !== "Completed")
       );
       setCompletedData(
-        nonAutoMeetings.filter((m: Meeting) => m.meetingStatus === "Completed")
+        filteredMeetings.filter((m) => m.meetingStatus === "Completed")
       );
+      setGroupedMeetings([]); // Clear this as we used unifiedMeetings in upcomingClasses
     } catch (error) {
       console.error("❌ Error fetching filtered meetings:", error);
     }
@@ -562,18 +617,16 @@ const handleRescheduleSubmit = async () => {
           <div className="h-full w-full flex flex-col justify-between">
             <div className="p-0 justify-between flex flex-col">
               <div
-                className={`${
-                  isRescheduleModalOpen ? "blur-sm" : ""
-                } transition-all duration-200`}
+                className={`${isRescheduleModalOpen ? "blur-sm" : ""
+                  } transition-all duration-200`}
               >
                 {/* Tabs */}
                 <div className="flex space-x-6 px-4 py-2 rounded-md">
                   <button
-                    className={`relative text-[14px] transition font-medium ${
-                      activeTab === "upcoming"
-                        ? "text-[#576CBC] font-semibold"
-                        : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-                    }`}
+                    className={`relative text-[14px] transition font-medium ${activeTab === "upcoming"
+                      ? "text-[#576CBC] font-semibold"
+                      : "text-[#0A0A12] dark:text-[#fff] opacity-80"
+                      }`}
                     onClick={() => setActiveTab("upcoming")}
                   >
                     Scheduled (
@@ -589,11 +642,10 @@ const handleRescheduleSubmit = async () => {
                   </button>
 
                   <button
-                    className={`relative text-[14px] transition font-medium ${
-                      activeTab === "completed"
-                        ? "text-[#576CBC] font-semibold"
-                        : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-                    }`}
+                    className={`relative text-[14px] transition font-medium ${activeTab === "completed"
+                      ? "text-[#576CBC] font-semibold"
+                      : "text-[#0A0A12] dark:text-[#fff] opacity-80"
+                      }`}
                     onClick={() => setActiveTab("completed")}
                   >
                     Completed (
@@ -672,13 +724,12 @@ const handleRescheduleSubmit = async () => {
                           return (
                             <tr
                               key={item.meetingId}
-                              className={`text-[12px] ${
-                                index % 2 === 0
-                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
+                              className={`text-[12px] ${index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                }`}
                             >
-                              <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left w-[180px] break-words whitespace-normal">
+                              <td className="px-3 py-3 text-[#3D8FDE] font-medium text-left w-[180px] break-words whitespace-normal">
                                 {item.meetingId}
                               </td>
                               <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left w-[250px] break-words whitespace-normal">
@@ -712,11 +763,12 @@ const handleRescheduleSubmit = async () => {
                                                 <IoPersonOutline className="flex-shrink-0" />
                                                 <div>
                                                   <div className="font-medium">
-                                                    {participant.teacherName ||
+                                                    {participant.participantName ||
+                                                      participant.teacherName ||
                                                       "Unknown Teacher"}
                                                   </div>
                                                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                    {participant.teacherEmail ||
+                                                    {participant.participantEmail ||
                                                       "No email"}
                                                   </div>
                                                 </div>
@@ -771,11 +823,10 @@ const handleRescheduleSubmit = async () => {
                           return (
                             <tr
                               key={item._id}
-                              className={`text-[12px] ${
-                                index % 2 === 0
-                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
+                              className={`text-[12px] ${index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                }`}
                             >
                               <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left w-[180px] break-words whitespace-normal">
                                 {item.meetingId}
@@ -809,6 +860,7 @@ const handleRescheduleSubmit = async () => {
                                                 <span className="flex items-center gap-2">
                                                   <IoPersonOutline />
                                                   {teacher.teacherName ||
+                                                    teacher.participantName ||
                                                     "Unknown Teacher"}
                                                 </span>
                                               </div>
@@ -820,7 +872,7 @@ const handleRescheduleSubmit = async () => {
                                   ) : (
                                     <span className="flex items-center gap-2 font-medium">
                                       <IoPersonOutline />
-                                      {getTeacherName(item.teacher)}
+                                      {getTeacherName(item.participants)}
                                     </span>
                                   )}
                                 </div>
@@ -1107,14 +1159,15 @@ const handleRescheduleSubmit = async () => {
                       className="flex justify-between items-center px-4 py-2"
                     >
                       <span className="text-[#4F46E5]">
-                        {teacher.teacherName || "Unknown Teacher"}
+                        {teacher.teacherName ||
+                          teacher.participantName ||
+                          "Unknown Teacher"}
                       </span>
                       <span
-                        className={`text-lg ${
-                          teacher.attendee === "present"
-                            ? "text-green-600"
-                            : "text-red-500"
-                        }`}
+                        className={`text-lg ${teacher.attendee === "present"
+                          ? "text-green-600"
+                          : "text-red-500"
+                          }`}
                       >
                         {teacher.attendee === "present" ? "✔" : "✘"}
                       </span>
@@ -1177,7 +1230,7 @@ const handleRescheduleSubmit = async () => {
                   className="w-full text-sm px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 />
               </div>
-                <div className="w-1/2">
+              <div className="w-1/2">
                 <label className="block text-xs font-medium text-[#0D0E25] mb-1 dark:text-white">
                   Reschedule End Time
                 </label>

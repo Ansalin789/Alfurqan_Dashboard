@@ -739,7 +739,7 @@ export default function Dashboard() {
         <div className="w-[310px] flex flex-col gap-4">
           {/* Calendar */}
           <div className="rounded-xl shadow-lg">
-            <div className="h-[350px] bg-white rounded-xl flex items-center justify-center text-gray-400 dark:bg-[#343434]">
+            <div className="h-[342px] bg-white rounded-xl flex items-center justify-center text-gray-400 dark:bg-[#343434]">
               <Calendar />
             </div>
           </div>
@@ -827,7 +827,7 @@ export default function Dashboard() {
           </div>
 
           {/* Schedule */}
-          <div className="bg-white rounded-xl shadow-lg p-4 dark:bg-[#343434] h-[332px]">
+          <div className="bg-white rounded-xl shadow-lg p-4 dark:bg-[#343434] h-[320px]">
             {/* Header */}
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-[16px] font-semibold text-gray-700 dark:text-[#ffff]">
