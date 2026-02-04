@@ -6,9 +6,6 @@ import dayjs from "dayjs";
 import { useSearchParams } from "next/navigation";
 import BaseLayout from "@/components/BaseLayout";
 import TeacherHeader from "../../components/TeacherHeader";
-import Link from "next/link";
-import { LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { JitsiMeeting } from "@jitsi/react-sdk";
 
 interface Attendance {

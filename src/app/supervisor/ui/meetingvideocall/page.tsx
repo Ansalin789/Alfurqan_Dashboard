@@ -101,43 +101,53 @@ export default function Page() {
   const [meetingUpdate, setMeetingUpdate] = useState(false);
   const [meetingMinutes, setMeetingMinutes] = useState<string>("");
 
-  useEffect(() => {
-    const fetchClassData = async () => {
-      try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("SupervisorAuthToken")
-            : null;
-        if (!token) {
-          console.error("❌ TeacherAuthToken not found");
-          return;
-        }
+ useEffect(() => {
+  const fetchClassData = async () => {
+    try {
+      const token = localStorage.getItem("SupervisorAuthToken");
+      if (!token) return;
 
-        const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/meeting/${meetingId}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (response.data) {
-          console.log("Setting classData to:", response.data);
-          setClassData(response.data);
-          setRoomName(response.data.meetingId);
-        } else {
-          console.log("No upcoming class found.");
-          setClassData(null);
+      const response = await axios.get(
+        `https://api.blackstoneinfomaticstech.com/teacherMeeting?meetingId=${meetingId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      } catch (err) {
-        console.log("Error loading class details:", err);
+      );
+
+      const meeting = response.data.meetings[0]?.data;
+
+      if (!meeting) {
+        console.log("No meeting found");
+        return;
       }
-    };
 
-    fetchClassData();
-  }, []);
+      setClassData(meeting);
+      setRoomName(meeting.meetingId);
+
+      // ✅ Initialize attendance
+      const initialAttendance = meeting.participants.map((p: any) => ({
+        id: null,
+        studentId: p.participantId,
+        name: p.participantName,
+        startTime: null,
+        endTime: null,
+        joined: false,
+        joinTime: "",
+        leaveTime: "",
+      }));
+
+      setAttendance(initialAttendance);
+
+    } catch (err) {
+      console.error("Error loading meeting:", err);
+    }
+  };
+
+  fetchClassData();
+}, [meetingId]);
+
   useEffect(() => {
     attendanceRef.current = attendance;
   }, [attendance]);

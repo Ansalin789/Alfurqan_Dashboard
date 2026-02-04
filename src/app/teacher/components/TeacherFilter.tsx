@@ -91,6 +91,7 @@ const TeacherFilter = () => {
   const [upcomingClasses, setUpcomingClasses] = useState<Meeting[]>([]);
   const [completedData, setCompletedData] = useState<Meeting[]>([]);
   const [filteredMeetings, setFilteredMeetings] = useState<Meeting[]>([]);
+  const [allMeetings, setAllMeetings] = useState<Meeting[]>([]);
 
   // Filter modal state
   const [showMeetingFilterModal, setShowMeetingFilterModal] = useState(false);
@@ -127,7 +128,7 @@ const TeacherFilter = () => {
         if (!token || !teacherId) return;
 
         const response = await axios.get<MeetingResponse>(
-          `https://api.blackstoneinfomaticstech.com/teacherMeetinglist`,
+          `http://localhost:5001/teacherMeetinglist`,
           {
             params: { teacherId },
             headers: {
@@ -141,17 +142,33 @@ const TeacherFilter = () => {
 
 
         // Only show as upcoming if end time is in the future and not completed
-        const upcoming = meetings.filter((m) =>
-          ["Scheduled", "Rescheduled"].includes(m.meetingStatus)
-        );
+       setAllMeetings(meetings);
 
-        // Show as completed if status is completed or end time is in the past
-        const completed = meetings.filter(
-          (m) => m.meetingStatus === "Completed"
-        );
 
-        setUpcomingClasses(upcoming);
-        setCompletedData(completed);
+
+// Completed tab → ONLY completed
+const completed = meetings.filter(
+  (m) => m.meetingStatus === "Completed"
+);
+
+// Scheduled tab → Scheduled + Rescheduled
+const upcoming = meetings.filter(
+  (m) =>
+    m.meetingStatus === "Scheduled" ||
+    m.meetingStatus === "Rescheduled"
+);
+
+setUpcomingClasses(upcoming);
+setCompletedData(completed);
+console.log({
+  total: meetings.length,
+  scheduled: upcoming.length,
+  completed: completed.length,
+});
+
+
+
+     
       } catch (error) {
         console.error("Error fetching meeting data:", error);
       }
@@ -341,7 +358,7 @@ const TeacherFilter = () => {
         >
           Completed ({completedData.length})
           {activeTab === "completed" && (
-            <span className="absolute left-0 ml-3 -bottom-1 w-[60px] h-[2px] rounded-full bg-[#576CBC]" />
+            <span className="absolute left-0 ml-4  -bottom-1 w-[60px] h-[2px] rounded-full bg-[#576CBC]" />
           )}
         </button>
       </div>
@@ -398,7 +415,7 @@ const TeacherFilter = () => {
                   key={item._id}
                   className="text-[12px] odd:bg-white even:bg-[#F8F8F8] dark:odd:bg-[#2C2C2C] dark:even:bg-[#303030]"
                 >
-                  <td className="px-4 py-2 text-[#3D8FDE] font-medium">
+                  <td className="px-4 py-3 text-[#3D8FDE] font-medium">
                     {item.meetingId}
                   </td>
                   <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
@@ -419,8 +436,8 @@ const TeacherFilter = () => {
                       className={`px-2 font-semibold text-[10px] text-center py-[3px] rounded-md ${item.meetingStatus === "Scheduled"
                           ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
                           : item.meetingStatus === "Rescheduled"
-                            ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE]"
-                            : "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
+                            ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE] "
+                            : "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633] "
                         }`}
                     >
                       {(item.meetingStatus || "UNKNOWN").toUpperCase()}

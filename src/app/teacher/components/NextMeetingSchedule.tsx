@@ -101,11 +101,9 @@ interface StudentMeeting {
 
 const NextMeetingSchedule = () => {
   const router = useRouter();
-  const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [classData, setClassData] = useState<Meeting | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isTimeUp, setIsTimeUp] = useState(false);
 const [isMeetingOngoing, setIsMeetingOngoing] = useState(false);
 const [isPopupVisible, setIsPopupVisible] = useState(false);
 const [isCountdownFinished, setIsCountdownFinished] = useState(false);
@@ -129,7 +127,7 @@ const [timeRemaining, setTimeRemaining] = useState(0);
           return;
         }
 
-        const res = await axios.get("https://api.blackstoneinfomaticstech.com/teacherMeetinglist", {
+        const res = await axios.get("http://localhost:5001/teacherMeetinglist", {
           params: { teacherId },
           headers: {
             "Content-Type": "application/json",
@@ -336,7 +334,7 @@ useEffect(() => {
           {isCountdownFinished ? (
             <button
               onClick={() =>
-                router.push(`/student/ui/liveclass?id=${classData?._id}`)
+                router.push(`/teacher/ui/livemeeting?id=${classData?.meetingId}`)
               }
               className="relative px-5 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-semibold 
               text-white bg-gradient-to-r from-[#576CBC] to-[#576CBC] 
