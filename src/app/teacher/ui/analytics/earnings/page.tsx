@@ -79,7 +79,7 @@ export interface UnifiedStudent {
   /* Group class fields */
   status?: string;
   sessionStatus?: string;
-  earnings?: number;
+  amount?: number;
 }
 export interface TrialClass {
   id: string;
@@ -170,7 +170,7 @@ const Earnings = () => {
           }
           if (cls.sessionClassType === "GROUPCLASS" && !cls.student) {
             cls.student = cls.student;
-            cls.amount = cls.student[0].earnings.toString();
+            cls.amount = cls.student[0].amount.toString();
           }
 
           // Ensure session arrays exist for each student
@@ -262,7 +262,7 @@ const Earnings = () => {
                 },
                 status: "Active",
                 sessionStatus: sessionStatus,
-                earnings: 0,
+                amount: 0,
               },
             ],
             package: "",
@@ -272,7 +272,6 @@ const Earnings = () => {
             classhour: "0.5",
             currency: "$",
             amount: "0",
-            earnings: 0,
             isSalaryProcessed: false,
             sessionStarttime: trialClass.scheduledFrom || "",
             sessionsEndtime: trialClass.scheduledTo || "",
@@ -555,7 +554,7 @@ const uniqueStatuses = Array.from(new Set(uniqueStudentSchedules.map(s => s.sche
                           {startTime?.[0]} - {endTime?.[0]}
                         </td>
                         <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                          {row.amount ? `${row.currency}${row.amount}` : `$0`}
+                          {row.student[0].amount ? `$${row.student[0].amount}` : `$0`}
                         </td>
                         <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                           <span

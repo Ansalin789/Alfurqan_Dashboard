@@ -81,7 +81,7 @@ export interface UnifiedStudent {
   /* Group class fields */
   status?: string;
   sessionStatus?: string;
-  earnings?: number;
+  amount?: number;
 }
 
 export interface TrialClass {
@@ -352,7 +352,7 @@ useEffect(()=>{
           }
           if (cls.sessionClassType === "GROUPCLASS" && !cls.student) {
             cls.student = cls.student;
-            cls.amount = cls.student[0].earnings.toString();
+            cls.amount = cls.student[0].amount.toString();
           }
 
           // Ensure session arrays exist for each student
@@ -444,7 +444,7 @@ useEffect(()=>{
                 },
                 status: "Active",
                 sessionStatus: sessionStatus,
-                earnings: 0,
+                amount: 0,
               },
             ],
             package: "",
@@ -454,7 +454,6 @@ useEffect(()=>{
             classhour: "0.5",
             currency: "$",
             amount: "0",
-            earnings: 0,
             isSalaryProcessed: false,
             sessionStarttime: trialClass.scheduledFrom || "",
             sessionsEndtime: trialClass.scheduledTo || "",

@@ -413,11 +413,6 @@ const Teacher = () => {
         return;
       }
 
-      // Step 1: Log incoming data
-      console.log("🔧 Saving rate for wageId:", wageId);
-      console.log("Rate:", rate);
-      console.log("HoursMins:", hoursMins);
-
       // Step 2: Find wage to update
       const wageToUpdate = wages.find((wage) => wage._id === wageId);
       if (!wageToUpdate) {
@@ -425,7 +420,6 @@ const Teacher = () => {
         return;
       }
 
-      console.log("🧠 Found wage:", wageToUpdate);
 
       // Step 3: Construct updated object
       const updatedClassType = {
@@ -439,7 +433,6 @@ const Teacher = () => {
         classType: updatedClassType,
       };
 
-      console.log("📦 Payload to send:", updatedWage);
 
       // Step 4: Send API request
       const response = await axios.put(
@@ -452,8 +445,6 @@ const Teacher = () => {
           },
         }
       );
-
-      console.log("✅ API Response:", response.data);
 
       // Step 5: Update local state
       setWages((prevWages) =>
@@ -518,7 +509,9 @@ const Teacher = () => {
           },
         }
       );
-      setScheduledClass(response.data.classSchedule || []);
+
+      console.log("Fetched schedule List>>>>:", response.data.classScheduleList);
+      setScheduledClass(response.data.classScheduleList || []);
     } catch (error) {
       console.error("Error fetching schedule:", error);
     }
@@ -528,13 +521,7 @@ const Teacher = () => {
     const fetchCounts = async () => {
       try {
         const token = localStorage.getItem("AdminAuthToken");
-        console.log(
-          "Sending request with teacherId:",
-          employeeId,
-          "Token:",
-          token
-        );
-
+      
         const res = await axios.get(
           `https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts`,
           {
@@ -545,7 +532,6 @@ const Teacher = () => {
           }
         );
 
-        console.log("API Response:", res.data);
         setTeacherCounts(res.data);
       } catch (error: any) {
         console.error("Error fetching teacher counts:", error.message);
