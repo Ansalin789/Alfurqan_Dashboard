@@ -29,8 +29,6 @@ interface ApiResponse {
 interface Teacher {
   teacherId: string;
   teacherName: string;
-  participantName: string;
-  participantEmail: string;
   teacherEmail: string;
   attendee?: string;
 }
@@ -66,7 +64,6 @@ interface BaseMeeting {
 }
 
 interface Meeting extends BaseMeeting {
-  participants: any;
   type: "regular";
   teacher: Teacher[];
 }
@@ -96,16 +93,11 @@ const ScheduledClasses = () => {
   const [upcomingClasses, setUpcomingClasses] = useState<Meeting[]>([]);
   const [groupedMeetings, setGroupedMeetings] = useState<GroupedMeeting[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [openTeacherDropdownId, setOpenTeacherDropdownId] = useState<
-    string | null
-  >(null);
-  const [selectedMeetingDetails, setSelectedMeetingDetails] =
-    useState<Meeting | null>(null);
-  const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] =
-    useState(false);
+  const [openTeacherDropdownId, setOpenTeacherDropdownId] = useState<string | null>(null);
+  const [selectedMeetingDetails, setSelectedMeetingDetails] = useState<Meeting | null>(null);
+  const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] = useState(false);
   const [rescheduleDate, setRescheduleDate] = useState("");
-  const [rescheduleStartTime, setRescheduleStartTime] = useState("");
-  const [rescheduleEndTime, setRescheduleEndTime] = useState("");
+  const [rescheduleTime, setRescheduleTime] = useState("");
   const [searchText, setSearchText] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -114,119 +106,87 @@ const ScheduledClasses = () => {
 
   // Enhanced type guard functions
   const isGroupedMeeting = (item: AnyMeeting): item is GroupedMeeting => {
-    return item.type === "grouped" && "participants" in item;
+    return item.type === 'grouped' && 'participants' in item;
   };
 
   const isRegularMeeting = (item: AnyMeeting): item is Meeting => {
-    return item.type === "regular" && "teacher" in item;
+    return item.type === 'regular' && 'teacher' in item;
   };
 
   // Safe teacher access helper functions
- // Safe teacher access helper functions
-  const getTeacherName = (participants: any): string => {
-    if (!participants || typeof participants !== "object") return "No teacher";
-
+  const getTeacherName = (teacher: any): string => {
+    if (!teacher || typeof teacher !== 'object') return "No teacher";
+    
     // Handle array case
-    if (Array.isArray(participants)) {
-      return participants[0]?.participantName || "No teacher";
+    if (Array.isArray(teacher)) {
+      return teacher[0]?.teacherName || "No teacher";
     }
-
+    
     // Handle single object case
-    return participants.participantName || "No teacher";
+    return teacher.teacherName || "No teacher";
   };
-  
 
   const getTeacherArray = (teacher: any): Teacher[] => {
     if (!teacher) return [];
     if (Array.isArray(teacher)) return teacher;
-    if (typeof teacher === "object" && (teacher.participantName || teacher.teacherName))
-      return [teacher];
+    if (typeof teacher === 'object' && teacher.teacherName) return [teacher];
     return [];
   };
 
   // Group meetings function
-  const groupMeetingsByMeetingId = (meetings: Meeting[]): Meeting[] => {
+  const groupMeetingsByMeetingId = (meetings: Meeting[]): GroupedMeeting[] => {
     const groupedMap = new Map();
 
     meetings.forEach((meeting) => {
-      // Use meetingId as key if available; otherwise fallback to _id to keep unique
-      const key = meeting.meetingId || meeting._id;
+      if (meeting.meetingId?.startsWith("auto-")) {
+        const key = `${meeting.meetingId}-${meeting.meetingName}`;
 
-      if (!groupedMap.has(key)) {
-        // Initialize with the meeting data, clearing the teacher array to accumulate participants
-        groupedMap.set(key, {
-          ...meeting,
-          teacher: [],
-        });
-      }
+        if (!groupedMap.has(key)) {
+          groupedMap.set(key, {
+            type: "grouped" as const,
+            meetingId: meeting.meetingId,
+            meetingName: meeting.meetingName,
+            selectedDate: meeting.selectedDate,
+            startTime: meeting.startTime,
+            endTime: meeting.endTime,
+            meetingStatus: meeting.meetingStatus,
+            participants: [],
+            _id: meeting._id,
+            createdDate: meeting.createdDate,
+            description: meeting.description,
+            status: meeting.status,
+            createdBy: meeting.createdBy
+          });
+        }
 
-      // Aggregate participants (teachers) into the grouped entry
-      const group = groupedMap.get(key);
-      if (Array.isArray(meeting.teacher)) {
-        group.teacher.push(...meeting.teacher);
+        // Add participants (teachers)
+        if (Array.isArray(meeting.teacher)) {
+          groupedMap.get(key).participants.push(...meeting.teacher);
+        }
       }
     });
 
     return Array.from(groupedMap.values());
   };
 
-  const filterMeetingsBySearch = (meetings: AnyMeeting[]) => {
-    if (!searchText.trim()) return meetings;
-
-    const searchLower = searchText.toLowerCase();
-    return meetings.filter((meeting) => {
-      const nameMatch = meeting.meetingName?.toLowerCase().includes(searchLower);
-      const idMatch = meeting.meetingId?.toLowerCase().includes(searchLower);
-      const dateMatch = new Date(meeting.selectedDate)
-        .toLocaleDateString("en-US", {
-          month: "short",
-          day: "2-digit",
-          year: "numeric",
-        })
-        .toLowerCase()
-        .includes(searchLower);
-      const timingMatch = meeting.startTime?.toLowerCase().includes(searchLower);
-      const statusMatch = meeting.meetingStatus
-        ?.toLowerCase()
-        .includes(searchLower);
-
-      let attendeeMatch = false;
-      if (isGroupedMeeting(meeting)) {
-        attendeeMatch = meeting.participants.some(
-          (p) =>
-            p.participantName?.toLowerCase().includes(searchLower) ||
-            p.teacherName?.toLowerCase().includes(searchLower)
-        );
-      } else if (isRegularMeeting(meeting)) {
-        const teachers = getTeacherArray(meeting.teacher);
-        attendeeMatch = teachers.some(
-          (t) =>
-            t.participantName?.toLowerCase().includes(searchLower) ||
-            t.teacherName?.toLowerCase().includes(searchLower)
-        );
-      }
-
-      return (
-        nameMatch ||
-        idMatch ||
-        dateMatch ||
-        timingMatch ||
-        statusMatch ||
-        attendeeMatch
-      );
-    });
-  };
-
   // Get combined data for display
   const getDataToShow = (): AnyMeeting[] => {
     if (activeTab === "upcoming") {
-      return [...upcomingClasses];
+      const upcomingGrouped = groupedMeetings.filter(
+        (group) =>
+          group.meetingStatus === "Scheduled" ||
+          group.meetingStatus === "Rescheduled"
+      );
+      return [...upcomingGrouped, ...upcomingClasses];
     } else {
-      return [...completedData];
+      const completedGrouped = groupedMeetings.filter(
+        (group) => group.meetingStatus === "Completed"
+      );
+      return [...completedGrouped, ...completedData];
     }
   };
 
-  const dataToShow = filterMeetingsBySearch(getDataToShow());
+  const dataToShow = getDataToShow();
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = dataToShow.slice(indexOfFirstItem, indexOfLastItem);
@@ -238,10 +198,7 @@ const ScheduledClasses = () => {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setOpenTeacherDropdownId(null);
       }
     };
@@ -250,15 +207,10 @@ const ScheduledClasses = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const [teachers, setTeachers] = useState<
-    { id: string; name: string; subject: string; email: string }[]
-  >([]);
+  const [teachers, setTeachers] = useState<{ id: string; name: string; subject: string; email: string }[]>([]);
 
   useEffect(() => {
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("SupervisorAuthToken")
-        : null;
+    const token = typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
 
     if (!token) {
       console.error("❌ AdminAuthToken not found");
@@ -290,10 +242,7 @@ const ScheduledClasses = () => {
   }, []);
 
   useEffect(() => {
-    const id =
-      typeof window !== "undefined"
-        ? localStorage.getItem("SupervisorPortalID")
-        : null;
+    const id = typeof window !== "undefined" ? localStorage.getItem("SupervisorPortalID") : null;
     const socket = getSocket(id ?? "");
     const handleList = (data: { data: Meeting }) => {
       console.log("📩 Received WebSocket Data:", data);
@@ -307,16 +256,11 @@ const ScheduledClasses = () => {
 
   useEffect(() => {
     const fetchMeetings = async () => {
-      const supervisorId = localStorage.getItem("SupervisorPortalID");
+      const supervisorId = "67a467bcc346aaaea402f760";
       const token = localStorage.getItem("SupervisorAuthToken");
 
       if (!token) {
         console.error("❌ SupervisorAuthToken not found");
-        return;
-      }
-
-      if (!supervisorId) {
-        console.error("❌ SupervisorPortalID not found");
         return;
       }
 
@@ -330,45 +274,37 @@ const ScheduledClasses = () => {
           }
         );
 
-        const allMeetings: Meeting[] = response.data.meetings.map(
-          (meeting: any) => {
-            // Determine source for teacher data: use 'teacher' array if present/non-empty, else 'participants'
-            let rawTeacher = meeting.teacher;
-            if ((!rawTeacher || (Array.isArray(rawTeacher) && rawTeacher.length === 0)) && meeting.participants) {
-              rawTeacher = meeting.participants;
-            }
+        const allMeetings: Meeting[] = response.data.meetings.map((meeting: any) => ({
+          ...meeting,
+          type: "regular" as const,
+          // Ensure teacher is always a properly formatted array
+          teacher: Array.isArray(meeting.teacher) 
+            ? meeting.teacher.filter((t: any) => t && typeof t === 'object')
+            : meeting.teacher && typeof meeting.teacher === 'object' 
+              ? [meeting.teacher] 
+              : []
+        }));
 
-            return {
-              ...meeting,
-              type: "regular" as const,
-              // Ensure teacher is always a properly formatted array
-              teacher: Array.isArray(rawTeacher)
-                ? rawTeacher.filter((t: any) => t && typeof t === "object")
-                : rawTeacher && typeof rawTeacher === "object"
-                  ? [rawTeacher]
-                  : [],
-            };
-          }
+        // Group auto-scheduled meetings
+        const grouped = groupMeetingsByMeetingId(allMeetings);
+        setGroupedMeetings(grouped);
+
+        // Filter non-auto meetings
+        const nonAutoMeetings = allMeetings.filter(
+          (meeting) => !meeting.meetingId?.startsWith("auto-")
         );
 
-        // Group ALL meetings by ID
-        const unifiedMeetings = groupMeetingsByMeetingId(allMeetings);
-
-        const upcomingMeetings = unifiedMeetings.filter((meeting) => {
-          const statusOk =
-            meeting.meetingStatus === "Scheduled" ||
-            meeting.meetingStatus === "Rescheduled";
+        const upcomingMeetings = nonAutoMeetings.filter((meeting) => {
+          const statusOk = meeting.meetingStatus === "Scheduled" || meeting.meetingStatus === "Rescheduled";
           return statusOk;
         });
 
-        const completedMeetings = unifiedMeetings.filter(
+        const completedMeetings = nonAutoMeetings.filter(
           (meeting) => meeting.meetingStatus === "Completed"
         );
 
         setUpcomingClasses(upcomingMeetings);
         setCompletedData(completedMeetings);
-        // groupedMeetings state is no longer used
-        setGroupedMeetings([]);
       } catch (error) {
         console.error("Error fetching meetings:", error);
       }
@@ -377,7 +313,28 @@ const ScheduledClasses = () => {
     fetchMeetings();
   }, []);
 
+  const filterMeetingsBySearch = (meetings: any[]) => {
+    if (!searchText.trim()) return meetings;
 
+    const searchLower = searchText.toLowerCase();
+    return meetings.filter((meeting) => {
+      const nameMatch = meeting.meetingName.toLowerCase().includes(searchLower);
+      const dateMatch = new Date(meeting.selectedDate)
+        .toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        })
+        .toLowerCase()
+        .includes(searchLower);
+      const timingMatch = meeting.startTime.toLowerCase().includes(searchLower);
+      const statusMatch = meeting.meetingStatus
+        .toLowerCase()
+        .includes(searchLower);
+
+      return nameMatch || dateMatch || timingMatch || statusMatch;
+    });
+  };
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -387,8 +344,7 @@ const ScheduledClasses = () => {
     if (
       !rescheduleReason.trim() ||
       !rescheduleDate ||
-      !rescheduleStartTime ||
-      !rescheduleEndTime ||
+      !rescheduleTime ||
       !selectedItemId
     ) {
       alert("Please fill all fields");
@@ -396,82 +352,54 @@ const ScheduledClasses = () => {
     }
 
     try {
-      const token = localStorage.getItem("SupervisorAuthToken");
-      if (!token) {
-        setFailedMessage("Not authenticated. Please login.");
-        setFailed(true);
-        return;
-      }
-
-      const isoDate = new Date(rescheduleDate).toISOString();
-
-      // Always use DB `_id` in URL to avoid ObjectId cast errors; include `meetingId` in body
-      const meetingObj = upcomingClasses.find((m) => m._id === selectedItemId);
-      const targetId = selectedItemId; // must be Mongo _id
-
-    const response = await fetch(
-      `https://api.blackstoneinfomaticstech.com/meeting/${targetId}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
- body: JSON.stringify({
-  selectedDate: isoDate,
-  startTime: rescheduleStartTime,
-  endTime: rescheduleEndTime,
-  description: rescheduleReason,
-})
-
-
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `https://api.blackstoneinfomaticstech.com/meeting/${selectedItemId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            selectedDate: rescheduleDate,
+            startTime: rescheduleTime,
+            description: rescheduleReason,
+            meetingStatus: "Rescheduled",
+          }),
         }
       );
 
-      let result: any = null;
-      try {
-        result = await response.json();
-      } catch (e) {
-        console.warn("No JSON in reschedule response", e);
-      }
-
-      console.log("Reschedule response:", response.status, result);
+      const result = await response.json();
 
       if (!response.ok) {
-        const msg = result?.message || result || `Status ${response.status}`;
-        setFailedMessage(String(msg));
-        setFailed(true);
-        return;
+        throw new Error(result.message || "Failed to update meeting");
       }
 
-      // Update UI using _id (selectedItemId holds _id)
       setUpcomingClasses((prevClasses) =>
         prevClasses.map((item) =>
           item._id === selectedItemId
             ? {
-              ...item,
-              meetingStatus: "Rescheduled" as Meeting["meetingStatus"],
-              selectedDate: isoDate,
-              startTime: rescheduleStartTime,
-              endTime: rescheduleEndTime,
-              description: rescheduleReason,
-            }
+                ...item,
+                meetingStatus: "Rescheduled" as Meeting["meetingStatus"],
+              }
             : item
         )
       );
 
       setSuccess(true);
       setTimeout(() => {
-        setSuccess(false);
+        setShowSuccess(false);
         setIsRescheduleModalOpen(false);
         setRescheduleReason("");
       }, 2000);
     } catch (error) {
       console.error("Error during rescheduling:", error);
-      setFailedMessage("Could not update meeting. Please try again.");
-      setFailed(true);
+      alert("Could not update meeting. Please try again.");
     }
   };
+
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   const getMeetingStatusClass = (status: string) => {
     switch (status) {
@@ -484,40 +412,40 @@ const ScheduledClasses = () => {
     }
   };
 
-  const handleViewDetails = (meetingId: string) => {
-    // Only allow viewing details in completed tab
-    if (activeTab !== "completed") {
-      return; // Don't do anything if not in completed tab
+const handleViewDetails = (meetingId: string) => {
+  // Only allow viewing details in completed tab
+  if (activeTab !== "completed") {
+    return; // Don't do anything if not in completed tab
+  }
+  
+  // Search in the combined data that's currently being displayed
+  const meeting = dataToShow.find((m) => {
+    if (isRegularMeeting(m)) {
+      return m._id === meetingId;
+    } else if (isGroupedMeeting(m)) {
+      return m._id === meetingId;
     }
-
-    // Search in the combined data that's currently being displayed
-    const meeting = dataToShow.find((m) => {
-      if (isRegularMeeting(m)) {
-        return m._id === meetingId;
-      } else if (isGroupedMeeting(m)) {
-        return m._id === meetingId;
-      }
-      return false;
-    });
-
-    if (meeting) {
-      // For grouped meetings, we need to convert them to the Meeting type for the modal
-      if (isGroupedMeeting(meeting)) {
-        // Convert GroupedMeeting to Meeting format for the modal
-        const meetingForModal: Meeting = {
-          ...meeting,
-          type: "regular",
-          teacher: meeting.participants,
-        };
-        setSelectedMeetingDetails(meetingForModal);
-      } else {
-        setSelectedMeetingDetails(meeting);
-      }
-      setIsMeetingDetailsModalOpen(true);
+    return false;
+  });
+  
+  if (meeting) {
+    // For grouped meetings, we need to convert them to the Meeting type for the modal
+    if (isGroupedMeeting(meeting)) {
+      // Convert GroupedMeeting to Meeting format for the modal
+      const meetingForModal: Meeting = {
+        ...meeting,
+        type: "regular",
+        teacher: meeting.participants
+      };
+      setSelectedMeetingDetails(meetingForModal);
     } else {
-      console.error("Meeting not found for ID:", meetingId);
+      setSelectedMeetingDetails(meeting);
     }
-  };
+    setIsMeetingDetailsModalOpen(true);
+  } else {
+    console.error("Meeting not found for ID:", meetingId);
+  }
+};
 
   const isStartMeetingNow = (
     selectedDate: string,
@@ -548,62 +476,32 @@ const ScheduledClasses = () => {
     if (timing) params["startTime"] = timing;
     if (status) params["meetingStatus"] = status;
 
-    // Use the same supervisor ID as in the initial fetch
-    const supervisorId = "67a467bcc346aaaea402f760";
-    if (supervisorId) params["supervisorId"] = supervisorId;
-
     try {
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        params,
-      });
+      const response = await axios.get(
+        "https://api.blackstoneinfomaticstech.com/allMeetings",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          params,
+        }
+      );
 
       const meetings: Meeting[] = response.data.meetings || [];
+      const grouped = groupMeetingsByMeetingId(meetings);
+      setGroupedMeetings(grouped);
 
-      // 1. Normalize data (same as fetchMeetings)
-      const normalizedMeetings: Meeting[] = meetings.map((meeting: any) => {
-        let rawTeacher = meeting.teacher;
-        if ((!rawTeacher || (Array.isArray(rawTeacher) && rawTeacher.length === 0)) && meeting.participants) {
-          rawTeacher = meeting.participants;
-        }
-        return {
-          ...meeting,
-          type: "regular" as const,
-          teacher: Array.isArray(rawTeacher)
-            ? rawTeacher.filter((t: any) => t && typeof t === "object")
-            : rawTeacher && typeof rawTeacher === "object"
-              ? [rawTeacher]
-              : [],
-        };
-      });
-
-      // 2. Group meetings
-      const unifiedMeetings = groupMeetingsByMeetingId(normalizedMeetings);
-
-      // 3. Filter client-side to ensure accuracy (and handle auto- meetings)
-      const filteredMeetings = unifiedMeetings.filter((meeting) => {
-        const isAuto = meeting.meetingId?.startsWith("auto-");
-        if (isAuto) return false;
-
-        // Apply filters locally if provided (in case backend ignores them)
-        if (status && meeting.meetingStatus !== status) return false;
-        // Date/Time filters are harder to apply strictly client-side without more parsing logic,
-        // but status is critical for the "Rescheduled" bug.
-        // Assuming backend handles date/time generally okay, or we accept loose match there.
-
-        return true;
-      });
+      const nonAutoMeetings = meetings.filter(
+        (meeting) => !meeting.meetingId?.startsWith("auto-")
+      );
 
       setUpcomingClasses(
-        filteredMeetings.filter((m) => m.meetingStatus !== "Completed")
+        nonAutoMeetings.filter((m: Meeting) => m.meetingStatus !== "Completed")
       );
       setCompletedData(
-        filteredMeetings.filter((m) => m.meetingStatus === "Completed")
+        nonAutoMeetings.filter((m: Meeting) => m.meetingStatus === "Completed")
       );
-      setGroupedMeetings([]); // Clear this as we used unifiedMeetings in upcomingClasses
     } catch (error) {
       console.error("❌ Error fetching filtered meetings:", error);
     }
@@ -617,16 +515,18 @@ const ScheduledClasses = () => {
           <div className="h-full w-full flex flex-col justify-between">
             <div className="p-0 justify-between flex flex-col">
               <div
-                className={`${isRescheduleModalOpen ? "blur-sm" : ""
-                  } transition-all duration-200`}
+                className={`${
+                  isRescheduleModalOpen ? "blur-sm" : ""
+                } transition-all duration-200`}
               >
                 {/* Tabs */}
                 <div className="flex space-x-6 px-4 py-2 rounded-md">
                   <button
-                    className={`relative text-[14px] transition font-medium ${activeTab === "upcoming"
-                      ? "text-[#576CBC] font-semibold"
-                      : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-                      }`}
+                    className={`relative text-[14px] transition font-medium ${
+                      activeTab === "upcoming"
+                        ? "text-[#576CBC] font-semibold"
+                        : "text-[#0A0A12] dark:text-[#fff] opacity-80"
+                    }`}
                     onClick={() => setActiveTab("upcoming")}
                   >
                     Scheduled (
@@ -642,10 +542,11 @@ const ScheduledClasses = () => {
                   </button>
 
                   <button
-                    className={`relative text-[14px] transition font-medium ${activeTab === "completed"
-                      ? "text-[#576CBC] font-semibold"
-                      : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-                      }`}
+                    className={`relative text-[14px] transition font-medium ${
+                      activeTab === "completed"
+                        ? "text-[#576CBC] font-semibold"
+                        : "text-[#0A0A12] dark:text-[#fff] opacity-80"
+                    }`}
                     onClick={() => setActiveTab("completed")}
                   >
                     Completed (
@@ -724,12 +625,13 @@ const ScheduledClasses = () => {
                           return (
                             <tr
                               key={item.meetingId}
-                              className={`text-[12px] ${index % 2 === 0
-                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                }`}
+                              className={`text-[12px] ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
                             >
-                              <td className="px-3 py-3 text-[#3D8FDE] font-medium text-left w-[180px] break-words whitespace-normal">
+                              <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left w-[180px] break-words whitespace-normal">
                                 {item.meetingId}
                               </td>
                               <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left w-[250px] break-words whitespace-normal">
@@ -738,9 +640,7 @@ const ScheduledClasses = () => {
                               <td className="px-3 py-2 text-left text-[#17243E] dark:text-[#FDFDFD]">
                                 <div className="relative">
                                   <button
-                                    onClick={() =>
-                                      toggleTeacherDropdown(item.meetingId)
-                                    }
+                                    onClick={() => toggleTeacherDropdown(item.meetingId)}
                                     className="flex items-center gap-2 font-medium hover:text-[#5c5c5c] dark:hover:text-[#5c5c5c]"
                                   >
                                     <AiOutlineMenuUnfold />
@@ -753,29 +653,24 @@ const ScheduledClasses = () => {
                                         <h4 className="font-semibold text-sm mb-2 text-[#17243E] dark:text-[#FDFDFD]">
                                           Attendees:
                                         </h4>
-                                        {item.participants.map(
-                                          (participant, idx) => (
-                                            <div
-                                              key={`${participant.teacherId}-${idx}`}
-                                              className="py-2 text-[#17243E] dark:text-[#FDFDFD] border-b border-gray-100 dark:border-gray-600 last:border-b-0"
-                                            >
-                                              <div className="flex items-center gap-2">
-                                                <IoPersonOutline className="flex-shrink-0" />
-                                                <div>
-                                                  <div className="font-medium">
-                                                    {participant.participantName ||
-                                                      participant.teacherName ||
-                                                      "Unknown Teacher"}
-                                                  </div>
-                                                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                    {participant.participantEmail ||
-                                                      "No email"}
-                                                  </div>
+                                        {item.participants.map((participant, idx) => (
+                                          <div
+                                            key={`${participant.teacherId}-${idx}`}
+                                            className="py-2 text-[#17243E] dark:text-[#FDFDFD] border-b border-gray-100 dark:border-gray-600 last:border-b-0"
+                                          >
+                                            <div className="flex items-center gap-2">
+                                              <IoPersonOutline className="flex-shrink-0" />
+                                              <div>
+                                                <div className="font-medium">
+                                                  {participant.teacherName || "Unknown Teacher"}
+                                                </div>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                  {participant.teacherEmail || "No email"}
                                                 </div>
                                               </div>
                                             </div>
-                                          )
-                                        )}
+                                          </div>
+                                        ))}
                                       </div>
                                     </div>
                                   )}
@@ -803,19 +698,18 @@ const ScheduledClasses = () => {
                                 </span>
                               </td>
                               <td className="px-3 py-2 text-left w-[80px] break-words whitespace-normal ">
-                                {activeTab === "completed" ? (
-                                  <button
-                                    onClick={() => handleViewDetails(item._id)}
-                                    className="p-2 rounded-md"
-                                  >
-                                    <FaEye className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD] cursor-pointer" />
-                                  </button>
-                                ) : (
-                                  <div className="p-2">
-                                    <FaEye className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD] cursor-not-allowed" />{" "}
-                                  </div>
-                                )}
-                              </td>
+  {activeTab === "completed" ? (
+    <button
+      onClick={() => handleViewDetails(item._id)}
+      className="p-2 rounded-md"
+    >
+      <FaEye className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD] cursor-pointer" />
+    </button>
+  ) : (
+    <div className="p-2">
+<FaEye className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD] cursor-not-allowed" />    </div>
+  )}
+</td>
                             </tr>
                           );
                         } else if (isRegularMeeting(item)) {
@@ -823,10 +717,11 @@ const ScheduledClasses = () => {
                           return (
                             <tr
                               key={item._id}
-                              className={`text-[12px] ${index % 2 === 0
-                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                }`}
+                              className={`text-[12px] ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
                             >
                               <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left w-[180px] break-words whitespace-normal">
                                 {item.meetingId}
@@ -839,40 +734,33 @@ const ScheduledClasses = () => {
                                   {getTeacherArray(item.teacher).length > 1 ? (
                                     <>
                                       <button
-                                        onClick={() =>
-                                          toggleTeacherDropdown(item._id)
-                                        }
+                                        onClick={() => toggleTeacherDropdown(item._id)}
                                         className="flex items-center gap-2 font-medium hover:text-[#5c5c5c] dark:hover:text-[#5c5c5c]"
                                       >
                                         <AiOutlineMenuUnfold />
-                                        View List (
-                                        {getTeacherArray(item.teacher).length})
+                                        View List ({getTeacherArray(item.teacher).length})
                                       </button>
 
                                       {openTeacherDropdownId === item._id && (
                                         <div className="absolute z-10 mt-2 w-48 bg-white rounded shadow-lg p-2 dark:bg-[#343434]">
-                                          {getTeacherArray(item.teacher).map(
-                                            (teacher, idx) => (
-                                              <div
-                                                key={idx}
-                                                className="py-1 text-[#17243E] dark:text-[#FDFDFD]"
-                                              >
-                                                <span className="flex items-center gap-2">
-                                                  <IoPersonOutline />
-                                                  {teacher.teacherName ||
-                                                    teacher.participantName ||
-                                                    "Unknown Teacher"}
-                                                </span>
-                                              </div>
-                                            )
-                                          )}
+                                          {getTeacherArray(item.teacher).map((teacher, idx) => (
+                                            <div
+                                              key={idx}
+                                              className="py-1 text-[#17243E] dark:text-[#FDFDFD]"
+                                            >
+                                              <span className="flex items-center gap-2">
+                                                <IoPersonOutline />
+                                                {teacher.teacherName || "Unknown Teacher"}
+                                              </span>
+                                            </div>
+                                          ))}
                                         </div>
                                       )}
                                     </>
                                   ) : (
                                     <span className="flex items-center gap-2 font-medium">
                                       <IoPersonOutline />
-                                      {getTeacherName(item.participants)}
+                                      {getTeacherName(item.teacher)}
                                     </span>
                                   )}
                                 </div>
@@ -893,13 +781,7 @@ const ScheduledClasses = () => {
                                 {(() => {
                                   let content;
                                   if (activeTab === "upcoming") {
-                                    if (
-                                      isStartMeetingNow(
-                                        item.selectedDate,
-                                        item.startTime,
-                                        item.endTime
-                                      )
-                                    ) {
+                                    if (isStartMeetingNow(item.selectedDate, item.startTime, item.endTime)) {
                                       content = (
                                         <button
                                           className="text-[10px] font-semibold px-[11px] py-1 rounded-lg bg-[#576cbc] text-white border"
@@ -934,42 +816,29 @@ const ScheduledClasses = () => {
                                 })()}
                               </td>
                               <td className="px-3 py-2 text-left w-[80px] break-words whitespace-normal">
-                                <div className="relative">
-                                  {activeTab === "upcoming" ? (
-                                    // Upcoming tab - open Reschedule modal for actions
-                                    item.meetingStatus === "Rescheduled" ? (
-                                      <button
-                                        type="button"
-                                        disabled
-                                        className="p-2 rounded-md opacity-50 cursor-not-allowed"
-                                      >
-                                        <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
-                                      </button>
-                                    ) : (
-                                      <button
-                                        onClick={() => {
-                                          setIsRescheduleModalOpen(true);
-                                          setSelectedItemId(item._id);
-                                        }}
-                                        type="button"
-                                        className="p-2 rounded-md"
-                                      >
-                                        <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD] cursor-pointer" />
-                                      </button>
-                                    )
-                                  ) : (
-                                    // Completed tab - show Eye for viewing details
-                                    <button
-                                      onClick={() =>
-                                        handleViewDetails(item._id)
-                                      }
-                                      className="p-2 rounded-md"
-                                    >
-                                      <FaEye className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD] cursor-pointer" />
-                                    </button>
-                                  )}
-                                </div>
-                              </td>
+  <div className="relative">
+    {activeTab === "upcoming" ? (
+      // Upcoming tab - show MoreVertical for actions (but NOT eye button)
+      <button
+        onClick={() => {
+          setIsDetailsModalOpen(true);
+          setSelectedItemId((prev) => prev === item._id ? null : item._id);
+        }}
+        className="p-2 rounded-md"
+      >
+        <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD] cursor-pointer" />
+      </button>
+    ) : (
+      // Completed tab - show Eye for viewing details
+      <button
+        onClick={() => handleViewDetails(item._id)}
+        className="p-2 rounded-md"
+      >
+        <FaEye className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD] cursor-pointer" />
+      </button>
+    )}
+  </div>
+</td>
                             </tr>
                           );
                         }
@@ -1152,28 +1021,23 @@ const ScheduledClasses = () => {
                 <span>Attendance</span>
               </div>
               <div className="divide-y max-h-40 overflow-y-auto text-sm">
-                {getTeacherArray(selectedMeetingDetails.teacher).map(
-                  (teacher, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between items-center px-4 py-2"
+                {getTeacherArray(selectedMeetingDetails.teacher).map((teacher, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center px-4 py-2"
+                  >
+                    <span className="text-[#4F46E5]">
+                      {teacher.teacherName || "Unknown Teacher"}
+                    </span>
+                    <span
+                      className={`text-lg ${
+                        teacher.attendee === "present" ? "text-green-600" : "text-red-500"
+                      }`}
                     >
-                      <span className="text-[#4F46E5]">
-                        {teacher.teacherName ||
-                          teacher.participantName ||
-                          "Unknown Teacher"}
-                      </span>
-                      <span
-                        className={`text-lg ${teacher.attendee === "present"
-                          ? "text-green-600"
-                          : "text-red-500"
-                          }`}
-                      >
-                        {teacher.attendee === "present" ? "✔" : "✘"}
-                      </span>
-                    </div>
-                  )
-                )}
+                      {teacher.attendee === "present" ? "✔" : "✘"}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
             <div className="mb-6">
@@ -1221,23 +1085,12 @@ const ScheduledClasses = () => {
               </div>
               <div className="w-1/2">
                 <label className="block text-xs font-medium text-[#0D0E25] mb-1 dark:text-white">
-                  Reschedule Start Time
+                  Reschedule Time
                 </label>
                 <input
                   type="time"
-                  value={rescheduleStartTime}
-                  onChange={(e) => setRescheduleStartTime(e.target.value)}
-                  className="w-full text-sm px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
-                />
-              </div>
-              <div className="w-1/2">
-                <label className="block text-xs font-medium text-[#0D0E25] mb-1 dark:text-white">
-                  Reschedule End Time
-                </label>
-                <input
-                  type="time"
-                  value={rescheduleEndTime}
-                  onChange={(e) => setRescheduleEndTime(e.target.value)}
+                  value={rescheduleTime}
+                  onChange={(e) => setRescheduleTime(e.target.value)}
                   className="w-full text-sm px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 />
               </div>

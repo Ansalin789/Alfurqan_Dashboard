@@ -104,7 +104,6 @@ export default function AddMeeting({ onClose }: Props) {
       participantName: teacher.teacherName,
       participantEmail: teacher.teacherEmail,
       role: "teacher",
-      attendee: "absent",
     }));
 
     const requestData = {
@@ -117,7 +116,7 @@ export default function AddMeeting({ onClose }: Props) {
       organizer: {
         organizerId: localStorage.getItem("SupervisorPortalId"),
         organizerName: localStorage.getItem("SupervisorPortalName"),
-        organizerEmail: "arthi.blackstoneinfomatics@gmail.com",
+        organizerEmail: localStorage.getItem("SupervisorPortalEmail"),
         role: "supervisor",
       },
       participants,

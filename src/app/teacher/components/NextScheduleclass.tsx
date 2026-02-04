@@ -67,7 +67,7 @@ const NextScheduledClass = () => {
         }
       );
       const now = new Date();
-      const upcoming = (response.data.classSchedule || [])
+      const upcoming = (response.data.classScheduleList || [])
         .map((item: ClassData) => {
           const startDate = new Date(item.startDate);
           const [startHour, startMin] = item.startTime[0]
