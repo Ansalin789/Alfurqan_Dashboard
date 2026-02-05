@@ -56,13 +56,16 @@ const LiveMeeting = () => {
           return;
         }
 
-        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/teacherMeeting`, {
-          params: { meetingId },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+        const response = await axios.get(
+          `https://api.blackstoneinfomaticstech.com/teacherMeeting`,
+          {
+            params: { meetingId },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           },
-        });
+        );
 
         const meeting = response.data.meetings[0]?.data; // Access the first meeting's data
         if (meeting && meeting.meetingStatus !== "Completed") {
@@ -70,16 +73,17 @@ const LiveMeeting = () => {
           setRoomName(meeting.meetingId);
 
           // Build initial attendance
-          const initialAttendance = meeting.teacher.map((t: { teacherId: any; teacherName: any; }) => ({
+          const initialAttendance = meeting.participants.map((p: any) => ({
             id: null,
-            studentId: t.teacherId,
-            name: t.teacherName,
+            studentId: p.participantId,
+            name: p.participantName,
             startTime: null,
             endTime: null,
             joined: false,
             joinTime: "",
             leaveTime: "",
           }));
+
           setAttendance(initialAttendance);
         }
       } catch (error) {
@@ -91,7 +95,11 @@ const LiveMeeting = () => {
   }, [params]);
 
   const handleEndCall = async () => {
-    const endCallTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+    const endCallTime = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
     const startTimeUsed = startTimeRef.current;
 
     if (!meetingData || !startTimeUsed) {
@@ -111,14 +119,20 @@ const LiveMeeting = () => {
       joinMinute = m;
     }
 
-    const actualJoin = dayjs(`${scheduledDate}T${String(joinHour).padStart(2, "0")}:${String(joinMinute).padStart(2, "0")}`);
+    const actualJoin = dayjs(
+      `${scheduledDate}T${String(joinHour).padStart(2, "0")}:${String(joinMinute).padStart(2, "0")}`,
+    );
     const diffMinutes = actualJoin.diff(scheduledStart, "minute");
     const teacherAbsent = diffMinutes >= 15;
 
     const student = attendance[0]; // Assuming attendance is an array
     const studentJoined = student?.joinTime && student.joinTime !== "";
-    const parsedStudentJoin = studentJoined ? dayjs(`${scheduledDate}T${student.joinTime}`) : null;
-    const studentLateBy = parsedStudentJoin ? parsedStudentJoin.diff(scheduledStart, "minute") : Infinity;
+    const parsedStudentJoin = studentJoined
+      ? dayjs(`${scheduledDate}T${student.joinTime}`)
+      : null;
+    const studentLateBy = parsedStudentJoin
+      ? parsedStudentJoin.diff(scheduledStart, "minute")
+      : Infinity;
     const studentAbsent = !studentJoined || studentLateBy > 15;
     const studentAttendee = studentAbsent ? "absent" : "present";
 
@@ -133,12 +147,16 @@ const LiveMeeting = () => {
 
     try {
       const token = localStorage.getItem("TeacherAuthToken");
-      await axios.put(`https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${meetingId}`, payload, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      await axios.put(
+        `https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${meetingId}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
       console.log("Meeting schedule updated");
       setRedirectTo("/teacher/ui/meeting");
     } catch (error) {
@@ -156,14 +174,24 @@ const LiveMeeting = () => {
               <div className="p-1 sm:p-2 relative w-full flex flex-col flex-1 h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] xl:h-[85vh]">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h2 className="text-lg font-medium">{meetingData?.meetingName}</h2>
-                    <span className="text-sm text-gray-500">{meetingData?.description}</span>
+                    <h2 className="text-lg font-medium">
+                      {meetingData?.meetingName}
+                    </h2>
+                    <span className="text-sm text-gray-500">
+                      {meetingData?.description}
+                    </span>
                   </div>
                   <div className="ml-auto w-64">
-                    <label htmlFor="attendance-select" className="block text-sm font-semibold mb-1">
+                    <label
+                      htmlFor="attendance-select"
+                      className="block text-sm font-semibold mb-1"
+                    >
                       Attendance
                     </label>
-                    <select id="attendance-select" className="w-full border p-2 rounded">
+                    <select
+                      id="attendance-select"
+                      className="w-full border p-2 rounded"
+                    >
                       {attendance.map((s) => {
                         let statusLabel = "❌ Not Joined";
                         if (s.joined) {
@@ -218,8 +246,14 @@ const LiveMeeting = () => {
                         const studentId = parts?.[1]?.trim() ?? "N/A";
                         const updated = attendance.map((a) =>
                           a.studentId === studentId
-                            ? { ...a, id: event.id, joined: true, joinTime, startTime: joinTime }
-                            : a
+                            ? {
+                                ...a,
+                                id: event.id,
+                                joined: true,
+                                joinTime,
+                                startTime: joinTime,
+                              }
+                            : a,
                         );
                         setAttendance(updated);
                       });
@@ -231,16 +265,19 @@ const LiveMeeting = () => {
                         });
                         setAttendance((prev) =>
                           prev.map((a) =>
-                            a.id === event.id ? { ...a, leaveTime } : a
-                          )
+                            a.id === event.id ? { ...a, leaveTime } : a,
+                          ),
                         );
                       });
                       externalApi.addListener("videoConferenceJoined", () => {
-                        const startCallTime = new Date().toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        });
+                        const startCallTime = new Date().toLocaleTimeString(
+                          [],
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                          },
+                        );
                         startTimeRef.current = startCallTime;
                         setStartTime(startCallTime);
                       });
