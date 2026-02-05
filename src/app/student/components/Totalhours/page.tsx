@@ -26,7 +26,7 @@ const Page = () => {
     return;
   }  
 
-        const response = await axios.get<ApiResponse>("https://api.alfurqanapp.com/classShedule/totalhours", {
+        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule/totalhours", {
           params: { studentId },
          headers: { "Content-Type": "application/json",
                'Authorization': `Bearer ${token}`,

@@ -289,7 +289,7 @@ const QuizPage = () => {
           return;
         }
        const res = await fetch(
-          `https://api.alfurqanapp.com/assignments?assignmentId=${assignmentId}`,
+          `https://api.blackstoneinfomaticstech.com/assignments?assignmentId=${assignmentId}`,
           {
             headers: {
               "Authorization": `Bearer ${token}`,
@@ -416,7 +416,7 @@ const QuizPage = () => {
             if (value.startsWith("http://") || value.startsWith("https://")) return value;
             // Relative path from backend
             if (value.startsWith("/")) {
-              return `https://api.alfurqanapp.com${value}`;
+              return `https://api.blackstoneinfomaticstech.com${value}`;
             }
             // Heuristics for common base64 image signatures
             const looksBase64Image =
@@ -431,7 +431,7 @@ const QuizPage = () => {
               return `data:${mime};base64,${value}`;
             }
             // Fallback: try treating as relative
-            return `https://api.alfurqanapp.com/${value.replace(/^\/+/, "")}`;
+            return `https://api.blackstoneinfomaticstech.com/${value.replace(/^\/+/, "")}`;
           };
 
           // Image identification
@@ -623,7 +623,7 @@ const QuizPage = () => {
         return;
       }
       const res = await fetch(
-        `https://api.alfurqanapp.com/assignments/bulk?assignmentId=${assignmentId}`,
+        `https://api.blackstoneinfomaticstech.com/assignments/bulk?assignmentId=${assignmentId}`,
         {
           method: "PUT",
           headers: {

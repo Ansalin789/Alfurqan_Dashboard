@@ -66,7 +66,7 @@ const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
 
 
       console.log("file ", resumeData)
-      const res = await fetch(`https://api.alfurqanapp.com/files/view/${resumeData}`, {
+      const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${resumeData}`, {
         method: "GET",
       });
 
@@ -210,7 +210,7 @@ export default function ApplicantsPage() {
 
 
       console.log("file ", resumeData)
-      const res = await fetch(`https://api.alfurqanapp.com/files/view/${resumeData}`, {
+      const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${resumeData}`, {
         method: "GET",
       });
 
@@ -228,7 +228,7 @@ export default function ApplicantsPage() {
   const fetchApplicants = async (token: string) => {
     try {
       const response = await axios.get(
-        "https://api.alfurqanapp.com/applicants",
+        "https://api.blackstoneinfomaticstech.com/applicants",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -275,7 +275,7 @@ export default function ApplicantsPage() {
       }
 
       const response = await axios.put(
-        `https://api.alfurqanapp.com/admin/${id}`,
+        `https://api.blackstoneinfomaticstech.com/admin/${id}`,
         { applicationStatus: status },
         {
           headers: {

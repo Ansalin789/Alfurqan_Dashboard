@@ -59,7 +59,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
       console.error("❌ AdminAuthToken not found");
     }
     const response = await axios.get(
-      `https://api.alfurqanapp.com/studentlist`,
+      `https://api.blackstoneinfomaticstech.com/studentlist`,
       {
         params: { academicCoachId: academicId },
         headers: {

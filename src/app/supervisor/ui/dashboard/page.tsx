@@ -214,7 +214,7 @@ export default function Dashboard() {
     };
 
     const fetchApplicants = axios.get(
-      "https://api.alfurqanapp.com/applicants",
+      "https://api.blackstoneinfomaticstech.com/applicants",
       {
         headers: {
           "Content-Type": "application/json",
@@ -224,7 +224,7 @@ export default function Dashboard() {
     );
 
     const fetchDashboardCounts = axios.get(
-      "https://api.alfurqanapp.com/dashboard/supervisor/counts",
+      "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts",
       {
         headers: {
           "Content-Type": "application/json",
@@ -345,7 +345,7 @@ export default function Dashboard() {
           return;
         }
         const response = await axios.get(
-          "https://api.alfurqanapp.com/allMeetings",
+          "https://api.blackstoneinfomaticstech.com/allMeetings",
           {
             headers: {
               "Content-Type": "application/json",
@@ -368,30 +368,45 @@ export default function Dashboard() {
 
         setMeetingDays(allMeetingDays);
 
-        // ✅ Filter today's meetings
-        const todayMeetings = allMeetings
-          .filter((meeting) => {
-            const meetingDate = new Date(meeting.selectedDate);
-            return meetingDate.toDateString() === today.toDateString();
-          })
-          .map((meeting) => {
-            let color = "bg-blue-100 text-blue-800"; // Default color
+    // Get current date & time
+const now = new Date();
 
-            if (meeting.meetingStatus === "Scheduled") {
-              color = "bg-amber-100 text-amber-800";
-            } else if (meeting.meetingStatus === "Reschedule") {
-              color = "bg-green-100 text-green-800";
-            }
+// Filter upcoming meetings
+const upcomingMeetings = allMeetings
+  .filter((meeting) => {
+    const meetingDateTime = new Date(
+      `${meeting.selectedDate} ${meeting.startTime}`
+    );
 
-            return {
-              time: meeting.startTime,
-              title: meeting.meetingName,
-              type: meeting.meetingStatus.toLowerCase(),
-              color,
-            };
-          });
+    return meetingDateTime >= now;
+  })
+  // Sort by nearest first
+  .sort((a, b) => {
+    const aDate = new Date(`${a.selectedDate} ${a.startTime}`);
+    const bDate = new Date(`${b.selectedDate} ${b.startTime}`);
+    return aDate.getTime() - bDate.getTime();
+  })
+  // Take latest 5
+  .slice(0, 5)
+  .map((meeting) => {
+    let color = "bg-blue-100 text-blue-800"; // Default color
 
-        setTodayMeetings(todayMeetings);
+    if (meeting.meetingStatus === "Scheduled") {
+      color = "bg-amber-100 text-amber-800";
+    } else if (meeting.meetingStatus === "Reschedule") {
+      color = "bg-green-100 text-green-800";
+    }
+
+    return {
+      time: meeting.startTime,
+      title: meeting.meetingName,
+      type: meeting.meetingStatus.toLowerCase(),
+      color,
+    };
+  });
+
+setTodayMeetings(upcomingMeetings);
+
       } catch (error) {
         console.error("🚨 Error fetching meetings:", error);
       }
@@ -413,7 +428,7 @@ export default function Dashboard() {
         return;
       }
       const response = await axios.get(
-        "https://api.alfurqanapp.com/applicants",
+        "https://api.blackstoneinfomaticstech.com/applicants",
         {
           headers: {
             "Content-Type": "application/json",

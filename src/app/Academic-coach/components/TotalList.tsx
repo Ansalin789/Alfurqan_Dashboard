@@ -45,7 +45,7 @@ const TotalList = () => {
 
       try {
         const response = await axios.get(
-          `https://api.alfurqanapp.com/dashboard/widgets?academicCoachId=${id}`,{
+          `https://api.blackstoneinfomaticstech.com/dashboard/widgets?academicCoachId=${id}`,{
             headers:{
               "Authorization" : `Bearer ${token}`
             },

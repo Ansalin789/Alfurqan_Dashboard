@@ -14,7 +14,7 @@ const HomePage = () => {
 
   const createPaymentIntent = async () => {
    
-    const response = await fetch(`https://api.alfurqanapp.com/create-payment-intent`, {
+    const response = await fetch(`https://api.blackstoneinfomaticstech.com/create-payment-intent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

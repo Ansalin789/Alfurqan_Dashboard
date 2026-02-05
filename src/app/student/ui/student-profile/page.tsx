@@ -150,7 +150,7 @@ const StudentProfile = () => {
       }
   
       await axios.put(
-        `https://api.alfurqanapp.com/studentProfile/${studentId}`,
+        `https://api.blackstoneinfomaticstech.com/studentProfile/${studentId}`,
         updateData,
         {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
@@ -202,7 +202,7 @@ const StudentProfile = () => {
           }
           const studentId = localStorage.getItem("StudentPortalId");
           const response = await axios.get<ApiResponse>(
-            "https://api.alfurqanapp.com/alstudents",
+            "https://api.blackstoneinfomaticstech.com/alstudents",
             {
               headers: {
                 "Content-Type": "application/json",
@@ -271,7 +271,7 @@ const StudentProfile = () => {
           return;
         }
         const response = await axios.get<StudentDashboardCounts>(
-          "https://api.alfurqanapp.com/dashboard/student/counts",
+          "https://api.blackstoneinfomaticstech.com/dashboard/student/counts",
           {
             params: { studentId },
             headers: {

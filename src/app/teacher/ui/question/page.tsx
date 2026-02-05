@@ -99,7 +99,7 @@ export default function Page() {
       if(!assigmnetId) return;
       try {
         const res = await axios.get<Assignment>(
-          `https://api.alfurqanapp.com/assignments/${assigmnetId}`,
+          `https://api.blackstoneinfomaticstech.com/assignments/${assigmnetId}`,
           {
             headers: {
               "Content-Type": "application/json",

@@ -58,7 +58,7 @@ const NextScheduledClass = () => {
         return;
       }
       const response = await axios.get(
-        "https://api.alfurqanapp.com/classShedule/teacher",
+        "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
         {
           params: { teacherId },
           headers: {
@@ -67,7 +67,7 @@ const NextScheduledClass = () => {
         }
       );
       const now = new Date();
-      const upcoming = (response.data.classSchedule || [])
+      const upcoming = (response.data.classScheduleList || [])
         .map((item: ClassData) => {
           const startDate = new Date(item.startDate);
           const [startHour, startMin] = item.startTime[0]
@@ -162,7 +162,7 @@ const NextScheduledClass = () => {
 
         try {
           await axios.post(
-            "https://api.alfurqanapp.com/classSession/triggerEnd",
+            "https://api.blackstoneinfomaticstech.com/classSession/triggerEnd",
             { sessionId: classData._id },
             {
               headers: {

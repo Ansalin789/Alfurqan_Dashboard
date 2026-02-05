@@ -17,7 +17,7 @@ const TeachingActivity: React.FC = () => {
           return;
         }
 
-        const response = await axios.get('https://api.alfurqanapp.com/classShedule', {
+        const response = await axios.get('https://api.blackstoneinfomaticstech.com/classShedule', {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,

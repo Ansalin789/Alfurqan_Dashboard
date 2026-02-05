@@ -41,15 +41,22 @@ const SchedulePage = () => {
       console.error("❌ AcademicCoachAuthToken not found");
       return;
     }
-    fetch(`https://api.alfurqanapp.com/meetingSchedulelist`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+  const acId = typeof window !== "undefined" ? localStorage.getItem("AcademicCoachPortalId") : null;   
+
+         const params = {
+    academicCoachId: acId,
+}; 
+ fetch(`
+https://api.blackstoneinfomaticstech.com/meetingSchedulelist?academicCoachId=${params.academicCoachId}`, {
+  method: "GET",
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+})
       .then((response) => response.json())
       .then((data) => {
         console.log("dataaa", data);
-        const mappedEvents = data.academicCoach.map((item: any) => ({
+        const mappedAcademicEvents = data.academicCoach.map((item: any) => ({
           id: item._id,
           title: item.subject,
           start: item.scheduledFrom,
@@ -59,7 +66,35 @@ const SchedulePage = () => {
           studentEmail: item.student.email,
           date: moment(item.scheduledStartDate).format("YYYY-MM-DD"),
         }));
+
+          const addSupervisorEvents = data.meetingList.map((item: any) => ({
+          id: item._id,
+          title: item.meetingName,
+          start: item.startTime,
+          end: item.endTime,
+          description: item.description,
+          studentName: item.participants.participantName,
+          studentEmail: item.participants.participantEmail,
+          date: moment(item.selectedDate).format("YYYY-MM-DD"),
+        }));
+
+          const adminEvents = data.adminMeetingList.map((item: any) => ({
+          id: item._id,
+          title: item.meetingName,
+          start: item.startTime,
+          end: item.endTime,
+          description: item.description,
+          studentName: item.admin.adminName,
+          studentEmail: item.admin.adminEmail,
+          date: moment(item.selectedDate).format("YYYY-MM-DD"),
+        }));
+         const mappedEvents = [
+    ...mappedAcademicEvents,
+    ...addSupervisorEvents,
+    ...adminEvents,
+  ];
         setEvents(mappedEvents);
+        console.log("Fetched Events: ", mappedEvents);
       })
       .catch((error) => console.error("Error fetching data: ", error));
   }, []);

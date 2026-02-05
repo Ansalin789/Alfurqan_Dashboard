@@ -131,7 +131,7 @@ const SchedulePage = () => {
       if (!token || !selectedClassId) return;
       try {
         const res = await fetch(
-          `https://api.alfurqanapp.com/classShedule/${selectedClassId}`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/${selectedClassId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!res.ok) return;
@@ -167,7 +167,7 @@ const SchedulePage = () => {
 
       try {
         const res = await fetch(
-          `https://api.alfurqanapp.com/classShedule/students?studentId=${studentId}`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -220,7 +220,7 @@ const SchedulePage = () => {
     try {
       const adjustedPosition =
         position === "Islamic Studies" ? "Islamic" : position;
-      const url = `https://api.alfurqanapp.com/teacher/availabletime?scheduleDate=${formattedDate}&position=${encodeURIComponent(
+      const url = `https://api.blackstoneinfomaticstech.com/teacher/availabletime?scheduleDate=${formattedDate}&position=${encodeURIComponent(
         adjustedPosition + " Teacher"
       )}`;
 
@@ -329,7 +329,7 @@ const SchedulePage = () => {
 
     try {
       const existingRes = await fetch(
-        `https://api.alfurqanapp.com/classShedule/${selectedClassId}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/${selectedClassId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -394,7 +394,7 @@ const SchedulePage = () => {
       };
 
       const res = await fetch(
-        `https://api.alfurqanapp.com/classShedule/${selectedClassId}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/${selectedClassId}`,
         {
           method: "PUT",
           headers: {
@@ -419,7 +419,7 @@ const SchedulePage = () => {
         console.log("✅ Class rescheduled successfully.");
         try {
           const refreshRes = await fetch(
-            `https://api.alfurqanapp.com/classShedule/students?studentId=${studentId}`,
+            `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,

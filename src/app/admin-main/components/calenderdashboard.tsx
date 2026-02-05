@@ -54,7 +54,7 @@ const Academic: React.FC = () => {
 
   const fetchMeetings = async (token: string) => {
     try {
-      const response = await fetch("https://api.alfurqanapp.com/allAdminMeeting", {
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/allAdminMeeting", {
         method: "GET",
         headers: {
           'Content-Type': 'application/json',

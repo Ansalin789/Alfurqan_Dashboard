@@ -32,7 +32,7 @@ const Academic: React.FC = () => {
     return;
   }
 
-    fetch(`https://api.alfurqanapp.com/meetingSchedulelist`,{
+    fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist`,{
       headers:{
         "Authorization": `Bearer ${token}`,
       }

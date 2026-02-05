@@ -78,7 +78,7 @@ export default function AdminHeader({
       const token = localStorage.getItem("AdminAuthToken");
       if (!token) return;
       await axios.put(
-        `https://api.alfurqanapp.com/notification/${notificationId}`,
+        `https://api.blackstoneinfomaticstech.com/notification/${notificationId}`,
         {
           isRead: true,
           notificationStatus: "Seen",
@@ -135,7 +135,7 @@ export default function AdminHeader({
       if (!userId || !token) return;
       try {
         const { data } = await axios.get(
-          `https://api.alfurqanapp.com/notification/getlist?receiverId=${userId}`,
+          `https://api.blackstoneinfomaticstech.com/notification/getlist?receiverId=${userId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -152,7 +152,7 @@ export default function AdminHeader({
   }, [userId]);
 
 useEffect(() => {
-  const socket = io("https://api.alfurqanapp.com");
+  const socket = io("https://api.blackstoneinfomaticstech.com");
 
   socket.on("notification", (data: any) => {
     setNotifications((prev) => [data, ...prev]);

@@ -78,7 +78,7 @@ function LiveClass() {
         }
         console.log(classScheduleid);
         const response = await axios.get<ClassData>(
-          `https://api.alfurqanapp.com/classShedule/${classScheduleid}`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/${classScheduleid}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -152,7 +152,7 @@ function LiveClass() {
         return;
       }
       const response = await axios.post(
-        "https://api.alfurqanapp.com/supervisorfeedback",
+        "https://api.blackstoneinfomaticstech.com/supervisorfeedback",
         feedbackData,
         {
           headers: {

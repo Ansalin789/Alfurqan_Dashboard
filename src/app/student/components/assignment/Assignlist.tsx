@@ -29,7 +29,7 @@ function Assignment() {
         }
 
         const response = await axios.get(
-          `https://api.alfurqanapp.com/assignments/cardcount?studentId=${studentId}`
+          `https://api.blackstoneinfomaticstech.com/assignments/cardcount?studentId=${studentId}`
           , {
             headers: {
               "Authorization": `Bearer ${token}`,

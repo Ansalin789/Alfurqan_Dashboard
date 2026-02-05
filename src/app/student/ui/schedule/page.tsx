@@ -100,7 +100,7 @@ const StudentSchedulePage = () => {
     }
 
     fetch(
-      `https://api.alfurqanapp.com/classShedule/students?studentId=${studentId}`,
+      `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

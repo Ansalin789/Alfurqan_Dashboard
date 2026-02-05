@@ -52,7 +52,7 @@ const NextEvaluationClass = () => {
         }
 
         const response = await axios.get(
-          `https://api.alfurqanapp.com/dashboard/ac/upcomingclass`,
+          `https://api.blackstoneinfomaticstech.com/dashboard/ac/upcomingclass`,
           {
             method: "GET",
             params: { academicCoachId: academicId },

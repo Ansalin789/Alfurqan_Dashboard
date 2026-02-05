@@ -302,7 +302,7 @@ const ManageStudentView = () => {
       }
       const alstudentsId = localStorage.getItem("studentManageID");
       const res = await fetch(
-        `https://api.alfurqanapp.com/alstudents/${alstudentsId}`,
+        `https://api.blackstoneinfomaticstech.com/alstudents/${alstudentsId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -323,7 +323,7 @@ useEffect(() => {
   const fetchStudentStats = async () => {
     try {
       const res = await fetch(
-        `https://api.alfurqanapp.com/studentattendanceperformance?studentId=${alstudentsId}`,
+        `https://api.blackstoneinfomaticstech.com/studentattendanceperformance?studentId=${alstudentsId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,  
@@ -369,7 +369,7 @@ useEffect(() => {
 
       try {
         const res = await fetch(
-          `https://api.alfurqanapp.com/classShedule/students?studentId=${studentId}`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

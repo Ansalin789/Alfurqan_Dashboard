@@ -177,7 +177,7 @@ const StudentList = () => {
           console.error("Missing token or teacher ID");
           return;
         }
-        const res = await fetch(`https://api.alfurqanapp.com/assignments/student?studentId=${studentId}`,
+        const res = await fetch(`https://api.blackstoneinfomaticstech.com/assignments/student?studentId=${studentId}`,
           {
             headers: {
               "Authorization": `Bearer ${token}`,

@@ -51,7 +51,7 @@ const UpcomingClasses: React.FC = () => {
         const academicId = localStorage.getItem("AcademicCoachPortalId");
 
         const response = await axios.get(
-          `https://api.alfurqanapp.com/dashboard/ac/upcomingclass`,
+          `https://api.blackstoneinfomaticstech.com/dashboard/ac/upcomingclass`,
           {
             params: { academicCoachId: academicId },
             headers: {

@@ -74,7 +74,7 @@ const Growth: React.FC = () => {
     const fetchData = async () => {
       try {
         const res = await axios.get<APIResponse>(
-          `https://api.alfurqanapp.com/alstudents/studentslevel?studentId=${studentId}`
+          `https://api.blackstoneinfomaticstech.com/alstudents/studentslevel?studentId=${studentId}`
         );
         const data = res.data.studentCountByLevel;
 

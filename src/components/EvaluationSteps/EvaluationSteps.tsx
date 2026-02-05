@@ -228,7 +228,7 @@ const Step2: React.FC<{
           return;
         }
         const response = await fetch(
-          `https://api.alfurqanapp.com/studentlist/${studentId}`,
+          `https://api.blackstoneinfomaticstech.com/studentlist/${studentId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -2337,7 +2337,7 @@ const Step9 = ({
         console.error("❌ AdminAuthToken not found");
         return;
       }
-      const response = await fetch(`https://api.alfurqanapp.com/evaluation`, {
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

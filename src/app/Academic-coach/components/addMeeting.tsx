@@ -91,7 +91,7 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
           typeof window !== "undefined"
             ? localStorage.getItem("AcademicCoachAuthToken")
             : null;
-        const url = `https://api.alfurqanapp.com/alstudents`;
+        const url = `https://api.blackstoneinfomaticstech.com/alstudents`;
 
         const response = await axios.get(url, {
           headers: {
@@ -116,7 +116,7 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
             ? localStorage.getItem("AcademicCoachAuthToken")
             : null;
         if (!token) return;
-        const url = `https://api.alfurqanapp.com/users`;
+        const url = `https://api.blackstoneinfomaticstech.com/users`;
         const response = await axios.get(url, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -256,7 +256,7 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
           return;
         }
     
-        const response = await axios.post("https://api.alfurqanapp.com/addMeeting", formattedPayload, {
+        const response = await axios.post("https://api.blackstoneinfomaticstech.com/addMeeting", formattedPayload, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

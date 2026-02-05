@@ -45,7 +45,7 @@ export default function AddMeeting({ onClose }: Props) {
           typeof window !== "undefined"
             ? localStorage.getItem("SupervisorAuthToken")
             : null;
-        const url = `https://api.alfurqanapp.com/teacher`;
+        const url = `https://api.blackstoneinfomaticstech.com/teacher`;
 
         const params: Record<string, string> = {
           supervisorId: Id ?? "",
@@ -104,7 +104,6 @@ export default function AddMeeting({ onClose }: Props) {
       participantName: teacher.teacherName,
       participantEmail: teacher.teacherEmail,
       role: "teacher",
-      attendee: "absent",
     }));
 
     const requestData = {
@@ -117,7 +116,7 @@ export default function AddMeeting({ onClose }: Props) {
       organizer: {
         organizerId: localStorage.getItem("SupervisorPortalId"),
         organizerName: localStorage.getItem("SupervisorPortalName"),
-        organizerEmail: "arthi.blackstoneinfomatics@gmail.com",
+        organizerEmail: localStorage.getItem("SupervisorPortalEmail"),
         role: "supervisor",
       },
       participants,
@@ -136,7 +135,7 @@ export default function AddMeeting({ onClose }: Props) {
       }
 
       const response = await axios.post(
-        "https://api.alfurqanapp.com/addMeeting",
+        "https://api.blackstoneinfomaticstech.com/addMeeting",
         requestData,
         {
           headers: {

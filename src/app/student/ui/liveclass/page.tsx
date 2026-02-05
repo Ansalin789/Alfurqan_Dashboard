@@ -74,7 +74,7 @@ function LiveClass() {
         }
 
         const response = await axios.get(
-          `https://api.alfurqanapp.com/classShedule/${id}`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/${id}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -131,7 +131,7 @@ function LiveClass() {
       });
 
       navigator.sendBeacon(
-        `https://api.alfurqanapp.com/classShedule/attendanceupdate/${id}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/attendanceupdate/${id}`,
         blob
       );
     };
@@ -155,7 +155,7 @@ function LiveClass() {
         return;
       }
       const res = await axios.put(
-        `https://api.alfurqanapp.com/classShedule/attendanceupdate/${id}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/attendanceupdate/${id}`,
         { student: data },
         {
           headers: {
@@ -239,7 +239,7 @@ function LiveClass() {
         return;
       }
       const response = await axios.post(
-        "https://api.alfurqanapp.com/feedback",
+        "https://api.blackstoneinfomaticstech.com/feedback",
         feedbackData,
         {
           headers: {

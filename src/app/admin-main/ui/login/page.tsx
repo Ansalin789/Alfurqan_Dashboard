@@ -132,7 +132,7 @@ const SignIn: React.FC = () => {
   }, [error]);
 
   const signIn = async (username: string, password: string) => {
-    return axios.post("https://api.alfurqanapp.com/signin", {
+    return axios.post("https://api.blackstoneinfomaticstech.com/signin", {
       username,
       password,
     });
@@ -141,7 +141,7 @@ const SignIn: React.FC = () => {
   const fetchrolebasedaccesscontrol = async (id: string, token: string, role?: string) => {
     try {
       const response = await axios.get<AccessApiResponse>(
-        `https://api.alfurqanapp.com/update-access/${id}`,
+        `https://api.blackstoneinfomaticstech.com/update-access/${id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -256,7 +256,7 @@ const SignIn: React.FC = () => {
     const checkEmail = async (email: string) => {
       try {
         const response = await axios.post(
-          `https://api.alfurqanapp.com/allcheck-email`,
+          `https://api.blackstoneinfomaticstech.com/allcheck-email`,
           { email }
         );
 

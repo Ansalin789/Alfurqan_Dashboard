@@ -88,7 +88,7 @@ const AddTrailStudentModal = ({
     console.error("❌ AdminAuthToken not found");
     return;
   }
-      const response = await fetch(`https://api.alfurqanapp.com/student`, {
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/student`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -28,7 +28,7 @@ export default function TrialRequests() {
 
   const fetchData = async (token: string) => {
     try {
-      const response = await fetch("https://api.alfurqanapp.com/dashboard/admin/totaltrialrequest",{
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/dashboard/admin/totaltrialrequest",{
         method: "GET",
         headers: {
           'Content-Type': 'application/json',

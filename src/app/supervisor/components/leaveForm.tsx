@@ -54,7 +54,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
           : null;
       axios
         .get(
-          `https://api.alfurqanapp.com/leaverequest?employeeId=${Id}`,
+          `https://api.blackstoneinfomaticstech.com/leaverequest?employeeId=${Id}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -112,7 +112,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
           : null;
 
       const response = await axios.post(
-        "https://api.alfurqanapp.com/leaverequest",
+        "https://api.blackstoneinfomaticstech.com/leaverequest",
         form,
         {
           headers: {

@@ -117,7 +117,7 @@ const Popup: React.FC<PopupProps> = ({
         console.error("❌ AdminAuthToken not found");
       }
       const response = await fetch(
-        `https://api.alfurqanapp.com/studentlist`,
+        `https://api.blackstoneinfomaticstech.com/studentlist`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

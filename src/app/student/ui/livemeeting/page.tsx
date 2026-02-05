@@ -79,7 +79,7 @@ const LiveMeeting = () => {
         }
 
         const response = await axios.get(
-          `https://api.alfurqanapp.com/teacherMeeting/${meetingId}`,
+          `https://api.blackstoneinfomaticstech.com/teacherMeeting/${meetingId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -189,7 +189,7 @@ const LiveMeeting = () => {
     try {
       const token = localStorage.getItem("StudentAuthToken");
       await axios.put(
-        `https://api.alfurqanapp.com/updateTeacherMeeting/${meetingId}`,
+        `https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${meetingId}`,
         payload,
         {
           headers: {

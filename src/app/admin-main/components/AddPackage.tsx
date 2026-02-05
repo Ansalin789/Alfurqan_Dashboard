@@ -97,7 +97,7 @@ export default function AddPackage({ onClose }: { onClose: () => void }) {
       console.log("Using token from login:", token.substring(0, 20) + "...");
       console.log("Payload being sent:", payload);
 
-      const response = await fetch("https://api.alfurqanapp.com/package", {
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/package", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

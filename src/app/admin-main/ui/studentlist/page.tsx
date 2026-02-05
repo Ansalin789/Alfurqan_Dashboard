@@ -76,7 +76,7 @@ export default function StudentList() {
   const fetchAndFilterStudent = async (token: string) => {
     try {
       const response = await axios.get(
-        "https://api.alfurqanapp.com/alstudents",
+        "https://api.blackstoneinfomaticstech.com/alstudents",
         {
           headers: {
             "Content-Type": "application/json",
@@ -108,7 +108,7 @@ export default function StudentList() {
     setPaymentError(null);
     try {
       const response = await axios.get(
-        `https://api.alfurqanapp.com/student/paymenthistory?userId=${userId}`,
+        `https://api.blackstoneinfomaticstech.com/student/paymenthistory?userId=${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -97,7 +97,7 @@ const Classes = () => {
         }
 
         const response = await axios.get<ApiResponse>(
-          "https://api.alfurqanapp.com/classShedule/students",
+          "https://api.blackstoneinfomaticstech.com/classShedule/students",
           {
             params: { studentId },
             headers: {

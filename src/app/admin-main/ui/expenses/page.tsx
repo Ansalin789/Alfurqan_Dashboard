@@ -56,7 +56,7 @@ const Expenses = () => {
     }
       const fetchCardCounts = async () => {
         try {
-          const response = await axios.get<ExpenseCardCounts>("https://api.alfurqanapp.com/expenseCardCounts",{
+          const response = await axios.get<ExpenseCardCounts>("https://api.blackstoneinfomaticstech.com/expenseCardCounts",{
             headers: {
               "Content-Type": "application/json",
               "Authorization": `Bearer ${token}`,
@@ -87,7 +87,7 @@ const Expenses = () => {
     // Fetch salary data only if it's empty
     if (salaryData.length === 0) {
       axios
-        .get("https://api.alfurqanapp.com/expense", {
+        .get("https://api.blackstoneinfomaticstech.com/expense", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

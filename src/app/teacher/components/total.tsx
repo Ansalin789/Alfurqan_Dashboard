@@ -48,7 +48,7 @@ const Total = () => {
     if (!teacherId || !token) return
 
     try {
-      const response = await axios.get("https://api.alfurqanapp.com/dashboard/teacher/counts", {
+      const response = await axios.get("https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts", {
         params: { teacherId },
         headers: {
           Authorization: `Bearer ${token}`,

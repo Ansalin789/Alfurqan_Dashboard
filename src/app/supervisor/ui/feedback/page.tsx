@@ -190,8 +190,8 @@ const resetFilters = () => {
 
         // 🔹 UPDATED: Send courseId or empty
         const url = selectedCourse 
-          ? `https://api.alfurqanapp.com/allfeedback?course=${selectedCourse}`
-          : "https://api.alfurqanapp.com/allfeedback";
+          ? `https://api.blackstoneinfomaticstech.com/allfeedback?course=${selectedCourse}`
+          : "https://api.blackstoneinfomaticstech.com/allfeedback";
 
         const response = await axios.get(url, {
           headers: {

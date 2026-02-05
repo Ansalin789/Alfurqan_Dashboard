@@ -56,7 +56,7 @@ const Teacherscard: React.FC = () => {
       try {
         const token = localStorage.getItem("AcademicCoachAuthToken");
 
-        const res = await fetch(`https://api.alfurqanapp.com/dashboard/ac/teachersattendance`,
+        const res = await fetch(`https://api.blackstoneinfomaticstech.com/dashboard/ac/teachersattendance`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

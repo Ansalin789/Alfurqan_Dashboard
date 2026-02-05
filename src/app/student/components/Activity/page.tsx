@@ -47,7 +47,7 @@ const TeachingActivity = () => {
         }
 
         const response = await axios.get(
-          `https://api.alfurqanapp.com/classShedule/activity`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/activity`,
           {
             params: { studentId },
             headers:{

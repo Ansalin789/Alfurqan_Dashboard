@@ -94,7 +94,7 @@ const Page = () => {
   const fetchLevels = async (token: string) => {
     try {
       const response = await fetch(
-        `https://api.alfurqanapp.com/levels/${courseId}`,
+        `https://api.blackstoneinfomaticstech.com/levels/${courseId}`,
         {
           method: "GET",
           headers: {
@@ -177,7 +177,7 @@ const Page = () => {
         return;
       }
       const res = await fetch(
-        `https://api.alfurqanapp.com/levels`,
+        `https://api.blackstoneinfomaticstech.com/levels`,
         {
           method: "POST",
           headers: {
@@ -274,7 +274,7 @@ const Page = () => {
         return;
       }
       const res = await fetch(
-        `https://api.alfurqanapp.com/update-levels`,
+        `https://api.blackstoneinfomaticstech.com/update-levels`,
         {
           method: "PUT",
           headers: {

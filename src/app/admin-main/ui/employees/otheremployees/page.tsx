@@ -428,7 +428,7 @@ const EmployeePage = () => {
 
     try {
       const response = await axios.get<Employee>(
-        `https://api.alfurqanapp.com/otheremp/${_id}`,
+        `https://api.blackstoneinfomaticstech.com/otheremp/${_id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -458,7 +458,7 @@ const EmployeePage = () => {
       const response = await axios.get<
         EmployeeWagesResponse | EmployeeWage[] | EmployeeWage
       >(
-        `https://api.alfurqanapp.com/empwages?employeeId=${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/empwages?employeeId=${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -510,7 +510,7 @@ const EmployeePage = () => {
   const fetchLeaveData = async (userId: string) => {
     try {
       const res = await axios.get(
-        `https://api.alfurqanapp.com/leaverequest?employeeId=${userId}`,
+        `https://api.blackstoneinfomaticstech.com/leaverequest?employeeId=${userId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -532,7 +532,7 @@ const EmployeePage = () => {
   const fetchData = async (employeeId: string) => {
     try {
       const res = await axios.get(
-        `https://api.alfurqanapp.com/shiftschedule/${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/shiftschedule/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -566,7 +566,7 @@ const EmployeePage = () => {
       }
 
       const response = await fetch(
-        `https://api.alfurqanapp.com/shiftschedule?employeeId=${selectedEmpId}`,
+        `https://api.blackstoneinfomaticstech.com/shiftschedule?employeeId=${selectedEmpId}`,
         {
           method: "PUT",
           headers: {
@@ -622,7 +622,7 @@ const EmployeePage = () => {
       }
 
       const res = await fetch(
-        `https://api.alfurqanapp.com/otheremployee/${employee?._id}`,
+        `https://api.blackstoneinfomaticstech.com/otheremployee/${employee?._id}`,
         {
           method: "PUT",
           headers: {

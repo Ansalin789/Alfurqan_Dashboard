@@ -174,7 +174,7 @@ const Page = () => {
   ) => {
     try {
       const response = await axios.get(
-        `https://api.alfurqanapp.com/adminassignment`,
+        `https://api.blackstoneinfomaticstech.com/adminassignment`,
         {
           params: { courseId, levelId },
           headers: {
@@ -341,7 +341,7 @@ const Page = () => {
         console.error("❌ AdminAuthToken not found");
         return;
       }
-      const res = await fetch(`https://api.alfurqanapp.com/adminassignment`, {
+      const res = await fetch(`https://api.blackstoneinfomaticstech.com/adminassignment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

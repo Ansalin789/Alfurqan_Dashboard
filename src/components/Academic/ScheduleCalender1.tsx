@@ -35,7 +35,7 @@ const ScheduleCalender: React.FC = () => {
     console.error("❌ AdminAuthToken not found");
     return;
   }
-    fetch(`https://api.alfurqanapp.com/meetingSchedulelist`,{
+    fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist`,{
       headers:{
         'Authorization': `Bearer ${token}`,
       }

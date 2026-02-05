@@ -52,7 +52,7 @@ const EmployeeCards: React.FC = () => {
       try {
         
         const response = await fetch(
-          `https://api.alfurqanapp.com/users?role=TEACHER`,{
+          `https://api.blackstoneinfomaticstech.com/users?role=TEACHER`,{
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ const EmployeeCards: React.FC = () => {
     console.error("❌ AdminAuthToken not found");
     return;
   }
-      const response = await fetch(`https://api.alfurqanapp.com/users`, {
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

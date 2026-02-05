@@ -52,7 +52,7 @@ const AssignmentList = () => {
           console.error("❌ TeacherAuthToken not found");
           return;
         }
-        const response = await axios.get("https://api.alfurqanapp.com/allAssignment", {
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allAssignment", {
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`,
@@ -227,7 +227,7 @@ const AssignmentList = () => {
         console.error("❌ TeacherAuthToken not found");
         return;
       }
-      const response = await fetch("https://api.alfurqanapp.com/assignments", {
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/assignments", {
         method: "POST",
         body: formData,
         headers: {
@@ -260,7 +260,7 @@ const AssignmentList = () => {
         console.error("❌ TeacherAuthToken not found");
         return;
       }
-      const response = await axios.get(`https://api.alfurqanapp.com/assignments/${selectedAssignmentId}`, {
+      const response = await axios.get(`https://api.blackstoneinfomaticstech.com/assignments/${selectedAssignmentId}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
@@ -311,7 +311,7 @@ const AssignmentList = () => {
       formData.append("answerValidation", data.answerValidation);
       formData.append("studentId", data.studentId);
       console.log(formData);
-      await axios.put(`https://api.alfurqanapp.com/assignments/${selectedAssignmentId}`, formData, {
+      await axios.put(`https://api.blackstoneinfomaticstech.com/assignments/${selectedAssignmentId}`, formData, {
         headers: {
           "Authorization": ` Bearer ${token}`
         }

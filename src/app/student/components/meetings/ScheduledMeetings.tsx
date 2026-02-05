@@ -115,7 +115,7 @@ const ScheduledMeetings = () => {
         if (!token || !teacherId) return;
 
         const response = await axios.get<MeetingApiResponse>(
-          "https://api.alfurqanapp.com/StudentMeetinglist",
+          "https://api.blackstoneinfomaticstech.com/StudentMeetinglist",
           {
             params: { studentId: teacherId },
             headers: {

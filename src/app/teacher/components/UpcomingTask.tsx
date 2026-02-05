@@ -147,7 +147,7 @@ const UpcomingTasks: React.FC = () => {
       }
 
       const response = await axios.get(
-        "https://api.alfurqanapp.com/classShedule/teacher",
+        "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
         {
           params: { teacherId },
           headers: {
@@ -325,12 +325,13 @@ const UpcomingTasks: React.FC = () => {
       setLoading(false);
 
       const upcomingclass = upcoming.filter((cls) => {
-        const classDate = parseDateTime(cls.startDate, cls.startTime?.[0]);
-        if (!classDate) return false;
-        const isToday = classDate.toDateString() === now.toDateString();
-        return isToday;
-      });
-      setClasses(upcomingclass);
+  const classDate = parseDateTime(cls.startDate, cls.startTime?.[0]);
+  if (!classDate) return false;
+  const isToday = classDate.toDateString() === now.toDateString();
+  return isToday;
+});
+setClasses(upcomingclass);
+
       console.log("Class data successfully set to state.");
     } catch (error : any) {
       console.error("Error fetching class data:", error);

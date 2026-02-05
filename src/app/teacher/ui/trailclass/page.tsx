@@ -230,7 +230,7 @@ function LiveClass() {
 
     axios
       .get<TrialClass[]>(
-        `https://api.alfurqanapp.com/teachertrialclass`,
+        `https://api.blackstoneinfomaticstech.com/teachertrialclass`,
         {
           params: { teacherId },
           headers: {
@@ -382,7 +382,7 @@ function LiveClass() {
         }
 
         const response = await fetch(
-          `https://api.alfurqanapp.com/evaluationlist/${selectedTrial?.trialId}`,
+          `https://api.blackstoneinfomaticstech.com/evaluationlist/${selectedTrial?.trialId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -510,7 +510,7 @@ function LiveClass() {
         return;
       }
       const response = await fetch(
-        `https://api.alfurqanapp.com/evaluation/${formData?._id}`,
+        `https://api.blackstoneinfomaticstech.com/evaluation/${formData?._id}`,
         {
           method: "PUT",
           headers: {
@@ -571,7 +571,7 @@ function LiveClass() {
         }
         console.log("teacherid", teacherId);
         const response = await axios.get<ApiResponse>(
-          `https://api.alfurqanapp.com/classShedule/teacher`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/teacher`,
           {
             params: { teacherId },
             headers: {
@@ -656,7 +656,7 @@ function LiveClass() {
           ? localStorage.getItem("TeacherAuthToken")
           : null;
       const response = await axios.put(
-        `https://api.alfurqanapp.com/classShedule/${classData._id}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/${classData._id}`,
         payload,
         {
           headers: {

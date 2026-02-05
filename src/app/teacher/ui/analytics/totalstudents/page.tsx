@@ -82,7 +82,7 @@ const Totalstudents = () => {
             : null;
 
         const response = await axios.get<SimpleStudent[]>(
-          "https://api.alfurqanapp.com/classShedule/teacher/list",
+          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list",
           {
             params: { teacherId },
             headers: {

@@ -114,7 +114,7 @@ export default function LiveClass() {
         const id = params.get("id");
         console.log("teacherid", teacherId);
         const response = await axios.get(
-          `https://api.alfurqanapp.com/classShedule/${id}`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/${id}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -170,7 +170,7 @@ export default function LiveClass() {
         return;
       }
       const res = await axios.put(
-        `https://api.alfurqanapp.com/classShedule/attendanceupdate/${id}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/attendanceupdate/${id}`,
         { teacher: data },
         {
           headers: {
@@ -194,7 +194,7 @@ export default function LiveClass() {
 
     if (classData?.sessionClassType === 'GROUPCLASS') {
       await fetch(
-        `https://api.alfurqanapp.com/groupclassschedule/bulkupdate/${classData.classLink}`,
+        `https://api.blackstoneinfomaticstech.com/groupclassschedule/bulkupdate/${classData.classLink}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -219,7 +219,7 @@ export default function LiveClass() {
 
     if (classData?.sessionClassType === 'GROUPCLASS') {
       res = await fetch(
-        `https://api.alfurqanapp.com/groupclassschedule/bulkupdate/${classData.classLink}`,
+        `https://api.blackstoneinfomaticstech.com/groupclassschedule/bulkupdate/${classData.classLink}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -326,7 +326,7 @@ export default function LiveClass() {
         return;
       }
       const response = await axios.post(
-        "https://api.alfurqanapp.com/teacherfeedback",
+        "https://api.blackstoneinfomaticstech.com/teacherfeedback",
         feedbackData,
         {
           headers: {

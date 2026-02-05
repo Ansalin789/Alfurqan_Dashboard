@@ -111,7 +111,7 @@ export default function SupervisorHeader({
           ? localStorage.getItem("SupervisorPortalId")
           : null;
       const { data } = await axios.get(
-        `https://api.alfurqanapp.com/notification/getlist?receiverId=${userId}`,
+        `https://api.blackstoneinfomaticstech.com/notification/getlist?receiverId=${userId}`,
         {
           method: "GET",
           headers: {
@@ -145,7 +145,7 @@ export default function SupervisorHeader({
       }
 
       await axios.put(
-        `https://api.alfurqanapp.com/notification/${notificationId}`,
+        `https://api.blackstoneinfomaticstech.com/notification/${notificationId}`,
         {
           isRead: true,
           notificationStatus: "Seen",

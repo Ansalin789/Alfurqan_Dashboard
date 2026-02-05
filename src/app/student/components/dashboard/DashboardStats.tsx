@@ -25,7 +25,7 @@ export default function App() {
         }
         const studentId = localStorage.getItem("StudentPortalId");
         const response = await axios.get(
-          "https://api.alfurqanapp.com/dashboard/student/counts",
+          "https://api.blackstoneinfomaticstech.com/dashboard/student/counts",
           {
             params: { studentId },
             headers: {

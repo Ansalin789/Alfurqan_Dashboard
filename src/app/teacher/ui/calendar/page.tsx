@@ -98,7 +98,7 @@ const TeacherSchedulePage = () => {
     }
 
     fetch(
-      `https://api.alfurqanapp.com/classShedule/teacher?teacherId=${teacherId}`,
+      `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${teacherId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

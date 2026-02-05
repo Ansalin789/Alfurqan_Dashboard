@@ -79,7 +79,7 @@ const NextMeetingSchedule = () => {
         }
 
         const res = await axios.get<StudentMeetingApiResponse>(
-          "https://api.alfurqanapp.com/StudentMeetinglist",
+          "https://api.blackstoneinfomaticstech.com/StudentMeetinglist",
           {
             params: { studentId },
             headers: {

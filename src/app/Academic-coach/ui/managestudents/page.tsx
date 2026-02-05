@@ -173,7 +173,7 @@ const ManageStudents = () => {
     academicCoachId: acId,
 };
       const response = await axios.get(
-        `https://api.alfurqanapp.com/alstudents`,
+        `https://api.blackstoneinfomaticstech.com/alstudents`,
         {
           params,
           headers: {

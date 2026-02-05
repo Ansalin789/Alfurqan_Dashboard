@@ -64,7 +64,7 @@ const Page = () => {
   }, []);
   const fetchLevels = async (token: string) => {
     try {
-      const response = await fetch(`https://api.alfurqanapp.com/levels/${courseId}`, {
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/levels/${courseId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

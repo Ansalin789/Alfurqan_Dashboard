@@ -157,7 +157,7 @@ const ManageTeacher: React.FC = () => {
           return;
         }
         const response = await fetch(
-          `https://api.alfurqanapp.com/applicants`,
+          `https://api.blackstoneinfomaticstech.com/applicants`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

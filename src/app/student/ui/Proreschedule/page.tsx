@@ -155,7 +155,7 @@ const TeachersSchedule = () => {
         }
 
         const response = await axios.get(
-          "https://api.alfurqanapp.com/classShedule/students",
+          "https://api.blackstoneinfomaticstech.com/classShedule/students",
           {
             params: { studentId },
             headers: {
@@ -218,7 +218,7 @@ const TeachersSchedule = () => {
     try {
     const adjustedPosition =
      position === "Islamic Studies" ? "Islamic" : position;
-      const url = `https://api.alfurqanapp.com/teacher/availabletime?scheduleDate=${formattedDate}&position=${encodeURIComponent(
+      const url = `https://api.blackstoneinfomaticstech.com/teacher/availabletime?scheduleDate=${formattedDate}&position=${encodeURIComponent(
         adjustedPosition + " Teacher"
       )}`;
 
@@ -332,7 +332,7 @@ const TeachersSchedule = () => {
     try {
       const classId = seacrh.get("classId");
       const existingRes = await fetch(
-        `https://api.alfurqanapp.com/classShedule/${classId}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/${classId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -401,7 +401,7 @@ const TeachersSchedule = () => {
       };
 
       const res = await fetch(
-        `https://api.alfurqanapp.com/classShedule/${classId}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/${classId}`,
         {
           method: "PUT",
           headers: {

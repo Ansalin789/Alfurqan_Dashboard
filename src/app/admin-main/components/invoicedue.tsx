@@ -66,7 +66,7 @@ const InvoicesDueByDays = () => {
 
   const fetchData = async (token: string) => {
     try {
-      const res = await fetch("https://api.alfurqanapp.com/invoiceduebydates", {
+      const res = await fetch("https://api.blackstoneinfomaticstech.com/invoiceduebydates", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

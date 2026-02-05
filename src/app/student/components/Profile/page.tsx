@@ -41,7 +41,7 @@ const Profile = () => {
     return;
   }
           const response = await axios.get<{ invoice: Invoice[] }>(
-            "https://api.alfurqanapp.com/classShedule/totalhours",
+            "https://api.blackstoneinfomaticstech.com/classShedule/totalhours",
             {
               params: { studentId },
               headers: { "Content-Type": "application/json",

@@ -75,7 +75,7 @@ const AdminModuleAccess = () => {
   const fetchEmployeeData = async (token: string) => {
     try {
       const res = await fetch(
-        `https://api.alfurqanapp.com/update-access/${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -170,7 +170,7 @@ const AdminModuleAccess = () => {
           : null;
 
       const response = await axios.put(
-        `https://api.alfurqanapp.com/update-access/${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
         { roleAccess },
         {
           headers: {

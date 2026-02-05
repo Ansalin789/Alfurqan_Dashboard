@@ -92,7 +92,7 @@ useEffect(() => {
 
     try {
       const res = await axios.get<Assignment>(
-        `https://api.alfurqanapp.com/assignments/${assignmentId}`,
+        `https://api.blackstoneinfomaticstech.com/assignments/${assignmentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

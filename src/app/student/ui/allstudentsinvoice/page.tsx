@@ -103,7 +103,7 @@ const Invoice = () => {
           return;
         }
         const response = await axios.get<InvoiceResponse>(
-          "https://api.alfurqanapp.com/studentinvoice",
+          "https://api.blackstoneinfomaticstech.com/studentinvoice",
           {
             headers: {
               "Content-Type": "application/json",
@@ -151,7 +151,7 @@ const Invoice = () => {
 
     try {
       const response = await axios.post(
-        "https://api.alfurqanapp.com/student/create-payment-intent",
+        "https://api.blackstoneinfomaticstech.com/student/create-payment-intent",
         {
           amount: totalprice * 100,
           currency: "usd",

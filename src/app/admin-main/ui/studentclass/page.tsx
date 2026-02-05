@@ -69,7 +69,7 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
           return;
         }
         const res = await fetch(
-          `https://api.alfurqanapp.com/classShedule/students?studentId=${studentId}`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

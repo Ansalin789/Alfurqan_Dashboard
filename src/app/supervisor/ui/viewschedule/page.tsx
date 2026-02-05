@@ -116,7 +116,7 @@ const ViewSchedule = () => {
           return;
         }
         const response = await axios.get<ApiResponse>(
-          "https://api.alfurqanapp.com/classShedule",
+          "https://api.blackstoneinfomaticstech.com/classShedule",
           {
             headers: {
               "Content-Type": "application/json",
@@ -247,7 +247,7 @@ const ViewSchedule = () => {
     if (course) params.course = course; // course name
 
     try {
-      const response = await axios.get("https://api.alfurqanapp.com/classShedule", {
+      const response = await axios.get("https://api.blackstoneinfomaticstech.com/classShedule", {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

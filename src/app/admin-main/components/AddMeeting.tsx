@@ -75,7 +75,7 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
         }
 
         const response = await axios.get(
-          "https://api.alfurqanapp.com/users",
+          "https://api.blackstoneinfomaticstech.com/users",
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -221,8 +221,8 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
       };
 
       const url = meetingToEdit?._id 
-        ? `https://api.alfurqanapp.com/allAdminMeeting/${meetingToEdit._id}`
-        : "https://api.alfurqanapp.com/addadminMeeting";
+        ? `https://api.blackstoneinfomaticstech.com/allAdminMeeting/${meetingToEdit._id}`
+        : "https://api.blackstoneinfomaticstech.com/addadminMeeting";
 
       const method = meetingToEdit?._id ? "PUT" : "POST";
 

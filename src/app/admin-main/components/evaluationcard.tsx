@@ -56,7 +56,7 @@ const TotalRequestChart = () => {
   const fetchData = async (token: string) => {
     try {
       const res = await fetch(
-        "https://api.alfurqanapp.com/totaltrialclass",
+        "https://api.blackstoneinfomaticstech.com/totaltrialclass",
         {
           method: "GET",
           headers: {
@@ -173,7 +173,7 @@ const CountriesCard = () => {
   const fetchData = async (token: string) => {
     try {
       const res = await fetch(
-        "https://api.alfurqanapp.com/countiescount",
+        "https://api.blackstoneinfomaticstech.com/countiescount",
         {
           method: "GET",
           headers: {
@@ -262,7 +262,7 @@ const PreferredTeachersCard = () => {
 
   const fetchData = async (token: string) => {
     const response = await fetch(
-      "https://api.alfurqanapp.com/preferedteacher",
+      "https://api.blackstoneinfomaticstech.com/preferedteacher",
       {
         method: "GET",
         headers: {
@@ -468,7 +468,7 @@ const CoursesChart = () => {
   const fetchCourseData = async (token: string) => {
     try {
       const res = await fetch(
-        "https://api.alfurqanapp.com/studentcourse",
+        "https://api.blackstoneinfomaticstech.com/studentcourse",
         {
           method: "GET",
           headers: {

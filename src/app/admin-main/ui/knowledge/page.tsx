@@ -89,7 +89,7 @@ export default function KnowledgeBase() {
     console.log("📥 Fetching courses...");
     try {
       const response = await fetch(
-        "https://api.alfurqanapp.com/courses",
+        "https://api.blackstoneinfomaticstech.com/courses",
         {
           method: "GET",
           headers: {
@@ -144,7 +144,7 @@ export default function KnowledgeBase() {
 
      
     console.log("file " , resumeData)
-    const res = await fetch(`https://api.alfurqanapp.com/files/view/${resumeData}`, {
+    const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${resumeData}`, {
       method: "GET",
     });
 
@@ -160,7 +160,7 @@ export default function KnowledgeBase() {
    const fetchAndOpenFile = async (fileId: string) => {
   try {
     console.log("file ",fileId)
-    const res = await fetch(`https://api.alfurqanapp.com/files/view/${fileId}`, {
+    const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${fileId}`, {
       method: "GET",
     });
 
@@ -182,7 +182,7 @@ console.log("res", blob.type);
   const fetchKnowledgeBaseList = async (token: string) => {
     try {
       const response = await fetch(
-        "https://api.alfurqanapp.com/knowledgebase/list",
+        "https://api.blackstoneinfomaticstech.com/knowledgebase/list",
         {
           method: "GET",
           headers: {
