@@ -73,7 +73,8 @@ export default function Page() {
   const fetchSchedule = async (token: string) => {
     try {
       const res = await axios.get(
-        `http://localhost:5001/classShedule/teacher?teacherId=${employeeId}`,
+        `
+https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
