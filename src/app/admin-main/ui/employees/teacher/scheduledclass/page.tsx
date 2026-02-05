@@ -652,7 +652,7 @@ https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employ
 
                         {row.students.length > 1 && openRow !== row.id && (
                           <span
-                            className={`px-3 py-1 rounded-full text-[10px] font-semibold ${statusClass(
+                            className={`px-3 py-1 rounded-md text-[10px] font-semibold ${statusClass(
                               row.status
                             )}`}
                           >

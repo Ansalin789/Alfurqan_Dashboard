@@ -50,11 +50,17 @@ interface BaseMeeting {
   updatedDate?: string;
   updatedBy?: string;
   __v?: number;
+
+  // ✅ ADD THESE TWO
+  teacher?: Teacher[];
+  participants?: Teacher[];
+
   supervisor?: {
     supervisorId: string;
     supervisorName: string;
     supervisorEmail: string;
   };
+
   admin?: {
     adminId: string;
     adminName: string;
@@ -62,6 +68,7 @@ interface BaseMeeting {
     adminRole: string;
   };
 }
+
 
 interface Meeting extends BaseMeeting {
   type: "regular";
@@ -107,7 +114,9 @@ const ScheduledClasses = () => {
   const [toDate, setToDate] = useState("");
   const [timing, setTiming] = useState("");
   const [status, setStatus] = useState("");
-
+  const [teachers, setTeachers] = useState<
+    { id: string; name: string; subject: string; email: string }[]
+  >([]);
   // Enhanced type guard functions
   const isGroupedMeeting = (item: AnyMeeting): item is GroupedMeeting => {
     return item.type === "grouped" && "participants" in item;
@@ -131,74 +140,205 @@ const ScheduledClasses = () => {
   };
 
   const getTeacherArray = (teacher: any): Teacher[] => {
-    if (!teacher) return [];
-    if (Array.isArray(teacher)) return teacher;
-    if (typeof teacher === "object" && teacher.teacherName) return [teacher];
+    console.log("getTeacherArray - raw teacher:", teacher);
+
+    if (!teacher) {
+      console.warn("getTeacherArray - teacher is null/undefined");
+      return [];
+    }
+
+    if (Array.isArray(teacher) && teacher.length > 0) {
+      console.log(
+        "getTeacherArray - teacher is non-empty array, length:",
+        teacher.length,
+      );
+      return teacher;
+    }
+
+    if (Array.isArray(teacher) && teacher.length === 0) {
+      console.warn("getTeacherArray - teacher is empty array");
+      return [];
+    }
+
+    if (typeof teacher === "object" && teacher.teacherName) {
+      console.log("getTeacherArray - teacher is single object");
+      return [teacher];
+    }
+
+    console.warn("getTeacherArray - teacher is in unexpected format");
     return [];
   };
 
+
+
   // Group meetings function
   const groupMeetingsByMeetingId = (meetings: Meeting[]): GroupedMeeting[] => {
-    const groupedMap = new Map();
+    console.log("groupMeetingsByMeetingId - input meetings:", meetings);
 
-    meetings.forEach((meeting) => {
-      if (meeting.meetingId?.startsWith("auto-")) {
-        const key = `${meeting.meetingId}-${meeting.meetingName}`;
+    const map = new Map<string, Meeting[]>();
+  
+    meetings.forEach((m) => {
+      console.log(
+        "groupMeetingsByMeetingId - processing meeting:",
+        m.meetingId,
+        "teacher:",
+        m.teacher,
+      );
 
-        if (!groupedMap.has(key)) {
-          groupedMap.set(key, {
-            type: "grouped" as const,
-            meetingId: meeting.meetingId,
-            meetingName: meeting.meetingName,
-            selectedDate: meeting.selectedDate,
-            startTime: meeting.startTime,
-            endTime: meeting.endTime,
-            meetingStatus: meeting.meetingStatus,
-            participants: [],
-            _id: meeting._id,
-            createdDate: meeting.createdDate,
-            description: meeting.description,
-            status: meeting.status,
-            createdBy: meeting.createdBy,
-          });
-        }
+      if (!map.has(m.meetingId)) {
+        map.set(m.meetingId, []);
+      }
+      map.get(m.meetingId)!.push(m);
+    });
+  
+    const grouped: GroupedMeeting[] = [];
+  
+    map.forEach((list, meetingId) => {
+      console.log(
+        "groupMeetingsByMeetingId - meetings for id:",
+        meetingId,
+        "count:",
+        list.length,
+      );
 
-        // Add participants (teachers)
-        if (Array.isArray(meeting.teacher)) {
-          groupedMap.get(key).participants.push(...meeting.teacher);
-        }
+      if (list.length > 1) {
+        const first = list[0];
+  
+        const participants = list.flatMap((m) =>
+          Array.isArray(m.teacher) ? m.teacher : [],
+        );
+
+        console.log(
+          "groupMeetingsByMeetingId - grouped meeting created:",
+          meetingId,
+          "participants length:",
+          participants.length,
+          "participants:",
+          participants,
+        );
+
+        grouped.push({
+          type: "grouped",
+          meetingId,
+          meetingName: first.meetingName,
+          selectedDate: first.selectedDate,
+          startTime: first.startTime,
+          endTime: first.endTime,
+          meetingStatus: first.meetingStatus,
+          _id: first._id,
+          createdDate: first.createdDate,
+          description: first.description,
+          status: first.status,
+          createdBy: first.createdBy,
+
+          // ✅ FIXED
+          participants,
+        });
       }
     });
+  
+    console.log(
+      "groupMeetingsByMeetingId - final grouped meetings:",
+      grouped,
+    );
 
-    return Array.from(groupedMap.values());
+    return grouped;
   };
+  
 
+  const filterMeetingsBySearch = (meetings: any[]) => {
+    if (!searchText.trim()) return meetings;
+
+    const searchLower = searchText.toLowerCase();
+    return meetings.filter((meeting) => {
+      const nameMatch = meeting.meetingName.toLowerCase().includes(searchLower);
+      const dateMatch = new Date(meeting.selectedDate)
+        .toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        })
+        .toLowerCase()
+        .includes(searchLower);
+      const timingMatch = meeting.startTime.toLowerCase().includes(searchLower);
+      const statusMatch = meeting.meetingStatus
+        .toLowerCase()
+        .includes(searchLower);
+
+      return nameMatch || dateMatch || timingMatch || statusMatch;
+    });
+  };
   // Get combined data for display
   const getDataToShow = (): AnyMeeting[] => {
     if (activeTab === "upcoming") {
-      const upcomingGrouped = groupedMeetings.filter(
-        (group) =>
-          group.meetingStatus === "Scheduled" ||
-          group.meetingStatus === "Rescheduled",
-      );
-      return [...upcomingGrouped, ...upcomingClasses];
+      return [
+        ...groupedMeetings.filter(
+          (g) =>
+            g.meetingStatus === "Scheduled" ||
+            g.meetingStatus === "Rescheduled",
+        ),
+        ...upcomingClasses,
+      ];
     } else {
-      const completedGrouped = groupedMeetings.filter(
-        (group) => group.meetingStatus === "Completed",
-      );
-      return [...completedGrouped, ...completedData];
+      return [
+        ...groupedMeetings.filter(
+          (g) => g.meetingStatus === "Completed",
+        ),
+        ...completedData,
+      ];
     }
   };
 
-  const dataToShow = getDataToShow();
+  const dataToShowUnfiltered = getDataToShow();
+  console.log(
+    "getDataToShow - unfiltered data (before search filter):",
+    dataToShowUnfiltered,
+  );
+
+  const dataToShow = filterMeetingsBySearch(dataToShowUnfiltered);
+  console.log("getDataToShow - dataToShow after search filter:", dataToShow);
+
+
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = dataToShow.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(dataToShow.length / itemsPerPage);
 
+  const isAutoMeeting = (item: AnyMeeting) =>
+    item.meetingName?.toLowerCase().includes("auto-scheduled");
+
   const toggleTeacherDropdown = (id: string) => {
-    setOpenTeacherDropdownId((prev) => (prev === id ? null : id));
+    setOpenTeacherDropdownId((prev) => {
+      const next = prev === id ? null : id;
+      console.log("toggleTeacherDropdown - clicked id:", id, "next:", next);
+      return next;
+    });
   };
+
+  const getAttendees = (item: AnyMeeting): Teacher[] => {
+    let attendees: Teacher[] = [];
+
+    if ("participants" in item) {
+      attendees = item.participants || [];
+    } else if ("teacher" in item) {
+      attendees = item.teacher || [];
+    }
+
+    console.log(
+      "getAttendees - item id:",
+      "meetingId",
+      "type:",
+      "participants" in item ? "grouped" : "regular",
+      "attendees length:",
+      attendees.length,
+      "attendees:",
+      attendees,
+    );
+
+    return attendees;
+  };
+
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -214,9 +354,7 @@ const ScheduledClasses = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const [teachers, setTeachers] = useState<
-    { id: string; name: string; subject: string; email: string }[]
-  >([]);
+
 
   useEffect(() => {
     const token =
@@ -261,7 +399,19 @@ const ScheduledClasses = () => {
     const socket = getSocket(id ?? "");
     const handleList = (data: { data: Meeting }) => {
       console.log("📩 Received WebSocket Data:", data);
-      setUpcomingClasses((prev) => [...prev, data.data]);
+      setUpcomingClasses((prev) => {
+        const newMeeting = { ...data.data, type: "regular" as const };
+        const updated = [...prev, newMeeting];
+
+        const grouped = groupMeetingsByMeetingId(updated);
+        setGroupedMeetings(grouped);
+
+        const groupedIds = grouped.map((g) => g.meetingId);
+
+        return updated.filter(
+          (m) => !groupedIds.includes(m.meetingId),
+        );
+      });
     };
     socket.on("addmeeting", handleList);
     return () => {
@@ -280,6 +430,8 @@ const ScheduledClasses = () => {
       }
 
       try {
+        console.log("fetchMeetings - starting fetch");
+
         const response = await axios.get(
           `https://api.blackstoneinfomaticstech.com/allMeetings?supervisorId=${supervisorId}`,
           {
@@ -289,41 +441,96 @@ const ScheduledClasses = () => {
           },
         );
 
+        console.log("fetchMeetings - raw API meetings:", response.data.meetings);
+
         const allMeetings: Meeting[] = response.data.meetings.map(
-          (meeting: any) => ({
-            ...meeting,
-            type: "regular" as const,
-            // Ensure teacher is always a properly formatted array
-            teacher: Array.isArray(meeting.teacher)
-              ? meeting.teacher.filter((t: any) => t && typeof t === "object")
-              : meeting.teacher && typeof meeting.teacher === "object"
-                ? [meeting.teacher]
-                : [],
-          }),
+          (meeting: any, idx: number) => {
+            let teachers: Teacher[] = [];
+
+            if (Array.isArray(meeting.teacher)) {
+              console.log(
+                "fetchMeetings - meeting index",
+                idx,
+                "has teacher array, length:",
+                meeting.teacher.length,
+              );
+              teachers = meeting.teacher;
+            } else if (meeting.teacher) {
+              console.log(
+                "fetchMeetings - meeting index",
+                idx,
+                "has single teacher object",
+                meeting.teacher,
+              );
+              teachers = [meeting.teacher];
+            } else {
+              console.warn(
+                "fetchMeetings - meeting index",
+                idx,
+                "has NO teacher field",
+              );
+            }
+
+            const normalized = {
+              ...meeting,
+              type: "regular" as const,
+              teacher: teachers,
+            };
+
+            console.log(
+              "fetchMeetings - normalized meeting:",
+              normalized.meetingId,
+              "teachers length:",
+              teachers.length,
+              "teachers:",
+              teachers,
+            );
+
+            return normalized;
+          },
         );
 
-        // Group auto-scheduled meetings
+        console.log("fetchMeetings - allMeetings normalized:", allMeetings);
+
+        // Group / single
         const grouped = groupMeetingsByMeetingId(allMeetings);
+        console.log("fetchMeetings - grouped meetings:", grouped);
         setGroupedMeetings(grouped);
 
-        // Filter non-auto meetings
-        const nonAutoMeetings = allMeetings.filter(
-          (meeting) => !meeting.meetingId?.startsWith("auto-"),
+        const groupedIds = grouped.map((g) => g.meetingId);
+        console.log("fetchMeetings - groupedIds:", groupedIds);
+
+        const singleMeetings = allMeetings.filter(
+          (m) => !groupedIds.includes(m.meetingId),
+        );
+        console.log(
+          "fetchMeetings - single (non-grouped) meetings:",
+          singleMeetings,
         );
 
-        const upcomingMeetings = nonAutoMeetings.filter((meeting) => {
-          const statusOk =
-            meeting.meetingStatus === "Scheduled" ||
-            meeting.meetingStatus === "Rescheduled";
-          return statusOk;
-        });
+        // ✅ Upcoming
+        const upcomingMeetings = singleMeetings.filter(
+          (m) =>
+            m.meetingStatus === "Scheduled" ||
+            m.meetingStatus === "Rescheduled",
+        );
+        console.log(
+          "fetchMeetings - upcomingMeetings:",
+          upcomingMeetings,
+        );
 
-        const completedMeetings = nonAutoMeetings.filter(
-          (meeting) => meeting.meetingStatus === "Completed",
+        // ✅ Completed
+        const completedMeetings = singleMeetings.filter(
+          (m) => m.meetingStatus === "Completed",
+        );
+        console.log(
+          "fetchMeetings - completedMeetings:",
+          completedMeetings,
         );
 
         setUpcomingClasses(upcomingMeetings);
         setCompletedData(completedMeetings);
+
       } catch (error) {
         console.error("Error fetching meetings:", error);
       }
@@ -332,32 +539,12 @@ const ScheduledClasses = () => {
     fetchMeetings();
   }, []);
 
-  const filterMeetingsBySearch = (meetings: any[]) => {
-    if (!searchText.trim()) return meetings;
 
-    const searchLower = searchText.toLowerCase();
-    return meetings.filter((meeting) => {
-      const nameMatch = meeting.meetingName.toLowerCase().includes(searchLower);
-      const dateMatch = new Date(meeting.selectedDate)
-        .toLocaleDateString("en-US", {
-          month: "short",
-          day: "2-digit",
-          year: "numeric",
-        })
-        .toLowerCase()
-        .includes(searchLower);
-      const timingMatch = meeting.startTime.toLowerCase().includes(searchLower);
-      const statusMatch = meeting.meetingStatus
-        .toLowerCase()
-        .includes(searchLower);
-
-      return nameMatch || dateMatch || timingMatch || statusMatch;
-    });
-  };
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentApplicants = currentItems.slice(startIndex, endIndex);
+  const currentApplicants = currentItems;
+
 
   const handleRescheduleSubmit = async () => {
     if (
@@ -399,9 +586,9 @@ const ScheduledClasses = () => {
         prevClasses.map((item) =>
           item._id === selectedItemId
             ? {
-                ...item,
-                meetingStatus: "Rescheduled" as Meeting["meetingStatus"],
-              }
+              ...item,
+              meetingStatus: "Rescheduled" as Meeting["meetingStatus"],
+            }
             : item,
         ),
       );
@@ -471,19 +658,20 @@ const ScheduledClasses = () => {
     startTime: string,
     endTime: string,
   ): boolean => {
-    const now = new Date();
-    const date = new Date(selectedDate);
-    const [startHour, startMin] = startTime.split(":").map(Number);
-    const [endHour, endMin] = endTime.split(":").map(Number);
+    try {
+      const now = new Date();
 
-    const start = new Date(date);
-    start.setHours(startHour, startMin, 0, 0);
+      const dateOnly = selectedDate.split("T")[0]; // YYYY-MM-DD
 
-    const end = new Date(date);
-    end.setHours(endHour, endMin, 0, 0);
+      const start = new Date(`${dateOnly}T${startTime}:00`);
+      const end = new Date(`${dateOnly}T${endTime}:00`);
 
-    return now >= start && now <= end;
+      return now >= start && now <= end;
+    } catch {
+      return false;
+    }
   };
+
 
   const handleFilter = async () => {
     setShowModal(false);
@@ -507,20 +695,41 @@ const ScheduledClasses = () => {
         },
       );
 
-      const meetings: Meeting[] = response.data.meetings || [];
+      const meetings: Meeting[] = (response.data.meetings || []).map(
+        (meeting: any) => ({
+          ...meeting,
+          type: "regular" as const, // ✅ ADD THIS
+          teacher: Array.isArray(meeting.teacher)
+            ? meeting.teacher
+            : meeting.teacher
+              ? [meeting.teacher]
+              : [],
+        }),
+      );
       const grouped = groupMeetingsByMeetingId(meetings);
       setGroupedMeetings(grouped);
 
-      const nonAutoMeetings = meetings.filter(
-        (meeting) => !meeting.meetingId?.startsWith("auto-"),
+      const groupedIds = grouped.map((g) => g.meetingId);
+
+      const singleMeetings = meetings.filter(
+        (m) => !groupedIds.includes(m.meetingId),
       );
 
-      setUpcomingClasses(
-        nonAutoMeetings.filter((m: Meeting) => m.meetingStatus !== "Completed"),
+      // Upcoming
+      const upcoming = singleMeetings.filter(
+        (m) =>
+          m.meetingStatus === "Scheduled" ||
+          m.meetingStatus === "Rescheduled",
       );
-      setCompletedData(
-        nonAutoMeetings.filter((m: Meeting) => m.meetingStatus === "Completed"),
+
+      // Completed
+      const completed = singleMeetings.filter(
+        (m) => m.meetingStatus === "Completed",
       );
+
+      setUpcomingClasses(upcoming);
+      setCompletedData(completed);
+
     } catch (error) {
       console.error("❌ Error fetching filtered meetings:", error);
     }
@@ -534,18 +743,16 @@ const ScheduledClasses = () => {
           <div className="h-full w-full flex flex-col justify-between">
             <div className="p-0 justify-between flex flex-col">
               <div
-                className={`${
-                  isRescheduleModalOpen ? "blur-sm" : ""
-                } transition-all duration-200`}
+                className={`${isRescheduleModalOpen ? "blur-sm" : ""
+                  } transition-all duration-200`}
               >
                 {/* Tabs */}
                 <div className="flex space-x-6 px-4 py-2 rounded-md">
                   <button
-                    className={`relative text-[14px] transition font-medium ${
-                      activeTab === "upcoming"
+                    className={`relative text-[14px] transition font-medium ${activeTab === "upcoming"
                         ? "text-[#576CBC] font-semibold"
                         : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-                    }`}
+                      }`}
                     onClick={() => setActiveTab("upcoming")}
                   >
                     Scheduled (
@@ -561,11 +768,10 @@ const ScheduledClasses = () => {
                   </button>
 
                   <button
-                    className={`relative text-[14px] transition font-medium ${
-                      activeTab === "completed"
+                    className={`relative text-[14px] transition font-medium ${activeTab === "completed"
                         ? "text-[#576CBC] font-semibold"
                         : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-                    }`}
+                      }`}
                     onClick={() => setActiveTab("completed")}
                   >
                     Completed (
@@ -639,16 +845,26 @@ const ScheduledClasses = () => {
                     </thead>
                     <tbody>
                       {currentItems.map((item, index) => {
+                      console.log(
+                        "Render row - index:",
+                        index,
+                        "item:",
+                        item,
+                        "isGroupedMeeting:",
+                        isGroupedMeeting(item),
+                        "isRegularMeeting:",
+                        isRegularMeeting(item),
+                      );
+
                         if (isGroupedMeeting(item)) {
                           // Render Grouped Meeting
                           return (
                             <tr
                               key={item.meetingId}
-                              className={`text-[12px] ${
-                                index % 2 === 0
+                              className={`text-[12px] ${index % 2 === 0
                                   ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
+                                }`}
                             >
                               <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left w-[180px] break-words whitespace-normal">
                                 {item.meetingId}
@@ -658,47 +874,69 @@ const ScheduledClasses = () => {
                               </td>
                               <td className="px-3 py-2 text-left text-[#17243E] dark:text-[#FDFDFD]">
                                 <div className="relative">
-                                  <button
-                                    onClick={() =>
-                                      toggleTeacherDropdown(item.meetingId)
-                                    }
-                                    className="flex items-center gap-2 font-medium hover:text-[#5c5c5c] dark:hover:text-[#5c5c5c]"
-                                  >
-                                    <AiOutlineMenuUnfold />
-                                    View List ({item.participants.length})
-                                  </button>
+                                  {/* Get attendees first */}
+                                  {(() => {
+                                    const attendees = getAttendees(item);
+                                    console.log(
+                                      "Grouped row attendees for meetingId:",
+                                      item.meetingId,
+                                      "length:",
+                                      attendees.length,
+                                      "attendees:",
+                                      attendees,
+                                    );
 
-                                  {openTeacherDropdownId === item.meetingId && (
-                                    <div className="absolute z-10 mt-2 w-72 bg-white rounded shadow-lg p-3 dark:bg-[#343434] border border-gray-200 dark:border-gray-600">
-                                      <div className="max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
-                                        <h4 className="font-semibold text-sm mb-2 text-[#17243E] dark:text-[#FDFDFD]">
-                                          Attendees:
-                                        </h4>
-                                        {item.participants.map(
-                                          (participant, idx) => (
-                                            <div
-                                              key={`${participant.teacherId}-${idx}`}
-                                              className="py-2 text-[#17243E] dark:text-[#FDFDFD] border-b border-gray-100 dark:border-gray-600 last:border-b-0"
-                                            >
-                                              <div className="flex items-center gap-2">
-                                                <IoPersonOutline className="flex-shrink-0" />
-                                                <div>
-                                                  <div className="font-medium">
-                                                    {participant.teacherName ||
-                                                      "Unknown Teacher"}
-                                                  </div>
-                                                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                    {participant.teacherEmail ||
-                                                      "No email"}
+                                    return (
+                                      <div className="relative">
+
+                                        {/* Button */}
+                                        <button
+                                          onClick={() => toggleTeacherDropdown(item.meetingId)}
+                                          className="flex items-center gap-2 font-medium"
+                                        >
+                                          <AiOutlineMenuUnfold />
+                                          View List ({attendees.length})
+                                        </button>
+
+                                        {/* Dropdown */}
+                                        {openTeacherDropdownId === item.meetingId && (
+                                          <div className="absolute z-10 mt-2 w-72 bg-white rounded shadow-lg p-3 dark:bg-[#343434]">
+
+                                            {attendees.length === 0 ? (
+                                              <p className="text-sm text-gray-500 text-center">
+                                                No Attendees
+                                              </p>
+                                            ) : (
+                                              attendees.map((p, idx) => (
+                                                <div
+                                                  key={idx}
+                                                  className="py-2 border-b last:border-0"
+                                                >
+                                                  <div className="flex items-center gap-2">
+                                                    <IoPersonOutline />
+
+                                                    <div>
+                                                      <div className="font-medium">
+                                                        {p.teacherName || "Unknown"}
+                                                      </div>
+
+                                                      <div className="text-xs text-gray-500">
+                                                        {p.teacherEmail || "No email"}
+                                                      </div>
+                                                    </div>
                                                   </div>
                                                 </div>
-                                              </div>
-                                            </div>
-                                          ),
+                                              ))
+                                            )}
+
+                                          </div>
                                         )}
                                       </div>
-                                    </div>
-                                  )}
+                                    );
+                                  })()}
+
+
+
                                 </div>
                               </td>
                               <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
@@ -714,14 +952,33 @@ const ScheduledClasses = () => {
                                 {item.startTime}
                               </td>
                               <td className="px-3 py-2 text-left">
-                                <span
-                                  className={`text-[10px] font-semibold px-3 py-1 rounded-lg ${getMeetingStatusClass(
-                                    item.meetingStatus,
-                                  )}`}
-                                >
-                                  {item.meetingStatus}
-                                </span>
+                                {activeTab === "upcoming" &&
+                                  isStartMeetingNow(
+                                    item.selectedDate,
+                                    item.startTime,
+                                    item.endTime,
+                                  ) ? (
+                                  <button
+                                    className="text-[10px] font-semibold px-[11px] py-1 rounded-lg bg-[#576cbc] text-white border"
+                                    onClick={() =>
+                                      router.push(
+                                        `/supervisor/ui/meetingvideocall?id=${item.meetingId}`,
+                                      )
+                                    }
+                                  >
+                                    Start Meeting
+                                  </button>
+                                ) : (
+                                  <span
+                                    className={`text-[10px] font-semibold px-3 py-1 rounded-lg ${getMeetingStatusClass(
+                                      item.meetingStatus,
+                                    )}`}
+                                  >
+                                    {item.meetingStatus}
+                                  </span>
+                                )}
                               </td>
+
                               <td className="px-3 py-2 text-left w-[80px] break-words whitespace-normal ">
                                 {activeTab === "completed" ? (
                                   <button
@@ -743,11 +1000,10 @@ const ScheduledClasses = () => {
                           return (
                             <tr
                               key={item._id}
-                              className={`text-[12px] ${
-                                index % 2 === 0
+                              className={`text-[12px] ${index % 2 === 0
                                   ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
+                                }`}
                             >
                               <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left w-[180px] break-words whitespace-normal">
                                 {item.meetingId}
@@ -810,52 +1066,36 @@ const ScheduledClasses = () => {
                                 {item.startTime}
                               </td>
                               <td className="px-3 py-2 text-left">
-                                {(() => {
-                                  let content;
-                                  if (activeTab === "upcoming") {
-                                    if (
-                                      isStartMeetingNow(
-                                        item.selectedDate,
-                                        item.startTime,
-                                        item.endTime,
+                                {activeTab === "upcoming" &&
+                                  isStartMeetingNow(
+                                    item.selectedDate,
+                                    item.startTime,
+                                    item.endTime,
+                                  ) ? (
+                                  <button
+                                    className="text-[10px] font-semibold px-[11px] py-1 rounded-lg bg-[#576cbc] text-white border"
+                                    onClick={() =>
+                                      router.push(
+                                        `/supervisor/ui/meetingvideocall?id=${item.meetingId}`,
                                       )
-                                    ) {
-                                      content = (
-                                        <button
-                                          className="text-[10px] font-semibold px-[11px] py-1 rounded-lg bg-[#576cbc] text-white border"
-                                          onClick={() =>
-                                            router.push(
-                                              `/supervisor/ui/meetingvideocall?id=${item.meetingId}`,
-                                            )
-                                          }
-                                        >
-                                          Start Meeting
-                                        </button>
-                                      );
-                                    } else {
-                                      content = (
-                                        <span
-                                          className={`text-[10px] font-semibold px-3 py-1 rounded-lg ${getMeetingStatusClass(
-                                            item.meetingStatus,
-                                          )}`}
-                                        >
-                                          {item.meetingStatus}
-                                        </span>
-                                      );
                                     }
-                                  } else {
-                                    content = (
-                                      <span className="text-[10px] font-semibold px-3 py-1 rounded-lg bg-[#ECFDF3] text-[#377E36] dark:bg-[#2E3D2E] dark:text-[#377E36]">
-                                        {item.meetingStatus}
-                                      </span>
-                                    );
-                                  }
-                                  return content;
-                                })()}
+                                  >
+                                    Start Meeting
+                                  </button>
+                                ) : (
+                                  <span
+                                    className={`text-[10px] font-semibold px-3 py-1 rounded-lg ${getMeetingStatusClass(
+                                      item.meetingStatus,
+                                    )}`}
+                                  >
+                                    {item.meetingStatus}
+                                  </span>
+                                )}
                               </td>
+
                               <td className="px-3 py-2 text-left w-[80px] break-words whitespace-normal">
                                 <div className="relative">
-                                  {activeTab === "upcoming" ? (
+                                  {activeTab === "upcoming" && !isAutoMeeting(item) ? (
                                     // Upcoming tab - show MoreVertical for actions (but NOT eye button)
                                     <button
                                       onClick={() => {
@@ -1073,11 +1313,10 @@ const ScheduledClasses = () => {
                         {teacher.teacherName || "Unknown Teacher"}
                       </span>
                       <span
-                        className={`text-lg ${
-                          teacher.attendee === "present"
+                        className={`text-lg ${teacher.attendee === "present"
                             ? "text-green-600"
                             : "text-red-500"
-                        }`}
+                          }`}
                       >
                         {teacher.attendee === "present" ? "✔" : "✘"}
                       </span>
