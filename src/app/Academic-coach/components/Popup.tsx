@@ -13,13 +13,13 @@ interface PopupProps {
   isOpen: boolean;
   onRequestClose: () => void;
   user: User | null;
-  isEditMode: boolean; 
+  isEditMode: boolean;
 
   onSave: (user: User) => void;
 }
 
 interface User {
-  id:string;
+  id: string;
   studentId: string;
   fname: string;
   lname: string;
@@ -68,7 +68,7 @@ const Popup: React.FC<PopupProps> = ({
 }) => {
   console.log('Popup user prop:', user); // Debug user prop
   const [formData, setFormData] = useState<User>({
-    id:"",
+    id: "",
     studentId: "",
     fname: "",
     lname: "",
@@ -97,7 +97,7 @@ const Popup: React.FC<PopupProps> = ({
         const roleAccess = JSON.parse(roleAccessRaw);
         const modules = roleAccess?.academicmodules || roleAccess;
 
-        setTrailWrite(modules?.trailmanagement?.write === true); // ✅ already present
+        setTrailWrite(modules?.trialmanagement?.write === true); // ✅ already present
       } catch (error) {
         console.error("Invalid AcademicRolePermission JSON", error);
       }
@@ -355,7 +355,7 @@ const Popup: React.FC<PopupProps> = ({
               />
             </div> */}
 
-     
+
 
             {/* Preferred Time */}
             <div>
@@ -386,15 +386,14 @@ const Popup: React.FC<PopupProps> = ({
             </div>
           </div>
 
-     
+
           {/* Start Evaluation Button */}
           <div className="flex justify-end">
             <button
               className={`px-5 py-2 rounded-lg transition-all duration-300 text-sm font-medium 
-                ${
-                  trailWrite
-                    ? "bg-[#576CBC] text-white hover:shadow-lg"
-                    : "bg-[#576CBC] text-white hover:shadow-lg cursor-not-allowed"
+                ${trailWrite
+                  ? "bg-[#576CBC] text-white hover:shadow-lg"
+                  : "bg-[#576CBC] text-white hover:shadow-lg cursor-not-allowed"
                 }`}
               onClick={trailWrite ? handleStart : undefined}
               disabled={!trailWrite}
