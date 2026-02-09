@@ -31,6 +31,10 @@ interface Teacher {
   teacherName: string;
   teacherEmail: string;
   attendee?: string;
+  participantName?: string;
+  name?: string;
+  participantEmail?: string;
+  email?: string;
 }
 interface Attendee {
   id?: string;
@@ -431,52 +435,16 @@ const ScheduledClasses = () => {
 
             // ✅ From teacher (auto + manual)
             if (Array.isArray(meeting.teacher)) {
-              console.log(
-                "fetchMeetings - meeting index",
-                idx,
-                "has teacher array, length:",
-                meeting.teacher.length,
-              );
-
               teachers = teachers.concat(meeting.teacher);
             } else if (meeting.teacher) {
-              console.log(
-                "fetchMeetings - meeting index",
-                idx,
-                "has single teacher object",
-                meeting.teacher,
-              );
-
               teachers.push(meeting.teacher);
             }
 
             // ✅ From participants (manual + auto)
             if (Array.isArray(meeting.participants)) {
-              console.log(
-                "fetchMeetings - meeting index",
-                idx,
-                "has participants array, length:",
-                meeting.participants.length,
-              );
-
               teachers = teachers.concat(meeting.participants);
             } else if (meeting.participants) {
-              console.log(
-                "fetchMeetings - meeting index",
-                idx,
-                "has single participant object",
-                meeting.participants,
-              );
-
               teachers.push(meeting.participants);
-            }
-
-            if (teachers.length === 0) {
-              console.warn(
-                "fetchMeetings - meeting index",
-                idx,
-                "has NO teachers or participants",
-              );
             }
 
             const normalized: Meeting = {
@@ -502,27 +470,63 @@ const ScheduledClasses = () => {
               })),
             };
 
-            console.log(
-              "fetchMeetings - normalized meeting:",
-              normalized.meetingId,
-              "teachers length:",
-              teachers.length,
-              "teachers:",
-              teachers,
-            );
-
             return normalized;
           },
         );
 
-        console.log("fetchMeetings - allMeetings normalized:", allMeetings);
-
         const grouped = groupMeetingsByMeetingId(allMeetings);
 
-        console.log("fetchMeetings - grouped meetings:", grouped);
+        // ✅ HANDLE AUTO-SCHEDULED MEETINGS
+        const autoMeetingsRaw = response.data.groupedAutoMeetings || [];
+        console.log("fetchMeetings - autoMeetingsRaw:", autoMeetingsRaw);
+
+        const autoMeetings: GroupedMeeting[] = autoMeetingsRaw.map((m: any) => {
+          // Parse date from "Auto-Scheduled Meeting on Thu Jan 15 2026"
+          let dateStr = "";
+          try {
+            const parts = m.meetingName.split(" on ");
+            if (parts.length > 1) {
+              dateStr = new Date(parts[1]).toISOString();
+            } else {
+              dateStr = new Date().toISOString(); // Fallback
+            }
+          } catch (e) {
+            console.error("Error parsing date from:", m.meetingName, e);
+            dateStr = new Date().toISOString();
+          }
+
+          return {
+            _id: m.meetingId || `auto-${Math.random()}`, // Auto meetings might not have _id in the same way
+            meetingName: m.meetingName,
+            meetingId: m.meetingId,
+            selectedDate: dateStr,
+            startTime: "10:00", // Default or extract if possible
+            endTime: "10:30",
+            description: "System Generated",
+            meetingStatus: "Scheduled",
+            status: "Active",
+            createdDate: new Date().toISOString(),
+            createdBy: "System",
+            type: "grouped" as const,
+            attendees: (m.participants || []).map((p: any) => ({
+              teacherId: p.teacherId,
+              teacherName: p.teacherName,
+              teacherEmail: p.teacherEmail,
+              attendee: "scheduled", // Default status
+              // Map other fields as needed to match Attendee interface
+            })),
+          };
+        });
+
+        console.log("fetchMeetings - processed autoMeetings:", autoMeetings);
+
+        // ✅ Merge both
+        const finalGrouped = [...grouped, ...autoMeetings];
+
+        console.log("fetchMeetings - final merged meetings:", finalGrouped);
 
         // ✅ single source of truth
-        setGroupedMeetings(grouped);
+        setGroupedMeetings(finalGrouped);
       } catch (error) {
         console.error("Error fetching meetings:", error);
       }
@@ -575,9 +579,9 @@ const ScheduledClasses = () => {
         prevClasses.map((item) =>
           item._id === selectedItemId
             ? {
-                ...item,
-                meetingStatus: "Rescheduled" as Meeting["meetingStatus"],
-              }
+              ...item,
+              meetingStatus: "Rescheduled" as Meeting["meetingStatus"],
+            }
             : item,
         ),
       );
@@ -628,7 +632,16 @@ const ScheduledClasses = () => {
         const meetingForModal: Meeting = {
           ...meeting,
           type: "regular",
-          teacher: meeting.participants || [],
+          teacher: (meeting.attendees || []).map((att) => ({
+            teacherId: att.teacherId || att.id || "",
+            teacherName: att.teacherName || att.name || "",
+            teacherEmail: att.teacherEmail || att.email || "",
+            participantName: att.participantName,
+            name: att.name,
+            participantEmail: att.participantEmail,
+            email: att.email,
+            attendee: att.attendee,
+          })),
         };
         setSelectedMeetingDetails(meetingForModal);
       } else {
@@ -670,7 +683,7 @@ const ScheduledClasses = () => {
     if (status) params["meetingStatus"] = status;
 
     try {
-      const response = await axios.get("http://localhost:5001/allMeetings", {
+      const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -740,18 +753,16 @@ const ScheduledClasses = () => {
           <div className="h-full w-full flex flex-col justify-between">
             <div className="p-0 justify-between flex flex-col">
               <div
-                className={`${
-                  isRescheduleModalOpen ? "blur-sm" : ""
-                } transition-all duration-200`}
+                className={`${isRescheduleModalOpen ? "blur-sm" : ""
+                  } transition-all duration-200`}
               >
                 {/* Tabs */}
                 <div className="flex space-x-6 px-4 py-2 rounded-md">
                   <button
-                    className={`relative text-[14px] transition font-medium ${
-                      activeTab === "upcoming"
-                        ? "text-[#576CBC] font-semibold"
-                        : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-                    }`}
+                    className={`relative text-[14px] transition font-medium ${activeTab === "upcoming"
+                      ? "text-[#576CBC] font-semibold"
+                      : "text-[#0A0A12] dark:text-[#fff] opacity-80"
+                      }`}
                     onClick={() => setActiveTab("upcoming")}
                   >
                     Scheduled (
@@ -767,11 +778,10 @@ const ScheduledClasses = () => {
                   </button>
 
                   <button
-                    className={`relative text-[14px] transition font-medium ${
-                      activeTab === "completed"
-                        ? "text-[#576CBC] font-semibold"
-                        : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-                    }`}
+                    className={`relative text-[14px] transition font-medium ${activeTab === "completed"
+                      ? "text-[#576CBC] font-semibold"
+                      : "text-[#0A0A12] dark:text-[#fff] opacity-80"
+                      }`}
                     onClick={() => setActiveTab("completed")}
                   >
                     Completed (
@@ -861,11 +871,10 @@ const ScheduledClasses = () => {
                           return (
                             <tr
                               key={item.meetingId}
-                              className={`text-[12px] ${
-                                index % 2 === 0
-                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
+                              className={`text-[12px] ${index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                }`}
                             >
                               <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left w-[180px] break-words whitespace-normal">
                                 {item.meetingId}
@@ -905,41 +914,41 @@ const ScheduledClasses = () => {
                                         {/* Dropdown */}
                                         {openTeacherDropdownId ===
                                           item.meetingId && (
-                                          <div className="absolute z-10 mt-2 w-72 bg-white rounded shadow-lg p-3 dark:bg-[#343434]">
-                                            {attendees.length === 0 ? (
-                                              <p className="text-sm text-gray-500 text-center">
-                                                No Attendees
-                                              </p>
-                                            ) : (
-                                              attendees.map((p, idx) => (
-                                                <div
-                                                  key={idx}
-                                                  className="py-2 border-b last:border-0"
-                                                >
-                                                  <div className="flex items-center gap-2">
-                                                    <IoPersonOutline />
+                                            <div className="absolute z-10 mt-2 w-72 bg-white rounded shadow-lg p-3 dark:bg-[#343434]">
+                                              {attendees.length === 0 ? (
+                                                <p className="text-sm text-gray-500 text-center">
+                                                  No Attendees
+                                                </p>
+                                              ) : (
+                                                attendees.map((p, idx) => (
+                                                  <div
+                                                    key={idx}
+                                                    className="py-2 border-b last:border-0"
+                                                  >
+                                                    <div className="flex items-center gap-2">
+                                                      <IoPersonOutline />
 
-                                                    <div>
-                                                      <div className="font-medium">
-                                                        {p.teacherName ||
-                                                          p.participantName ||
-                                                          p.name ||
-                                                          "Unknown"}
-                                                      </div>
+                                                      <div>
+                                                        <div className="font-medium">
+                                                          {p.teacherName ||
+                                                            p.participantName ||
+                                                            p.name ||
+                                                            "Unknown"}
+                                                        </div>
 
-                                                      <div className="text-xs text-gray-500">
-                                                        {p.teacherEmail ||
-                                                          p.participantEmail ||
-                                                          p.email ||
-                                                          "No email"}
+                                                        <div className="text-xs text-gray-500">
+                                                          {p.teacherEmail ||
+                                                            p.participantEmail ||
+                                                            p.email ||
+                                                            "No email"}
+                                                        </div>
                                                       </div>
                                                     </div>
                                                   </div>
-                                                </div>
-                                              ))
-                                            )}
-                                          </div>
-                                        )}
+                                                ))
+                                              )}
+                                            </div>
+                                          )}
                                       </div>
                                     );
                                   })()}
@@ -955,15 +964,15 @@ const ScheduledClasses = () => {
                                   .replace(",", ",")}{" "}
                               </td>
                               <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left w-[80px] break-words whitespace-normal">
-                                {item.startTime}
+                                {item.startTime} - {item.endTime}
                               </td>
                               <td className="px-3 py-2 text-left">
                                 {activeTab === "upcoming" &&
-                                isStartMeetingNow(
-                                  item.selectedDate,
-                                  item.startTime,
-                                  item.endTime,
-                                ) ? (
+                                  isStartMeetingNow(
+                                    item.selectedDate,
+                                    item.startTime,
+                                    item.endTime,
+                                  ) ? (
                                   <button
                                     className="text-[10px] font-semibold px-[11px] py-1 rounded-lg bg-[#576cbc] text-white border"
                                     onClick={() =>
@@ -1006,15 +1015,25 @@ const ScheduledClasses = () => {
                                             prev === item._id ? null : item._id,
                                           );
                                         }}
-                                        className={`p-2 rounded-md ${
-                                          item.meetingStatus === "Rescheduled"
-                                            ? "opacity-40 cursor-not-allowed"
-                                            : "cursor-pointer"
-                                        }`}
+                                        className={`p-2 rounded-md ${item.meetingStatus === "Rescheduled"
+                                          ? "opacity-40 cursor-not-allowed"
+                                          : "cursor-pointer"
+                                          }`}
                                       >
                                         <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
                                       </button>
                                     )}
+
+                                  {activeTab === "completed" && (
+                                    <button
+                                      onClick={() =>
+                                        handleViewDetails(item._id)
+                                      }
+                                      className="p-2 rounded-md"
+                                    >
+                                      <FaEye className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD] cursor-pointer" />
+                                    </button>
+                                  )}
                                 </div>
                               </td>
                             </tr>
@@ -1024,11 +1043,10 @@ const ScheduledClasses = () => {
                           return (
                             <tr
                               key={item._id}
-                              className={`text-[12px] ${
-                                index % 2 === 0
-                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
+                              className={`text-[12px] ${index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                }`}
                             >
                               <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left w-[180px] break-words whitespace-normal">
                                 {item.meetingId}
@@ -1088,15 +1106,15 @@ const ScheduledClasses = () => {
                                   .replace(",", ",")}{" "}
                               </td>
                               <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left w-[80px] break-words whitespace-normal">
-                                {item.startTime}
+                                {item.startTime}{item.endTime}
                               </td>
                               <td className="px-3 py-2 text-left">
                                 {activeTab === "upcoming" &&
-                                isStartMeetingNow(
-                                  item.selectedDate,
-                                  item.startTime,
-                                  item.endTime,
-                                ) ? (
+                                  isStartMeetingNow(
+                                    item.selectedDate,
+                                    item.startTime,
+                                    item.endTime,
+                                  ) ? (
                                   <button
                                     className="text-[10px] font-semibold px-[11px] py-1 rounded-lg bg-[#576cbc] text-white border"
                                     onClick={() =>
@@ -1121,7 +1139,7 @@ const ScheduledClasses = () => {
                               <td className="px-3 py-2 text-left w-[80px] break-words whitespace-normal">
                                 <div className="relative">
                                   {activeTab === "upcoming" &&
-                                  !isAutoMeeting(item) ? (
+                                    !isAutoMeeting(item) ? (
                                     // Upcoming tab - show MoreVertical for actions (but NOT eye button)
                                     <button
                                       onClick={() => {
@@ -1336,14 +1354,16 @@ const ScheduledClasses = () => {
                       className="flex justify-between items-center px-4 py-2"
                     >
                       <span className="text-[#4F46E5]">
-                        {teacher.teacherName || "Unknown Teacher"}
+                        {teacher.teacherName ||
+                          teacher.participantName ||
+                          teacher.name ||
+                          "Unknown Teacher"}
                       </span>
                       <span
-                        className={`text-lg ${
-                          teacher.attendee === "present"
-                            ? "text-green-600"
-                            : "text-red-500"
-                        }`}
+                        className={`text-lg text-center pr-4 ${teacher.attendee === "present"
+                          ? "text-green-600"
+                          : "text-red-500"
+                          }`}
                       >
                         {teacher.attendee === "present" ? "✔" : "✘"}
                       </span>

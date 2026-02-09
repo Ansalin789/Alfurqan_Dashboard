@@ -17,7 +17,20 @@ interface Attendance {
   leaveTime: string;
 }
 
+interface Supervisor {
+  supervisorId: string;
+  supervisorName: string;
+  supervisorEmail: string;
+  supervisorRole: string;
+}
 
+interface Teacher {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+  attendee: string;
+  _id: string;
+}
 
 interface Meeting {
   _id: string;
@@ -86,7 +99,8 @@ export default function Page() {
   const seacrh = useSearchParams();
   const meetingId = seacrh.get("id");
   const [meetingUpdate, setMeetingUpdate] = useState(false);
-  
+  const [meetingMinutes, setMeetingMinutes] = useState<string>("");
+
   useEffect(() => {
     const fetchClassData = async () => {
       try {
@@ -211,7 +225,81 @@ export default function Page() {
     attendanceRef.current = attendance;
   }, [attendance]);
 
-  
+  // Function to handle API update
+  const handleMeetingMinutesUpdate = async () => {
+    console.log("📌 Submit clicked");
+    let duration = "";
+    if (startTime && endTime) {
+      duration = calculateDuration(startTime, endTime);
+    } else {
+      console.warn("Missing start or end time for duration calculation");
+    }
+
+    const normalizedTeachers = Array.isArray(classData?.teacher)
+      ? classData.teacher
+      : [classData?.teacher];
+
+    // ✅ Build payload from LIVE attendance
+const payload = {
+  meetingminutes: meetingMinutes,
+  duration,
+  meetingStatus: "Completed",
+  teacher: attendance.map((a) => ({
+    teacherId: a.studentId,   // real DB id
+    teacherName: a.name,
+    attendee: "present",
+  })),
+};
+
+console.log("Final Payload:", payload);
+
+
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AcademicCoachAuthToken")
+          : null;
+      if (!token) {
+        console.error("❌ AcademicCoachAuthToken not found");
+        return;
+      }
+
+      const response = await fetch(
+        `https://api.blackstoneinfomaticstech.com/meetingminutes/${meetingId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        },
+      );
+      console.log("pay", payload);
+
+      if (!response.ok) {
+        throw new Error("Failed to update meeting minutes");
+      }
+
+      const result = await response.json();
+      console.log("✅ Meeting Minutes Updated:", result);
+
+      setMeetingUpdate(false); // close modal
+    } catch (error) {
+      console.error("❌ Error updating meeting minutes:", error);
+    }
+  };
+  const calculateDuration = (startTime: string, endTime: string): string => {
+    const today = new Date().toDateString(); // use today's date to construct full datetime
+    const start = new Date(`${today} ${startTime}`);
+    const end = new Date(`${today} ${endTime}`);
+    const diffMs = end.getTime() - start.getTime(); // difference in milliseconds
+    if (diffMs < 0) return "Invalid";
+    const diffMins = Math.floor(diffMs / 60000); // convert to minutes
+    const hours = Math.floor(diffMins / 60);
+    const minutes = diffMins % 60;
+    return `${hours}h ${minutes}m`;
+  };
   const getCurrentUser = () => {
     const teacherId = localStorage.getItem("TeacherId");
     const teacherName = localStorage.getItem("TeacherName");
@@ -480,7 +568,88 @@ export default function Page() {
       </div>
 
       {/* Meeting minutes popup  */}
-     
+      {meetingUpdate && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ">
+          <div className="bg-white rounded-xl p-6 w-full max-w-3xl shadow-lg space-y-5 dark:bg-[#252525]">
+            {/* Header */}
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-[#fff]">
+              Update Meeting Minutes
+            </h2>
+
+            {/* Content */}
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Attendees List */}
+              <div className="md:w-1/2 border border-[#343434] rounded-lg p-4 h-72 overflow-y-auto">
+                <h3 className="text-base font-medium text-gray-700 mb-2 dark:text-[#fff]">
+                  Attendees:
+                </h3>
+              <ul className="list-disc list-inside text-sm text-gray-800 space-y-1 dark:text-[#fff]">
+
+  {attendance
+    .filter((a) => a.joined) // only real participants
+    .map((a) => {
+
+      let status: JSX.Element;
+
+      if (a.leaveTime) {
+        status = (
+          <span className="text-gray-600">
+            🚪 Left at {a.leaveTime}
+          </span>
+        );
+      } else {
+        status = (
+          <span className="text-green-600">
+            ✅ Joined at {a.joinTime}
+          </span>
+        );
+      }
+
+      return (
+        <li key={a.id}>
+          <span className="font-medium">{a.name}</span> – {status}
+        </li>
+      );
+    })}
+</ul>
+
+              </div>
+
+              {/* Meeting Minutes Textarea */}
+              <div className="md:w-1/2 border border-[#343434] rounded-lg p-4 h-72 flex flex-col">
+                <label
+                  htmlFor="htmldaad"
+                  className="text-base font-medium text-gray-700 mb-2 dark:text-[#fff]"
+                >
+                  Meeting Minutes
+                </label>
+                <textarea
+                  value={meetingMinutes}
+                  onChange={(e) => setMeetingMinutes(e.target.value)}
+                  className="flex-grow rounded p-2 text-sm resize-none focus:outline-none dark:bg-[#252525] "
+                  placeholder="Enter your notes here..."
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setMeetingUpdate(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleMeetingMinutesUpdate}
+                className="px-4 py-2 bg-[#576CBC] text-white rounded hover:bg-[#43569e] text-sm font-medium"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </BaseLayout1>
   );
 }

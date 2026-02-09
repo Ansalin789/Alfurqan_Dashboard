@@ -415,40 +415,19 @@ export default function Page() {
                         );
 
                         // 🔴 Handle Participant Left
-                        externalApi.addListener(
-                          "participantJoined",
-                          (event) => {
-                            const joinTime = new Date().toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: true,
-                            });
+                          externalApi.addListener("participantLeft", (event) => {
+                          const leaveTime = new Date().toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          });
 
-                            const name = event.displayName || "Guest";
-
-                            setAttendance((prev) => {
-                              // prevent duplicate
-                              const exists = prev.some(
-                                (a) => a.id === event.id,
-                              );
-                              if (exists) return prev;
-
-                              return [
-                                ...prev,
-                                {
-                                  id: event.id,
-                                  studentId: event.id, // use jitsi id
-                                  name: name,
-                                  startTime: null,
-                                  endTime: null,
-                                  joined: true,
-                                  joinTime,
-                                  leaveTime: "",
-                                },
-                              ];
-                            });
-                          },
-                        );
+                          setAttendance((prev) =>
+                            prev.map((a) =>
+                              a.id === event.id ? { ...a, leaveTime } : a,
+                            ),
+                          );
+                        });
 
                         // 🎥 Host/teacher Joined Call
                         externalApi.addListener("videoConferenceJoined", () => {

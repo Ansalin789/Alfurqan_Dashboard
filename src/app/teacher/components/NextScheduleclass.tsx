@@ -46,52 +46,61 @@ const NextScheduledClass = () => {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [totalCountdownSeconds, setTotalCountdownSeconds] = useState(0);
+  const [upcomingClasses, setUpcomingClasses] = useState<ClassData[]>([]);
+  const [recentClass, setRecentClass] = useState<ClassData | null>(null);
+  const nextClass = upcomingClasses[0];
+
+
 
   const fetchClassData = async () => {
     try {
       setLoading(true);
       const teacherId = localStorage.getItem("TeacherPortalId");
       const token = localStorage.getItem("TeacherAuthToken");
-      if (!teacherId || !token) {
-        setClassData(null);
-        setLoading(false);
-        return;
-      }
+      if (!teacherId || !token) return;
+
       const response = await axios.get(
         "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
         {
           params: { teacherId },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      const now = new Date();
-      const upcoming = (response.data.classScheduleList || [])
-        .map((item: ClassData) => {
-          const startDate = new Date(item.startDate);
-          const [startHour, startMin] = item.startTime[0]
-            .split(":")
-            .map(Number);
-          startDate.setHours(startHour, startMin, 0, 0);
-          const endDate = new Date(item.startDate);
-          const [endHour, endMin] = item.endTime[0].split(":").map(Number);
-          endDate.setHours(endHour, endMin, 0, 0);
-          return { ...item, classStart: startDate, classEnd: endDate };
-        })
-        .filter((item: ClassData) => item.classEnd! > now)
-        .sort(
-          (a: ClassData, b: ClassData) =>
-            a.classStart!.getTime() - b.classStart!.getTime()
-        )[0];
 
-      setClassData(upcoming ?? null);
-    } catch (error) {
-      console.error("Failed to fetch scheduled class:", error);
+      const now = new Date();
+
+      const allClasses: ClassData[] = (response.data.classScheduleList || []).map(
+        (item: ClassData) => {
+          const startDate = new Date(item.startDate);
+          const [sh, sm] = item.startTime[0].split(":").map(Number);
+          startDate.setHours(sh, sm, 0, 0);
+
+          const endDate = new Date(item.startDate);
+          const [eh, em] = item.endTime[0].split(":").map(Number);
+          endDate.setHours(eh, em, 0, 0);
+
+          return { ...item, classStart: startDate, classEnd: endDate };
+        }
+      );
+
+      const upcoming = allClasses
+        .filter((c) => c.classEnd! > now)
+        .sort((a, b) => a.classStart!.getTime() - b.classStart!.getTime());
+
+      const past = allClasses
+        .filter((c) => c.classEnd! < now)
+        .sort((a, b) => b.classEnd!.getTime() - a.classEnd!.getTime())[0];
+
+      setUpcomingClasses(upcoming);
+      setRecentClass(past || null);
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
+
+
 
   useEffect(() => {
     fetchClassData();
@@ -141,12 +150,14 @@ const NextScheduledClass = () => {
   }, [classData]);
 
   useEffect(() => {
-    const interval = setInterval(async () => {
-      if (!classData) return;
+    if (!nextClass) return;
 
+    const interval = setInterval(async () => {
       const now = new Date();
-      const start = classData.classStart!;
-      const end = classData.classEnd!;
+      const start = nextClass.classStart;
+      const end = nextClass.classEnd;
+
+      if (!start || !end) return;
 
       if (now >= start && now <= end) {
         setIsClassOngoing(true);
@@ -154,8 +165,8 @@ const NextScheduledClass = () => {
         setIsClassOngoing(false);
       }
 
-      if (now > end && classData.sessionStatus !== "Completed") {
-        console.log(`⏹ Class ${classData._id} ended — marking via evaluation`);
+      if (now > end && nextClass.sessionStatus !== "Completed") {
+        console.log(`⏹ Class ${nextClass._id} ended — marking via evaluation`);
 
         const token = localStorage.getItem("TeacherAuthToken");
         if (!token) return;
@@ -163,40 +174,35 @@ const NextScheduledClass = () => {
         try {
           await axios.post(
             "https://api.blackstoneinfomaticstech.com/classSession/triggerEnd",
-            { sessionId: classData._id },
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
+            { sessionId: nextClass._id },
+            { headers: { Authorization: `Bearer ${token}` } }
           );
 
           console.log("✅ Evaluation marked as completed");
 
-          setClassData(null);
-          setTimeout(() => {
-            fetchClassData();
-          }, 1500);
+          // refresh list
+          setTimeout(fetchClassData, 1500);
         } catch (err) {
           console.error("❌ Failed to mark in evaluation:", err);
         }
       }
-    }, 10000); // every 10 sec
+    }, 10000);
 
     return () => clearInterval(interval);
-  }, [classData]);
+  }, [nextClass]);
+
 
   const handleJoinClass = () => {
-    if (!classData?.classLink) return;
+    if (!nextClass?.classLink) return;
 
-    const isCountdownFinished = timeRemaining <= 0;
-    if (!isCountdownFinished) {
+    if (timeRemaining > 0) {
       setIsPopupVisible(true);
       return;
     }
 
-    window.open(`/teacher/ui/liveclass?id=${classData._id}`, "_blank");
+    window.open(`/teacher/ui/liveclass?id=${nextClass._id}`, "_blank");
   };
+
 
   if (loading)
     return (
@@ -344,6 +350,22 @@ const NextScheduledClass = () => {
           className="text-white text-lg sm:text-xl cursor-pointer"
           onClick={() => setIsPopupVisible(!isPopupVisible)}
         />
+
+
+        {recentClass && (
+          <div className="bg-white rounded-xl shadow p-4 mt-3 text-[#1B1B1B]">
+            <p className="text-sm font-semibold">Last Class</p>
+            <p className="text-xs">
+              {recentClass.sessionClassType === "REGULARCLASS"
+                ? recentClass.student?.studentFirstName
+                : "Group Class"}
+            </p>
+            <p className="text-xs opacity-70">
+              {recentClass.classStart?.toDateString()}
+            </p>
+          </div>
+        )}
+
       </div>
     </div>
   );

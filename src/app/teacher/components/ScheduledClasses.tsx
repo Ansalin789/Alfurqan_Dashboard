@@ -215,13 +215,13 @@ const ScheduledClasses = () => {
           const classStartDateTime =
             trialClass.scheduledStartDate && trialClass.scheduledFrom
               ? (() => {
-                  const date = new Date(trialClass.scheduledStartDate);
-                  const [hours, minutes] = trialClass.scheduledFrom
-                    .split(":")
-                    .map(Number);
-                  date.setHours(hours, minutes, 0, 0);
-                  return date;
-                })()
+                const date = new Date(trialClass.scheduledStartDate);
+                const [hours, minutes] = trialClass.scheduledFrom
+                  .split(":")
+                  .map(Number);
+                date.setHours(hours, minutes, 0, 0);
+                return date;
+              })()
               : null;
 
           const now = new Date();
@@ -245,13 +245,13 @@ const ScheduledClasses = () => {
             endDate: trialClass.scheduledEndDate || "",
             classDay: trialClass.scheduledStartDate
               ? [
-                  new Date(trialClass.scheduledStartDate).toLocaleDateString(
-                    "en-US",
-                    {
-                      weekday: "long",
-                    }
-                  ),
-                ]
+                new Date(trialClass.scheduledStartDate).toLocaleDateString(
+                  "en-US",
+                  {
+                    weekday: "long",
+                  }
+                ),
+              ]
               : [],
             startTime: [trialClass.scheduledFrom || ""],
             endTime: [trialClass.scheduledTo || ""],
@@ -419,9 +419,8 @@ const ScheduledClasses = () => {
 
     const filtered = dataToShow.filter((item) =>
       (item.students || []).some((s: any) => {
-        const fullName = `${s.student?.studentFirstName || ""} ${
-          s.student?.studentLastName || ""
-        }`
+        const fullName = `${s.student?.studentFirstName || ""} ${s.student?.studentLastName || ""
+          }`
           .toLowerCase()
           .trim();
 
@@ -521,11 +520,10 @@ const ScheduledClasses = () => {
           <div className="flex space-x-6 px-4 py-2 rounded-md">
             <button
               onClick={() => setActiveTab("upcoming")}
-              className={`relative text-[15px] transition font-medium ${
-                activeTab === "upcoming"
+              className={`relative text-[15px] transition font-medium ${activeTab === "upcoming"
                   ? "text-[#576CBC] font-semibold"
                   : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-              }`}
+                }`}
             >
               Scheduled ({upcomingClasses.length})
               {activeTab === "upcoming" && (
@@ -534,11 +532,10 @@ const ScheduledClasses = () => {
             </button>
             <button
               onClick={() => setActiveTab("completed")}
-              className={`relative text-[15px] transition font-medium ${
-                activeTab === "completed"
+              className={`relative text-[15px] transition font-medium ${activeTab === "completed"
                   ? "text-[#576CBC] font-semibold"
                   : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-              }`}
+                }`}
             >
               Completed ({completedData.length})
               {activeTab === "completed" && (
@@ -612,10 +609,10 @@ const ScheduledClasses = () => {
                       : null;
                     const formattedDate = dateObj
                       ? dateObj.toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "2-digit",
-                          year: "numeric",
-                        })
+                        month: "short",
+                        day: "2-digit",
+                        year: "numeric",
+                      })
                       : "N/A";
 
                     /* ---------- TIME ---------- */
@@ -629,29 +626,29 @@ const ScheduledClasses = () => {
                       // ✅ GROUP CLASS (students[])
                       Array.isArray(item.students) && item.students.length > 0
                         ? item.students
-                            .map(({ student }) => {
-                              if (!student) return null;
+                          .map(({ student }) => {
+                            if (!student) return null;
 
-                              const first =
-                                student.studentFirstName?.trim() || "";
-                              const last =
-                                student.studentLastName?.trim() || "";
+                            const first =
+                              student.studentFirstName?.trim() || "";
+                            const last =
+                              student.studentLastName?.trim() || "";
 
-                              // avoid duplicate first + last
-                              if (
-                                first &&
-                                last &&
-                                first.toLowerCase() === last.toLowerCase()
-                              ) {
-                                return first;
-                              }
+                            // avoid duplicate first + last
+                            if (
+                              first &&
+                              last &&
+                              first.toLowerCase() === last.toLowerCase()
+                            ) {
+                              return first;
+                            }
 
-                              return `${first} ${last}`.trim() || "Student";
-                            })
-                            .filter(Boolean)
-                            .join(", ")
+                            return `${first} ${last}`.trim() || "Student";
+                          })
+                          .filter(Boolean)
+                          .join(", ")
                         : // ✅ REGULAR CLASS (single student)
-                          "N/A";
+                        "N/A";
 
                     /* ---------- COURSE ---------- */
                     const courseName = item.course?.courseName || "N/A";
@@ -661,8 +658,8 @@ const ScheduledClasses = () => {
                       item.sessionClassType === "GROUPCLASS"
                         ? "Group Class"
                         : isTrial
-                        ? "Trial Class"
-                        : "Regular Class";
+                          ? "Trial Class"
+                          : "Regular Class";
 
                     /* ---------- STATUS ---------- */
                     const status = item.scheduleStatus;
@@ -681,14 +678,12 @@ const ScheduledClasses = () => {
 
                     return (
                       <tr
-                        key={`${
-                          item._id
-                        }_${startDateTime.getTime()}_${startTimeStr}`} // include startTime in key
-                        className={`text-[12px] ${
-                          index % 2 === 0
+                        key={`${item._id
+                          }_${startDateTime.getTime()}_${startTimeStr}`} // include startTime in key
+                        className={`text-[12px] ${index % 2 === 0
                             ? "bg-[#fff] dark:bg-[#2C2C2C]"
                             : "bg-[#F8F8F8] dark:bg-[#303030]"
-                        }`}
+                          }`}
                       >
                         {/* ID */}
                         <td className="px-3 py-2 text-[10px] text-left w-[200px] break-words">
@@ -708,13 +703,11 @@ const ScheduledClasses = () => {
                                 onClick={() =>
                                   setOpenStudents(
                                     openStudents ===
-                                      `${
-                                        item._id
+                                      `${item._id
                                       }_${startDateTime.getTime()}_${startTimeStr}`
                                       ? null
-                                      : `${
-                                          item._id
-                                        }_${startDateTime.getTime()}_${startTimeStr}`
+                                      : `${item._id
+                                      }_${startDateTime.getTime()}_${startTimeStr}`
                                   )
                                 }
                                 className="underline cursor-pointer"
@@ -723,22 +716,21 @@ const ScheduledClasses = () => {
                               </button>
 
                               {openStudents ===
-                                `${
-                                  item._id
+                                `${item._id
                                 }_${startDateTime.getTime()}_${startTimeStr}` && (
-                                <div className="absolute z-50 mt-2 w-56 bg-white border border-gray-200 rounded-md shadow-lg">
-                                  <ul className="max-h-48 overflow-y-auto">
-                                    {studentsArray.map((name, idx) => (
-                                      <li
-                                        key={idx}
-                                        className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 break-words"
-                                      >
-                                        {name}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
+                                  <div className="absolute z-50 mt-2 w-56 bg-white border border-gray-200 rounded-md shadow-lg">
+                                    <ul className="max-h-48 overflow-y-auto">
+                                      {studentsArray.map((name, idx) => (
+                                        <li
+                                          key={idx}
+                                          className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 break-words"
+                                        >
+                                          {name}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
                             </>
                           ) : (
                             <span className="text-gray-400">—</span>
@@ -769,15 +761,14 @@ const ScheduledClasses = () => {
                         <td className="px-3 py-2 text-xs w-[200px]">
                           <span
                             className={`inline-block rounded-md font-semibold text-[11px] px-3 py-1
-              ${
-                status === "Scheduled"
-                  ? "bg-green-100 text-green-800 dark:bg-green-800/20"
-                  : status === "Rescheduled" || status === "Reschedulerequested"
-                  ? "bg-gray-200 text-gray-800 dark:bg-gray-500/20"
-                  : status === "BothAbsent"
-                  ? "bg-red-100 text-red-700 dark:bg-red-700/20"
-                  : "bg-gray-300 text-gray-600 dark:bg-gray-500/20"
-              }`}
+              ${status === "Scheduled"
+                                ? "bg-green-100 text-green-800 dark:bg-green-800/20"
+                                : status === "Rescheduled" || status === "Reschedulerequested"
+                                  ? "bg-gray-200 text-gray-800 dark:bg-gray-500/20"
+                                  : status === "BothAbsent"
+                                    ? "bg-red-100 text-red-700 dark:bg-red-700/20"
+                                    : "bg-gray-300 text-gray-600 dark:bg-gray-500/20"
+                              }`}
                           >
                             {status}
                           </span>
@@ -790,13 +781,11 @@ const ScheduledClasses = () => {
                               onClick={() =>
                                 setOpenDropdownId(
                                   openDropdownId ===
-                                    `${
-                                      item._id
+                                    `${item._id
                                     }_${startDateTime.getTime()}_${startTimeStr}`
                                     ? null
-                                    : `${
-                                        item._id
-                                      }_${startDateTime.getTime()}_${startTimeStr}`
+                                    : `${item._id
+                                    }_${startDateTime.getTime()}_${startTimeStr}`
                                 )
                               }
                               className="p-2 rounded-md"
@@ -807,9 +796,8 @@ const ScheduledClasses = () => {
                             {activeTab !== "completed" &&
                               item.sessionClassType === "REGULARCLASS" &&
                               openDropdownId ===
-                                `${
-                                  item._id
-                                }_${startDateTime.getTime()}_${startTimeStr}` && (
+                              `${item._id
+                              }_${startDateTime.getTime()}_${startTimeStr}` && (
                                 <div className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white dark:bg-[#2C2C2C] shadow-lg">
                                   <button
                                     onClick={() =>
