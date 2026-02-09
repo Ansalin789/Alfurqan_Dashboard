@@ -240,18 +240,19 @@ export default function Page() {
       : [classData?.teacher];
 
     // ✅ Build payload from LIVE attendance
-    const payload = {
-      meetingminutes: meetingMinutes,
-      duration,
-      meetingStatus: "Completed",
-      teacher: attendance.map((a) => ({
-        teacherId: a.studentId, // real DB id
-        teacherName: a.name,
-        attendee: "present",
-      })),
-    };
+const payload = {
+  meetingminutes: meetingMinutes,
+  duration,
+  meetingStatus: "Completed",
+  teacher: attendance.map((a) => ({
+    teacherId: a.studentId,   // real DB id
+    teacherName: a.name,
+    attendee: "present",
+  })),
+};
 
-    console.log("Final Payload:", payload);
+console.log("Final Payload:", payload);
+
 
     try {
       const token =
@@ -382,26 +383,28 @@ export default function Page() {
                         className="w-full border p-2 rounded focus:outline-none text-[10px] dark:bg-[#252525] "
                       >
                         {attendance
-                          .filter((s) => s.joined) // only real participants
-                          .map((s) => {
-                            let statusLabel = "";
+  .filter((s) => s.joined) // only real participants
+  .map((s) => {
 
-                            if (s.leaveTime) {
-                              statusLabel = `🚪 Left at ${s.leaveTime}`;
-                            } else {
-                              statusLabel = `✅ Joined at ${s.joinTime}`;
-                            }
+    let statusLabel = "";
 
-                            return (
-                              <option
-                                className="text-[12px]"
-                                key={s.id}
-                                value={s.id || ""}
-                              >
-                                {s.name} – {statusLabel}
-                              </option>
-                            );
-                          })}
+    if (s.leaveTime) {
+      statusLabel = `🚪 Left at ${s.leaveTime}`;
+    } else {
+      statusLabel = `✅ Joined at ${s.joinTime}`;
+    }
+
+    return (
+      <option
+        className="text-[12px]"
+        key={s.id}
+        value={s.id ||""}
+      >
+        {s.name} – {statusLabel}
+      </option>
+    );
+  })}
+
                       </select>
                     </div>
                   </div>
@@ -449,72 +452,62 @@ export default function Page() {
                         );
 
                         // ================= JOIN =================
-                        externalApi.addListener(
-                          "participantJoined",
-                          (event) => {
-                            const joinTime = new Date().toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: true,
-                            });
+                       externalApi.addListener("participantJoined", (event) => {
 
-                            let realId = "";
-                            let realName = "Guest";
+  const joinTime = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
 
-                            // ✅ Extract ID from displayName
-                            if (event.displayName?.includes("| ID :")) {
-                              const parts = event.displayName.split("| ID :");
-                              realName = parts[0].trim();
-                              realId = parts[1].trim();
-                            } else {
-                              realName = event.displayName || "Guest";
-                            }
+  let realId = "";
+  let realName = "Guest";
 
-                            // ❌ If no ID → ignore
-                            if (!realId) {
-                              console.warn(
-                                "⚠️ No ID found:",
-                                event.displayName,
-                              );
-                              return;
-                            }
+  // ✅ Extract ID from displayName
+  if (event.displayName?.includes("| ID :")) {
+    const parts = event.displayName.split("| ID :");
+    realName = parts[0].trim();
+    realId = parts[1].trim();
+  } else {
+    realName = event.displayName || "Guest";
+  }
 
-                            setAttendance((prev) => {
-                              // ✅ Avoid duplicate entry
-                              const exists = prev.some(
-                                (a) => a.studentId === realId,
-                              );
+  // ❌ If no ID → ignore
+  if (!realId) {
+    console.warn("⚠️ No ID found:", event.displayName);
+    return;
+  }
 
-                              if (exists) {
-                                return prev.map((a) =>
-                                  a.studentId === realId
-                                    ? {
-                                        ...a,
-                                        id: event.id,
-                                        joined: true,
-                                        joinTime,
-                                      }
-                                    : a,
-                                );
-                              }
+  setAttendance((prev) => {
 
-                              // ✅ New join
-                              return [
-                                ...prev,
-                                {
-                                  id: event.id, // jitsi id
-                                  studentId: realId, // ✅ REAL DB ID
-                                  name: realName,
-                                  startTime: null,
-                                  endTime: null,
-                                  joined: true,
-                                  joinTime,
-                                  leaveTime: "",
-                                },
-                              ];
-                            });
-                          },
-                        );
+    // ✅ Avoid duplicate entry
+    const exists = prev.some(a => a.studentId === realId);
+
+    if (exists) {
+      return prev.map(a =>
+        a.studentId === realId
+          ? { ...a, id: event.id, joined: true, joinTime }
+          : a
+      );
+    }
+
+    // ✅ New join
+    return [
+      ...prev,
+      {
+        id: event.id,          // jitsi id
+        studentId: realId,     // ✅ REAL DB ID
+        name: realName,
+        startTime: null,
+        endTime: null,
+        joined: true,
+        joinTime,
+        leaveTime: "",
+      },
+    ];
+  });
+});
+
 
                         // ================= LEAVE =================
                         externalApi.addListener("participantLeft", (event) => {
@@ -575,6 +568,88 @@ export default function Page() {
       </div>
 
       {/* Meeting minutes popup  */}
+      {meetingUpdate && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ">
+          <div className="bg-white rounded-xl p-6 w-full max-w-3xl shadow-lg space-y-5 dark:bg-[#252525]">
+            {/* Header */}
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-[#fff]">
+              Update Meeting Minutes
+            </h2>
+
+            {/* Content */}
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Attendees List */}
+              <div className="md:w-1/2 border border-[#343434] rounded-lg p-4 h-72 overflow-y-auto">
+                <h3 className="text-base font-medium text-gray-700 mb-2 dark:text-[#fff]">
+                  Attendees:
+                </h3>
+              <ul className="list-disc list-inside text-sm text-gray-800 space-y-1 dark:text-[#fff]">
+
+  {attendance
+    .filter((a) => a.joined) // only real participants
+    .map((a) => {
+
+      let status: JSX.Element;
+
+      if (a.leaveTime) {
+        status = (
+          <span className="text-gray-600">
+            🚪 Left at {a.leaveTime}
+          </span>
+        );
+      } else {
+        status = (
+          <span className="text-green-600">
+            ✅ Joined at {a.joinTime}
+          </span>
+        );
+      }
+
+      return (
+        <li key={a.id}>
+          <span className="font-medium">{a.name}</span> – {status}
+        </li>
+      );
+    })}
+</ul>
+
+              </div>
+
+              {/* Meeting Minutes Textarea */}
+              <div className="md:w-1/2 border border-[#343434] rounded-lg p-4 h-72 flex flex-col">
+                <label
+                  htmlFor="htmldaad"
+                  className="text-base font-medium text-gray-700 mb-2 dark:text-[#fff]"
+                >
+                  Meeting Minutes
+                </label>
+                <textarea
+                  value={meetingMinutes}
+                  onChange={(e) => setMeetingMinutes(e.target.value)}
+                  className="flex-grow rounded p-2 text-sm resize-none focus:outline-none dark:bg-[#252525] "
+                  placeholder="Enter your notes here..."
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setMeetingUpdate(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleMeetingMinutesUpdate}
+                className="px-4 py-2 bg-[#576CBC] text-white rounded hover:bg-[#43569e] text-sm font-medium"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </BaseLayout1>
   );
 }

@@ -430,7 +430,7 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
 import { useSearchParams } from "next/navigation";
-import BaseLayout from "@/components/BaseLayout";
+import BaseLayout2 from "@/components/BaseLayout2";
 import StudentHeader from "../../components/StudentHeader";
 import { JitsiMeeting } from "@jitsi/react-sdk";
 
@@ -591,7 +591,7 @@ const LiveMeeting = () => {
   };
 
   return (
-    <BaseLayout>
+    <BaseLayout2>
       <StudentHeader currentSection="Live Meeting" />
       <div className="flex h-screen">
         <div className="flex flex-col w-full min-h-screen px-4 sm:px-6 md:px-8">
@@ -618,27 +618,24 @@ const LiveMeeting = () => {
                       id="attendance-select"
                       className="w-full border p-2 rounded focus:outline-none text-[10px] dark:bg-[#252525] "
                     >
-                      {attendance
-                        .filter((s) => s.joined) // only real participants
-                        .map((s) => {
-                          let statusLabel = "";
+   {attendance.map((s) => {
 
-                          if (s.leaveTime) {
-                            statusLabel = `🚪 Left at ${s.leaveTime}`;
-                          } else {
-                            statusLabel = `✅ Joined at ${s.joinTime}`;
-                          }
+  let status = "❌ Not Joined";
 
-                          return (
-                            <option
-                              className="text-[12px]"
-                              key={s.id}
-                              value={s.id || ""}
-                            >
-                              {s.name} – {statusLabel}
-                            </option>
-                          );
-                        })}
+  if (s.joined) {
+    status = s.leaveTime
+      ? `🚪 Left at ${s.leaveTime}`
+      : `✅ Joined at ${s.joinTime}`;
+  }
+
+  return (
+    <option key={s.studentId || s.id}>
+      {s.name} – {status}
+    </option>
+  );
+})}
+
+
                     </select>
                   </div>
                 </div>
@@ -646,6 +643,11 @@ const LiveMeeting = () => {
                 {roomName && (
                   <JitsiMeeting
                     roomName={roomName}
+    userInfo={{
+    displayName: `${localStorage.getItem("StudentName")} | ID : ${localStorage.getItem("StudentId")}`,
+    email: localStorage.getItem("StudentEmail") || "student@alfurqan.com",
+  }}
+
                     domain="meet.alfurqanapp.com"
                     configOverwrite={{
                       startWithAudioMuted: false,
@@ -669,105 +671,124 @@ const LiveMeeting = () => {
                         "recording",
                       ],
                     }}
-                    onApiReady={(externalApi) => {
-                      // ================= JOIN =================
-                      externalApi.addListener(
-                        "participantJoined",
-                        (event) => {
-                          const joinTime = new Date().toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true,
-                          });
+                  onApiReady={(externalApi) => {
 
-                          let realId = "";
-                          let realName = "Guest";
+  // ================= JOIN =================
+ externalApi.addListener("participantJoined", (event) => {
 
-                          // ✅ Extract ID from displayName
-                          if (event.displayName?.includes("| ID :")) {
-                            const parts = event.displayName.split("| ID :");
-                            realName = parts[0].trim();
-                            realId = parts[1].trim();
-                          } else {
-                            realName = event.displayName || "Guest";
-                          }
+  const joinTime = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
 
-                          // ❌ If no ID → ignore
-                          if (!realId) {
-                            console.warn(
-                              "⚠️ No ID found:",
-                              event.displayName,
-                            );
-                            return;
-                          }
+  console.log("🟢 Joined:", event.displayName, event.id);
 
-                          setAttendance((prev) => {
-                            // ✅ Avoid duplicate entry
-                            const exists = prev.some(
-                              (a) => a.studentId === realId,
-                            );
+  let name = event.displayName || "Guest";
 
-                            if (exists) {
-                              return prev.map((a) =>
-                                a.studentId === realId
-                                  ? {
-                                    ...a,
-                                    id: event.id,
-                                    joined: true,
-                                    joinTime,
-                                  }
-                                  : a,
-                              );
-                            }
+  // Remove "| ID : xxx" if exists
+  if (name.includes("|")) {
+    name = name.split("|")[0].trim();
+  }
 
-                            // ✅ New join
-                            return [
-                              ...prev,
-                              {
-                                id: event.id, // jitsi id
-                                studentId: realId, // ✅ REAL DB ID
-                                name: realName,
-                                startTime: null,
-                                endTime: null,
-                                joined: true,
-                                joinTime,
-                                leaveTime: "",
-                              },
-                            ];
-                          });
-                        },
-                      );
+  setAttendance((prev) => {
 
-                      // ================= LEAVE =================
-                      externalApi.addListener("participantLeft", (event) => {
-                        const leaveTime = new Date().toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true,
-                        });
+    // 🔥 Match by JITSI ID
+    const exists = prev.find((a) => a.id === event.id);
 
-                        setAttendance((prev) =>
-                          prev.map((a) =>
-                            a.id === event.id ? { ...a, leaveTime } : a,
-                          ),
-                        );
-                      });
-                      externalApi.addListener("videoConferenceJoined", () => {
-                        const startCallTime = new Date().toLocaleTimeString(
-                          [],
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                          },
-                        );
-                        startTimeRef.current = startCallTime;
-                        setStartTime(startCallTime);
-                      });
-                      externalApi.addListener("videoConferenceLeft", () => {
-                        handleEndCall();
-                      });
-                    }}
+    if (exists) {
+      return prev.map((a) =>
+        a.id === event.id
+          ? {
+              ...a,
+              joined: true,
+              joinTime,
+              leaveTime: "",
+            }
+          : a
+      );
+    }
+
+    // 🔥 Update first "not joined" slot if exists
+    const firstNotJoined = prev.find((a) => !a.joined);
+
+    if (firstNotJoined) {
+      return prev.map((a) =>
+        a === firstNotJoined
+          ? {
+              ...a,
+              id: event.id,
+              name,
+              joined: true,
+              joinTime,
+              leaveTime: "",
+            }
+          : a
+      );
+    }
+
+    // 🔥 Otherwise add new
+    return [
+      ...prev,
+      {
+        id: event.id,
+        studentId: event.id,
+        name,
+        startTime: null,
+        endTime: null,
+        joined: true,
+        joinTime,
+        leaveTime: "",
+      },
+    ];
+  });
+});
+
+
+  // ================= LEAVE =================
+externalApi.addListener("participantLeft", (event) => {
+
+  const leaveTime = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  console.log("🔴 Left:", event.id);
+
+  setAttendance((prev) =>
+    prev.map((a) =>
+      a.id === event.id
+        ? {
+            ...a,
+            joined: false,
+            leaveTime,
+          }
+        : a
+    )
+  );
+});
+
+
+  // ================= HOST JOIN =================
+  externalApi.addListener("videoConferenceJoined", () => {
+
+    const startCallTime = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+
+    startTimeRef.current = startCallTime;
+    setStartTime(startCallTime);
+  });
+
+  // ================= HOST LEAVE =================
+  externalApi.addListener("videoConferenceLeft", () => {
+    handleEndCall();
+  });
+}}
+
                     getIFrameRef={(iframeRef) => {
                       iframeRef.style.border = "0px";
                       iframeRef.style.height = "100%";
@@ -780,7 +801,7 @@ const LiveMeeting = () => {
           </div>
         </div>
       </div>
-    </BaseLayout>
+    </BaseLayout2>
   );
 };
 
