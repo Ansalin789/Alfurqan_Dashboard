@@ -234,12 +234,12 @@ export default function Page() {
       }
 
       console.log("📤 SENDING PUT REQUEST");
-      console.log("URL:", `http://localhost:5001/meetingminutes/${meetingId}`);
+      console.log("URL:", `https://api.blackstoneinfomaticstech.com/meetingminutes/${meetingId}`);
       console.log("METHOD: PUT");
       console.log("BODY:", JSON.stringify(payload, null, 2));
 
       const response = await fetch(
-        `http://localhost:5001/meetingminutes/${meetingId}`,
+        `https://api.blackstoneinfomaticstech.com/meetingminutes/${meetingId}`,
         {
           method: "PUT",
           headers: {
