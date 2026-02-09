@@ -329,7 +329,7 @@ export default function Dashboard() {
   }, [applicants, weekRange]);
   const [meetingDays, setMeetingDays] = useState<number[]>([]);
   const [todayMeetings, setTodayMeetings] = useState<
-    { time: string; title: string; type: string; color: string }[]
+    { time: string; title: string; meetingId: string; color: string }[]
   >([]);
 
   useEffect(() => {
@@ -354,7 +354,7 @@ export default function Dashboard() {
           }
         );
 
-        const allMeetings: Meeting[] = response.data.data.meetings;
+        const allMeetings: Meeting[] = response.data.meetings;
 
         // console.log("✅ Full Meetings Data:", allMeetings);
 
@@ -368,45 +368,60 @@ export default function Dashboard() {
 
         setMeetingDays(allMeetingDays);
 
-    // Get current date & time
-const now = new Date();
+        const now = new Date();
 
-// Filter upcoming meetings
-const upcomingMeetings = allMeetings
-  .filter((meeting) => {
-    const meetingDateTime = new Date(
-      `${meeting.selectedDate} ${meeting.startTime}`
-    );
+// Step 1: Date + Time format
+const formattedMeetings = allMeetings.map((meeting) => {
+  const datePart = meeting.selectedDate.split("T")[0];
 
-    return meetingDateTime >= now;
-  })
-  // Sort by nearest first
-  .sort((a, b) => {
-    const aDate = new Date(`${a.selectedDate} ${a.startTime}`);
-    const bDate = new Date(`${b.selectedDate} ${b.startTime}`);
-    return aDate.getTime() - bDate.getTime();
-  })
-  // Take latest 5
+  const meetingDateTime = new Date(
+    `${datePart}T${meeting.startTime}:00`
+  );
+
+  return {
+    ...meeting,
+    meetingDateTime,
+  };
+});
+
+// Step 2: Unique by meetingId only
+const uniqueMap = new Map();
+
+formattedMeetings.forEach((meeting) => {
+  if (!uniqueMap.has(meeting.meetingId)) {
+    uniqueMap.set(meeting.meetingId, meeting);
+  }
+});
+
+const uniqueMeetings = Array.from(uniqueMap.values());
+
+// Step 3: Upcoming + sort + limit
+const upcomingMeetings = uniqueMeetings
+  .filter((m) => m.meetingDateTime >= now)
+
+  .sort((a, b) => a.meetingDateTime - b.meetingDateTime)
+
   .slice(0, 5)
-  .map((meeting) => {
-    let color = "bg-blue-100 text-blue-800"; // Default color
 
-    if (meeting.meetingStatus === "Scheduled") {
+  .map((m) => {
+    let color = "bg-blue-100 text-blue-800";
+
+    if (m.meetingStatus === "Scheduled") {
       color = "bg-amber-100 text-amber-800";
-    } else if (meeting.meetingStatus === "Reschedule") {
-      color = "bg-green-100 text-green-800";
     }
 
     return {
-      time: meeting.startTime,
-      title: meeting.meetingName,
-      type: meeting.meetingStatus.toLowerCase(),
+      time: m.startTime,
+      title: m.meetingName,
+      meetingId: m.meetingId,
       color,
     };
   });
 
 setTodayMeetings(upcomingMeetings);
 
+        
+        
       } catch (error) {
         console.error("🚨 Error fetching meetings:", error);
       }

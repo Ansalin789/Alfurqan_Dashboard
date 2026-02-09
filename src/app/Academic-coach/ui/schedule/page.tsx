@@ -7,6 +7,7 @@ import { Clock } from "lucide-react";
 import AcademicHeader from "../../components/academicHeader";
 import { FaClock } from "react-icons/fa";
 import { BsFillCalendar2WeekFill } from "react-icons/bs";
+import { useRouter } from "next/navigation";
 
 interface Event {
   id: string;
@@ -17,6 +18,7 @@ interface Event {
   date: string;
   studentName: string,
   studentEmail: string,
+  meetingId?: string;
 }
 
 const SchedulePage = () => {
@@ -32,6 +34,7 @@ const SchedulePage = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+const router = useRouter();
 
   const tabs = ["monthly", "weekly", "daily"] as const;
 
@@ -46,8 +49,7 @@ const SchedulePage = () => {
          const params = {
     academicCoachId: acId,
 }; 
- fetch(`
-https://api.blackstoneinfomaticstech.com/meetingSchedulelist?academicCoachId=${params.academicCoachId}`, {
+ fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist?academicCoachId=${params.academicCoachId}`, {
   method: "GET",
   headers: {
     Authorization: `Bearer ${token}`,
@@ -58,6 +60,8 @@ https://api.blackstoneinfomaticstech.com/meetingSchedulelist?academicCoachId=${p
         console.log("dataaa", data);
         const mappedAcademicEvents = data.academicCoach.map((item: any) => ({
           id: item._id,
+            meetingId: item._id, // or item.meetingId if exists
+
           title: item.subject,
           start: item.scheduledFrom,
           end: item.scheduledTo,
@@ -69,6 +73,7 @@ https://api.blackstoneinfomaticstech.com/meetingSchedulelist?academicCoachId=${p
 
           const addSupervisorEvents = data.meetingList.map((item: any) => ({
           id: item._id,
+           meetingId: item.meetingId,
           title: item.meetingName,
           start: item.startTime,
           end: item.endTime,
@@ -80,6 +85,7 @@ https://api.blackstoneinfomaticstech.com/meetingSchedulelist?academicCoachId=${p
 
           const adminEvents = data.adminMeetingList.map((item: any) => ({
           id: item._id,
+          meetingId: item.meetingId,
           title: item.meetingName,
           start: item.startTime,
           end: item.endTime,
@@ -428,6 +434,28 @@ https://api.blackstoneinfomaticstech.com/meetingSchedulelist?academicCoachId=${p
     );
   };
 
+
+const canJoinNow = (event: Event) => {
+  const now = moment();
+
+  const eventDateTime = moment(
+    `${event.date} ${event.start}`,
+    "YYYY-MM-DD HH:mm"
+  );
+
+  const eventEndTime = moment(
+    `${event.date} ${event.end}`,
+    "YYYY-MM-DD HH:mm"
+  );
+
+  // Allow join from 10 mins before till end
+  return now.isBetween(
+    eventDateTime.clone().subtract(10, "minutes"),
+    eventEndTime
+  );
+};
+
+
   return (
     <BaseLayout1>
       <AcademicHeader currentSection="Calendar" />
@@ -516,6 +544,15 @@ https://api.blackstoneinfomaticstech.com/meetingSchedulelist?academicCoachId=${p
                         <p className="text-[11px] font-light text-[#333] dark:text-[#fff] mt-2">
                           {item.studentName || ""}
                         </p>
+
+                        {canJoinNow(item) && (
+  <button
+    onClick={() => router.push(`/Academic-coach/ui/videocall?id=${item.meetingId || item.id}`)}
+    className="mt-2 px-3 py-1 text-[11px] bg-green-600 text-white rounded hover:bg-green-700 transition"
+  >
+    ▶ Start Now
+  </button>
+)}
                       </div>
                     );
                   })

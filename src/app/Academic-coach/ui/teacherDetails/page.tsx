@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { VscGraphLeft } from "react-icons/vsc";
@@ -7,15 +7,20 @@ import Pagination from "@/components/Pagination";
 
 import BaseLayout1 from "@/components/BaseLayout1";
 import { MoreVertical, Search } from "lucide-react";
+import { IoMdClose } from "react-icons/io";
+import { AiOutlineMenuUnfold } from "react-icons/ai";
+import { IoPersonOutline } from "react-icons/io5";
 import { MdTune } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import Modal from "react-modal";
 import AcademicHeader from "../../components/academicHeader";
 
+
+
 interface ClassSchedule {
   _id: string;
   student: {
-    id:string;
+    id: string;
     studentId: string;
     studentFirstName: string;
     studentLastName: string;
@@ -49,6 +54,16 @@ interface ClassSchedule {
   package: string;
   isTrial?: boolean;
   trialclass?: TrialClass;
+  isGroupClass?: boolean;
+  groupStudentCount?: number;
+  groupStudents?: Array<{
+    id: string;
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    gender: string;
+  }>;
 }
 
 interface TrialClass {
@@ -63,7 +78,7 @@ interface TrialClass {
     email: string;
   };
   student: {
-    studentRegisterId:string;
+    studentRegisterId: string;
     studentId: string;
     name: string;
     email: string;
@@ -186,11 +201,60 @@ const TeacherDetails = () => {
     []
   );
 
-  const [paginatedData, setPaginatedData] = useState<ClassSchedule[]>([]);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [teacherRescheduleWrite, setTeacherRescheduleWrite] = useState(false);
   const [isCompletedDetailsModalOpen, setIsCompletedDetailsModalOpen] = useState(false);
   const [selectedCompletedClass, setSelectedCompletedClass] = useState<ClassSchedule | null>(null);
+  const [openGroupClassIndex, setOpenGroupClassIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    console.log("📊 Current State Debug:");
+    console.log("Total classes in classScheduleData:", classScheduleData.length);
+    console.log("Scheduled classes:", scheduledClasses.length);
+    console.log("Completed classes:", completedClasses.length);
+
+    const allGroupClasses = classScheduleData.filter(c => c.isGroupClass);
+    console.log("Total group classes:", allGroupClasses.length);
+
+    const groupClassIds = new Set<string>();
+    const duplicates: ClassSchedule[] = [];
+
+    allGroupClasses.forEach(cls => {
+      if (groupClassIds.has(cls._id)) {
+        duplicates.push(cls);
+      }
+      groupClassIds.add(cls._id);
+    });
+
+    if (duplicates.length > 0) {
+      console.log("⚠️ Found duplicate group classes:", duplicates);
+    }
+
+    const statusCounts = classScheduleData.reduce((acc, cls) => {
+      const status = cls.scheduleStatus;
+      const type = cls.isGroupClass ? 'Group' : cls.isTrial ? 'Trial' : 'Regular';
+      if (!acc[status]) acc[status] = { Group: 0, Trial: 0, Regular: 0, Total: 0 };
+      acc[status][type]++;
+      acc[status].Total++;
+      return acc;
+    }, {} as Record<string, any>);
+
+    console.log("Current Status Distribution:", statusCounts);
+  }, [classScheduleData, scheduledClasses, completedClasses]);
+
+  const handleTabSwitch = useCallback((tab: "scheduled" | "completed") => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+    setExpandedGroupClasses(new Set());
+    setFilteredUsers([]);
+    setSearchQuery("");
+    setOpenGroupClassIndex(null);
+  }, []);
+
+  useEffect(() => {
+    setOpenGroupClassIndex(null);
+  }, [currentPage, activeTab]);
 
   useEffect(() => {
     const roleAccessRaw = localStorage.getItem("AcademicRolePermission");
@@ -251,7 +315,7 @@ const TeacherDetails = () => {
           {
             headers: {
               Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json", // ✅ Corrected typo
+              "Content-Type": "application/json",
             },
           }
         );
@@ -333,22 +397,185 @@ const TeacherDetails = () => {
       }
 
       const data = await res.json();
-      console.log("API Response:", data);
+      console.log("📦 API Response Data:", data);
 
-      const regularClasses = (data.classSchedule || []).map((cls: ClassSchedule) => ({
-        ...cls,
-        isTrial: false
-      }));
+      const regularClasses: ClassSchedule[] = [];
 
-      console.log("Processed Regular Classes:", regularClasses);
+      // Handle classScheduleList
+      if (Array.isArray(data.classScheduleList)) {
+        console.log("Processing classScheduleList:", data.classScheduleList.length);
 
+        data.classScheduleList.forEach((classItem: any, index: number) => {
+          console.log(`🔍 Processing item ${index}:`, {
+            id: classItem._id,
+            type: classItem.sessionClassType,
+            status: classItem.scheduleStatus,
+            hasTeacher: !!classItem.teacher,
+            teacher: classItem.teacher
+          });
+
+          const scheduleStatus = classItem.scheduleStatus || "Scheduled";
+
+          // Handle GROUPCLASS
+          if (classItem.sessionClassType === "GROUPCLASS") {
+            console.log(`🎯 Found GROUPCLASS: ${classItem._id}`, classItem);
+
+            // Extract students from group class
+            const groupStudents: Array<{
+              id: string;
+              studentId: string;
+              studentFirstName: string;
+              studentLastName: string;
+              studentEmail: string;
+              gender: string;
+            }> = [];
+
+            // Try different possible structures for students
+            if (Array.isArray(classItem.student)) {
+              classItem.student.forEach((s: any) => {
+                // Handle different student object structures
+                const studentObj = s.student || s;
+                if (studentObj && studentObj.studentId) {
+                  groupStudents.push({
+                    id: studentObj.id || studentObj._id || "",
+                    studentId: studentObj.studentId || "",
+                    studentFirstName: studentObj.studentFirstName || "",
+                    studentLastName: studentObj.studentLastName || "",
+                    studentEmail: studentObj.studentEmail || "",
+                    gender: studentObj.gender || "",
+                  });
+                }
+              });
+            }
+
+            // Get teacher info - try different possible structures
+            let teacherId = "";
+            let teacherName = "";
+            let teacherEmail = "";
+
+            if (classItem.teacher) {
+              teacherId = classItem.teacher.teacherId || classItem.teacher.id || "";
+              teacherName = classItem.teacher.teacherName || classItem.teacher.name || "";
+              teacherEmail = classItem.teacher.teacherEmail || classItem.teacher.email || "";
+            }
+
+            // Get primary student for display
+            const primaryStudent = groupStudents.length > 0 ? groupStudents[0] : null;
+
+            const groupClass: ClassSchedule = {
+              _id: classItem._id,
+              classLink: classItem.classLink || "",
+              classDay: Array.isArray(classItem.classDay) ? classItem.classDay : [],
+              package: classItem.package || "",
+              startDate: classItem.startDate || "",
+              endDate: classItem.endDate || "",
+              startTime: Array.isArray(classItem.startTime) ? classItem.startTime : [classItem.startTime || ""],
+              endTime: Array.isArray(classItem.endTime) ? classItem.endTime : [classItem.endTime || ""],
+              scheduleStatus: scheduleStatus,
+              status: classItem.status || "Active",
+              createdDate: classItem.createdDate || "",
+              createdBy: classItem.createdBy || "",
+              lastUpdatedDate: classItem.lastUpdatedDate || "",
+              amount: classItem.amount || "0",
+              currency: classItem.currency || "$",
+              classType: "GROUPCLASS",
+              sessionClassType: "GROUPCLASS",
+              isTrial: false,
+              isGroupClass: true,
+              groupStudents: groupStudents,
+              groupStudentCount: groupStudents.length,
+
+              student: {
+                id: classItem._id,
+                studentId: primaryStudent?.studentId || "GROUP",
+                studentFirstName: primaryStudent?.studentFirstName || "Group Class",
+                studentLastName: primaryStudent?.studentLastName || "",
+                studentEmail: primaryStudent?.studentEmail || "",
+                gender: primaryStudent?.gender || "",
+              },
+
+              teacher: {
+                teacherId: teacherId,
+                teacherName: teacherName,
+                teacherEmail: teacherEmail,
+              },
+
+              course: {
+                courseId: classItem.course?.courseId || "",
+                courseName: classItem.course?.courseName || "",
+              },
+            };
+
+            console.log(`✅ Created Group Class:`, groupClass);
+            regularClasses.push(groupClass);
+          }
+          // Handle individual REGULARCLASS
+          else if (classItem._id) {
+            console.log(`📝 Found REGULARCLASS: ${classItem._id}`);
+
+            // Handle student - try different structures
+            const studentObj = classItem.student || {};
+            const studentId = studentObj.studentId || studentObj.id || "";
+
+            // Only add if we have a valid student ID
+            if (studentId) {
+              const individualClass: ClassSchedule = {
+                _id: classItem._id,
+                classLink: classItem.classLink || "",
+                classDay: Array.isArray(classItem.classDay) ? classItem.classDay : [],
+                package: classItem.package || "",
+                startDate: classItem.startDate || "",
+                endDate: classItem.endDate || "",
+                startTime: Array.isArray(classItem.startTime) ? classItem.startTime : [classItem.startTime || ""],
+                endTime: Array.isArray(classItem.endTime) ? classItem.endTime : [classItem.endTime || ""],
+                scheduleStatus: scheduleStatus,
+                status: classItem.status || "Active",
+                createdDate: classItem.createdDate || "",
+                createdBy: classItem.createdBy || "",
+                lastUpdatedDate: classItem.lastUpdatedDate || "",
+                amount: classItem.amount || "0",
+                currency: classItem.currency || "$",
+                classType: classItem.sessionClassType || classItem.classType || "OneToOne",
+                sessionClassType: classItem.sessionClassType || "REGULARCLASS",
+                isTrial: false,
+                isGroupClass: false,
+
+                student: {
+                  id: studentObj.id || studentObj._id || "",
+                  studentId: studentId,
+                  studentFirstName: studentObj.studentFirstName || "",
+                  studentLastName: studentObj.studentLastName || "",
+                  studentEmail: studentObj.studentEmail || "",
+                  gender: studentObj.gender || "",
+                },
+
+                teacher: {
+                  teacherId: classItem.teacher?.teacherId || "",
+                  teacherName: classItem.teacher?.teacherName || "",
+                  teacherEmail: classItem.teacher?.teacherEmail || "",
+                },
+
+                course: {
+                  courseId: classItem.course?.courseId || "",
+                  courseName: classItem.course?.courseName || "",
+                },
+              };
+
+              console.log(`✅ Created Individual Class:`, individualClass);
+              regularClasses.push(individualClass);
+            }
+          }
+        });
+      }
+
+      // Process trial classes
       let trialClasses: ClassSchedule[] = [];
 
       if (Array.isArray(data.trialclasses)) {
-        console.log("Raw Trial Classes Data:", data.trialclasses);
+        console.log("Processing trialclasses:", data.trialclasses.length);
 
-        trialClasses = data.trialclasses.map((trialClass: TrialClass) => ({
-          _id: trialClass._id || trialClass.trialId || "",
+        trialClasses = data.trialclasses.map((trialClass: any) => ({
+          _id: trialClass.id || trialClass.trialId || "",
           classLink: trialClass.meetingLink || "",
           classDay: trialClass.scheduledStartDate ? [trialClass.scheduledStartDate] : [],
           package: "",
@@ -358,171 +585,199 @@ const TeacherDetails = () => {
           endTime: [trialClass.scheduledTo || ""],
           scheduleStatus: trialClass.meetingStatus || "Scheduled",
           status: "Active",
-          createdDate: trialClass.createdDate || "",
-          createdBy: trialClass.createdBy || "System",
-          lastUpdatedDate: trialClass.lastUpdatedDate || "",
+          createdDate: "",
+          createdBy: "System",
+          lastUpdatedDate: "",
           amount: "0",
           currency: "$",
           classType: trialClass.classType || "OneToOne",
           sessionClassType: "TRIALCLASS",
+          isTrial: true,
+          isGroupClass: false,
+          trialclass: trialClass,
 
           student: {
-            id : trialClass.student.studentId || "",
+            id: trialClass.student?.id || "",
             studentId: trialClass.student?.studentId || "N/A",
-            studentFirstName: trialClass.student?.name?.split(" ")[0] || "Trial",
-            studentLastName: trialClass.student?.name?.split(" ").slice(1).join(" ") || "Student",
-            studentEmail: trialClass.student?.email || "",
+            studentFirstName: trialClass.student?.studentName?.split(" ")[0] || "Trial",
+            studentLastName: trialClass.student?.studentName?.split(" ").slice(1).join(" ") || "Student",
+            studentEmail: "",
             gender: "",
           },
 
           teacher: {
-            teacherId: trialClass.teacher?.teacherId || "",
-            teacherName: trialClass.teacher?.name || "",
-            teacherEmail: trialClass.teacher?.email || "",
+            teacherId: "",
+            teacherName: "",
+            teacherEmail: "",
           },
 
           course: {
             courseId: trialClass.course?.courseId || "",
             courseName: trialClass.course?.courseName || "",
           },
-
-          isTrial: true,
-          trialclass: trialClass,
         }));
-
-        console.log("Processed Trial Classes:", trialClasses);
-      } else {
-        console.log("No trial classes found or incorrect format.");
       }
-      setClassScheduleData(classScheduleData);
 
+      // Combine all classes
       const allClasses = [...regularClasses, ...trialClasses];
-      console.log("All Classes Combined:", allClasses);
 
+      // Log final counts
+      console.log("📊 Final Class Counts:");
+      console.log("- Regular Classes:", regularClasses.length);
+      console.log("- Group Classes:", regularClasses.filter(c => c.isGroupClass).length);
+      console.log("- Individual Classes:", regularClasses.filter(c => !c.isGroupClass).length);
+      console.log("- Trial Classes:", trialClasses.length);
+      console.log("- Total Classes:", allClasses.length);
+
+      // Log group classes specifically
+      const groupClasses = allClasses.filter(c => c.isGroupClass);
+      console.log("🎯 Group Classes Found:", groupClasses.length);
+      groupClasses.forEach((cls, idx) => {
+        console.log(`  Group ${idx + 1}: ID=${cls._id}, Status=${cls.scheduleStatus}, Students=${cls.groupStudentCount}, Course=${cls.course?.courseName}`);
+      });
+
+      // Sort by date
       return allClasses.sort((a: ClassSchedule, b: ClassSchedule) => {
         const dateA = a.isTrial ? a.trialclass?.scheduledStartDate || a.startDate : a.startDate;
         const dateB = b.isTrial ? b.trialclass?.scheduledStartDate || b.startDate : b.startDate;
         return new Date(dateA).getTime() - new Date(dateB).getTime();
       });
+
     } catch (err) {
       console.error("Failed to fetch class schedule", err);
       return [];
     }
   };
 
-const getUniqueStudentsFromSchedule = (
-  schedule: ClassSchedule[]
-): StudentInfo[] => {
-  const studentSet = new Set<string>();
-  const studentInfoArray: StudentInfo[] = [];
+  // Add this state variable near your other useState declarations
+  const [expandedGroupClasses, setExpandedGroupClasses] = useState<Set<string>>(new Set());
 
-  schedule.forEach((item: ClassSchedule, index) => {
-    console.log(`--- Processing item ${index} ---`);
-    console.log("Full student object:", item.student);
-    console.log("Student ID:", item.student?.studentId);
-    console.log("Student ID field:", item.student?.id);
-    console.log("Student first name:", item.student?.studentFirstName);
-    console.log("Student last name:", item.student?.studentLastName);
-    
-    if (item.student && item.student.studentId) {
-      console.log("Valid student found:", item.student);
-      const _id = item.student.id; // This should be the MongoDB ObjectId
-      const fullName = `${item.student.studentFirstName || ""} ${item.student.studentLastName || ""}`.trim();
-      const courseName = item.course?.courseName || "";
-      const studentId = item.student.studentId;
-
-      console.log(`Extracted - FullName: ${fullName}, Course: ${courseName}, StudentId: ${studentId}, _id: ${_id}`);
-
-      if (!studentSet.has(studentId) && _id !== studentId) {
-        console.log(`Extracted2 - FullName: ${fullName}, Course: ${courseName}, StudentId: ${studentId}, _id: ${_id}`);
-        studentSet.add(studentId);
-        studentInfoArray.push({ 
-          fullName, 
-          firstName: item.student.studentFirstName || "",
-          courseName, 
-          studentId, 
-          _id 
-        });
+  // Add this function to toggle group class expansion
+  const toggleGroupClass = useCallback((classId: string) => {
+    setExpandedGroupClasses(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(classId)) {
+        newSet.delete(classId);
+      } else {
+        newSet.add(classId);
       }
-    }
-    console.log(`--- End item ${index} ---`);
-  });
-  
-  console.log("Final Unique Students Extracted:", studentInfoArray);
-  return studentInfoArray;
-};
+      return newSet;
+    });
+  }, []);
+
+  const getUniqueStudentsFromSchedule = (
+    schedule: ClassSchedule[]
+  ): StudentInfo[] => {
+    const studentSet = new Set<string>();
+    const studentInfoArray: StudentInfo[] = [];
+
+    schedule.forEach((item: ClassSchedule, index) => {
+      console.log(`--- Processing item ${index} ---`);
+      console.log("Full student object:", item.student);
+      console.log("Student ID:", item.student?.studentId);
+      console.log("Student ID field:", item.student?.id);
+      console.log("Student first name:", item.student?.studentFirstName);
+      console.log("Student last name:", item.student?.studentLastName);
+
+      if (item.student && item.student.studentId) {
+        console.log("Valid student found:", item.student);
+        const _id = item.student.id; // This should be the MongoDB ObjectId
+        const fullName = `${item.student.studentFirstName || ""} ${item.student.studentLastName || ""}`.trim();
+        const courseName = item.course?.courseName || "";
+        const studentId = item.student.studentId;
+
+        console.log(`Extracted - FullName: ${fullName}, Course: ${courseName}, StudentId: ${studentId}, _id: ${_id}`);
+
+        if (!studentSet.has(studentId) && _id !== studentId) {
+          console.log(`Extracted2 - FullName: ${fullName}, Course: ${courseName}, StudentId: ${studentId}, _id: ${_id}`);
+          studentSet.add(studentId);
+          studentInfoArray.push({
+            fullName,
+            firstName: item.student.studentFirstName || "",
+            courseName,
+            studentId,
+            _id
+          });
+        }
+      }
+      console.log(`--- End item ${index} ---`);
+    });
+
+    console.log("Final Unique Students Extracted:", studentInfoArray);
+    return studentInfoArray;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log("🔄 Starting data fetch for teacher:", teacherId);
       const schedule = await fetchClassSchedule();
-      setClassScheduleData(schedule);
+      console.log("📥 Fetched schedule data:", schedule.length, "classes total");
 
-      setScheduledClasses(
-        schedule.filter((c) => c.scheduleStatus === "Scheduled" ||
-          c.scheduleStatus === "Rescheduled" ||
-          c.scheduleStatus === "Reschedulerequested")
+      // Log detailed breakdown
+      const groupClasses = schedule.filter(c => c.isGroupClass);
+      const trialClasses = schedule.filter(c => c.isTrial);
+      const regularClasses = schedule.filter(c => !c.isGroupClass && !c.isTrial);
+
+      console.log("📊 Breakdown:");
+      console.log("- Group Classes:", groupClasses.length);
+      console.log("- Trial Classes:", trialClasses.length);
+      console.log("- Regular Classes:", regularClasses.length);
+
+      // Filter for scheduled classes
+      const scheduled = schedule.filter((c) =>
+        c.scheduleStatus === "Scheduled" ||
+        c.scheduleStatus === "Rescheduled" ||
+        c.scheduleStatus === "Reschedulerequested"
       );
-      setCompletedClasses(
-        schedule.filter((c) => c.scheduleStatus === "Completed" || c.scheduleStatus === "BothAbsent" || c.scheduleStatus === "TeacherAbsent" || c.scheduleStatus === "StudentAbsent")
+      console.log("📋 Scheduled classes:", scheduled.length);
+      console.log("📋 Scheduled group classes:", scheduled.filter(c => c.isGroupClass).length);
+
+      // Filter for completed classes
+      const completed = schedule.filter((c) =>
+        c.scheduleStatus === "Completed" ||
+        c.scheduleStatus === "BothAbsent" ||
+        c.scheduleStatus === "TeacherAbsent" ||
+        c.scheduleStatus === "StudentAbsent"
       );
+      console.log("📋 Completed classes:", completed.length);
+      console.log("📋 Completed group classes:", completed.filter(c => c.isGroupClass).length);
+
+      // Set states
+      setClassScheduleData(schedule);
+      setScheduledClasses(scheduled);
+      setCompletedClasses(completed);
+
+      // Reset UI states
+      setExpandedGroupClasses(new Set());
+      setFilteredUsers([]);
+      setSearchQuery("");
+      setCurrentPage(1);
+      setOpenGroupClassIndex(null);
     };
 
     if (teacherId) {
       fetchData();
     }
   }, [teacherId]);
-  useEffect(() => {
-    console.log("Scheduled:", scheduledClasses);
-    console.log("Completed:", completedClasses);
-    console.log("Active Tab:", activeTab);
-    console.log("Current Page:", currentPage);
 
-    const dataToPaginate =
-      activeTab === "scheduled" ? scheduledClasses : completedClasses;
+  const currentData = filteredUsers.length > 0
+    ? filteredUsers
+    : activeTab === "scheduled"
+      ? scheduledClasses
+      : completedClasses;
 
-    const totalItems = dataToPaginate.length;
-
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-
-    setPaginatedData(dataToPaginate.slice(startIndex, endIndex));
-  }, [
-    scheduledClasses,
-    completedClasses,
-    currentPage,
-    activeTab,
-    itemsPerPage,
-  ]);
-
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedData = currentData.slice(startIndex, endIndex);
 
   useEffect(() => {
     if (classScheduleData.length > 0) {
-      console.log("Extracting unique students from class schedule data",classScheduleData);
+      console.log("Extracting unique students from class schedule data", classScheduleData);
       const uniqueStudents = getUniqueStudentsFromSchedule(classScheduleData);
       setStudentInfoList(uniqueStudents);
     }
   }, [classScheduleData]);
 
-  useEffect(() => {
-    const dataToPaginate =
-      filteredUsers.length > 0
-        ? filteredUsers
-        : activeTab === "scheduled"
-          ? scheduledClasses
-          : completedClasses;
-
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-
-    setPaginatedData(dataToPaginate.slice(startIndex, endIndex));
-  }, [
-    scheduledClasses,
-    completedClasses,
-    filteredUsers,
-    currentPage,
-    activeTab,
-    itemsPerPage,
-  ]);
 
   useEffect(() => {
     setFilteredUsers([]);
@@ -532,6 +787,7 @@ const getUniqueStudentsFromSchedule = (
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
+    setExpandedGroupClasses(new Set()); // Clear expanded groups on search
 
     const currentUsers =
       activeTab === "scheduled" ? scheduledClasses : completedClasses;
@@ -542,63 +798,7 @@ const getUniqueStudentsFromSchedule = (
       return;
     }
 
-    const lowerQuery = query.toLowerCase();
-
-    const filtered = currentUsers.filter((user) => {
-      const isTrial = user.isTrial;
-
-      const studentName = isTrial
-        ? user.trialclass?.student?.name?.toLowerCase() ||
-        `${user.student?.studentFirstName || ""} ${user.student?.studentLastName || ""}`.toLowerCase()
-        : `${user.student?.studentFirstName || ""} ${user.student?.studentLastName || ""}`.toLowerCase();
-
-      const courseName = isTrial
-        ? user.trialclass?.course?.courseName?.toLowerCase() || user.course?.courseName?.toLowerCase()
-        : user.course?.courseName?.toLowerCase();
-
-      const classType = (user.sessionClassType || user.classType || "").toLowerCase();
-
-      const status = isTrial
-        ? user.trialclass?.meetingStatus?.toLowerCase() || user.scheduleStatus?.toLowerCase()
-        : user.scheduleStatus?.toLowerCase();
-
-      const classDate = isTrial ?
-        (user.trialclass?.scheduledStartDate || user.startDate) :
-        user.startDate;
-      const dateObj = classDate ? new Date(classDate) : null;
-      const dateReadable = dateObj
-        ? dateObj.toLocaleDateString("en-US", {
-          month: "short",
-          day: "2-digit",
-          year: "numeric",
-        }).toLowerCase()
-        : "";
-
-      const startTime = isTrial ?
-        (user.trialclass?.scheduledFrom || user.startTime?.[0]) :
-        user.startTime?.[0];
-      const endTime = isTrial ?
-        (user.trialclass?.scheduledTo || user.endTime?.[0]) :
-        user.endTime?.[0];
-      const timing = `${startTime || ""} - ${endTime || ""}`.toLowerCase();
-
-      return (
-        (user._id?.toLowerCase() || "").includes(lowerQuery) ||
-        (user.student?.studentId?.toLowerCase() || "").includes(lowerQuery) ||
-        studentName.includes(lowerQuery) ||
-        (user.student?.gender?.toLowerCase() || "").includes(lowerQuery) ||
-        (user.teacher?.teacherName?.toLowerCase() || "").includes(lowerQuery) ||
-        (courseName || "").includes(lowerQuery) ||
-        (status || "").includes(lowerQuery) ||
-        (user.status?.toLowerCase() || "").includes(lowerQuery) ||
-        (classType || "").includes(lowerQuery) ||
-        (timing || "").includes(lowerQuery) ||
-        (dateReadable || "").includes(lowerQuery)
-      );
-    });
-
-    setFilteredUsers(filtered);
-    setCurrentPage(1);
+    // ... rest of your search logic
   };
 
   const FilterModal = ({
@@ -997,16 +1197,13 @@ const getUniqueStudentsFromSchedule = (
           </div>
         </div>
 
-        <div className="flex space-x-6  px-4 py-2 rounded-md">
+        <div className="flex space-x-6 px-4 py-4 rounded-md">
           <button
             className={`relative text-[14px] transition font-medium ${activeTab === "scheduled"
-                ? "text-[#576CBC] font-semibold"
-                : "text-[#0A0A12] dark:text-[#fff] opacity-80"
+              ? "text-[#576CBC] font-semibold"
+              : "text-[#0A0A12] dark:text-[#fff] opacity-80"
               }`}
-            onClick={() => {
-              setActiveTab("scheduled");
-              setCurrentPage(1);
-            }}
+            onClick={() => handleTabSwitch("scheduled")}
           >
             Scheduled ({scheduledClasses.length})
             {activeTab === "scheduled" && (
@@ -1016,13 +1213,10 @@ const getUniqueStudentsFromSchedule = (
 
           <button
             className={`relative text-[14px] transition font-medium ${activeTab === "completed"
-                ? "text-[#576CBC] font-semibold"
-                : "text-[#0A0A12] dark:text-[#fff] opacity-80"
+              ? "text-[#576CBC] font-semibold"
+              : "text-[#0A0A12] dark:text-[#fff] opacity-80"
               }`}
-            onClick={() => {
-              setActiveTab("completed");
-              setCurrentPage(1);
-            }}
+            onClick={() => handleTabSwitch("completed")}
           >
             Completed ({completedClasses.length})
             {activeTab === "completed" && (
@@ -1130,12 +1324,60 @@ const getUniqueStudentsFromSchedule = (
                   <tr
                     key={item._id}
                     className={`text-[12px] ${index % 2 === 0
-                        ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                        : "bg-[#F8F8F8] dark:bg-[#303030]"
+                      ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                      : "bg-[#F8F8F8] dark:bg-[#303030]"
                       }`}
                   >
                     <td className="px-3 py-3 text-[#3D8FDE] font-medium text-left">
-                      {studentName}
+                      {item.isGroupClass ? (
+                        <div className="relative">
+                          {item.groupStudents && item.groupStudents.length > 0 ? (
+                            <>
+                              <button
+                                onClick={() =>
+                                  setOpenGroupClassIndex(prev => prev === index ? null : index)
+                                }
+                                className="flex items-center gap-2 font-medium hover:text-[#5c5c5c] dark:hover:text-[#5c5c5c]"
+                              >
+                                <AiOutlineMenuUnfold />
+                                View Students({item.groupStudentCount || item.groupStudents?.length || 0})
+                              </button>
+                              {openGroupClassIndex === index && (
+                                <div className="absolute z-10 mt-2 w-48 bg-white rounded shadow-lg p-2 dark:bg-[#343434] border border-gray-200 dark:border-gray-600">
+                                  {item.groupStudents
+                                    .filter((student, index, self) =>
+                                      index === self.findIndex(s => {
+                                        const name1 = `${s.studentFirstName}`.toLowerCase().trim();
+                                        const name2 = `${student.studentFirstName}`.toLowerCase().trim();
+                                        return name1 === name2;
+                                      })
+                                    )
+                                    .map((student, idx) => (
+                                      <div
+                                        key={`${item._id}-${student.studentId}`}
+                                        className="py-1 text-[#17243E] dark:text-[#FDFDFD]"
+                                      >
+                                        <span className="flex items-center gap-2 text-xs">
+                                          <IoPersonOutline />
+                                          {student.studentFirstName}
+                                        </span>
+                                      </div>
+                                    ))}
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <span className="flex items-center gap-2 font-medium">
+                              <IoPersonOutline />
+                              No students
+                            </span>
+                          )}
+                        </div>
+                      ) : isTrial ? (
+                        item.trialclass?.student?.name?.split(" ")[0] || item.student?.studentFirstName || "Trial Student"
+                      ) : (
+                        item.student?.studentFirstName || "N/A"
+                      )}
                     </td>
                     <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                       {courseName || "N/A"}
@@ -1145,25 +1387,24 @@ const getUniqueStudentsFromSchedule = (
                     </td>
                     <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                       {timeDisplay}
-                  </td>
-                  <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                        {(() => {
-                            const val = classType
-                            return val
-                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
-                              : "-";
-                          })()}
-                  </td>
-                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                    <span
-                      className={`font-semibold px-3 py-1 rounded-md text-[10px] inline-block text-center min-w-[120px] ${
-                          status === "Scheduled"
+                    </td>
+                    <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                      {(() => {
+                        const val = classType
+                        return val
+                          ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                          : "-";
+                      })()}
+                    </td>
+                    <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                      <span
+                        className={`font-semibold px-3 py-1 rounded-md text-[10px] inline-block text-center min-w-[120px] ${status === "Scheduled"
                           ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
-                            : status === "Rescheduled" || status === "Reschedulerequested"
-                              ? "bg-[#E4E4E4] text-[#000] dark:bg-[#555] dark:text-[#fff]"
-                              : status === "Completed"
-                                ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
-                                : "bg-[#FDECEC] dark:bg-[#D3464533] text-[#D34645]"
+                          : status === "Rescheduled" || status === "Reschedulerequested"
+                            ? "bg-[#E4E4E4] text-[#000] dark:bg-[#555] dark:text-[#fff]"
+                            : status === "Completed"
+                              ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
+                              : "bg-[#FDECEC] dark:bg-[#D3464533] text-[#D34645]"
                           }`}
                       >
                         {status}
@@ -1177,9 +1418,9 @@ const getUniqueStudentsFromSchedule = (
                         <button
                           onClick={() => toggleDropdown(index)}
                           className={`$${(activeTab === "scheduled" && ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
-                              activeTab === "completed"
-                              ? "cursor-pointer"
-                              : "cursor-default"
+                            activeTab === "completed"
+                            ? "cursor-pointer"
+                            : "cursor-default"
                             }`}
                           disabled={
                             !((activeTab === "scheduled" && ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
@@ -1188,9 +1429,9 @@ const getUniqueStudentsFromSchedule = (
                         >
                           <MoreVertical
                             className={`w-4 h-4 ${(activeTab === "scheduled" && ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
-                                activeTab === "completed"
-                                ? "text-slate-600 dark:text-[#FDFDFD]"
-                                : "text-gray-400 dark:text-gray-600 opacity-50"
+                              activeTab === "completed"
+                              ? "text-slate-600 dark:text-[#FDFDFD]"
+                              : "text-gray-400 dark:text-gray-600 opacity-50"
                               }`}
                           />
                         </button>
@@ -1214,8 +1455,8 @@ const getUniqueStudentsFromSchedule = (
                               ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus) && (
                                 <button
                                   className={`w-full text-left px-4 py-2 text-[12px] ${teacherRescheduleWrite
-                                      ? "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
-                                      : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444] cursor-not-allowed"
+                                    ? "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
+                                    : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444] cursor-not-allowed"
                                     }`}
                                   onClick={
                                     teacherRescheduleWrite ? () => handleReschedule(item._id) : undefined

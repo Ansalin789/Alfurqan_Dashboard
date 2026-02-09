@@ -289,48 +289,78 @@ const UpcomingTasks: React.FC = () => {
       // Filter completed classes
       const now = new Date();
 
-      const parseDateTime = (dateStr: string, timeStr?: string) => {
+      const parseDateTime = (dateStr: any, timeStr?: string) => {
         if (!dateStr) return null;
-        const date = new Date(dateStr);
-        if (timeStr) {
-          const [hours, minutes] = timeStr.split(":").map(Number);
-          date.setHours(hours, minutes, 0, 0);
+
+        console.log("parseDateTime - raw dateStr:", dateStr, "timeStr:", timeStr);
+
+        // Handle Mongo {$date}
+        if (typeof dateStr === "object" && dateStr.$date) {
+          dateStr = dateStr.$date;
         }
+
+        const date = new Date(dateStr);
+
+        if (isNaN(date.getTime())) {
+          console.warn("parseDateTime - invalid date:", dateStr);
+          return null;
+        }
+
+        if (timeStr) {
+          const [h, m] = timeStr.split(":").map(Number);
+          date.setHours(h, m, 0, 0);
+        }
+
+        console.log("parseDateTime - parsed Date:", date);
+
         return date;
       };
 
-      const upcoming = allClasses
-        .filter((cls) => {
-          const startDateTime = parseDateTime(
-            cls.startDate,
-            cls.startTime?.[0]
-          );
-          return (
-            ["Scheduled", "Rescheduled", "Reschedulerequested"].includes(
-              cls.scheduleStatus
-            ) &&
-            startDateTime &&
-            startDateTime >= now
-          );
-        })
-        .sort((a, b) => {
-          const aDate =
-            parseDateTime(a.startDate, a.startTime?.[0]) || new Date(0);
-          const bDate =
-            parseDateTime(b.startDate, b.startTime?.[0]) || new Date(0);
-          return aDate.getTime() - bDate.getTime(); // ascending: closest to now first
+      const upcoming = allClasses.filter((cls) => {
+        const start = parseDateTime(cls.startDate, cls.startTime?.[0]);
+        const end = parseDateTime(cls.endDate, cls.endTime?.[0]);
+
+        console.log("Filter class - id:", cls._id, {
+          startDate: cls.startDate,
+          endDate: cls.endDate,
+          startTime: cls.startTime?.[0],
+          endTime: cls.endTime?.[0],
+          parsedStart: start,
+          parsedEnd: end,
+          status: cls.scheduleStatus,
         });
 
-      console.log("Upcoming Classes:", upcoming);
-      setLoading(false);
+        if (!start || !end) {
+          console.warn("Skipping class due to missing start/end:", cls._id);
+          return false;
+        }
 
-      const upcomingclass = upcoming.filter((cls) => {
-  const classDate = parseDateTime(cls.startDate, cls.startTime?.[0]);
-  if (!classDate) return false;
-  const isToday = classDate.toDateString() === now.toDateString();
-  return isToday;
-});
-setClasses(upcomingclass);
+        const validStatus = [
+          "Scheduled",
+          "BothAbsent",
+          "StudentAbsent",
+          "NotCompleted",
+        ];
+
+        if (!validStatus.includes(cls.scheduleStatus)) {
+          console.warn(
+            "Skipping class due to invalid status:",
+            cls._id,
+            cls.scheduleStatus
+          );
+          return false;
+        }
+
+        // Show until end time
+        const keep = now < end;
+        console.log("Filter result for class", cls._id, "=>", keep);
+        return keep;
+      });
+
+      console.log("Upcoming Classes:", upcoming);
+
+      setClasses(upcoming);
+      setLoading(false);
 
       console.log("Class data successfully set to state.");
     } catch (error : any) {

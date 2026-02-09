@@ -37,6 +37,7 @@ export interface StudentData {
 
 type SimpleUser = {
   _id: string;
+  userId : string;
   username: string;
   email?: string;
   role: string;
@@ -125,6 +126,7 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
           const nameValue = u.userName ?? u.username ?? `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim();
           return {
             _id: u._id ?? u.id ?? "",
+            userId: u.userId ?? u.userId ?? "",
             username: nameValue,
             email: u.email ?? u.userEmail ?? "",
             role: String(roleValue),
@@ -152,13 +154,13 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
   const toggleUserByRole = (user: SimpleUser, role: "Teacher" | "Admin") => {
     if (role === "Teacher") {
       setSelectedTeacherUsers((prev) => {
-        const exists = prev.some((t) => t._id === user._id);
-        return exists ? prev.filter((t) => t._id !== user._id) : [...prev, user];
+        const exists = prev.some((t) => t._id === user.userId);
+        return exists ? prev.filter((t) => t._id !== user.userId) : [...prev, user];
       });
     } else {
       setSelectedAdminUsers((prev) => {
-        const exists = prev.some((t) => t._id === user._id);
-        return exists ? prev.filter((t) => t._id !== user._id) : [...prev, user];
+        const exists = prev.some((t) => t._id === user.userId);
+        return exists ? prev.filter((t) => t._id !== user.userId) : [...prev, user];
       });
     }
   };
@@ -196,7 +198,7 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
     
       const participants = [
         ...selectedTeacherUsers.map((u) => ({
-          participantId: u._id,
+          participantId: u.userId,
           participantName: u.username,
           participantEmail: u.email || "",
           role: "teacher" as const,
@@ -210,7 +212,7 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
           attendee: "Student",
         })),
         ...selectedAdminUsers.map((u) => ({
-          participantId: u._id,
+          participantId: u.userId,
           participantName: u.username,
           participantEmail: u.email || "",
           role: "admin" as const,
@@ -331,8 +333,8 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
               
                 Add Participants
               </label>
-              <div className="relative flex items-center rounded-lg dark:bg-[#2B2B2B]  w-full text-xs border border-[#D4D4D4] dark:border-[#3F3F46] rounded-lg px-2 py-2 
-          focus:outline-none focus:ring-1 focus:ring-[#6366F1] bg-white dark:bg-[#2A2A2A] 
+              <div className="relative flex items-center  dark:bg-[#2B2B2B]  w-full text-xs border border-[#D4D4D4] dark:border-[#3F3F46] rounded-lg px-2 py-2 
+          focus:outline-none focus:ring-1 focus:ring-[#6366F1] bg-white 
           text-[#1E1E1E] dark:text-[#E4E4E7]">
               <div className="flex-1 px-2 text-xs text-gray-500 dark:text-gray-300 font-light">
               Select Participants                </div>
@@ -356,36 +358,9 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
                       Select Participants
                     </h2>
                     <div className="flex items-center gap-2 mb-3 border-b border-gray-300 dark:border-gray-600 pb-2">
-                      <button onClick={() => setRoleTab("Student")} className={`px-3 py-1.5 text-xs rounded-md ${roleTab === "Student" ? "bg-[#576CBC] text-white" : "bg-gray-100 dark:bg-[#2B2B2B] text-gray-800 dark:text-white"}`}>Students</button>
                       <button onClick={() => setRoleTab("Teacher")} className={`px-3 py-1.5 text-xs rounded-md ${roleTab === "Teacher" ? "bg-[#576CBC] text-white" : "bg-gray-100 dark:bg-[#2B2B2B] text-gray-800 dark:text-white"}`}>Teachers</button>
-                      <button onClick={() => setRoleTab("Admin")} className={`px-3 py-1.5 text-xs rounded-md ${roleTab === "Admin" ? "bg-[#576CBC] text-white" : "bg-gray-100 dark:bg-[#2B2B2B] text-gray-800 dark:text-white"}`}>Admins</button>
                     </div>
-                    {roleTab === "Student" && (
-                      <>
-                        <div className="flex gap-2 mb-2">
-                          {tabs.map((tab) => (
-                            <button key={tab} onClick={() => setActiveTab(tab)} className={`px-3 py-1.5 text-xs rounded-md transition ${activeTab === tab ? "bg-[#576CBC] text-white" : "bg-gray-100 dark:bg-[#2B2B2B] text-gray-800 dark:text-white"}`}>{tab}</button>
-                          ))}
-                        </div>
-                        <div className="space-y-2 max-h-48 overflow-y-auto text-sm pr-1">
-                          {Teachers.filter((teacher) => {
-                            if (activeTab === "All") return true;
-                            return teacher.student.course === activeTab;
-                          })
-                            .reduce((unique: typeof Teachers, teacher) => {
-                              const exists = unique.find((t) => t.student.studentId === teacher.student.studentId);
-                              if (!exists) unique.push(teacher);
-                              return unique;
-                            }, [])
-                            .map((teacher) => (
-                              <label key={teacher.student.studentId} className="flex items-center gap-2 px-1">
-                                <input type="checkbox" checked={selectedTeachers.includes(teacher)} onChange={() => toggleTeacher(teacher)} />
-                                <span className="dark:text-white text-gray-700">{teacher.username}</span>
-                              </label>
-                            ))}
-                        </div>
-                      </>
-                    )}
+                   
                     {roleTab === "Teacher" && (
                       <>
                         <div className="flex gap-2 mb-2">
@@ -412,10 +387,10 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
                               return (u.position || "").toLowerCase() === teacherCategoryTab.toLowerCase();
                             })
                             .map((user) => (
-                              <label key={user._id} className="flex items-center gap-2 px-1">
+                              <label key={user.userId} className="flex items-center gap-2 px-1">
                                 <input
                                   type="checkbox"
-                                  checked={selectedTeacherUsers.some((t) => t._id === user._id)}
+                                  checked={selectedTeacherUsers.some((t) => t.userId === user.userId)}
                                   onChange={() => toggleUserByRole(user, "Teacher")}
                                 />
                                 <span className="dark:text-white text-gray-700">{user.username}</span>
@@ -424,22 +399,7 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
                         </div>
                       </>
                     )}
-                    {roleTab === "Admin" && (
-                      <div className="space-y-2 max-h-48 overflow-y-auto text-sm pr-1">
-                        {allUsers
-                          .filter((u) => (u.role || "").toLowerCase() === "admin")
-                          .map((user) => (
-                            <label key={user._id} className="flex items-center gap-2 px-1">
-                              <input
-                                type="checkbox"
-                                checked={selectedAdminUsers.some((t) => t._id === user._id)}
-                                onChange={() => toggleUserByRole(user, "Admin")}
-                              />
-                              <span className="dark:text-white text-gray-700">{user.username}</span>
-                            </label>
-                          ))}
-                      </div>
-                    )}
+                   
                     <div className="flex justify-end mt-6 gap-3">
                     <button
                         onClick={() => setOpen(false)}
