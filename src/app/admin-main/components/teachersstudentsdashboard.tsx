@@ -72,7 +72,7 @@ export default function TeachersStudents() {
         <span>Students</span>
       </div>
 
-      <div className="max-h-40 overflow-y-auto pr-2">
+      <div className="max-h-40 overflow-y-scroll scrollbar-none pr-2">
         {teachers.map((teacher, index) => (
           <div
             key={getTeacherKey(teacher, index)}

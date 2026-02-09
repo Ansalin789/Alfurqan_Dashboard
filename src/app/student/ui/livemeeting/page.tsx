@@ -296,12 +296,6 @@ const LiveMeeting = () => {
                           "recording",
                         ],
                       }}
-                      interfaceConfigOverwrite={{
-                        SHOW_JITSI_WATERMARK: false,
-                        SHOW_BRAND_WATERMARK: false,
-                        SHOW_PROMOTIONAL_CLOSE_PAGE: false,
-                        SHOW_POWERED_BY: false,
-                      }}
                       onApiReady={(externalApi) => {
                         // ================= JOIN =================
                         externalApi.addListener(
