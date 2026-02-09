@@ -83,7 +83,7 @@ export default function Page() {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         if (response.data && response.data.length > 0) {
@@ -102,7 +102,7 @@ export default function Page() {
               joined: false,
               joinTime: "",
               leaveTime: "",
-            }))
+            })),
           );
 
           setAttendance(teacherAttendance);
@@ -133,23 +133,11 @@ export default function Page() {
     const payload = {
       duration: duration,
       meetingStatus: "Completed",
-      teacher: classData?.teacher.map((teacher) => {
-        const matchingAttendance = attendance.find(
-          (a) => a.studentId === teacher.teacherId
-        );
-        let attendee = "absent";
-        if (matchingAttendance) {
-          attendee = matchingAttendance.joined ? "present" : "absent";
-        }
-
-        return {
-          teacherId: teacher.teacherId,
-          teacherName: teacher.teacherName,
-          teacherEmail: teacher.teacherEmail,
-          attendee: attendee,
-          _id: teacher._id,
-        };
-      }),
+      teacher: attendance.map((a) => ({
+  teacherId: a.studentId,
+  teacherName: a.name,
+  attendee: a.leaveTime ? "present" : "present", // joined = present
+})),
 
     };
 
@@ -172,7 +160,7 @@ export default function Page() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(payload),
-        }
+        },
       );
       console.log("pay", payload);
 
@@ -205,9 +193,94 @@ export default function Page() {
     return `${hours}h ${minutes}m`;
   };
 
+  const getCurrentUserInfo = () => {
+    // Admin
+    const adminId = localStorage.getItem("AdminId");
+    const adminName = localStorage.getItem("AdminName");
+    const adminEmail = localStorage.getItem("AdminEmail");
+
+    if (adminId && adminName) {
+      return {
+        name: adminName,
+        id: adminId,
+        email: adminEmail || "admin@alfurqan.com",
+        role: "admin",
+      };
+    }
+
+    // Academic Coach
+    const acId = localStorage.getItem("AcademicCoachPortalId");
+    const acName = localStorage.getItem("AcademicCoachName");
+    const acEmail = localStorage.getItem("AcademicCoachEmail");
+
+    if (acId && acName) {
+      return {
+        name: acName,
+        id: acId,
+        email: acEmail || "coach@alfurqan.com",
+        role: "academicCoach",
+      };
+    }
+
+    // Supervisor
+    const supId = localStorage.getItem("SupervisorId");
+    const supName = localStorage.getItem("SupervisorName");
+    const supEmail = localStorage.getItem("SupervisorEmail");
+
+    if (supId && supName) {
+      return {
+        name: supName,
+        id: supId,
+        email: supEmail || "supervisor@alfurqan.com",
+        role: "supervisor",
+      };
+    }
+
+    // Teacher
+    const teacherId = localStorage.getItem("TeacherId");
+    const teacherName = localStorage.getItem("TeacherName");
+    const teacherEmail = localStorage.getItem("TeacherEmail");
+
+    if (teacherId && teacherName) {
+      return {
+        name: teacherName,
+        id: teacherId,
+        email: teacherEmail || "teacher@alfurqan.com",
+        role: "teacher",
+      };
+    }
+
+    // Student
+    const studentId = localStorage.getItem("StudentId");
+    const studentName = localStorage.getItem("StudentName");
+    const studentEmail = localStorage.getItem("StudentEmail");
+
+    if (studentId && studentName) {
+      return {
+        name: studentName,
+        id: studentId,
+        email: studentEmail || "student@alfurqan.com",
+        role: "student",
+      };
+    }
+
+    // Fallback
+    return {
+      name: "Guest",
+      id: "UNKNOWN",
+      email: "guest@alfurqan.com",
+      role: "guest",
+    };
+  };
+
+  const currentUser = getCurrentUserInfo();
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Live Meeting" showBackButton={true} showBackPath="/admin-main/ui/meeting" />
+      <AdminHeader
+        currentSection="Live Meeting"
+        showBackButton={true}
+        showBackPath="/admin-main/ui/meeting"
+      />
       <div className="flex flex-col min-h-screen px-4 sm:px-6 md:px-8">
         {/* Page Content */}
         <div className="flex flex-col lg:flex-row gap-6 flex-1 w-full max-w-screen-xl">
@@ -250,24 +323,23 @@ export default function Page() {
                         id="attendance-select"
                         className="w-full border p-2 rounded focus:outline-none text-[10px] dark:bg-[#252525] "
                       >
-                        {attendance.map((s) => {
-                          let statusLabel = "❌ Not Joined";
-                          if (s.joined) {
-                            statusLabel = s.leaveTime
+                        {attendance
+                          .filter((s) => s.joined)
+                          .map((s) => {
+                            const statusLabel = s.leaveTime
                               ? `🚪 Left at ${s.leaveTime}`
                               : `✅ Joined at ${s.joinTime}`;
-                          }
 
-                          return (
-                            <option
-                              className="text-[12px]"
-                              key={s.studentId}
-                              value={s.studentId}
-                            >
-                              {s.name} – {statusLabel}
-                            </option>
-                          );
-                        })}
+                            return (
+                              <option
+                                className="text-[12px]"
+                                key={s.id}
+                                value={s.id || ""}
+                              >
+                                {s.name} – {statusLabel}
+                              </option>
+                            );
+                          })}
                       </select>
                     </div>
                   </div>
@@ -277,6 +349,10 @@ export default function Page() {
                 <div className="flex-1 min-w-0 w-full h-[50vh] md:h-[60vh] rounded-md overflow-hidden shadow-inner border border-gray-300">
                   {roomName && (
                     <JitsiMeeting
+                      userInfo={{
+                        displayName: `${currentUser.name} | ID : ${currentUser.id}`,
+                        email: currentUser.email,
+                      }}
                       roomName={roomName}
                       domain="meet.alfurqanapp.com"
                       configOverwrite={{
@@ -302,78 +378,76 @@ export default function Page() {
                         ],
                       }}
                       onApiReady={(externalApi) => {
-
                         // ✅ Handle Participant Joined
                         externalApi.addListener(
                           "participantJoined",
-                          (event: { id: string; displayName?: string }) => {
+                          (event) => {
                             const joinTime = new Date().toLocaleTimeString([], {
                               hour: "2-digit",
                               minute: "2-digit",
                               hour12: true,
                             });
 
-                            console.log(
-                              "Participant displayName:",
-                              event.displayName
-                            );
-                            const parts = event.displayName?.split("| ID :");
-                            console.log("Split parts:", parts);
+                            const name = event.displayName || "Guest";
 
-                            const name = parts?.[0]?.trim() ?? "Unknown";
-                            const studentId = parts?.[1]?.trim() ?? "N/A";
+                            setAttendance((prev) => {
+                              // prevent duplicate
+                              const exists = prev.some(
+                                (a) => a.id === event.id,
+                              );
+                              if (exists) return prev;
 
-                            alert(`Name: ${name}, studentId: ${studentId}`);
-                            setAttendance((prev) =>
-                              prev.map((a) =>
-                                a.studentId === studentId
-                                  ? {
-                                      ...a,
-                                      id: event.id,
-                                      joined: true,
-                                      joinTime: joinTime,
-                                    }
-                                  : a
-                              )
-                            );
-                          }
+                              return [
+                                ...prev,
+                                {
+                                  id: event.id,
+                                  studentId: event.id, // use jitsi id
+                                  name: name,
+                                  startTime: null,
+                                  endTime: null,
+                                  joined: true,
+                                  joinTime,
+                                  leaveTime: "",
+                                },
+                              ];
+                            });
+                          },
                         );
 
                         // 🔴 Handle Participant Left
                         externalApi.addListener(
-                          "participantLeft",
-                          (event: { id: string }) => {
-                            console.log("participantLeft event fired:", event);
-                            const leaveTime = new Date().toLocaleTimeString(
-                              [],
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              }
-                            );
+                          "participantJoined",
+                          (event) => {
+                            const joinTime = new Date().toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            });
 
-                            const participant = attendanceRef.current.find(
-                              (p) => p.id === event.id
-                            );
-                            console.log("Matching participant:", participant);
-                            if (participant) {
-                              setAttendance((prev) =>
-                                prev.map((a) =>
-                                  a.id === event.id
-                                    ? { ...a, leaveTime: leaveTime }
-                                    : a
-                                )
+                            const name = event.displayName || "Guest";
+
+                            setAttendance((prev) => {
+                              // prevent duplicate
+                              const exists = prev.some(
+                                (a) => a.id === event.id,
                               );
-                              console.log(
-                                `🔴 ${participant.name} left at ${leaveTime}`
-                              );
-                            } else {
-                              console.warn(
-                                `Participant with id ${event.id} not found in attendance.`
-                              );
-                            }
-                          }
+                              if (exists) return prev;
+
+                              return [
+                                ...prev,
+                                {
+                                  id: event.id,
+                                  studentId: event.id, // use jitsi id
+                                  name: name,
+                                  startTime: null,
+                                  endTime: null,
+                                  joined: true,
+                                  joinTime,
+                                  leaveTime: "",
+                                },
+                              ];
+                            });
+                          },
                         );
 
                         // 🎥 Host/teacher Joined Call
@@ -384,7 +458,7 @@ export default function Page() {
                               hour: "2-digit",
                               minute: "2-digit",
                               hour12: true,
-                            }
+                            },
                           );
 
                           console.log("Call started at", startCallTime);
@@ -397,7 +471,7 @@ export default function Page() {
                               hour: "2-digit",
                               minute: "2-digit",
                               hour12: true,
-                            }
+                            },
                           );
                           setEndTime(startCallTime);
                           setMeetingUpdate(true);
@@ -434,42 +508,30 @@ export default function Page() {
                   Attendees:
                 </h3>
                 <ul className="list-disc list-inside text-sm text-gray-800 space-y-1 dark:text-[#fff]">
-                  {attendance.map((a) => {
-                    let status: JSX.Element;
-
-                    if (a.joined) {
-                      if (a.leaveTime) {
-                        status = (
-                          <span className="text-gray-600">
-                            🚪 Left at {a.leaveTime}
-                          </span>
-                        );
-                      } else {
-                        status = (
-                          <span className="text-green-600">
-                            ✅ Joined at {a.joinTime}
-                          </span>
-                        );
-                      }
-                    } else {
-                      status = (
-                        <span className="text-red-500 font-semibold text-sm">
-                          ❌ Not Joined
+                  {attendance
+                    .filter((a) => a.joined)
+                    .map((a) => {
+                      const status = a.leaveTime ? (
+                        <span className="text-gray-600">
+                          🚪 Left at {a.leaveTime}
+                        </span>
+                      ) : (
+                        <span className="text-green-600">
+                          ✅ Joined at {a.joinTime}
                         </span>
                       );
-                    }
 
-                    return (
-                      <li key={a.studentId}>
-                        <span className="font-medium">{a.name}</span> – {status}
-                      </li>
-                    );
-                  })}
+                      return (
+                        <li key={a.id}>
+                          <span className="font-medium">{a.name}</span> –{" "}
+                          {status}
+                        </li>
+                      );
+                    })}
                 </ul>
               </div>
 
               {/* Meeting Minutes Textarea */}
-            
             </div>
 
             {/* Action Buttons */}
@@ -489,7 +551,6 @@ export default function Page() {
             </div>
           </div>
         </div>
-        
       )}
     </BaseLayout4>
   );
