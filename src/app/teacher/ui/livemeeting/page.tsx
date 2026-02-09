@@ -188,24 +188,32 @@ const LiveMeeting = () => {
                     >
                       Attendance
                     </label>
-                    <select
-                      id="attendance-select"
-                      className="w-full border p-2 rounded"
-                    >
-                      {attendance.map((s) => {
-                        let statusLabel = "❌ Not Joined";
-                        if (s.joined) {
-                          statusLabel = s.leaveTime
-                            ? `🚪 Left at ${s.leaveTime}`
-                            : `✅ Joined at ${s.joinTime}`;
-                        }
-                        return (
-                          <option key={s.studentId} value={s.studentId}>
-                            {s.name} – {statusLabel}
-                          </option>
-                        );
-                      })}
-                    </select>
+                   <select
+                        id="attendance-select"
+                        className="w-full border p-2 rounded focus:outline-none text-[10px] dark:bg-[#252525] "
+                      >
+                        {attendance
+                          .filter((s) => s.joined) // only real participants
+                          .map((s) => {
+                            let statusLabel = "";
+
+                            if (s.leaveTime) {
+                              statusLabel = `🚪 Left at ${s.leaveTime}`;
+                            } else {
+                              statusLabel = `✅ Joined at ${s.joinTime}`;
+                            }
+
+                            return (
+                              <option
+                                className="text-[12px]"
+                                key={s.id}
+                                value={s.id || ""}
+                              >
+                                {s.name} – {statusLabel}
+                              </option>
+                            );
+                          })}
+                      </select>
                   </div>
                 </div>
                 {/* Jitsi Meeting Component */}
@@ -236,39 +244,88 @@ const LiveMeeting = () => {
                       ],
                     }}
                     onApiReady={(externalApi) => {
-                      externalApi.addListener("participantJoined", (event) => {
-                        const joinTime = new Date().toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        });
-                        const parts = event.displayName?.split("| ID :");
-                        const studentId = parts?.[1]?.trim() ?? "N/A";
-                        const updated = attendance.map((a) =>
-                          a.studentId === studentId
-                            ? {
-                                ...a,
-                                id: event.id,
-                                joined: true,
-                                joinTime,
-                                startTime: joinTime,
+                      // ================= JOIN =================
+                        externalApi.addListener(
+                          "participantJoined",
+                          (event) => {
+                            const joinTime = new Date().toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            });
+
+                            let realId = "";
+                            let realName = "Guest";
+
+                            // ✅ Extract ID from displayName
+                            if (event.displayName?.includes("| ID :")) {
+                              const parts = event.displayName.split("| ID :");
+                              realName = parts[0].trim();
+                              realId = parts[1].trim();
+                            } else {
+                              realName = event.displayName || "Guest";
+                            }
+
+                            // ❌ If no ID → ignore
+                            if (!realId) {
+                              console.warn(
+                                "⚠️ No ID found:",
+                                event.displayName,
+                              );
+                              return;
+                            }
+
+                            setAttendance((prev) => {
+                              // ✅ Avoid duplicate entry
+                              const exists = prev.some(
+                                (a) => a.studentId === realId,
+                              );
+
+                              if (exists) {
+                                return prev.map((a) =>
+                                  a.studentId === realId
+                                    ? {
+                                        ...a,
+                                        id: event.id,
+                                        joined: true,
+                                        joinTime,
+                                      }
+                                    : a,
+                                );
                               }
-                            : a,
+
+                              // ✅ New join
+                              return [
+                                ...prev,
+                                {
+                                  id: event.id, // jitsi id
+                                  studentId: realId, // ✅ REAL DB ID
+                                  name: realName,
+                                  startTime: null,
+                                  endTime: null,
+                                  joined: true,
+                                  joinTime,
+                                  leaveTime: "",
+                                },
+                              ];
+                            });
+                          },
                         );
-                        setAttendance(updated);
-                      });
-                      externalApi.addListener("participantLeft", (event) => {
-                        const leaveTime = new Date().toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
+
+                        // ================= LEAVE =================
+                        externalApi.addListener("participantLeft", (event) => {
+                          const leaveTime = new Date().toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          });
+
+                          setAttendance((prev) =>
+                            prev.map((a) =>
+                              a.id === event.id ? { ...a, leaveTime } : a,
+                            ),
+                          );
                         });
-                        setAttendance((prev) =>
-                          prev.map((a) =>
-                            a.id === event.id ? { ...a, leaveTime } : a,
-                          ),
-                        );
-                      });
                       externalApi.addListener("videoConferenceJoined", () => {
                         const startCallTime = new Date().toLocaleTimeString(
                           [],

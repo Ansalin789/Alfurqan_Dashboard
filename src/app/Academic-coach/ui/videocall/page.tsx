@@ -17,7 +17,20 @@ interface Attendance {
   leaveTime: string;
 }
 
+interface Supervisor {
+  supervisorId: string;
+  supervisorName: string;
+  supervisorEmail: string;
+  supervisorRole: string;
+}
 
+interface Teacher {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+  attendee: string;
+  _id: string;
+}
 
 interface Meeting {
   _id: string;
@@ -86,7 +99,8 @@ export default function Page() {
   const seacrh = useSearchParams();
   const meetingId = seacrh.get("id");
   const [meetingUpdate, setMeetingUpdate] = useState(false);
-  
+  const [meetingMinutes, setMeetingMinutes] = useState<string>("");
+
   useEffect(() => {
     const fetchClassData = async () => {
       try {
@@ -211,7 +225,80 @@ export default function Page() {
     attendanceRef.current = attendance;
   }, [attendance]);
 
-  
+  // Function to handle API update
+  const handleMeetingMinutesUpdate = async () => {
+    console.log("📌 Submit clicked");
+    let duration = "";
+    if (startTime && endTime) {
+      duration = calculateDuration(startTime, endTime);
+    } else {
+      console.warn("Missing start or end time for duration calculation");
+    }
+
+    const normalizedTeachers = Array.isArray(classData?.teacher)
+      ? classData.teacher
+      : [classData?.teacher];
+
+    // ✅ Build payload from LIVE attendance
+    const payload = {
+      meetingminutes: meetingMinutes,
+      duration,
+      meetingStatus: "Completed",
+      teacher: attendance.map((a) => ({
+        teacherId: a.studentId, // real DB id
+        teacherName: a.name,
+        attendee: "present",
+      })),
+    };
+
+    console.log("Final Payload:", payload);
+
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AcademicCoachAuthToken")
+          : null;
+      if (!token) {
+        console.error("❌ AcademicCoachAuthToken not found");
+        return;
+      }
+
+      const response = await fetch(
+        `https://api.blackstoneinfomaticstech.com/meetingminutes/${meetingId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        },
+      );
+      console.log("pay", payload);
+
+      if (!response.ok) {
+        throw new Error("Failed to update meeting minutes");
+      }
+
+      const result = await response.json();
+      console.log("✅ Meeting Minutes Updated:", result);
+
+      setMeetingUpdate(false); // close modal
+    } catch (error) {
+      console.error("❌ Error updating meeting minutes:", error);
+    }
+  };
+  const calculateDuration = (startTime: string, endTime: string): string => {
+    const today = new Date().toDateString(); // use today's date to construct full datetime
+    const start = new Date(`${today} ${startTime}`);
+    const end = new Date(`${today} ${endTime}`);
+    const diffMs = end.getTime() - start.getTime(); // difference in milliseconds
+    if (diffMs < 0) return "Invalid";
+    const diffMins = Math.floor(diffMs / 60000); // convert to minutes
+    const hours = Math.floor(diffMins / 60);
+    const minutes = diffMins % 60;
+    return `${hours}h ${minutes}m`;
+  };
   const getCurrentUser = () => {
     const teacherId = localStorage.getItem("TeacherId");
     const teacherName = localStorage.getItem("TeacherName");
@@ -295,28 +382,26 @@ export default function Page() {
                         className="w-full border p-2 rounded focus:outline-none text-[10px] dark:bg-[#252525] "
                       >
                         {attendance
-  .filter((s) => s.joined) // only real participants
-  .map((s) => {
+                          .filter((s) => s.joined) // only real participants
+                          .map((s) => {
+                            let statusLabel = "";
 
-    let statusLabel = "";
+                            if (s.leaveTime) {
+                              statusLabel = `🚪 Left at ${s.leaveTime}`;
+                            } else {
+                              statusLabel = `✅ Joined at ${s.joinTime}`;
+                            }
 
-    if (s.leaveTime) {
-      statusLabel = `🚪 Left at ${s.leaveTime}`;
-    } else {
-      statusLabel = `✅ Joined at ${s.joinTime}`;
-    }
-
-    return (
-      <option
-        className="text-[12px]"
-        key={s.id}
-        value={s.id ||""}
-      >
-        {s.name} – {statusLabel}
-      </option>
-    );
-  })}
-
+                            return (
+                              <option
+                                className="text-[12px]"
+                                key={s.id}
+                                value={s.id || ""}
+                              >
+                                {s.name} – {statusLabel}
+                              </option>
+                            );
+                          })}
                       </select>
                     </div>
                   </div>
@@ -364,62 +449,72 @@ export default function Page() {
                         );
 
                         // ================= JOIN =================
-                       externalApi.addListener("participantJoined", (event) => {
+                        externalApi.addListener(
+                          "participantJoined",
+                          (event) => {
+                            const joinTime = new Date().toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            });
 
-  const joinTime = new Date().toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
+                            let realId = "";
+                            let realName = "Guest";
 
-  let realId = "";
-  let realName = "Guest";
+                            // ✅ Extract ID from displayName
+                            if (event.displayName?.includes("| ID :")) {
+                              const parts = event.displayName.split("| ID :");
+                              realName = parts[0].trim();
+                              realId = parts[1].trim();
+                            } else {
+                              realName = event.displayName || "Guest";
+                            }
 
-  // ✅ Extract ID from displayName
-  if (event.displayName?.includes("| ID :")) {
-    const parts = event.displayName.split("| ID :");
-    realName = parts[0].trim();
-    realId = parts[1].trim();
-  } else {
-    realName = event.displayName || "Guest";
-  }
+                            // ❌ If no ID → ignore
+                            if (!realId) {
+                              console.warn(
+                                "⚠️ No ID found:",
+                                event.displayName,
+                              );
+                              return;
+                            }
 
-  // ❌ If no ID → ignore
-  if (!realId) {
-    console.warn("⚠️ No ID found:", event.displayName);
-    return;
-  }
+                            setAttendance((prev) => {
+                              // ✅ Avoid duplicate entry
+                              const exists = prev.some(
+                                (a) => a.studentId === realId,
+                              );
 
-  setAttendance((prev) => {
+                              if (exists) {
+                                return prev.map((a) =>
+                                  a.studentId === realId
+                                    ? {
+                                        ...a,
+                                        id: event.id,
+                                        joined: true,
+                                        joinTime,
+                                      }
+                                    : a,
+                                );
+                              }
 
-    // ✅ Avoid duplicate entry
-    const exists = prev.some(a => a.studentId === realId);
-
-    if (exists) {
-      return prev.map(a =>
-        a.studentId === realId
-          ? { ...a, id: event.id, joined: true, joinTime }
-          : a
-      );
-    }
-
-    // ✅ New join
-    return [
-      ...prev,
-      {
-        id: event.id,          // jitsi id
-        studentId: realId,     // ✅ REAL DB ID
-        name: realName,
-        startTime: null,
-        endTime: null,
-        joined: true,
-        joinTime,
-        leaveTime: "",
-      },
-    ];
-  });
-});
-
+                              // ✅ New join
+                              return [
+                                ...prev,
+                                {
+                                  id: event.id, // jitsi id
+                                  studentId: realId, // ✅ REAL DB ID
+                                  name: realName,
+                                  startTime: null,
+                                  endTime: null,
+                                  joined: true,
+                                  joinTime,
+                                  leaveTime: "",
+                                },
+                              ];
+                            });
+                          },
+                        );
 
                         // ================= LEAVE =================
                         externalApi.addListener("participantLeft", (event) => {
@@ -480,7 +575,6 @@ export default function Page() {
       </div>
 
       {/* Meeting minutes popup  */}
-     
     </BaseLayout1>
   );
 }
