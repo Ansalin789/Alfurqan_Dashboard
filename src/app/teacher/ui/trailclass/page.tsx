@@ -413,7 +413,7 @@ function LiveClass() {
         setStudentStatus(data.studentStatus);
         setPaymentStatus(data.paymentStatus);
         setPaymentLink(
-          `https://alfurqanapp.com/invoice?id=${encodeURIComponent(
+          `https://blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(
             data.trialId
           )}`
         );
