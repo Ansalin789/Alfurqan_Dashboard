@@ -881,14 +881,14 @@ const Invoice = () => {
                 Invoice
               </h1>
               <img
-                src="/assets/images/alf.png"
+                src="/assets/images/bsicon.png"
                 alt="Al Furqan Academy"
                 className="w-40 block dark:hidden"
               />
 
               {/* Dark mode logo */}
               <img
-                src="/assets/images/alfwhitelogo.png"
+                src="/assets/images/blackstone.png"
                 alt="Al Furqan Academy"
                 className="w-40 hidden dark:block"
               />

@@ -54,17 +54,12 @@ export default function Sidebar3() {
       <aside className="sidebar bg-[#012A4A] dark:bg-[#1D1D1D] p-4 h-full flex flex-col">
         {/* Logo Section */}
         <div className='flex items-center gap-2 mt-5 mb-6 px-2'>
-          <Image 
-            src="/assets/images/alfwhite.png" 
-            width={40} 
-            height={40} 
-            className='w-10 h-10 object-contain' 
-            alt='logo' 
-          />
-          <div className="text-white leading-tight">
+        <Image     src="/assets/images/blackstone.png" width={150} height={150} className='bg-cover bg-center w-8 h-12' alt='logo' />
+
+          {/* <div className="text-white leading-tight">
             <h3 className="font-bold text-[18px]">AL FURQAN</h3>
             <h4 className="font-light text-[14px] font-sans">academy</h4>
-          </div>
+          </div> */}
         </div>
 
         {/* Menu List */}

@@ -56,19 +56,21 @@ function StudentSidebar() {
     <div className="sidebar__wrapper bg-[#012A4A] dark:bg-[#1D1D1D] p-4 h-full w-full max-w-full overflow-y-auto flex flex-col">
 
       {/* Logo Section */}
-      <div className='flex items-center gap-2 mt-5 mb-6 px-2'>
-        <Image
-          src="/assets/images/alfwhite.png"
-          width={40}
-          height={40}
-          className='w-10 h-10 object-contain'
-          alt='logo'
-        />
-        <div className="text-white leading-4">
-          <h3 className="font-bold text-[18px] sm:text-[20px] xl:text-[22px]">AL FURQAN</h3>
-          <h4 className="font-[200] ml-12 text-[16px] sm:text-[16px] xl:text-[17px] font-sans tracking-wide">academy</h4>
-        </div>
-      </div>
+    <div className='flex items-center gap-2  mb-6 px-2'>
+  <Image
+    src="/assets/images/blackstone.png"
+    width={150}
+    height={160}
+  className="h-[94px] w-auto sm:h-[110px] xl:h-[125px] object-contain"
+    alt="Blackstone logo"
+  />
+  
+  
+      {/* <div className="text-white leading-tight">
+        <h3 className="font-bold text-[18px] sm:text-[20px] xl:text-[22px]">Blackstone</h3>
+        <h4 className="font-light text-[14px] sm:text-[15px] xl:text-[16px] font-sans">academy</h4>
+      </div> */}
+    </div>
 
       {/* Menu List */}
       <ul className="space-y-2 flex-1">

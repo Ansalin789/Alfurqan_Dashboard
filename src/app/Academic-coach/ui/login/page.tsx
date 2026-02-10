@@ -353,7 +353,7 @@ const SignIn: React.FC = () => {
         <div className="w-full lg:w-1/2 h-auto lg:h-screen bg-white flex flex-col overflow-hidden order-2 lg:order-1">
           <div className="px-4 sm:px-6 lg:px-8 py-1">
             <Image
-              src="/assets/images/Logo - Website - big size 1.svg"
+              src="/assets/images/bsicon.png"
               alt="logo"
               width={150}
               height={160}
