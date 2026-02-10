@@ -354,7 +354,7 @@ export default function Page() {
                         email: currentUser.email,
                       }}
                       roomName={roomName}
-                      domain="meet.alfurqanapp.com"
+                      domain="meet.blackstoneinfomaticstech.com"
                       configOverwrite={{
                         startWithAudioMuted: false,
                         startWithVideoMuted: false,

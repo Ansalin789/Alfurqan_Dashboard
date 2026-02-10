@@ -581,7 +581,7 @@ export default function LiveClass() {
                     <JitsiMeeting
                       roomName={roomName}
                       userInfo={userInfo}
-                      domain="meet.alfurqanapp.com"
+                      domain="meet.blackstoneinfomaticstech.com"
                       configOverwrite={{
                         startWithAudioMuted: false,
                         startWithVideoMuted: false,

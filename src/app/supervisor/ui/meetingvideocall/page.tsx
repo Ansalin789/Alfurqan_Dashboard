@@ -360,7 +360,7 @@ export default function Page() {
                   {roomName && (
                     <JitsiMeeting
                       roomName={roomName}
-                      domain="meet.alfurqanapp.com"
+                      domain="meet.blackstoneinfomaticstech.com"
                       userInfo={{
                         displayName: `${localStorage.getItem("StudentName")} | ID : ${localStorage.getItem("StudentId")}`,
                         email:

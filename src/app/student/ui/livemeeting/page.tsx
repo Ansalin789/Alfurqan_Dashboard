@@ -221,7 +221,7 @@ const LiveMeeting = () => {
                         localStorage.getItem("StudentEmail") ||
                         "student@alfurqan.com",
                     }}
-                    domain="meet.alfurqanapp.com"
+                    domain="meet.blackstoneinfomaticstech.com"
                     configOverwrite={{
                       startWithAudioMuted: false,
                       startWithVideoMuted: false,

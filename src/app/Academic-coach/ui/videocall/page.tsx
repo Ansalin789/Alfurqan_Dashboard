@@ -415,7 +415,7 @@ console.log("Final Payload:", payload);
                   {roomName && (
                     <JitsiMeeting
                       roomName={roomName}
-                      domain="meet.alfurqanapp.com"
+                      domain="meet.blackstoneinfomaticstech.com"
                       // ✅ Always send user info
                       userInfo={{
                         displayName: `${currentUser.name} | ID : ${currentUser.id}`,

@@ -217,7 +217,7 @@ const LiveMeeting = () => {
                 {roomName && (
                   <JitsiMeeting
                     roomName={roomName}
-                    domain="meet.alfurqanapp.com"
+                    domain="meet.blackstoneinfomaticstech.com"
                       userInfo={{
     displayName: `${localStorage.getItem("TeacherName")} | ID : ${localStorage.getItem("TeacherId")}`,
     email: localStorage.getItem("TeacherEmail") || "teacher@alfurqan.com",

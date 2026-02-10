@@ -324,7 +324,7 @@ function LiveClass() {
                     {roomName && (
                       <JitsiMeeting
                         roomName={roomName}
-                        domain="meet.alfurqanapp.com"
+                        domain="meet.blackstoneinfomaticstech.com"
                         configOverwrite={{
                         startWithAudioMuted: false,
                         startWithVideoMuted: false,
