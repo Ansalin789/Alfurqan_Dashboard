@@ -82,11 +82,11 @@ export default function Sidebar4() {
         
         {/* Logo */}
         <div className='flex items-center gap-3 mt-5 mb-6 px-2'>
-          <Image src="/assets/images/alfwhite.png" width={40} height={40} alt='logo' />
-          <div className="text-white">
+        <Image     src="/assets/images/blackstone.png" width={150} height={150} className='bg-cover bg-center w-8 h-12' alt='logo' />
+          {/* <div className="text-white">
             <h3 className="font-bold text-[18px]">AL FURQAN</h3>
             <h4 className="text-[14px] font-light">academy</h4>
-          </div>
+          </div> */}
         </div>
 
         <ul className="space-y-1.5 flex-1">

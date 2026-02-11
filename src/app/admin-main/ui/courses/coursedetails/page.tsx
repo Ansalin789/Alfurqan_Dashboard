@@ -166,12 +166,27 @@ const Page = () => {
 
   const handleSubmit = async () => {
     try {
-      // Convert numberOfLevels to number and validate
-      const numLevels = parseInt(form.level);
-      if (numLevels < 1) {
+      
+      if ( !form.level.trim()) {
         setFailedMessage("Number of Levels must be a positive number");
+           setFailed(true);
+      return;
       }
-
+  if (!form.courseDescription?.trim()) {
+      setFailedMessage("Course description is required");
+      setFailed(true);
+      return;
+    }
+    if (!form.courseTitle.trim()) {
+      setFailedMessage("Course title is required");
+      setFailed(true);
+      return;
+    }
+    if (!form.courseDuration.trim()) {
+      setFailedMessage("Course duration is required");
+      setFailed(true);
+      return;
+    }
       // Prepare data for API
       const newCourse = {
         course: {
@@ -235,30 +250,28 @@ const Page = () => {
         }, 2000);
         fetchCourses(token);
       }
-    } catch (err) {
-      const error = err as AxiosError;
-      const status = error.response?.status;
-      setShowForm(false);
-      if (Number(status === 400)) {
-        const message =
-          (error.response?.data as any)?.message ??
-          "Please check the form inputs.";
-        setFailedMessage(message);
-        setFailed(true);
-      } else if (status === 401) {
-        setFailedMessage("Please login again.");
-        setFailed(true);
-      } else if (status === 403) {
-        setFailedMessage("You don't have permission to perform this action.");
-        setFailed(true);
-      } else if (status === 500) {
-        setFailedMessage("Server error");
-        setFailed(true);
-      } else {
-        setFailed(true);
-        console.error(`Unexpected error: ${status}`);
-      }
-    }
+   } catch (err) {
+  const error = err as AxiosError;
+  const status = error.response?.status;
+
+  setShowForm(false);
+  setFailed(true);
+
+  if (status === 400) {
+    setFailedMessage(
+      (error.response?.data as any)?.message ||
+      "Invalid form data. Please check description and other fields."
+    );
+  } else if (status === 401) {
+    setFailedMessage("Please login again.");
+  } else if (status === 403) {
+    setFailedMessage("You don't have permission to perform this action.");
+  } else if (status === 500) {
+    setFailedMessage("Server error. Try again later.");
+  } else {
+    setFailedMessage("Something went wrong. Please try again.");
+  }
+}
   };
   const itemsPerPage = 4;
 

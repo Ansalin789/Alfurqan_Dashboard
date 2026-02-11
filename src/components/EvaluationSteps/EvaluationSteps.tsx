@@ -132,7 +132,7 @@ const Step1: React.FC<{ nextStep: (data: any) => void }> = ({ nextStep }) => {
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
         <Image
-          src="/assets/images/whitelogo.png"
+         src="/assets/images/blackstone.png"
           alt="Logo"
           className="w-40 drop-shadow-2xl"
           width={100}
@@ -295,7 +295,7 @@ const Step2: React.FC<{
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
         <Image
-          src="/assets/images/whitelogo.png"
+          src="/assets/images/blackstone.png"
           alt="Logo"
           className="w-40 drop-shadow-2xl"
           width={100}
@@ -431,7 +431,7 @@ const Step3 = ({
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
         <Image
-          src="/assets/images/whitelogo.png"
+         src="/assets/images/blackstone.png"
           alt="Logo"
           className="w-40 drop-shadow-2xl"
           width={100}
@@ -610,7 +610,7 @@ const Step4 = ({
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
         <Image
-          src="/assets/images/whitelogo.png"
+          src="/assets/images/blackstone.png"
           alt="Logo"
           className="w-40 drop-shadow-2xl"
           width={100}
@@ -842,7 +842,7 @@ const Step5 = ({
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
         <Image
-          src="/assets/images/whitelogo.png"
+          src="/assets/images/blackstone.png"
           alt="Logo"
           className="w-40 drop-shadow-2xl"
           width={100}
@@ -1480,7 +1480,7 @@ const Step6 = ({
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
         <Image
-          src="/assets/images/whitelogo.png"
+          src="/assets/images/blackstone.png"
           alt="Logo"
           className="w-28 drop-shadow-2xl"
           width={100}
@@ -1815,7 +1815,7 @@ const Step7 = ({
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
         <Image
-          src="/assets/images/whitelogo.png"
+          src="/assets/images/blackstone.png"
           alt="Logo"
           className="w-40 drop-shadow-2xl"
           width={100}
@@ -2167,7 +2167,7 @@ const Step8 = ({
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
         <Image
-          src="/assets/images/whitelogo.png"
+           src="/assets/images/blackstone.png"
           alt="Logo"
           className="w-28 drop-shadow-2xl"
           width={100}
@@ -2371,7 +2371,7 @@ const Step9 = ({
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
         <Image
-          src="/assets/images/whitelogo.png"
+          src="/assets/images/blackstone.png"
           alt="Logo"
           className="w-40 drop-shadow-2xl"
           width={100}

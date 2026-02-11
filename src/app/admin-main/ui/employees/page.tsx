@@ -776,10 +776,20 @@ const Page = () => {
     const portalURL = `https://blackstoneinfomaticstech.com/teacher/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
     window.location.href = portalURL;
   }
-  function handlePortalAccessforemployee(username: string, password: string) {
+  function handlePortalAccessforemployee(username: string, password: string, roles: string[]) {
     const encodedUsername = encodeURIComponent(username);
     const encodedPassword = encodeURIComponent(password);
-    const portalURL = `https://blackstoneinfomaticstech.com/supervisor/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
+
+    let portalURL = "";
+
+    if (roles.includes("ACADEMICCOACH")) {
+      portalURL = `https://blackstoneinfomaticstech.com/Academic-coach/ui/login?username=${encodedUsername}&password=${encodedPassword}`;
+    } else if (roles.includes("ADMIN")) {
+      portalURL = `https://blackstoneinfomaticstech.com/admin-main/ui/login?username=${encodedUsername}&password=${encodedPassword}`;
+    } else {
+      portalURL = `https://blackstoneinfomaticstech.com/supervisor/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
+    }
+
     window.location.href = portalURL;
   }
   const handleChange = (
@@ -2065,7 +2075,8 @@ const Page = () => {
                                   onClick={() =>
                                     handlePortalAccessforemployee(
                                       employee.userName,
-                                      employee.password
+                                      employee.password,
+                                      employee.role
                                     )
                                   }
                                   disabled={!dashboardRead}

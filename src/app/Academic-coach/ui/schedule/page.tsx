@@ -7,6 +7,7 @@ import { Clock } from "lucide-react";
 import AcademicHeader from "../../components/academicHeader";
 import { FaClock } from "react-icons/fa";
 import { BsFillCalendar2WeekFill } from "react-icons/bs";
+import { useRouter } from "next/navigation";
 
 interface Event {
   id: string;
@@ -17,6 +18,7 @@ interface Event {
   date: string;
   studentName: string,
   studentEmail: string,
+  meetingId?: string;
 }
 
 const SchedulePage = () => {
@@ -32,6 +34,7 @@ const SchedulePage = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+const router = useRouter();
 
   const tabs = ["monthly", "weekly", "daily"] as const;
 
@@ -41,16 +44,24 @@ const SchedulePage = () => {
       console.error("❌ AcademicCoachAuthToken not found");
       return;
     }
-    fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+  const acId = typeof window !== "undefined" ? localStorage.getItem("AcademicCoachPortalId") : null;   
+
+         const params = {
+    academicCoachId: acId,
+}; 
+ fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist?academicCoachId=${params.academicCoachId}`, {
+  method: "GET",
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+})
       .then((response) => response.json())
       .then((data) => {
         console.log("dataaa", data);
-        const mappedEvents = data.academicCoach.map((item: any) => ({
+        const mappedAcademicEvents = data.academicCoach.map((item: any) => ({
           id: item._id,
+            meetingId: item._id, // or item.meetingId if exists
+
           title: item.subject,
           start: item.scheduledFrom,
           end: item.scheduledTo,
@@ -59,7 +70,37 @@ const SchedulePage = () => {
           studentEmail: item.student.email,
           date: moment(item.scheduledStartDate).format("YYYY-MM-DD"),
         }));
+
+          const addSupervisorEvents = data.meetingList.map((item: any) => ({
+          id: item._id,
+           meetingId: item.meetingId,
+          title: item.meetingName,
+          start: item.startTime,
+          end: item.endTime,
+          description: item.description,
+          studentName: item.participants.participantName,
+          studentEmail: item.participants.participantEmail,
+          date: moment(item.selectedDate).format("YYYY-MM-DD"),
+        }));
+
+          const adminEvents = data.adminMeetingList.map((item: any) => ({
+          id: item._id,
+          meetingId: item.meetingId,
+          title: item.meetingName,
+          start: item.startTime,
+          end: item.endTime,
+          description: item.description,
+          studentName: item.admin.adminName,
+          studentEmail: item.admin.adminEmail,
+          date: moment(item.selectedDate).format("YYYY-MM-DD"),
+        }));
+         const mappedEvents = [
+    ...mappedAcademicEvents,
+    ...addSupervisorEvents,
+    ...adminEvents,
+  ];
         setEvents(mappedEvents);
+        console.log("Fetched Events: ", mappedEvents);
       })
       .catch((error) => console.error("Error fetching data: ", error));
   }, []);
@@ -393,6 +434,28 @@ const SchedulePage = () => {
     );
   };
 
+
+const canJoinNow = (event: Event) => {
+  const now = moment();
+
+  const eventDateTime = moment(
+    `${event.date} ${event.start}`,
+    "YYYY-MM-DD HH:mm"
+  );
+
+  const eventEndTime = moment(
+    `${event.date} ${event.end}`,
+    "YYYY-MM-DD HH:mm"
+  );
+
+  // Allow join from 10 mins before till end
+  return now.isBetween(
+    eventDateTime.clone().subtract(10, "minutes"),
+    eventEndTime
+  );
+};
+
+
   return (
     <BaseLayout1>
       <AcademicHeader currentSection="Calendar" />
@@ -481,6 +544,15 @@ const SchedulePage = () => {
                         <p className="text-[11px] font-light text-[#333] dark:text-[#fff] mt-2">
                           {item.studentName || ""}
                         </p>
+
+                        {canJoinNow(item) && (
+  <button
+    onClick={() => router.push(`/Academic-coach/ui/videocall?id=${item.meetingId || item.id}`)}
+    className="mt-2 px-3 py-1 text-[11px] bg-green-600 text-white rounded hover:bg-green-700 transition"
+  >
+    ▶ Start Now
+  </button>
+)}
                       </div>
                     );
                   })

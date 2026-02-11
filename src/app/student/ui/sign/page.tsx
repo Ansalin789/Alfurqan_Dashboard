@@ -68,6 +68,7 @@ const SignIn: React.FC = () => {
       console.log("[Student SignIn] Response Status:", response.status);
       console.log("[Student SignIn] Response Data:", response.data);
 
+
       if (response.status === 200) {
         return response.data;
       }
@@ -81,6 +82,7 @@ const SignIn: React.FC = () => {
         url: error?.config?.url,
         method: error?.config?.method,
       });
+
 
       if (error.response && error.response.status === 404) {
         throw new Error("Email not found");
@@ -98,6 +100,7 @@ const SignIn: React.FC = () => {
       username: username1,
       password: password ? `*** (len:${password.length})` : "<empty>",
     });
+
 
     try {
       const data = await signIn(username1, password);
@@ -187,6 +190,7 @@ const SignIn: React.FC = () => {
   };
 
   const getGoogleUserInfo = async (accessToken: string) => {
+    
     try {
       const response = await axios.get(
         "https://www.googleapis.com/oauth2/v3/userinfo",
@@ -304,6 +308,7 @@ const SignIn: React.FC = () => {
         </AnimatePresence>
       )}
 
+
       {/* Left Section - Sign In Form */}
       <div className="w-full lg:w-1/2 h-auto lg:h-screen bg-white flex flex-col overflow-hidden order-2 lg:order-1">
         <div className="px-4 sm:px-6 lg:px-8 py-1">
@@ -331,7 +336,7 @@ const SignIn: React.FC = () => {
               >
                 Create now
               </button>
-            </p>
+            </p> 
 
             <form onSubmit={handleFormSubmit}>
               <div className="mb-4">
@@ -428,9 +433,8 @@ const SignIn: React.FC = () => {
                   type="button"
                   onClick={() => login()}
                   disabled={loading}
-                  className={`w-full flex items-center justify-center gap-3 bg-white border border-[#CBD5E0] hover:bg-gray-50 text-[#67728A] font-medium py-3 rounded-2xl transition-all mb-4 shadow-sm text-sm sm:text-base ${
-                    loading ? "opacity-70 cursor-not-allowed" : "hover:shadow-md"
-                  }`}
+                  className={`w-full flex items-center justify-center gap-3 bg-white border border-[#CBD5E0] hover:bg-gray-50 text-[#67728A] font-medium py-3 rounded-2xl transition-all mb-4 shadow-sm text-sm sm:text-base ${loading ? "opacity-70 cursor-not-allowed" : "hover:shadow-md"
+                    }`}
                 >
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-[#4285F4] border-t-transparent rounded-full animate-spin" />

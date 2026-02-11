@@ -196,14 +196,7 @@ export default function AddMeeting({ onClose }: Props) {
     fetchTeachers();
   }, [open, activeTab]);
 
-  const toggleTeacher = (teacher: Participants) => {
-    setSelectedParticipants((prev) => {
-      const exists = prev.some((t) => t.studentId === teacher.studentId);
-      return exists
-        ? prev.filter((t) => t.studentId !== teacher.studentId)
-        : [...prev, teacher];
-    });
-  };
+
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -334,6 +327,19 @@ endTime,
       console.error(`Error (${status}):`, error.message);
     }
   };
+const toggleTeacher = (student: Participants) => {
+  setSelectedParticipants((prev) => {
+    const exists = prev.find((p) => p.studentId === student.studentId);
+
+    if (exists) {
+      // Remove
+      return prev.filter((p) => p.studentId !== student.studentId);
+    } else {
+      // Add
+      return [...prev, student];
+    }
+  });
+};
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
@@ -364,87 +370,142 @@ endTime,
         </div>
 
         {/* Add Participants */}
-        <div className="mb-4">
-          <label
-            htmlFor="add participants"
-            className="block text-sm text-gray-600 dark:text-white mb-1"
+     {/* Add Participants */}
+<div className="mb-4">
+  <label className="block text-sm text-gray-600 dark:text-white mb-1">
+    Add Participants
+  </label>
+
+  {/* Input */}
+  <div className="relative">
+    <input
+      type="text"
+      readOnly
+      value={selectedParticipants.map((p) => p.name).join(", ")}
+      placeholder="Select participants"
+      className="w-full border rounded px-3 py-2 text-sm pr-10 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+    />
+
+    <button
+      type="button"
+      onClick={() => setOpen(true)}
+      className="absolute inset-y-0 right-0 flex items-center"
+    >
+      <Plus
+        size={19}
+        className="dark:text-[#fff] border border-[#858B94] rounded-sm -ml-7 p-[2px]"
+      />
+    </button>
+  </div>
+
+  {/* Selected Participants Chips */}
+  {selectedParticipants.length > 0 && (
+    <div className="mt-2 p-2 border rounded bg-gray-50 dark:bg-[#2A2A2A]">
+      <p className="text-xs text-gray-600 dark:text-gray-300 mb-1">
+        Selected Participants:
+      </p>
+
+      <div className="flex flex-wrap gap-2">
+        {selectedParticipants.map((p) => (
+          <span
+            key={p.studentId}
+            className="px-2 py-1 bg-[#1d1d1d46] text-white text-xs rounded-md flex items-center gap-1"
           >
-            Add Participants
-          </label>
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Show all name"
-              readOnly
-              className="w-full border rounded px-3 py-2 text-sm pr-10 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-            />
+            {p.name}
+
             <button
               type="button"
-              onClick={() => setOpen(true)}
-              className="absolute inset-y-0 right-0 flex items-center"
+              onClick={() => toggleTeacher(p)}
+              className="hover:text-red-500"
             >
-              <Plus size={19} className="dark:text-[#fff] border border-[#858B94] rounded-sm -ml-7 p-[2px]"/>
+              ✕
             </button>
-          </div>
-          <Dialog
-            open={open}
-            onClose={() => setOpen(false)}
-            className="relative z-50"
-          >
-            <div className="fixed inset-0 bg-black/50" />
-            <div className="fixed inset-0 flex items-center justify-center p-4">
-              <section className="bg-white dark:bg-[#1D1D1D] rounded-lg p-5 w-full max-w-md">
-                <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
-                  Select Participants
-                </h2>
-                <div className="flex gap-2 mb-4">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`px-3 py-2 text-xs rounded ${
-                        activeTab === tab
-                          ? "bg-[#576CBC] text-white"
-                          : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white"
-                      }`}
-                    >
-                      {tab}
-                    </button>
-                  ))}
-                </div>
-                <div className="space-y-2 max-h-40 overflow-y-auto text-sm">
-                  {Participants.map((student) => (
-                    <label
-                      key={student.studentId}
-                      className="flex items-center gap-2"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedParticipants.includes(student)}
-                        onChange={() => toggleTeacher(student)}
-                      />
-                      <span className="dark:text-white">{student.name}</span>
-                    </label>
-                  ))}
-                </div>
-                <div className="flex justify-end mt-4 gap-2">
-                  <button
-                    onClick={() => setOpen(false)}
-                    className="px-3 py-1 border text-[#576CBC] rounded text-[12px] hover:bg-[#576bbc1a]"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => setOpen(false)}
-                    className="px-4 py-1 bg-[#576CBC] text-white rounded text-[12px] hover:bg-[#576bbcaf]"
-                  >
-                    Done
-                  </button>
-                </div>
-              </section>
-            </div>
-          </Dialog>
+          </span>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {/* Dialog */}
+  <Dialog open={open} onClose={() => setOpen(false)} className="relative z-50">
+    <div className="fixed inset-0 bg-black/50" />
+
+    <div className="fixed inset-0 flex items-center justify-center p-4">
+      <section className="bg-white dark:bg-[#1D1D1D] rounded-lg p-5 w-full max-w-md">
+
+        <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+          Select Participants
+        </h2>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-4">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-3 py-2 text-xs rounded ${
+                activeTab === tab
+                  ? "bg-[#576CBC] text-white"
+                  : "bg-gray-200 dark:bg-gray-700"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
+
+        {/* Participant List */}
+        <div className="space-y-2 max-h-48 overflow-y-auto text-sm">
+          {Participants.length === 0 && (
+            <p className="text-center text-gray-400 text-xs">
+              No participants found
+            </p>
+          )}
+
+          {Participants.map((student) => (
+            <label
+              key={student.studentId}
+              className="flex items-center gap-2"
+            >
+              <input
+                type="checkbox"
+                checked={selectedParticipants.some(
+                  (p) => p.studentId === student.studentId
+                )}
+                onChange={() => toggleTeacher(student)}
+              />
+
+              <span className="dark:text-white">
+                {student.name}
+              </span>
+            </label>
+          ))}
+        </div>
+
+        {/* Buttons */}
+        <div className="flex justify-end mt-4 gap-2">
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="px-3 py-1 border text-[#576CBC] rounded text-xs"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="px-4 py-1 bg-[#576CBC] text-white rounded text-xs"
+          >
+            Done
+          </button>
+        </div>
+
+      </section>
+    </div>
+  </Dialog>
+</div>
+
 
         {/* Participants */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -464,22 +525,7 @@ endTime,
             />
           </div>
 
-          <div className="mt-1">
-            <label
-              htmlFor="uyvuhvyuc"
-              className="block text-sm text-gray-600 dark:text-white"
-            >
-              Selected Paticipants
-            </label>
-            <select className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]">
-              <option value="">Show</option>
-              {selectedParticipants.map((student: Participants) => (
-                <option key={student.studentId} value={student.name}>
-                  {student.name}
-                </option>
-              ))}
-            </select>
-          </div>
+       
         </div>
 
         <div className="mb-4">

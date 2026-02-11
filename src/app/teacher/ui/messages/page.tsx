@@ -576,7 +576,7 @@ const Message = () => {
                   </div>
                 </div>
 
-                <div className="flex-1 p-3 overflow-y-auto dark:bg-[#343434] scrollbar-none bg-gray-50 flex flex-col">
+                <div className="flex-1 p-3 overflow-y-auto dark:text-[#FFFFFF] dark:bg-[#343434] scrollbar-none bg-gray-50 flex flex-col">
                   {" "}
                   {/* Added flex-col-reverse */}
                   <AnimatePresence>
@@ -597,15 +597,15 @@ const Message = () => {
                         >
                           <motion.div
                             whileHover={{ scale: 1.01 }}
-                            className={`p-2 rounded-lg max-w-[80%] shadow-sm ${
+                            className={`p-2 rounded-lg max-w-[80%] shadow-sm dark:bg-[#343434] ${
                               msg.senderId === userId
-                                ? "bg-[#223857]  text-white shadow-lg rounded-tr-none"
-                                : "bg-white shadow-lg rounded-tl-none"
+                                ? "bg-[#576CBC]  text-white shadow-lg rounded-tr-none"
+                                : "bg-[#F1F1F1] shadow-lg rounded-tl-none"
                             }`}
                           >
-                            <p className="text-xs">{msg.messages}</p>
+                            <p className="text-xs dark:text-[#FFFFFF]">{msg.messages}</p>
                             <div className="flex items-center justify-end mt-1 space-x-1">
-                              <span className="text-[9px] opacity-70">
+                              <span className="text-[9px] opacity-70 dark:text-[#FFFFFF]">
                                 {new Date(msg.createdDate).toLocaleTimeString(
                                   [],
                                   {

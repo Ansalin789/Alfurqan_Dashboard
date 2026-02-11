@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { isToday } from 'date-fns';
 
 interface ClassEvent {
   _id: string;
@@ -11,8 +12,114 @@ interface ClassEvent {
   sessionClassType: string;
 }
 
+
+export interface UnifiedClassSchedule {
+  _id: string;
+  classId?: string;
+
+  classLink: string;
+  sessionClassType: "GROUPCLASS" | "REGULARCLASS" | "TRIALCLASS";
+  scheduleStatus: string;
+
+  course: {
+    courseId: string;
+    courseName: string;
+  };
+
+  startDate: string;
+  endDate: string;
+
+  classDay: string[];
+  startTime: string[];
+  endTime: string[];
+
+  /* ---------- STUDENTS (WORKS FOR BOTH) ---------- */
+  students: UnifiedStudent[];
+
+  /* ---------- TEACHER (NULL FOR GROUP IF NOT SENT) ---------- */
+  teacher?: {
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+    teacherSessionStart: string | null;
+    teacherSessionEnd: string | null;
+  };
+
+  /* ---------- OPTIONAL REGULAR CLASS FIELDS ---------- */
+  package?: string;
+  totalHourse?: number;
+
+  status?: string;
+  createdBy?: string;
+  teacherAttendee?: string;
+  studentAttendee?: string;
+
+  classhour?: string;
+  currency?: string;
+  amount?: string;
+  earnings?: number;
+  isSalaryProcessed?: boolean;
+
+  sessionStarttime?: string;
+  sessionsEndtime?: string;
+  sessionStatus?: string;
+
+  createdDate?: string;
+  lastUpdatedDate?: string;
+  __v?: number;
+}
+export interface UnifiedStudent {
+  student: {
+    id: string;
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    gender: string;
+    level: string;
+    studnetSessionStart: string[] | null;
+    studnetSessionEnd: string[] | null;
+  };
+
+  /* Group class fields */
+  status?: string;
+  sessionStatus?: string;
+  earnings?: number;
+}
+
+export interface TrialClass {
+  id: string;
+  trialId: string;
+
+  student: {
+    id: string;
+    studentId: string;
+    studentName: string;
+  };
+
+  classType: string;
+  meetingLink: string;
+
+  course: {
+    courseId: string;
+    courseName: string;
+  };
+  scheduledStartDate: string;
+  scheduledEndDate: string;
+  scheduledFrom: string;
+  scheduledTo: string;
+
+  meetingStatus: string;
+}
+
+export interface ApiResponse {
+  totalCount: number;
+  classScheduleList: UnifiedClassSchedule[];
+  trialclasses: TrialClass[];
+}
+
 const UpcomingTasks: React.FC = () => {
-  const [classes, setClasses] = useState<ClassEvent[]>([]);
+  const [classes, setClasses] = useState<UnifiedClassSchedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const classTypeStyles: Record<string, { dot: string; text: string }> = {
@@ -26,48 +133,241 @@ const UpcomingTasks: React.FC = () => {
 
   useEffect(() => {
     const fetchClasses = async () => {
-      try {
-        const teacherId = localStorage.getItem('TeacherPortalId');
-        const token = localStorage.getItem('TeacherAuthToken');
+    try {
+      const teacherId = localStorage.getItem("TeacherPortalId");
+      const token = localStorage.getItem("TeacherAuthToken");
 
-        if (!teacherId || !token) {
-          throw new Error('Teacher credentials not found');
+      console.log("Fetching classes...");
+      console.log("Teacher ID:", teacherId);
+      console.log("Auth Token Present:", !!token);
+
+      if (!token || !teacherId) {
+        console.warn("Missing token or teacher ID.");
+        return;
+      }
+
+      const response = await axios.get(
+        "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
+        {
+          params: { teacherId },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("API Response:", response.data);
+
+      // Process regular classes
+      const regularClasses: UnifiedClassSchedule[] =
+        response.data.classScheduleList.map((cls: any) => {
+          // Normalize: if it's a regular class with a single student
+          if (cls.student && cls.sessionClassType !== "GROUPCLASS") {
+            cls.students = [{ student: cls.student }];
+            delete cls.student;
+          }
+          if (cls.sessionClassType === "GROUPCLASS" && !cls.students) {
+            cls.students = cls.student;
+          }
+
+          // Ensure session arrays exist for each student
+          cls.students?.forEach((s: any) => {
+            s.student.studnetSessionStart ||= [];
+            s.student.studnetSessionEnd ||= [];
+          });
+
+          // Return the unified class object
+          return {
+            ...cls,
+            isTrial: false,
+          };
+        });
+
+      console.log("Processed Regular Classes:", regularClasses);
+
+      /* ---------------- TRIAL CLASSES ---------------- */
+
+      let trialClasses: UnifiedClassSchedule[] = [];
+
+      if (Array.isArray(response.data.trialclasses)) {
+        console.log("Raw Trial Classes Data:", response.data.trialclasses);
+
+        const now = new Date();
+
+        trialClasses = response.data.trialclasses.map((trialClass: any) => {
+          // Compute the class start datetime
+          const classStartDateTime =
+            trialClass.scheduledStartDate && trialClass.scheduledFrom
+              ? (() => {
+                  const date = new Date(trialClass.scheduledStartDate);
+                  const [hours, minutes] = trialClass.scheduledFrom
+                    .split(":")
+                    .map(Number);
+                  date.setHours(hours, minutes, 0, 0);
+                  return date;
+                })()
+              : null;
+
+          const now = new Date();
+
+          let sessionStatus = "Scheduled";
+          if (classStartDateTime && classStartDateTime < now) {
+            sessionStatus = "Completed";
+          }
+
+          return {
+            _id: trialClass.id || trialClass.trialId || "",
+            classId: "",
+            classLink: trialClass.trialId || "",
+            sessionClassType: "TRIALCLASS",
+            scheduleStatus: sessionStatus,
+            course: {
+              courseId: trialClass.course?.courseId || "",
+              courseName: trialClass.course?.courseName || "",
+            },
+            startDate: trialClass.scheduledStartDate || "",
+            endDate: trialClass.scheduledEndDate || "",
+            classDay: trialClass.scheduledStartDate
+              ? [
+                  new Date(trialClass.scheduledStartDate).toLocaleDateString(
+                    "en-US",
+                    {
+                      weekday: "long",
+                    }
+                  ),
+                ]
+              : [],
+            startTime: [trialClass.scheduledFrom || ""],
+            endTime: [trialClass.scheduledTo || ""],
+            students: [
+              {
+                student: {
+                  id: trialClass.student?.id || "",
+                  studentId: trialClass.student?.studentId || "",
+                  studentFirstName:
+                    trialClass.student?.studentName?.split(" ")[0] || "Trial",
+                  studentLastName:
+                    trialClass.student?.studentName
+                      ?.split(" ")
+                      .slice(1)
+                      .join(" ") || "Student",
+                  studentEmail: "",
+                  gender: "",
+                  level: "",
+                  studnetSessionStart: [],
+                  studnetSessionEnd: [],
+                },
+                status: "Active",
+                sessionStatus: sessionStatus,
+                earnings: 0,
+              },
+            ],
+            package: "",
+            totalHourse: 0.5,
+            status: "Active",
+            createdBy: "System",
+            classhour: "0.5",
+            currency: "$",
+            amount: "0",
+            earnings: 0,
+            isSalaryProcessed: false,
+            sessionStarttime: trialClass.scheduledFrom || "",
+            sessionsEndtime: trialClass.scheduledTo || "",
+          };
+        });
+
+        console.log("Processed Trial Classes:", trialClasses);
+      } else {
+        console.log("No trial classes found or incorrect format.");
+      }
+
+      // Combine both types
+      const allClasses = [...regularClasses, ...trialClasses];
+      console.log("All Classes Combined:", allClasses);
+
+      // Filter completed classes
+      const now = new Date();
+
+      const parseDateTime = (dateStr: any, timeStr?: string) => {
+        if (!dateStr) return null;
+
+        console.log("parseDateTime - raw dateStr:", dateStr, "timeStr:", timeStr);
+
+        // Handle Mongo {$date}
+        if (typeof dateStr === "object" && dateStr.$date) {
+          dateStr = dateStr.$date;
         }
 
-        const response = await axios.get(
-          'https://api.blackstoneinfomaticstech.com/classShedule/teacher',
-          {
-            params: { teacherId },
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const date = new Date(dateStr);
 
-        const today = new Date();
-        const todayClasses = response.data.classSchedule
-          .filter((item: ClassEvent) => {
-            const classDate = new Date(item.startDate);
-            return classDate.toDateString() === today.toDateString();
-          })
-          .map((item: ClassEvent) => ({
-            ...item,
-            sessionClassType: item.sessionClassType.trim().toUpperCase(),
-          }))
-          .sort((a: { startTime: string[] }, b: { startTime: string[] }) =>
-            a.startTime[0].localeCompare(b.startTime[0])
+        if (isNaN(date.getTime())) {
+          console.warn("parseDateTime - invalid date:", dateStr);
+          return null;
+        }
+
+        if (timeStr) {
+          const [h, m] = timeStr.split(":").map(Number);
+          date.setHours(h, m, 0, 0);
+        }
+
+        console.log("parseDateTime - parsed Date:", date);
+
+        return date;
+      };
+
+      const upcoming = allClasses.filter((cls) => {
+        const start = parseDateTime(cls.startDate, cls.startTime?.[0]);
+        const end = parseDateTime(cls.endDate, cls.endTime?.[0]);
+
+        console.log("Filter class - id:", cls._id, {
+          startDate: cls.startDate,
+          endDate: cls.endDate,
+          startTime: cls.startTime?.[0],
+          endTime: cls.endTime?.[0],
+          parsedStart: start,
+          parsedEnd: end,
+          status: cls.scheduleStatus,
+        });
+
+        if (!start || !end) {
+          console.warn("Skipping class due to missing start/end:", cls._id);
+          return false;
+        }
+
+        const validStatus = [
+          "Scheduled",
+          "BothAbsent",
+          "StudentAbsent",
+          "NotCompleted",
+        ];
+
+        if (!validStatus.includes(cls.scheduleStatus)) {
+          console.warn(
+            "Skipping class due to invalid status:",
+            cls._id,
+            cls.scheduleStatus
           );
+          return false;
+        }
 
-        setClasses(todayClasses);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to fetch classes'
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+        // Show until end time
+        const keep = now < end;
+        console.log("Filter result for class", cls._id, "=>", keep);
+        return keep;
+      });
+
+      console.log("Upcoming Classes:", upcoming);
+
+      setClasses(upcoming);
+      setLoading(false);
+
+      console.log("Class data successfully set to state.");
+    } catch (error : any) {
+      console.error("Error fetching class data:", error);
+      setError(error);
+    }
+  };
 
     fetchClasses();
   }, []);

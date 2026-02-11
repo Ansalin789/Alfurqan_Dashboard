@@ -6,9 +6,6 @@ import dayjs from "dayjs";
 import { useSearchParams } from "next/navigation";
 import BaseLayout from "@/components/BaseLayout";
 import TeacherHeader from "../../components/TeacherHeader";
-import Link from "next/link";
-import { LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { JitsiMeeting } from "@jitsi/react-sdk";
 
 interface Attendance {
@@ -59,13 +56,16 @@ const LiveMeeting = () => {
           return;
         }
 
-        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/teacherMeeting`, {
-          params: { meetingId },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+        const response = await axios.get(
+          `https://api.blackstoneinfomaticstech.com/teacherMeeting`,
+          {
+            params: { meetingId },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           },
-        });
+        );
 
         const meeting = response.data.meetings[0]?.data; // Access the first meeting's data
         if (meeting && meeting.meetingStatus !== "Completed") {
@@ -73,16 +73,17 @@ const LiveMeeting = () => {
           setRoomName(meeting.meetingId);
 
           // Build initial attendance
-          const initialAttendance = meeting.teacher.map((t: { teacherId: any; teacherName: any; }) => ({
+          const initialAttendance = meeting.participants.map((p: any) => ({
             id: null,
-            studentId: t.teacherId,
-            name: t.teacherName,
+            studentId: p.participantId,
+            name: p.participantName,
             startTime: null,
             endTime: null,
             joined: false,
             joinTime: "",
             leaveTime: "",
           }));
+
           setAttendance(initialAttendance);
         }
       } catch (error) {
@@ -94,7 +95,11 @@ const LiveMeeting = () => {
   }, [params]);
 
   const handleEndCall = async () => {
-    const endCallTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+    const endCallTime = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
     const startTimeUsed = startTimeRef.current;
 
     if (!meetingData || !startTimeUsed) {
@@ -114,14 +119,20 @@ const LiveMeeting = () => {
       joinMinute = m;
     }
 
-    const actualJoin = dayjs(`${scheduledDate}T${String(joinHour).padStart(2, "0")}:${String(joinMinute).padStart(2, "0")}`);
+    const actualJoin = dayjs(
+      `${scheduledDate}T${String(joinHour).padStart(2, "0")}:${String(joinMinute).padStart(2, "0")}`,
+    );
     const diffMinutes = actualJoin.diff(scheduledStart, "minute");
     const teacherAbsent = diffMinutes >= 15;
 
     const student = attendance[0]; // Assuming attendance is an array
     const studentJoined = student?.joinTime && student.joinTime !== "";
-    const parsedStudentJoin = studentJoined ? dayjs(`${scheduledDate}T${student.joinTime}`) : null;
-    const studentLateBy = parsedStudentJoin ? parsedStudentJoin.diff(scheduledStart, "minute") : Infinity;
+    const parsedStudentJoin = studentJoined
+      ? dayjs(`${scheduledDate}T${student.joinTime}`)
+      : null;
+    const studentLateBy = parsedStudentJoin
+      ? parsedStudentJoin.diff(scheduledStart, "minute")
+      : Infinity;
     const studentAbsent = !studentJoined || studentLateBy > 15;
     const studentAttendee = studentAbsent ? "absent" : "present";
 
@@ -136,12 +147,16 @@ const LiveMeeting = () => {
 
     try {
       const token = localStorage.getItem("TeacherAuthToken");
-      await axios.put(`https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${meetingId}`, payload, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      await axios.put(
+        `https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${meetingId}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
       console.log("Meeting schedule updated");
       setRedirectTo("/teacher/ui/meeting");
     } catch (error) {
@@ -159,27 +174,42 @@ const LiveMeeting = () => {
               <div className="p-1 sm:p-2 relative w-full flex flex-col flex-1 h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] xl:h-[85vh]">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h2 className="text-lg font-medium">{meetingData?.meetingName}</h2>
-                    <span className="text-sm text-gray-500">{meetingData?.description}</span>
+                    <h2 className="text-lg font-medium">
+                      {meetingData?.meetingName}
+                    </h2>
+                    <span className="text-sm text-gray-500">
+                      {meetingData?.description}
+                    </span>
                   </div>
                   <div className="ml-auto w-64">
-                    <label htmlFor="attendance-select" className="block text-sm font-semibold mb-1">
+                    <label
+                      htmlFor="attendance-select"
+                      className="block text-sm font-semibold mb-1"
+                    >
                       Attendance
                     </label>
-                    <select id="attendance-select" className="w-full border p-2 rounded">
-                      {attendance.map((s) => {
-                        let statusLabel = "❌ Not Joined";
-                        if (s.joined) {
-                          statusLabel = s.leaveTime
-                            ? `🚪 Left at ${s.leaveTime}`
-                            : `✅ Joined at ${s.joinTime}`;
-                        }
-                        return (
-                          <option key={s.studentId} value={s.studentId}>
-                            {s.name} – {statusLabel}
-                          </option>
-                        );
-                      })}
+                    <select
+                      id="attendance-select"
+                      className="w-full border p-2 rounded focus:outline-none text-[10px] dark:bg-[#252525] "
+                    >
+     {attendance.map((s) => {
+
+  let status = "❌ Not Joined";
+
+  if (s.joined) {
+    status = s.leaveTime
+      ? `🚪 Left at ${s.leaveTime}`
+      : `✅ Joined at ${s.joinTime}`;
+  }
+
+  return (
+    <option key={s.studentId || s.id}>
+      {s.name} – {status}
+    </option>
+  );
+})}
+
+
                     </select>
                   </div>
                 </div>
@@ -188,6 +218,10 @@ const LiveMeeting = () => {
                   <JitsiMeeting
                     roomName={roomName}
                     domain="meet.blackstoneinfomaticstech.com"
+                      userInfo={{
+    displayName: `${localStorage.getItem("TeacherName")} | ID : ${localStorage.getItem("TeacherId")}`,
+    email: localStorage.getItem("TeacherEmail") || "teacher@alfurqan.com",
+  }}
                     configOverwrite={{
                       startWithAudioMuted: false,
                       startWithVideoMuted: false,
@@ -210,47 +244,123 @@ const LiveMeeting = () => {
                         "recording",
                       ],
                     }}
-                    onApiReady={(externalApi) => {
-                      externalApi.addListener("participantJoined", (event) => {
-                        const joinTime = new Date().toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        });
-                        const parts = event.displayName?.split("| ID :");
-                        const studentId = parts?.[1]?.trim() ?? "N/A";
-                        const updated = attendance.map((a) =>
-                          a.studentId === studentId
-                            ? { ...a, id: event.id, joined: true, joinTime, startTime: joinTime }
-                            : a
-                        );
-                        setAttendance(updated);
-                      });
-                      externalApi.addListener("participantLeft", (event) => {
-                        const leaveTime = new Date().toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        });
-                        setAttendance((prev) =>
-                          prev.map((a) =>
-                            a.id === event.id ? { ...a, leaveTime } : a
-                          )
-                        );
-                      });
-                      externalApi.addListener("videoConferenceJoined", () => {
-                        const startCallTime = new Date().toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        });
-                        startTimeRef.current = startCallTime;
-                        setStartTime(startCallTime);
-                      });
-                      externalApi.addListener("videoConferenceLeft", () => {
-                        handleEndCall();
-                      });
-                    }}
+                  onApiReady={(externalApi) => {
+
+  // ================= JOIN =================
+ externalApi.addListener("participantJoined", (event) => {
+
+  const joinTime = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  console.log("🟢 Joined:", event.displayName, event.id);
+
+  let name = event.displayName || "Guest";
+
+  // Remove "| ID : xxx" if exists
+  if (name.includes("|")) {
+    name = name.split("|")[0].trim();
+  }
+
+  setAttendance((prev) => {
+
+    // 🔥 Match by JITSI ID
+    const exists = prev.find((a) => a.id === event.id);
+
+    if (exists) {
+      return prev.map((a) =>
+        a.id === event.id
+          ? {
+              ...a,
+              joined: true,
+              joinTime,
+              leaveTime: "",
+            }
+          : a
+      );
+    }
+
+    // 🔥 Update first "not joined" slot if exists
+    const firstNotJoined = prev.find((a) => !a.joined);
+
+    if (firstNotJoined) {
+      return prev.map((a) =>
+        a === firstNotJoined
+          ? {
+              ...a,
+              id: event.id,
+              name,
+              joined: true,
+              joinTime,
+              leaveTime: "",
+            }
+          : a
+      );
+    }
+
+    // 🔥 Otherwise add new
+    return [
+      ...prev,
+      {
+        id: event.id,
+        studentId: event.id,
+        name,
+        startTime: null,
+        endTime: null,
+        joined: true,
+        joinTime,
+        leaveTime: "",
+      },
+    ];
+  });
+});
+
+
+  // ================= LEAVE =================
+ externalApi.addListener("participantLeft", (event) => {
+
+  const leaveTime = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  console.log("🔴 Left:", event.id);
+
+  setAttendance((prev) =>
+    prev.map((a) =>
+      a.id === event.id
+        ? {
+            ...a,
+            joined: false,
+            leaveTime,
+          }
+        : a
+    )
+  );
+});
+
+  // ================= HOST JOIN =================
+  externalApi.addListener("videoConferenceJoined", () => {
+
+    const startCallTime = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+
+    startTimeRef.current = startCallTime;
+    setStartTime(startCallTime);
+  });
+
+  // ================= HOST LEAVE =================
+  externalApi.addListener("videoConferenceLeft", () => {
+    handleEndCall();
+  });
+}}
+
                     getIFrameRef={(iframeRef) => {
                       iframeRef.style.border = "0px";
                       iframeRef.style.height = "100%";

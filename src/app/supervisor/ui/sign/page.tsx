@@ -48,7 +48,11 @@ export interface SupervisorModules {
   meeting: RoleModuleAccess;
   teachers: RoleModuleAccess;
   messages: RoleModuleAccess;
-  support: RoleModuleAccess;
+  support: {
+    read: boolean;
+    write: boolean;
+    delete: boolean;
+  };
 }
 
 export interface StudentModules {
@@ -68,10 +72,7 @@ export interface TeacherModules {
   assignment: RoleModuleAccess;
   messages: RoleModuleAccess;
   analytics: RoleModuleAccess;
-  support: {
-    read: boolean;
-    write: boolean;
-  };
+  support: RoleModuleAccess;
 }
 
 export interface RoleAccess {
@@ -168,6 +169,7 @@ const SignIn: React.FC = () => {
             "SupervisorRolePermission",
             JSON.stringify(roleAccess.supervisormodules)
           );
+          console.log("SupervisorRolePermission", roleAccess.supervisormodules);
 
           console.log("Stored only supervisormodules after overriding admin flag");
         } else {
@@ -231,23 +233,23 @@ const SignIn: React.FC = () => {
     }
   };
 
- const getGoogleUserInfo = async (accessToken: string) => {
-  try {
-    const response = await axios.get(
-      "https://www.googleapis.com/oauth2/v3/userinfo",
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+  const getGoogleUserInfo = async (accessToken: string) => {
+    try {
+      const response = await axios.get(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
-    return response.data; // contains email, name, picture, etc.
-  } catch (err) {
-    console.error("Failed to fetch Google user:", err);
-    return null;
-  }
-};
+      return response.data; // contains email, name, picture, etc.
+    } catch (err) {
+      console.error("Failed to fetch Google user:", err);
+      return null;
+    }
+  };
 
   const handleGoogleSuccess = async (response: CredentialResponse) => {
     const { credential } = response;
@@ -256,8 +258,8 @@ const SignIn: React.FC = () => {
       setLoginError("Google login failed: No credential received");
       return;
     }
-    const emaildata =await getGoogleUserInfo(credential);
-    const email : any = emaildata.email;
+    const emaildata = await getGoogleUserInfo(credential);
+    const email: any = emaildata.email;
     const checkEmail = async (email: string) => {
       try {
         const response = await axios.post(
@@ -352,34 +354,28 @@ const SignIn: React.FC = () => {
         {/* Left Section - Sign In Form */}
         <div className="w-full lg:w-1/2 h-auto lg:h-screen bg-white flex flex-col overflow-hidden order-2 lg:order-1">
           <div className="px-4 sm:px-6 lg:px-8 py-1">
-            <Image 
-              src="/assets/images/Logo - Website - big size 1.svg" 
-              alt="logo" 
-              width={150} 
-              height={160} 
-              priority 
-              style={{ height: 'auto' }} 
+            <Image
+             src="/assets/images/bsicon.png"
+              alt="logo"
+              width={150}
+              height={160}
+              priority
+              style={{ height: 'auto' }}
               className='justify-left ml-0 sm:ml-[38px] mt-4 sm:mt-5 p-0'
             />
           </div>
 
-<div
-  className="
+          <div
+            className="
     flex-1
     flex items-center justify-center
     px-4 sm:px-6 lg:px-8
     overflow-auto scrollbar-none
     py-6
   "
->
+          >
             <div className="w-full max-w-md">
-              <h2 className="text-2xl sm:text-[32px] font-bold text-black mb-2 text-center lg:text-left">Sign in</h2>
-              <p className="text-[#718096] mb-6 sm:mb-8 text-sm sm:text-[14px] text-center lg:text-left">
-                Don't have an account?{' '}
-                <a href="#" className="text-[#5A73B3] hover:text-[#4d6295] underline">
-                  Create now
-                </a>
-              </p>
+              <h2 className="text-2xl sm:text-[32px] font-bold text-black mb-10 text-center lg:text-left">Sign in</h2>
 
               <form onSubmit={handleFormSubmit}>
                 <div className="mb-4">
@@ -442,9 +438,8 @@ const SignIn: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full bg-[#5A73B3] hover:bg-[#4d6299] text-white font-medium py-3 rounded-2xl transition-colors mb-4 text-sm sm:text-base ${
-                    loading ? 'opacity-70 cursor-not-allowed' : ''
-                  }`}
+                  className={`w-full bg-[#5A73B3] hover:bg-[#4d6299] text-white font-medium py-3 rounded-2xl transition-colors mb-4 text-sm sm:text-base ${loading ? 'opacity-70 cursor-not-allowed' : ''
+                    }`}
                 >
                   {loading ? (
                     <div className="flex items-center justify-center gap-2">
@@ -469,9 +464,8 @@ const SignIn: React.FC = () => {
                   type="button"
                   onClick={() => login()}
                   disabled={loading}
-                  className={`w-full flex items-center justify-center gap-3 bg-white border border-[#CBD5E0] hover:bg-gray-50 text-[#67728A] font-medium py-3 rounded-2xl transition-all mb-4 shadow-sm text-sm sm:text-base ${
-                    loading ? "opacity-70 cursor-not-allowed" : "hover:shadow-md"
-                  }`}
+                  className={`w-full flex items-center justify-center gap-3 bg-white border border-[#CBD5E0] hover:bg-gray-50 text-[#67728A] font-medium py-3 rounded-2xl transition-all mb-4 shadow-sm text-sm sm:text-base ${loading ? "opacity-70 cursor-not-allowed" : "hover:shadow-md"
+                    }`}
                 >
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-[#4285F4] border-t-transparent rounded-full animate-spin" />
@@ -512,9 +506,7 @@ const SignIn: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Section */}
         <div className="relative w-full lg:w-1/2 h-96 lg:h-screen overflow-hidden order-1 lg:order-2">
-          {/* Background Image */}
           <Image
             src="/assets/images/Frame 2147226048.svg"
             alt="right-bg"
@@ -524,14 +516,11 @@ const SignIn: React.FC = () => {
             className="w-full h-full object-cover absolute inset-0"
           />
 
-          {/* Black overlay */}
           <div className="absolute inset-0 bg-black/25"></div>
 
-          {/* Content */}
-        <div className="relative z-10 flex flex-col justify-between w-full h-full px-4 sm:px-6 lg:px-10 py-6">
+          <div className="relative z-10 flex flex-col justify-between w-full h-full px-4 sm:px-6 lg:px-10 py-6">
 
-  {/* TOP CARD */}
-  <div className="
+            <div className="
     bg-white rounded-xl shadow-lg
     p-4 sm:p-5 lg:p-6
     w-full 
@@ -539,94 +528,90 @@ const SignIn: React.FC = () => {
     mx-auto
     mt-14 sm:mt-28 lg:mt-32
   ">
-    <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-5">
+              <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-5">
 
-      {/* LEFT CONTENT */}
-      <div className="flex-1 text-left w-full">
-        <h2 className="
-          text-lg sm:text-xl lg:text-[20px]
+                <div className="flex-1 text-left w-full">
+                  <h2 className="
+          text-lg sm:text-xl lg:text-[19px]
           font-bold leading-snug 
           text-[#576CBC]
-          mb-3 sm:mb-4
+          mb-3 sm:mb-4 text-justify
         ">
-          Connecting You to Qur'an,<br />
-          Arabic, and the Wisdom of<br />
-          Islam
-        </h2>
+                    Connecting You to Qur'an,<br />
+                    Arabic, and the Wisdom of<br />
+                    Islam
+                  </h2>
 
-        <p className="
+                  <p className="
           text-[#808080]
-          text-sm sm:text-[15px] lg:text-[16px]
+          text-xs sm:text-[14px] lg:text-[14px]
           leading-relaxed
-          mb-3 sm:mb-4
+          mb-3 sm:mb-4 text-justify
         ">
-          And We have certainly made the Qur'an easy for remembrance, so is there is any who will remember ?
-        </p>
+                    And We have certainly made the Qur'an easy for remembrance, so is there is any who will remember ?
+                  </p>
 
-        <p className="text-[#808080] text-xs sm:text-sm lg:text-[15px] font-medium">
-          Surah Al-Qamar (54:17)
-        </p>
-      </div>
+                  <p className="text-[#808080] text-xs sm:text-sm lg:text-[15px] font-medium">
+                    Surah Al-Qamar (54:17)
+                  </p>
+                </div>
 
-      {/* IMAGE */}
-      <div className="flex-shrink-0 w-full sm:w-auto flex justify-center">
-        <img
-          src="/assets/images/close-up-hands-holding-diplomas-caps.svg"
-          alt="supervisor"
-          className="
+                <div className="flex-shrink-0 w-full sm:w-auto flex justify-center">
+                  <img
+                    src="/assets/images/close-up-hands-holding-diplomas-caps.svg"
+                    alt="supervisor"
+                    className="
             w-36 h-36
             sm:w-44 sm:h-44
             lg:w-[200px] lg:h-[200px]
             object-cover rounded-lg
           "
-        />
-      </div>
-    </div>
-  </div>
+                  />
+                </div>
+              </div>
+            </div>
 
-  {/* BOTTOM SECTION */}
-  <div className="text-center text-white mx-auto mt-3 sm:mt-6 mb-10">
+            <div className="text-center text-white mx-auto mt-3 sm:mt-6 mb-10">
 
-    <h2 className="text-lg sm:text-xl lg:text-[22px] font-semibold mb-2">
-      Supervisor Dashboard
-    </h2>
+              <h2 className="text-lg sm:text-xl lg:text-[22px] font-semibold mb-2">
+                Supervisor Dashboard
+              </h2>
 
-    <p className="
+              <p className="
       text-[#CFD9E0]
-      text-sm sm:text-base
+      text-xs sm:text-sm
       leading-relaxed
       max-w-xs sm:max-w-md mx-auto mb-3
     ">
-      Manage your entire educational platform with powerful administrative tools,
-      user management systems, and comprehensive analytics dashboards.
-    </p>
+                Manage your entire educational platform with powerful administrative tools,
+                user management systems, and comprehensive analytics dashboards.
+              </p>
 
-    {/* PAGINATION */}
-    <div className="flex items-center justify-center gap-4 mt-8">
+              <div className="flex items-center justify-center gap-4 mt-8">
 
-      <button className="w-6 h-6 flex items-center justify-center text-[#A6B4E2] hover:text-white">
-        <ChevronLeft size={14} />
-      </button>
+                <button className="w-6 h-6 flex items-center justify-center text-[#A6B4E2] hover:text-white">
+                  <ChevronLeft size={14} />
+                </button>
 
-      <div className="flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-[#A6B4E2]" />
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[#A6B4E2]" />
 
-        <div className="w-4 h-4 flex items-center justify-center">
-          <div className="w-2 h-2 rounded-full bg-[#E8EBF9]" />
-        </div>
+                  <div className="w-4 h-4 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-[#E8EBF9]" />
+                  </div>
 
-        <div className="w-2 h-2 rounded-full bg-[#A6B4E2]" />
-      </div>
+                  <div className="w-2 h-2 rounded-full bg-[#A6B4E2]" />
+                </div>
 
-      <button className="w-6 h-6 flex items-center justify-center text-[#A6B4E2] hover:text-white">
-        <ChevronRight size={14} />
-      </button>
+                <button className="w-6 h-6 flex items-center justify-center text-[#A6B4E2] hover:text-white">
+                  <ChevronRight size={14} />
+                </button>
 
-    </div>
+              </div>
 
-  </div>
+            </div>
 
-</div>
+          </div>
 
 
 

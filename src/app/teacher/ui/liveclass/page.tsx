@@ -570,13 +570,13 @@ console.log("Teacher left: Stopping auto recording");
 
                   {/* Student Performance Card */}
                   <div className=" rounded-2xl flex-col w-full xl:w-1/2 p-6 text-[#010E30] dark:text-[#FFFFFF]">
-                    <h3 className="text-lg font-semibold mb-6">
+                    <h3 className="text-lg font-semibold mb-6 text-[#010E30] dark:text-[#FFFFFF]">
                       Student Performance
                     </h3>
 
                     {categories.map((category, index) => (
                       <div key={category} className="mb-4">
-                        <p className="text-base font-medium text-gray-700 mb-1 dark:text-white">
+                        <p className="text-base font-medium  text-[#010E30] dark:text-[#FFFFFF]">
                           {category}
                         </p>
                         <StarRating

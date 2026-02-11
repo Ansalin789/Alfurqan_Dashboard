@@ -101,11 +101,9 @@ interface StudentMeeting {
 
 const NextMeetingSchedule = () => {
   const router = useRouter();
-  const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [classData, setClassData] = useState<Meeting | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isTimeUp, setIsTimeUp] = useState(false);
 const [isMeetingOngoing, setIsMeetingOngoing] = useState(false);
 const [isPopupVisible, setIsPopupVisible] = useState(false);
 const [isCountdownFinished, setIsCountdownFinished] = useState(false);
@@ -181,7 +179,7 @@ const [timeRemaining, setTimeRemaining] = useState(0);
 
   
 useEffect(() => {
-  if (!classData || !classData.startTime || !classData.endTime || !classData.selectedDate) return;
+  if (!classData) return;
 
   const [startHour, startMinute] = classData.startTime.split(":").map(Number);
   const [endHour, endMinute] = classData.endTime.split(":").map(Number);
@@ -192,39 +190,43 @@ useEffect(() => {
   const meetingEnd = new Date(classData.selectedDate);
   meetingEnd.setHours(endHour, endMinute, 0, 0);
 
-  const updateTimeLeft = () => {
+  const tick = () => {
     const now = new Date();
 
+    // BEFORE START
     if (now < meetingStart) {
-      // Before start time
-      setIsTimeUp(false);
+      const diffSeconds = Math.floor(
+        (meetingStart.getTime() - now.getTime()) / 1000
+      );
+
+      setTimeRemaining(diffSeconds);
+      setIsCountdownFinished(false);
       setIsMeetingOngoing(false);
+      return;
+    }
 
-      const diff = meetingStart.getTime() - now.getTime();
-      const totalSeconds = Math.floor(diff / 1000);
-      const hours = Math.floor(totalSeconds / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-
-      setTime({ hours, minutes, seconds });
-    } else if (now >= meetingStart && now <= meetingEnd) {
-      // During meeting
-      setIsTimeUp(true);
+    // DURING MEETING
+    if (now >= meetingStart && now <= meetingEnd) {
+      setTimeRemaining(0);
+      setIsCountdownFinished(true);
       setIsMeetingOngoing(true);
-      setTime({ hours: 0, minutes: 0, seconds: 0 });
-    } else {
-      // After end time
-      setIsTimeUp(false);
+      return;
+    }
+
+    // AFTER MEETING
+    if (now > meetingEnd) {
+      setTimeRemaining(0);
+      setIsCountdownFinished(false);
       setIsMeetingOngoing(false);
-      setClassData(null); // Hide meeting details
+      setClassData(null);
     }
   };
 
-  updateTimeLeft();
-  const interval = setInterval(updateTimeLeft, 1000);
-
+  tick(); // run immediately
+  const interval = setInterval(tick, 1000);
   return () => clearInterval(interval);
 }, [classData]);
+
 
 
   if (loading) {
@@ -332,7 +334,7 @@ useEffect(() => {
           {isCountdownFinished ? (
             <button
               onClick={() =>
-                router.push(`/student/ui/liveclass?id=${classData?._id}`)
+                router.push(`/teacher/ui/livemeeting?id=${classData?.meetingId}`)
               }
               className="relative px-5 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-semibold 
               text-white bg-gradient-to-r from-[#576CBC] to-[#576CBC] 

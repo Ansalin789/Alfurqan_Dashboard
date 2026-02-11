@@ -99,12 +99,11 @@ export default function AddMeeting({ onClose }: Props) {
     const formattedDate = new Date(selectedDate).toISOString();
     const createdDate = new Date().toISOString();
 
-    const teachers = selectedTeachers.map((teacher, idx) => ({
-      teacherId: teacher.teacherId,
-      teacherName: teacher.teacherName,
-      teacherEmail: teacher.teacherEmail,
-      _id: teacher.teacherId,
-      attendee: "absent",
+    const participants = selectedTeachers.map((teacher) => ({
+      participantId: teacher.teacherId,
+      participantName: teacher.teacherName,
+      participantEmail: teacher.teacherEmail,
+      role: "teacher",
     }));
 
     const requestData = {
@@ -114,13 +113,13 @@ export default function AddMeeting({ onClose }: Props) {
       startTime,
       endTime,
       meetingStatus: "Scheduled",
-      supervisor: {
-        supervisorId: localStorage.getItem("SupervisorPortalId"),
-        supervisorName: localStorage.getItem("SupervisorPortalName"),
-        supervisorEmail: "arthi.blackstoneinfomatics@gmail.com",
-        supervisorRole: "SUPERVISOR",
+      organizer: {
+        organizerId: localStorage.getItem("SupervisorPortalId"),
+        organizerName: localStorage.getItem("SupervisorPortalName"),
+        organizerEmail: localStorage.getItem("SupervisorPortalEmail"),
+        role: "supervisor",
       },
-      teacher: teachers,
+      participants,
       meetingminutes: " ",
       description,
       status: "Active",
@@ -155,15 +154,15 @@ export default function AddMeeting({ onClose }: Props) {
           setEndTime("");
           setSelectedTeachers([]);
           setDescription("");
-           onClose();
+          onClose();
         }, 2000);
       }
     } catch (err) {
       const error = err as AxiosError;
       const status = error.response?.status;
-       setTimeout(() => {
-          onClose();
-        }, 3000);
+      setTimeout(() => {
+        onClose();
+      }, 3000);
       if (Number(status === 400)) {
         console.log("please >");
         setFailedMessage("Please check the form inputs.");
