@@ -10,50 +10,31 @@ import Pagination from "@/components/Pagination";
 import Modal from "react-modal";
 import { getSocket } from "@/app/utils/socket";
 
-interface ClassData {
-  isTrial: boolean;
-  classType: string;
-  classId: string;
-  trialclass: any;
+export interface UnifiedClassSchedule {
   _id: string;
-  classDay: string[]; // ISO date strings
-  package: string;
-  totalHourse: number;
-  startDate: string; // ISO date string
-  endDate: string;   // ISO date string
-  startTime: string[];
-  endTime: string[];
-  scheduleStatus: string;
-  classLink: string;
-  status: string;
-  createdBy: string;
-  teacherAttendee: string;
-  studentAttendee: string;
-  classhour: string;
-  currency: string;
-  amount: string;
-  earnings: number;
-  isSalaryProcessed: boolean;
-  sessionClassType: string;
-  sessionStarttime: string;
-  sessionsEndtime: string;
-  sessionStatus: string;
-  createdDate: string;
-  lastUpdatedDate: string;
-  __v: number;
+  classId?: string;
 
-  student: {
-    studentId: string;
-    studentFirstName: string;
-    studentLastName: string;
-    studentEmail: string;
-    gender: string;
-    level: string;
-    studnetSessionStart: string[];
-    studnetSessionEnd: string[];
+  classLink: string;
+  sessionClassType: "GROUPCLASS" | "REGULARCLASS" | "TRIALCLASS";
+  scheduleStatus: string;
+
+  course: {
+    courseId: string;
+    courseName: string;
   };
 
-  teacher: {
+  startDate: string;
+  endDate: string;
+
+  classDay: string[];
+  startTime: string[];
+  endTime: string[];
+
+  /* ---------- STUDENTS (WORKS FOR BOTH) ---------- */
+  students: UnifiedStudent[];
+
+  /* ---------- TEACHER (NULL FOR GROUP IF NOT SENT) ---------- */
+  teacher?: {
     teacherId: string;
     teacherName: string;
     teacherEmail: string;
@@ -61,98 +42,90 @@ interface ClassData {
     teacherSessionEnd: string | null;
   };
 
-  course: {
-    courseId: string;
-    courseName: string;
+  /* ---------- OPTIONAL REGULAR CLASS FIELDS ---------- */
+  package?: string;
+  totalHourse?: number;
+
+  status?: string;
+  createdBy?: string;
+  teacherAttendee?: string;
+  studentAttendee?: string;
+
+  classhour?: string;
+  currency?: string;
+  amount?: string;
+  earnings?: number;
+  isSalaryProcessed?: boolean;
+
+  sessionStarttime?: string;
+  sessionsEndtime?: string;
+  sessionStatus?: string;
+
+  createdDate?: string;
+  lastUpdatedDate?: string;
+  __v?: number;
+}
+export interface UnifiedStudent {
+  student: {
+    id: string;
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    gender: string;
+    level: string;
+    studnetSessionStart: string[] | null;
+    studnetSessionEnd: string[] | null;
   };
 
-  alfstudent: {
-    _id: string;
-    username: string;
-    password: string;
-    sessionClassType: string;
-    role: string;
-    level: string;
-    status: string;
-    createdDate: string;
-    createdBy: string;
-    updatedDate: string;
-    __v: number;
-    student: {
-      studentId: string;
-      studentEmail: string;
-      studentPhone: number;
-      course: string;
-      package: string;
-      city: string;
-      country: string;
-      gender: string;
-    };
-  };
+  /* Group class fields */
+  status?: string;
+  sessionStatus?: string;
+  earnings?: number;
 }
 
+export interface TrialClass {
+  id: string;
+  trialId: string;
 
-interface TrialClass {
-  academicCoach: {
-    academicCoachId: string | null;
-    name: string | null;
-    email: string | null;
-  };
-  teacher: {
-    teacherId: string;
-    name: string;
-    email: string;
-  };
   student: {
+    id: string;
     studentId: string;
-    name: string;
-    email: string;
-    city: string;
-    country: string;
-    phonenumber: string;
+    studentName: string;
   };
+
+  classType: string;
+  meetingLink: string;
+
   course: {
     courseId: string;
     courseName: string;
   };
-  _id: string;
-  trialId: string;
-  subject: string;
-  meetingLocation: string;
-  classType: string;
-  meetingType: string;
-  meetingLink: string;
-  isScheduledMeeting: boolean;
   scheduledStartDate: string;
   scheduledEndDate: string;
   scheduledFrom: string;
   scheduledTo: string;
-  timeZone: string;
-  description: string;
+
   meetingStatus: string;
-  studentResponse: string;
-  status: string;
-  createdDate: string;
-  createdBy: string;
-  lastUpdatedDate: string;
-  lastUpdatedBy: string;
-  __v: number;
 }
 
-interface ApiResponse {
+export interface ApiResponse {
   totalCount: number;
-  classSchedule: ClassData[];
-  trialclasses: TrialClass;
+  classScheduleList: UnifiedClassSchedule[];
+  trialclasses: TrialClass[];
 }
 
 const ScheduledClasses = () => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredClasses, setFilteredClasses] = useState<ClassData[]>([]);
+  const [filteredClasses, setFilteredClasses] = useState<
+    UnifiedClassSchedule[]
+  >([]);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("upcoming");
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [openStudents, setOpenStudents] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     courseName: "",
     teacher: "",
@@ -163,8 +136,12 @@ const ScheduledClasses = () => {
   });
 
   const itemsPerPage = 10;
-  const [upcomingClasses, setUpcomingClasses] = useState<ClassData[]>([]);
-  const [completedData, setCompletedData] = useState<ClassData[]>([]);
+  const [upcomingClasses, setUpcomingClasses] = useState<
+    UnifiedClassSchedule[]
+  >([]);
+  const [completedData, setCompletedData] = useState<UnifiedClassSchedule[]>(
+    []
+  );
 
   useEffect(() => {
     Modal.setAppElement("body");
@@ -184,7 +161,7 @@ const ScheduledClasses = () => {
         return;
       }
 
-      const response = await axios.get<ApiResponse>(
+      const response = await axios.get(
         "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
         {
           params: { teacherId },
@@ -198,102 +175,122 @@ const ScheduledClasses = () => {
       console.log("API Response:", response.data);
 
       // Process regular classes
-      const regularClasses = response.data.classSchedule.map(cls => ({
-        ...cls,
-        isTrial: false
-      }));
+      const regularClasses: UnifiedClassSchedule[] =
+        response.data.classScheduleList.map((cls: any) => {
+          // Normalize: if it's a regular class with a single student
+          if (cls.student && cls.sessionClassType !== "GROUPCLASS") {
+            cls.students = [{ student: cls.student }];
+            delete cls.student;
+          }
+          if (cls.sessionClassType === "GROUPCLASS" && !cls.students) {
+            cls.students = cls.student;
+          }
+
+          // Ensure session arrays exist for each student
+          cls.students?.forEach((s: any) => {
+            s.student.studnetSessionStart ||= [];
+            s.student.studnetSessionEnd ||= [];
+          });
+
+          // Return the unified class object
+          return {
+            ...cls,
+            isTrial: false,
+          };
+        });
 
       console.log("Processed Regular Classes:", regularClasses);
 
-      // Process trial classes
-      let trialClasses: ClassData[] = [];
+      /* ---------------- TRIAL CLASSES ---------------- */
+
+      let trialClasses: UnifiedClassSchedule[] = [];
 
       if (Array.isArray(response.data.trialclasses)) {
         console.log("Raw Trial Classes Data:", response.data.trialclasses);
 
-        trialClasses = response.data.trialclasses.map((trialClass) => ({
-          _id: trialClass._id || trialClass.trialId || "",
-          classId: "",
-          classLink: trialClass.meetingLink || "",
-          classDay: trialClass.scheduledStartDate ? [trialClass.scheduledStartDate] : [],
-          package: "", // Trial classes may not have package
-          totalHourse: 0.5,
-          startDate: trialClass.scheduledStartDate || "",
-          endDate: trialClass.scheduledEndDate || "",
-          startTime: [trialClass.scheduledFrom || ""],
-          endTime: [trialClass.scheduledTo || ""],
-          scheduleStatus: trialClass.meetingStatus || "Scheduled",
-          classhour: "0.5",
-          currency: "$",
-          amount: "0",
-          earnings: 0,
-          isSalaryProcessed: false,
-          status: "Active",
-          createdDate: trialClass.createdDate || "",
-          createdBy: trialClass.createdBy || "System",
-          lastUpdatedDate: trialClass.lastUpdatedDate || "",
-          lastUpdatedBy: trialClass.lastUpdatedBy || "",
-          __v: trialClass.__v || 0,
+        const now = new Date();
 
-          sessionClassType: "TRIALCLASS",
-          classType: trialClass.classType || "OneToOne",
-          sessionStarttime: trialClass.scheduledFrom || "",
-          sessionsEndtime: trialClass.scheduledTo || "",
-          sessionStatus: trialClass.meetingStatus === "Completed" ? "Completed" : "NotCompleted",
+        trialClasses = response.data.trialclasses.map((trialClass: any) => {
+          // Compute the class start datetime
+          const classStartDateTime =
+            trialClass.scheduledStartDate && trialClass.scheduledFrom
+              ? (() => {
+                const date = new Date(trialClass.scheduledStartDate);
+                const [hours, minutes] = trialClass.scheduledFrom
+                  .split(":")
+                  .map(Number);
+                date.setHours(hours, minutes, 0, 0);
+                return date;
+              })()
+              : null;
 
-          student: {
-            studentId: trialClass.student?.studentId || "N/A",
-            studentFirstName: trialClass.student?.name?.split(" ")[0] || "Trial",
-            studentLastName: trialClass.student?.name?.split(" ").slice(1).join(" ") || "Student",
-            studentEmail: trialClass.student?.email || "",
-            gender: "", // No gender in trial
-            level: "", // No level in trial
-            studnetSessionStart: [], // Provide empty array to match ClassData type
-            studnetSessionEnd: [],   // Provide empty array to match ClassData type
-          },
+          const now = new Date();
 
-          teacher: {
-            teacherId: trialClass.teacher?.teacherId || "",
-            teacherName: trialClass.teacher?.name || "",
-            teacherEmail: trialClass.teacher?.email || "",
-            teacherSessionStart: null,
-            teacherSessionEnd: null,
-          },
+          let sessionStatus = "Scheduled";
+          if (classStartDateTime && classStartDateTime < now) {
+            sessionStatus = "Completed";
+          }
 
-          course: {
-            courseId: trialClass.course?.courseId || "",
-            courseName: trialClass.course?.courseName || "",
-          },
-
-          alfstudent: {
-            _id: "",
-            username: "",
-            password: "",
-            sessionClassType: "",
-            role: "",
-            level: "",
-            status: "",
-            createdDate: "",
-            createdBy: "",
-            updatedDate: "",
-            __v: 0,
-            student: {
-              studentId: "",
-              studentEmail: "",
-              studentPhone: 0,
-              course: "",
-              package: "",
-              city: "",
-              country: "",
-              gender: "",
+          return {
+            _id: trialClass.id || trialClass.trialId || "",
+            classId: "",
+            classLink: trialClass.trialId || "",
+            sessionClassType: "TRIALCLASS",
+            scheduleStatus: sessionStatus,
+            course: {
+              courseId: trialClass.course?.courseId || "",
+              courseName: trialClass.course?.courseName || "",
             },
-          },
-
-          teacherAttendee: "",
-          studentAttendee: "",
-          isTrial: true,
-          trialclass: trialClass,
-        }));
+            startDate: trialClass.scheduledStartDate || "",
+            endDate: trialClass.scheduledEndDate || "",
+            classDay: trialClass.scheduledStartDate
+              ? [
+                new Date(trialClass.scheduledStartDate).toLocaleDateString(
+                  "en-US",
+                  {
+                    weekday: "long",
+                  }
+                ),
+              ]
+              : [],
+            startTime: [trialClass.scheduledFrom || ""],
+            endTime: [trialClass.scheduledTo || ""],
+            students: [
+              {
+                student: {
+                  id: trialClass.student?.id || "",
+                  studentId: trialClass.student?.studentId || "",
+                  studentFirstName:
+                    trialClass.student?.studentName?.split(" ")[0] || "Trial",
+                  studentLastName:
+                    trialClass.student?.studentName
+                      ?.split(" ")
+                      .slice(1)
+                      .join(" ") || "Student",
+                  studentEmail: "",
+                  gender: "",
+                  level: "",
+                  studnetSessionStart: [],
+                  studnetSessionEnd: [],
+                },
+                status: "Active",
+                sessionStatus: sessionStatus,
+                earnings: 0,
+              },
+            ],
+            package: "",
+            totalHourse: 0.5,
+            status: "Active",
+            createdBy: "System",
+            classhour: "0.5",
+            currency: "$",
+            amount: "0",
+            earnings: 0,
+            isSalaryProcessed: false,
+            sessionStarttime: trialClass.scheduledFrom || "",
+            sessionsEndtime: trialClass.scheduledTo || "",
+          };
+        });
 
         console.log("Processed Trial Classes:", trialClasses);
       } else {
@@ -307,25 +304,58 @@ const ScheduledClasses = () => {
       // Filter completed classes
       const now = new Date();
 
+      const parseDateTime = (dateStr: string, timeStr?: string) => {
+        if (!dateStr) return null;
+        const date = new Date(dateStr);
+        if (timeStr) {
+          const [hours, minutes] = timeStr.split(":").map(Number);
+          date.setHours(hours, minutes, 0, 0);
+        }
+        return date;
+      };
+
       const completed = allClasses
-        .filter(cls => {
-          const endDate = new Date(cls.endDate);
+        .filter((cls) => {
+          const endDateTime = parseDateTime(cls.endDate, cls.endTime?.[0]); // endTime array first element
           return (
-            ["Completed", "BothAbsent", "StudentAbsent", "TeacherAbsent"].includes(cls.scheduleStatus) &&
-            endDate < now
+            [
+              "Completed",
+              "BothAbsent",
+              "StudentAbsent",
+              "TeacherAbsent",
+            ].includes(cls.scheduleStatus) ||
+            (endDateTime && endDateTime < now)
           );
         })
-        .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()); // descending
+        .sort((a, b) => {
+          const aDate =
+            parseDateTime(a.startDate, a.startTime?.[0]) || new Date(0);
+          const bDate =
+            parseDateTime(b.startDate, b.startTime?.[0]) || new Date(0);
+          return bDate.getTime() - aDate.getTime(); // descending
+        });
 
       const upcoming = allClasses
-        .filter(cls => {
-          const endDate = new Date(cls.endDate);
+        .filter((cls) => {
+          const startDateTime = parseDateTime(
+            cls.startDate,
+            cls.startTime?.[0]
+          );
           return (
-            ["Scheduled", "Rescheduled", "Reschedulerequested"].includes(cls.scheduleStatus) &&
-            endDate >= now
+            ["Scheduled", "Rescheduled", "Reschedulerequested"].includes(
+              cls.scheduleStatus
+            ) &&
+            startDateTime &&
+            startDateTime >= now
           );
         })
-        .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()); // descending
+        .sort((a, b) => {
+          const aDate =
+            parseDateTime(a.startDate, a.startTime?.[0]) || new Date(0);
+          const bDate =
+            parseDateTime(b.startDate, b.startTime?.[0]) || new Date(0);
+          return aDate.getTime() - bDate.getTime(); // ascending: closest to now first
+        });
 
       console.log("Upcoming Classes:", upcoming);
       console.log("Completed Classes:", completed);
@@ -350,7 +380,7 @@ const ScheduledClasses = () => {
         : null;
     if (!userId) return;
     const socket = getSocket(userId);
-    const handleUpcoming = (data: ClassData) => {
+    const handleUpcoming = (data: UnifiedClassSchedule) => {
       console.log("Update student");
       setUpcomingClasses((prev) =>
         prev.map((app) =>
@@ -368,7 +398,7 @@ const ScheduledClasses = () => {
     setOpenDropdownId(null);
     router.push(`/teacher/ui/teacherreschedule?classId=${id}`);
   };
-  const dataToShow: ClassData[] =
+  const dataToShow: UnifiedClassSchedule[] =
     activeTab === "upcoming" ? upcomingClasses : completedData;
 
   useEffect(() => {
@@ -379,75 +409,24 @@ const ScheduledClasses = () => {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    const lowerQuery = query.toLowerCase();
+    const lowerQuery = query.toLowerCase().trim();
 
-    const filtered = dataToShow.filter((item) => {
-      const isTrial = item.classType === "Trial class" || (item as any).isTrial;
+    if (!lowerQuery) {
+      setFilteredClasses(dataToShow);
+      setCurrentPage(1);
+      return;
+    }
 
-      // Date fields as shown in UI
-      const classDate = isTrial
-        ? (item as any).trialclass?.scheduledStartDate || item.startDate
-        : item.startDate;
-      const dateObj = classDate ? new Date(classDate) : null;
-      const dateIso = classDate ? classDate.slice(0, 10).toLowerCase() : ""; // YYYY-MM-DD
-      const dateReadable = dateObj
-        ? dateObj
-          .toLocaleDateString("en-US", {
-            month: "short",
-            day: "2-digit",
-            year: "numeric",
-          })
+    const filtered = dataToShow.filter((item) =>
+      (item.students || []).some((s: any) => {
+        const fullName = `${s.student?.studentFirstName || ""} ${s.student?.studentLastName || ""
+          }`
           .toLowerCase()
-        : "";
+          .trim();
 
-      // Timing as shown in UI
-      const startTime = isTrial
-        ? (item as any).trialclass?.scheduledFrom || item.startTime?.[0]
-        : item.startTime?.[0];
-      const endTime = isTrial
-        ? (item as any).trialclass?.scheduledTo || item.endTime?.[0]
-        : item.endTime?.[0];
-      const timing = `${startTime || ""} - ${endTime || ""}`.toLowerCase();
-
-      // Status as shown in UI
-      const status = (
-        isTrial
-          ? (item as any).trialclass?.meetingStatus || item.scheduleStatus
-          : item.scheduleStatus
-      )
-        ?.toLowerCase() || "";
-
-      // Course and Class Type as shown in UI
-      const courseName = (
-        isTrial
-          ? (item as any).trialclass?.course?.courseName || item.course?.courseName
-          : item.course?.courseName
-      )
-        ?.toLowerCase() || "";
-      const classType = (item.sessionClassType || item.classType || "")
-        .toLowerCase();
-
-      // Student identifiers
-      const studentFirst = item.student?.studentFirstName?.toLowerCase() || "";
-      const studentLast = item.student?.studentLastName?.toLowerCase() || "";
-      const studentEmail = item.student?.studentEmail?.toLowerCase() || "";
-
-      // ID
-      const classId = (isTrial ? (item as any).trialclass?.trialId || item._id : item._id)?.toLowerCase() || "";
-
-      return (
-        classId.includes(lowerQuery) ||
-        studentFirst.includes(lowerQuery) ||
-        studentLast.includes(lowerQuery) ||
-        studentEmail.includes(lowerQuery) ||
-        courseName.includes(lowerQuery) ||
-        classType.includes(lowerQuery) ||
-        status.includes(lowerQuery) ||
-        timing.includes(lowerQuery) ||
-        dateIso.includes(lowerQuery) ||
-        dateReadable.includes(lowerQuery)
-      );
-    });
+        return fullName.includes(lowerQuery);
+      })
+    );
 
     setFilteredClasses(filtered);
     setCurrentPage(1);
@@ -456,6 +435,7 @@ const ScheduledClasses = () => {
   const handleApplyFilters = () => {
     const latestDataToShow =
       activeTab === "upcoming" ? upcomingClasses : completedData;
+
     let filtered = [...latestDataToShow];
 
     if (filters.courseName) {
@@ -466,7 +446,6 @@ const ScheduledClasses = () => {
       );
     }
 
-
     if (filters.scheduleStatus) {
       filtered = filtered.filter(
         (c) =>
@@ -475,20 +454,29 @@ const ScheduledClasses = () => {
       );
     }
     if (filters.studentName) {
-      filtered = filtered.filter((c) => {
-        const fullName =
-          `${c.student.studentFirstName} ${c.student.studentLastName}`.toLowerCase();
-        return fullName.includes(filters.studentName.toLowerCase());
-      });
+      const search = filters.studentName.toLowerCase();
+
+      filtered = filtered.filter((c) =>
+        (c.students || []).some((s: any) => {
+          const fullName = `${s.student?.studentFirstName || ""}`
+            .toLowerCase()
+            .trim();
+
+          return fullName.includes(search);
+        })
+      );
     }
+
     if (filters.fromDate && filters.toDate) {
       const from = new Date(filters.fromDate);
       const to = new Date(filters.toDate);
+
       filtered = filtered.filter((c) => {
         const date = new Date(c.startDate);
         return date >= from && date <= to;
       });
     }
+
     setFilteredClasses(filtered);
     setCurrentPage(1);
   };
@@ -510,11 +498,15 @@ const ScheduledClasses = () => {
 
   const studentNames = Array.from(
     new Set(
-      dataToShow.map(
-        (c) => `${c.student.studentFirstName} `
+      dataToShow.flatMap((c) =>
+        (c.students || []).map((s: any) =>
+          `${s.student?.studentFirstName || ""}`.trim()
+        )
       )
     )
-  );
+  )
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -586,28 +578,35 @@ const ScheduledClasses = () => {
             >
               <thead className="px-4 py-3.5 text-center border text-[14px] border-[#4C6993] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                 <tr className="font-extralight">
-                  <th className="text-left px-4 py-3 w-[180px] font-normal">Class ID</th>
-                  <th className="text-left px-4 py-3 font-normal">Student Name</th>
+                  <th className="text-left px-4 py-3 w-[180px] font-normal">
+                    Class ID
+                  </th>
+                  <th className="text-left px-4 py-3 font-normal">
+                    Student Name
+                  </th>
                   <th className="text-left px-4 py-3 font-normal">Course</th>
-                  <th className="text-left px-4 py-3 font-normal">Class Type</th>
+                  <th className="text-left px-4 py-3 font-normal">
+                    Class Type
+                  </th>
                   <th className="text-left px-4 py-3 font-normal">Date</th>
                   <th className="text-left px-4 py-3 font-normal">Timing</th>
-                  <th className="text-left px-4 py-3 w-[180px] font-normal">Status</th>
+                  <th className="text-left px-4 py-3 w-[180px] font-normal">
+                    Status
+                  </th>
                   <th className="text-left px-4 py-3 font-normal">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {currentItems.length > 0 ? (
                   currentItems.map((item, index) => {
-                    const isTrial = item.classType === "Trial class" || item.isTrial;
+                    /* ---------- DERIVED FLAGS ---------- */
+                    const isTrial =
+                      item.totalHourse === 0.5 && item.createdBy === "System";
 
-                    // Get the appropriate date
-                    const classDate = isTrial ?
-                      (item.trialclass?.scheduledStartDate || item.startDate) :
-                      item.startDate;
-
-                    // Format the date
-                    const dateObj = classDate ? new Date(classDate) : null;
+                    /* ---------- DATE ---------- */
+                    const dateObj = item.startDate
+                      ? new Date(item.startDate)
+                      : null;
                     const formattedDate = dateObj
                       ? dateObj.toLocaleDateString("en-US", {
                         month: "short",
@@ -616,107 +615,194 @@ const ScheduledClasses = () => {
                       })
                       : "N/A";
 
-                    // Get time - prioritize trial class time if available
-                    const startTime = isTrial ?
-                      (item.trialclass?.scheduledFrom || item.startTime?.[0]) :
-                      item.startTime?.[0];
-                    const endTime = isTrial ?
-                      (item.trialclass?.scheduledTo || item.endTime?.[0]) :
-                      item.endTime?.[0];
-                    const timeDisplay = startTime && endTime ? `${startTime} - ${endTime}` : "N/A";
+                    /* ---------- TIME ---------- */
+                    const startTime = item.startTime?.[0];
+                    const endTime = item.endTime?.[0];
+                    const timeDisplay =
+                      startTime && endTime
+                        ? `${startTime} - ${endTime}`
+                        : "N/A";
+                    const studentNames =
+                      // ✅ GROUP CLASS (students[])
+                      Array.isArray(item.students) && item.students.length > 0
+                        ? item.students
+                          .map(({ student }) => {
+                            if (!student) return null;
 
-                    const hideLastNameStatuses = [
-                      "Scheduled",
-                      "Rescheduled",
-                      "Reschedulerequested",
-                      "BothAbsent",
-                      "StudentAbsent",
-                      "TeacherAbsent",
-                    ];
+                            const first =
+                              student.studentFirstName?.trim() || "";
+                            const last =
+                              student.studentLastName?.trim() || "";
 
-                    const studentName =
-                      isTrial || hideLastNameStatuses.includes(item.scheduleStatus)
-                        ? item.student?.studentFirstName || item.trialclass?.student?.name?.split(" ")[0] || "Student"
-                        : `${item.student?.studentFirstName || ""} ${item.student?.studentLastName || ""}`.trim();
+                            // avoid duplicate first + last
+                            if (
+                              first &&
+                              last &&
+                              first.toLowerCase() === last.toLowerCase()
+                            ) {
+                              return first;
+                            }
 
-                    const classType = item.sessionClassType || item.classType || "N/A";
+                            return `${first} ${last}`.trim() || "Student";
+                          })
+                          .filter(Boolean)
+                          .join(", ")
+                        : // ✅ REGULAR CLASS (single student)
+                        "N/A";
 
-                    // Get course name
-                    const courseName = isTrial
-                      ? item.trialclass?.course?.courseName || item.course?.courseName
-                      : item.course?.courseName;
+                    /* ---------- COURSE ---------- */
+                    const courseName = item.course?.courseName || "N/A";
 
-                    // Get status
-                    const status = isTrial
-                      ? item.trialclass?.meetingStatus || item.scheduleStatus
-                      : item.scheduleStatus;
+                    /* ---------- CLASS TYPE ---------- */
+                    const classType =
+                      item.sessionClassType === "GROUPCLASS"
+                        ? "Group Class"
+                        : isTrial
+                          ? "Trial Class"
+                          : "Regular Class";
 
-      return (
-        <tr
-          key={item._id}
-          className={`text-[12px] justify-center ${
-            index % 2 === 0
-              ? "bg-[#fff] dark:bg-[#2C2C2C]"
-              : "bg-[#F8F8F8] dark:bg-[#303030]"
-          }`}
-        >
-          <td className="px-3 py-2 text-[10px] text-left w-[200px] break-words whitespace-normal">
-            {isTrial ? item.trialclass?.trialId || item.classId : item.classId || "N/A"}
-          </td>
-          <td className="text-[#3D8FDE] px-3 py-2 text-left w-[180px] break-words whitespace-normal">
-            {studentName || "N/A"}
-          </td>
-          <td className="px-3 py-2 text-left w-[170px] break-words whitespace-normal">
-            {courseName || "N/A"}
-          </td>
-          <td className="px-3 py-2 text-left w-[170px] break-words whitespace-normal">
-               {(() => {
-                            const val = classType
-                            return val
-                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
-                              : "-";
-                          })()}
-          </td>
-          <td className="px-3 py-2 text-left w-[170px] break-words whitespace-normal">
-            {formattedDate}
-          </td>
-          <td className="px-3 py-2 text-left w-[170px] break-words whitespace-normal">
-            {timeDisplay}
-          </td>
-          <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-xs w-[200px] break-words whitespace-normal">
-  <span
-    className={`inline-block text-center rounded-md font-semibold text-[11px] px-3 py-1
-      ${
-        status === "Scheduled"
-          ? "bg-green-100 text-green-800 dark:bg-green-800/20"
-          : status === "Rescheduled" || status === "Reschedulerequested"
-          ? "bg-gray-200 text-gray-800 dark:bg-gray-500/20"
-          : status === "BothAbsent"
-          ? "bg-red-100 text-red-700 dark:bg-red-700/20"
-          : "bg-gray-300 text-gray-600 dark:bg-gray-500/20"
-      }
-    `}
+                    /* ---------- STATUS ---------- */
+                    const status = item.scheduleStatus;
+                    const startDateTime = new Date(item.startDate);
+                    let startTimeStr = "";
+                    if (item.startTime?.[0]) {
+                      startTimeStr = item.startTime[0]; // get startTime string
+                      const [hours, minutes] = startTimeStr
+                        .split(":")
+                        .map(Number);
+                      startDateTime.setHours(hours, minutes, 0, 0);
+                    }
+                    const studentsArray = studentNames
+                      ? studentNames.split(", ").filter(Boolean)
+                      : [];
+
+                    return (
+                      <tr
+                        key={`${item._id
+                          }_${startDateTime.getTime()}_${startTimeStr}`} // include startTime in key
+                        className={`text-[12px] ${index % 2 === 0
+                            ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                            : "bg-[#F8F8F8] dark:bg-[#303030]"
+                          }`}
+                      >
+                        {/* ID */}
+                        <td className="px-3 py-2 text-[10px] text-left w-[200px] break-words">
+                          {item.classId || item.classLink}
+                        </td>
+
+                        {/* Student */}
+
+                        <td className="relative text-[#3D8FDE] px-3 py-2 text-left w-[180px]">
+                          {studentsArray.length === 1 ? (
+                            <span className="break-words">
+                              {studentsArray[0]}
+                            </span>
+                          ) : studentsArray.length > 1 ? (
+                            <>
+                              <button
+                                onClick={() =>
+                                  setOpenStudents(
+                                    openStudents ===
+                                      `${item._id
+                                      }_${startDateTime.getTime()}_${startTimeStr}`
+                                      ? null
+                                      : `${item._id
+                                      }_${startDateTime.getTime()}_${startTimeStr}`
+                                  )
+                                }
+                                className="underline cursor-pointer"
+                              >
+                                View Students ({studentsArray.length})
+                              </button>
+
+                              {openStudents ===
+                                `${item._id
+                                }_${startDateTime.getTime()}_${startTimeStr}` && (
+                                  <div className="absolute z-50 mt-2 w-56 bg-white border border-gray-200 rounded-md shadow-lg">
+                                    <ul className="max-h-48 overflow-y-auto">
+                                      {studentsArray.map((name, idx) => (
+                                        <li
+                                          key={idx}
+                                          className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 break-words"
+                                        >
+                                          {name}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                            </>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </td>
+
+                        {/* Course */}
+                        <td className="px-3 py-2 text-left w-[170px] break-words">
+                          {courseName}
+                        </td>
+
+                        {/* Class Type */}
+                        <td className="px-3 py-2 text-left w-[170px] break-words">
+                          {classType}
+                        </td>
+
+                        {/* Date */}
+                        <td className="px-3 py-2 text-left w-[170px] break-words">
+                          {formattedDate}
+                        </td>
+
+                        {/* Time */}
+                        <td className="px-3 py-2 text-left w-[170px] break-words">
+                          {timeDisplay}
+                        </td>
+
+                        {/* Status */}
+                        <td className="px-3 py-2 text-xs w-[200px]">
+                          <span
+                            className={`inline-block rounded-md font-semibold text-[11px] px-3 py-1
+              ${status === "Scheduled"
+                                ? "bg-green-100 text-green-800 dark:bg-green-800/20"
+                                : status === "Rescheduled" || status === "Reschedulerequested"
+                                  ? "bg-gray-200 text-gray-800 dark:bg-gray-500/20"
+                                  : status === "BothAbsent"
+                                    ? "bg-red-100 text-red-700 dark:bg-red-700/20"
+                                    : "bg-gray-300 text-gray-600 dark:bg-gray-500/20"
+                              }`}
                           >
                             {status}
                           </span>
                         </td>
 
-                        <td className="px-3 py-2 relative w-[10px] break-words whitespace-normal">
-                          <div className="relative inline-block text-left">
+                        {/* Actions */}
+                        <td className="px-3 py-2 relative w-[10px]">
+                          <div className="relative inline-block">
                             <button
                               onClick={() =>
-                                setOpenDropdownId(openDropdownId === item._id ? null : item._id)
+                                setOpenDropdownId(
+                                  openDropdownId ===
+                                    `${item._id
+                                    }_${startDateTime.getTime()}_${startTimeStr}`
+                                    ? null
+                                    : `${item._id
+                                    }_${startDateTime.getTime()}_${startTimeStr}`
+                                )
                               }
                               className="p-2 rounded-md"
                             >
                               <MoreVertical className="w-4 h-4 text-slate-600 dark:text-white" />
                             </button>
 
-                            {activeTab !== "completed" && openDropdownId === item._id && (
-                              <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-[#2C2C2C] shadow-lg ring-1 ring-black ring-opacity-5">
-                                <div className="py-1 text-sm text-gray-700 dark:text-white">
+                            {activeTab !== "completed" &&
+                              item.sessionClassType === "REGULARCLASS" &&
+                              openDropdownId ===
+                              `${item._id
+                              }_${startDateTime.getTime()}_${startTimeStr}` && (
+                                <div className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white dark:bg-[#2C2C2C] shadow-lg">
                                   <button
-                                    onClick={() => handleRescheduleRedirect(item._id)}
+                                    onClick={() =>
+                                      handleRescheduleRedirect(item._id)
+                                    }
                                     className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-[#404040]"
                                   >
                                     Reschedule
@@ -728,8 +814,7 @@ const ScheduledClasses = () => {
                                     Cancel
                                   </button>
                                 </div>
-                              </div>
-                            )}
+                              )}
                           </div>
                         </td>
                       </tr>
@@ -737,7 +822,7 @@ const ScheduledClasses = () => {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={7} className="text-center py-4 text-gray-500">
+                    <td colSpan={8} className="text-center py-4 text-gray-500">
                       No classes found
                     </td>
                   </tr>
@@ -765,11 +850,11 @@ const ScheduledClasses = () => {
       >
         <div>
           <button
-              className="absolute top-2 right-3 text-gray-400 text-xl"
-              onClick={() => setIsFilterModalOpen(false)}
-            >
-              &times;
-            </button>
+            className="absolute top-2 right-3 text-gray-400 text-xl"
+            onClick={() => setIsFilterModalOpen(false)}
+          >
+            &times;
+          </button>
           <h2 className="text-[16px] font-semibold mb-6 text-[#2D2D2D] dark:text-white">
             Filter by
           </h2>

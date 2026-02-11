@@ -276,9 +276,7 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
           <p className="text-[#4b5563] text-[13px] mb-2 text-center mt-2">
            <span className="font-bold">Level</span>  : &nbsp;{dashboardCounts.totalLevel}
           </p>
-          <p className="text-[#4b5563] text-[13px] mb-2 text-center mt-2">
-            <span className="font-bold">Family Id</span> :&nbsp;{familyId ?? "-"}
-          </p>
+        
 
           <div className="flex justify-center space-x-1 mb-2">
             {[...Array(4)].map((_, i) => (

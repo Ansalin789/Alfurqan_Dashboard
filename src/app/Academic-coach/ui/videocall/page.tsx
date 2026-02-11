@@ -3,10 +3,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { JitsiMeeting } from "@jitsi/react-sdk";
 import axios from "axios";
-import BaseLayout3 from "@/components/BaseLayout3";
+import BaseLayout1 from "@/components/BaseLayout1";
 import { useSearchParams } from "next/navigation";
-import AdminHeader from "../../components/AdminHeader";
-import BaseLayout4 from "@/components/BaseLayout4";
+import AcademicHeader from "../../components/academicHeader";
 interface Attendance {
   id: string | null;
   studentId: string;
@@ -18,18 +17,18 @@ interface Attendance {
   leaveTime: string;
 }
 
-interface Admin {
-  adminId: string;
-  adminName: string;
-  adminEmail: string;
-  adminRole: string;
+interface Supervisor {
+  supervisorId: string;
+  supervisorName: string;
+  supervisorEmail: string;
+  supervisorRole: string;
 }
 
 interface Teacher {
   teacherId: string;
   teacherName: string;
   teacherEmail: string;
-  attendee?: string;
+  attendee: string;
   _id: string;
 }
 
@@ -37,19 +36,57 @@ interface Meeting {
   _id: string;
   meetingName: string;
   meetingId: string;
-  admin: Admin;
-  selectedDate: string;
+
+  selectedDate: string; // ISO date string
   startTime: string;
   endTime: string;
-  teacher: Teacher[];
-  description: string;
-  meetingStatus: string;
-  status: string;
+  description?: string;
+
+  meetingStatus: "Completed" | "Scheduled" | "Pending" | string;
+  duration?: string;
+  status: "Active" | "Inactive" | string;
+
   createdDate: string;
   createdBy: string;
-  updatedDate: string;
-  updatedBy: string;
-  __v: number;
+  updatedDate?: string;
+  updatedBy?: string;
+  __v?: number;
+
+  // Optional supervisor (some meetings)
+  supervisor?: {
+    supervisorId: string;
+    supervisorName: string;
+    supervisorEmail: string;
+  };
+
+  // Optional admin (some meetings)
+  admin?: {
+    adminId: string;
+    adminName: string;
+    adminEmail: string;
+    adminRole: string;
+  };
+
+  // Optional single or multiple teachers
+  teacher:
+    | Array<{
+        teacherId: string;
+        teacherName: string;
+        teacherEmail: string;
+        attendee?: string;
+      }>
+    | {
+        teacherId: string;
+        teacherName: string;
+        teacherEmail: string;
+      };
+
+  // Optional participants (student meetings)
+  participants?: Array<{
+    studentId: string;
+    studentName: string;
+    studentEmail: string;
+  }>;
 }
 
 export default function Page() {
@@ -60,69 +97,137 @@ export default function Page() {
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const attendanceRef = useRef(attendance);
   const seacrh = useSearchParams();
-  const meetingId = seacrh.get("meetingId");
+  const meetingId = seacrh.get("id");
   const [meetingUpdate, setMeetingUpdate] = useState(false);
+  const [meetingMinutes, setMeetingMinutes] = useState<string>("");
 
   useEffect(() => {
     const fetchClassData = async () => {
       try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("AdminAuthToken")
-            : null;
-        if (!token) {
-          console.error("❌ AdminAuthToken not found");
-          return;
-        }
+        const token = localStorage.getItem("AcademicCoachAuthToken");
+        if (!token || !meetingId) return;
 
-        // Use correct query string and expect array response
-        const response = await axios.get<Meeting[]>(
-          `https://api.blackstoneinfomaticstech.com/allAdminMeeting/meetingId?meetingId=${meetingId}`,
+        const acId = localStorage.getItem("AcademicCoachPortalId");
+
+        const response = await axios.get(
+          `https://api.blackstoneinfomaticstech.com/meetingSchedulelist?academicCoachId=${acId}`,
           {
             headers: {
-              "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
           },
         );
 
-        if (response.data && response.data.length > 0) {
-          // Use the first meeting for general info
-          setClassData(response.data[0]);
-          setRoomName(response.data[0].meetingId);
+        const { academicCoach, meetingList, adminMeetingList } = response.data;
 
-          // Flatten all teachers from all meetings
-          const teacherAttendance = response.data.flatMap((meeting) =>
-            meeting.teacher.map((teacher: Teacher) => ({
+        // ✅ Merge all meetings
+        const allMeetings = [
+          ...academicCoach,
+          ...meetingList,
+          ...adminMeetingList,
+        ];
+
+        // ✅ Find selected meeting
+        const meeting = allMeetings.find(
+          (m: any) => m._id === meetingId || m.meetingId === meetingId,
+        );
+
+        if (!meeting) {
+          console.log("❌ No meeting found for:", meetingId);
+          return;
+        }
+
+        console.log("✅ Found Meeting:", meeting);
+
+        setClassData(meeting);
+
+        // ✅ Jitsi Room
+        setRoomName(meeting.meetingId || meeting._id);
+
+        // ✅ Attendance (if participants exist)
+        const tempAttendance: Attendance[] = [];
+
+        // ✅ Students
+        if (meeting.participants?.length) {
+          meeting.participants.forEach((p: any) => {
+            tempAttendance.push({
               id: null,
-              studentId: teacher.teacherId,
-              name: teacher.teacherName,
+              studentId: p.studentId || p.participantId,
+              name: p.studentName || p.participantName,
               startTime: null,
               endTime: null,
               joined: false,
               joinTime: "",
               leaveTime: "",
-            })),
-          );
-
-          setAttendance(teacherAttendance);
-        } else {
-          setClassData(null);
+            });
+          });
         }
+
+        // ✅ Teachers
+        if (meeting.teacher) {
+          const teachers = Array.isArray(meeting.teacher)
+            ? meeting.teacher
+            : [meeting.teacher];
+
+          teachers.forEach((t: any) => {
+            tempAttendance.push({
+              id: null,
+              studentId: t.teacherId,
+              name: t.teacherName,
+              startTime: null,
+              endTime: null,
+              joined: false,
+              joinTime: "",
+              leaveTime: "",
+            });
+          });
+        }
+
+        // ✅ Supervisor
+        if (meeting.supervisor) {
+          tempAttendance.push({
+            id: null,
+            studentId: meeting.supervisor.supervisorId,
+            name: meeting.supervisor.supervisorName,
+            startTime: null,
+            endTime: null,
+            joined: false,
+            joinTime: "",
+            leaveTime: "",
+          });
+        }
+
+        // ✅ Admin
+        if (meeting.admin) {
+          tempAttendance.push({
+            id: null,
+            studentId: meeting.admin.adminId,
+            name: meeting.admin.adminName,
+            startTime: null,
+            endTime: null,
+            joined: false,
+            joinTime: "",
+            leaveTime: "",
+          });
+        }
+
+        setAttendance(tempAttendance);
+        console.log("Attendance list initialized:", tempAttendance);
       } catch (err) {
-        console.log("Error loading class details:", err);
+        console.error("❌ Error loading meeting:", err);
       }
     };
 
     fetchClassData();
-  }, []);
+  }, [meetingId]);
+
   useEffect(() => {
     attendanceRef.current = attendance;
   }, [attendance]);
 
   // Function to handle API update
   const handleMeetingMinutesUpdate = async () => {
-    console.log("\uD83D\uDCCC Submit clicked");
+    console.log("📌 Submit clicked");
     let duration = "";
     if (startTime && endTime) {
       duration = calculateDuration(startTime, endTime);
@@ -130,29 +235,37 @@ export default function Page() {
       console.warn("Missing start or end time for duration calculation");
     }
 
-    const payload = {
-      duration: duration,
-      meetingStatus: "Completed",
-      teacher: attendance.map((a) => ({
-  teacherId: a.studentId,
-  teacherName: a.name,
-  attendee: a.leaveTime ? "present" : "present", // joined = present
-})),
+    const normalizedTeachers = Array.isArray(classData?.teacher)
+      ? classData.teacher
+      : [classData?.teacher];
 
-    };
+    // ✅ Build payload from LIVE attendance
+const payload = {
+  meetingminutes: meetingMinutes,
+  duration,
+  meetingStatus: "Completed",
+  teacher: attendance.map((a) => ({
+    teacherId: a.studentId,   // real DB id
+    teacherName: a.name,
+    attendee: "present",
+  })),
+};
+
+console.log("Final Payload:", payload);
+
 
     try {
       const token =
         typeof window !== "undefined"
-          ? localStorage.getItem("AdminAuthToken")
+          ? localStorage.getItem("AcademicCoachAuthToken")
           : null;
       if (!token) {
-        console.error("AdminAuthToken not found");
+        console.error("❌ AcademicCoachAuthToken not found");
         return;
       }
 
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/allAdminMeeting/update/${meetingId}`,
+        `https://api.blackstoneinfomaticstech.com/meetingminutes/${meetingId}`,
         {
           method: "PUT",
           headers: {
@@ -169,117 +282,63 @@ export default function Page() {
       }
 
       const result = await response.json();
-      console.log(" Meeting Minutes Updated:", result);
+      console.log("✅ Meeting Minutes Updated:", result);
 
       setMeetingUpdate(false); // close modal
     } catch (error) {
-      console.error(" Error updating meeting minutes:", error);
+      console.error("❌ Error updating meeting minutes:", error);
     }
   };
   const calculateDuration = (startTime: string, endTime: string): string => {
     const today = new Date().toDateString(); // use today's date to construct full datetime
-
     const start = new Date(`${today} ${startTime}`);
     const end = new Date(`${today} ${endTime}`);
-
     const diffMs = end.getTime() - start.getTime(); // difference in milliseconds
-
     if (diffMs < 0) return "Invalid";
-
     const diffMins = Math.floor(diffMs / 60000); // convert to minutes
     const hours = Math.floor(diffMins / 60);
     const minutes = diffMins % 60;
-
     return `${hours}h ${minutes}m`;
   };
-
-  const getCurrentUserInfo = () => {
-    // Admin
-    const adminId = localStorage.getItem("AdminId");
-    const adminName = localStorage.getItem("AdminName");
-    const adminEmail = localStorage.getItem("AdminEmail");
-
-    if (adminId && adminName) {
-      return {
-        name: adminName,
-        id: adminId,
-        email: adminEmail || "admin@alfurqan.com",
-        role: "admin",
-      };
-    }
-
-    // Academic Coach
-    const acId = localStorage.getItem("AcademicCoachPortalId");
-    const acName = localStorage.getItem("AcademicCoachName");
-    const acEmail = localStorage.getItem("AcademicCoachEmail");
-
-    if (acId && acName) {
-      return {
-        name: acName,
-        id: acId,
-        email: acEmail || "coach@alfurqan.com",
-        role: "academicCoach",
-      };
-    }
-
-    // Supervisor
-    const supId = localStorage.getItem("SupervisorId");
-    const supName = localStorage.getItem("SupervisorName");
-    const supEmail = localStorage.getItem("SupervisorEmail");
-
-    if (supId && supName) {
-      return {
-        name: supName,
-        id: supId,
-        email: supEmail || "supervisor@alfurqan.com",
-        role: "supervisor",
-      };
-    }
-
-    // Teacher
+  const getCurrentUser = () => {
     const teacherId = localStorage.getItem("TeacherId");
     const teacherName = localStorage.getItem("TeacherName");
     const teacherEmail = localStorage.getItem("TeacherEmail");
 
     if (teacherId && teacherName) {
       return {
-        name: teacherName,
         id: teacherId,
+        name: teacherName,
         email: teacherEmail || "teacher@alfurqan.com",
-        role: "teacher",
       };
     }
 
-    // Student
-    const studentId = localStorage.getItem("StudentId");
-    const studentName = localStorage.getItem("StudentName");
-    const studentEmail = localStorage.getItem("StudentEmail");
+    const coachId = localStorage.getItem("AcademicCoachPortalId");
+    const coachName = localStorage.getItem("AcademicCoachName");
+    const coachEmail = localStorage.getItem("AcademicCoachEmail");
 
-    if (studentId && studentName) {
+    if (coachId && coachName) {
       return {
-        name: studentName,
-        id: studentId,
-        email: studentEmail || "student@alfurqan.com",
-        role: "student",
+        id: coachId,
+        name: coachName,
+        email: coachEmail || "coach@alfurqan.com",
       };
     }
 
-    // Fallback
     return {
-      name: "Guest",
       id: "UNKNOWN",
+      name: "Guest",
       email: "guest@alfurqan.com",
-      role: "guest",
     };
   };
+  const currentUser = getCurrentUser();
 
-  const currentUser = getCurrentUserInfo();
   return (
-    <BaseLayout4>
-      <AdminHeader
-        currentSection="Live Meeting"
+    <BaseLayout1>
+      <AcademicHeader
+        currentSection="Meeting"
         showBackButton={true}
-        showBackPath="/admin-main/ui/meeting"
+        showBackPath="/Academic-coach/ui/schedule"
       />
       <div className="flex flex-col min-h-screen px-4 sm:px-6 md:px-8">
         {/* Page Content */}
@@ -324,22 +383,28 @@ export default function Page() {
                         className="w-full border p-2 rounded focus:outline-none text-[10px] dark:bg-[#252525] "
                       >
                         {attendance
-                          .filter((s) => s.joined)
-                          .map((s) => {
-                            const statusLabel = s.leaveTime
-                              ? `🚪 Left at ${s.leaveTime}`
-                              : `✅ Joined at ${s.joinTime}`;
+  .filter((s) => s.joined) // only real participants
+  .map((s) => {
 
-                            return (
-                              <option
-                                className="text-[12px]"
-                                key={s.id}
-                                value={s.id || ""}
-                              >
-                                {s.name} – {statusLabel}
-                              </option>
-                            );
-                          })}
+    let statusLabel = "";
+
+    if (s.leaveTime) {
+      statusLabel = `🚪 Left at ${s.leaveTime}`;
+    } else {
+      statusLabel = `✅ Joined at ${s.joinTime}`;
+    }
+
+    return (
+      <option
+        className="text-[12px]"
+        key={s.id}
+        value={s.id ||""}
+      >
+        {s.name} – {statusLabel}
+      </option>
+    );
+  })}
+
                       </select>
                     </div>
                   </div>
@@ -349,73 +414,103 @@ export default function Page() {
                 <div className="flex-1 min-w-0 w-full h-[50vh] md:h-[60vh] rounded-md overflow-hidden shadow-inner border border-gray-300">
                   {roomName && (
                     <JitsiMeeting
+                      roomName={roomName}
+                      domain="meet.blackstoneinfomaticstech.com"
+                      // ✅ Always send user info
                       userInfo={{
                         displayName: `${currentUser.name} | ID : ${currentUser.id}`,
                         email: currentUser.email,
                       }}
-                      roomName={roomName}
-                      domain="meet.blackstoneinfomaticstech.com"
+                      // ✅ Disable prejoin + lock name
                       configOverwrite={{
+                        prejoinPageEnabled: false, // ⭐ VERY IMPORTANT
                         startWithAudioMuted: false,
                         startWithVideoMuted: false,
+
                         toolbarButtons: [
                           "microphone",
                           "camera",
-                          "closedcaptions",
                           "desktop",
                           "fullscreen",
-                          "fodeviceselection",
                           "hangup",
-                          "profile",
                           "chat",
-                          "settings",
                           "raisehand",
-                          "videoquality",
-                          "filmstrip",
-                          "shortcuts",
                           "tileview",
-                          "recording",
+                          "settings",
                         ],
                       }}
+                      // ✅ Disable rename/profile
+                      interfaceConfigOverwrite={{
+                        DISABLE_PROFILE: true,
+                        DISABLE_RENAME: true,
+                      }}
                       onApiReady={(externalApi) => {
-                        // ✅ Handle Participant Joined
-                        externalApi.addListener(
-                          "participantJoined",
-                          (event) => {
-                            const joinTime = new Date().toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: true,
-                            });
-
-                            const name = event.displayName || "Guest";
-
-                            setAttendance((prev) => {
-                              // prevent duplicate
-                              const exists = prev.some(
-                                (a) => a.id === event.id,
-                              );
-                              if (exists) return prev;
-
-                              return [
-                                ...prev,
-                                {
-                                  id: event.id,
-                                  studentId: event.id, // use jitsi id
-                                  name: name,
-                                  startTime: null,
-                                  endTime: null,
-                                  joined: true,
-                                  joinTime,
-                                  leaveTime: "",
-                                },
-                              ];
-                            });
-                          },
+                        // ✅ Force display name after join
+                        externalApi.executeCommand(
+                          "displayName",
+                          `${currentUser.name} | ID : ${currentUser.id}`,
                         );
 
-                        // 🔴 Handle Participant Left
-                          externalApi.addListener("participantLeft", (event) => {
+                        // ================= JOIN =================
+                       externalApi.addListener("participantJoined", (event) => {
+
+  const joinTime = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  let realId = "";
+  let realName = "Guest";
+
+  // ✅ Extract ID from displayName
+  if (event.displayName?.includes("| ID :")) {
+    const parts = event.displayName.split("| ID :");
+    realName = parts[0].trim();
+    realId = parts[1].trim();
+  } else {
+    realName = event.displayName || "Guest";
+  }
+
+  // ❌ If no ID → ignore
+  if (!realId) {
+    console.warn("⚠️ No ID found:", event.displayName);
+    return;
+  }
+
+  setAttendance((prev) => {
+
+    // ✅ Avoid duplicate entry
+    const exists = prev.some(a => a.studentId === realId);
+
+    if (exists) {
+      return prev.map(a =>
+        a.studentId === realId
+          ? { ...a, id: event.id, joined: true, joinTime }
+          : a
+      );
+    }
+
+    // ✅ New join
+    return [
+      ...prev,
+      {
+        id: event.id,          // jitsi id
+        studentId: realId,     // ✅ REAL DB ID
+        name: realName,
+        startTime: null,
+        endTime: null,
+        joined: true,
+        joinTime,
+        leaveTime: "",
+      },
+    ];
+  });
+});
+
+
+                        // ================= LEAVE =================
+                        externalApi.addListener("participantLeft", (event) => {
                           const leaveTime = new Date().toLocaleTimeString([], {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -429,7 +524,7 @@ export default function Page() {
                           );
                         });
 
-                        // 🎥 Host/teacher Joined Call
+                        // ================= HOST JOIN =================
                         externalApi.addListener("videoConferenceJoined", () => {
                           const startCallTime = new Date().toLocaleTimeString(
                             [],
@@ -440,11 +535,12 @@ export default function Page() {
                             },
                           );
 
-                          console.log("Call started at", startCallTime);
                           setStartTime(startCallTime);
                         });
+
+                        // ================= HOST LEAVE =================
                         externalApi.addListener("videoConferenceLeft", () => {
-                          const startCallTime = new Date().toLocaleTimeString(
+                          const endCallTime = new Date().toLocaleTimeString(
                             [],
                             {
                               hour: "2-digit",
@@ -452,7 +548,8 @@ export default function Page() {
                               hour12: true,
                             },
                           );
-                          setEndTime(startCallTime);
+
+                          setEndTime(endCallTime);
                           setMeetingUpdate(true);
                         });
                       }}
@@ -486,31 +583,53 @@ export default function Page() {
                 <h3 className="text-base font-medium text-gray-700 mb-2 dark:text-[#fff]">
                   Attendees:
                 </h3>
-                <ul className="list-disc list-inside text-sm text-gray-800 space-y-1 dark:text-[#fff]">
-                  {attendance
-                    .filter((a) => a.joined)
-                    .map((a) => {
-                      const status = a.leaveTime ? (
-                        <span className="text-gray-600">
-                          🚪 Left at {a.leaveTime}
-                        </span>
-                      ) : (
-                        <span className="text-green-600">
-                          ✅ Joined at {a.joinTime}
-                        </span>
-                      );
+              <ul className="list-disc list-inside text-sm text-gray-800 space-y-1 dark:text-[#fff]">
 
-                      return (
-                        <li key={a.id}>
-                          <span className="font-medium">{a.name}</span> –{" "}
-                          {status}
-                        </li>
-                      );
-                    })}
-                </ul>
+  {attendance
+    .filter((a) => a.joined) // only real participants
+    .map((a) => {
+
+      let status: JSX.Element;
+
+      if (a.leaveTime) {
+        status = (
+          <span className="text-gray-600">
+            🚪 Left at {a.leaveTime}
+          </span>
+        );
+      } else {
+        status = (
+          <span className="text-green-600">
+            ✅ Joined at {a.joinTime}
+          </span>
+        );
+      }
+
+      return (
+        <li key={a.id}>
+          <span className="font-medium">{a.name}</span> – {status}
+        </li>
+      );
+    })}
+</ul>
+
               </div>
 
               {/* Meeting Minutes Textarea */}
+              <div className="md:w-1/2 border border-[#343434] rounded-lg p-4 h-72 flex flex-col">
+                <label
+                  htmlFor="htmldaad"
+                  className="text-base font-medium text-gray-700 mb-2 dark:text-[#fff]"
+                >
+                  Meeting Minutes
+                </label>
+                <textarea
+                  value={meetingMinutes}
+                  onChange={(e) => setMeetingMinutes(e.target.value)}
+                  className="flex-grow rounded p-2 text-sm resize-none focus:outline-none dark:bg-[#252525] "
+                  placeholder="Enter your notes here..."
+                />
+              </div>
             </div>
 
             {/* Action Buttons */}
@@ -531,6 +650,6 @@ export default function Page() {
           </div>
         </div>
       )}
-    </BaseLayout4>
+    </BaseLayout1>
   );
 }

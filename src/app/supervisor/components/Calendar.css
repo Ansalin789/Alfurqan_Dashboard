@@ -134,3 +134,16 @@ font-family: 'Poppins', 'Segoe UI', sans-serif;
 .custom-calendar .react-calendar__navigation__label {
   background: transparent !important;
 }
+
+/* New class for event indicator dot without active background */
+.custom-calendar .has-event::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  right: 0px;
+  width: 8px;
+  height: 8px;
+  background-color: #3973C6;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}

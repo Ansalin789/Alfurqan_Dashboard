@@ -416,7 +416,7 @@ const completedCount = filteredClass.filter(cls =>
                       <td className="px-4 py-3 text-left break-words">
                         <span className="text-xs">{cls.classId || cls.classLink}</span>
                       </td>
-                      <td className="px-4 py-3 text-left text-[#576CBC] text-xs sm:text-sm">
+                      <td className="px-4 py-3 text-left text-[#576CBC] text-xs sm:text-xs">
                         {cls.teacher?.teacherName || "N/A"}
                       </td>
                       <td className="px-4 py-3 text-left text-xs">

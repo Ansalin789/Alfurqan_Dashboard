@@ -180,7 +180,7 @@ useEffect(() => {
 
 
   const handleStartClass = () => {
-router.push(`/student/ui/livemeeting?id=${classData?._id}`);
+router.push(`/student/ui/livemeeting?id=${classData?.meetingId}`);
   };
 
   const formatTime = (time: number) => (time < 10 ? `0${time}` : time);

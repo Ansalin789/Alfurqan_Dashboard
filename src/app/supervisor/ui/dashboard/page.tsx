@@ -329,7 +329,7 @@ export default function Dashboard() {
   }, [applicants, weekRange]);
   const [meetingDays, setMeetingDays] = useState<number[]>([]);
   const [todayMeetings, setTodayMeetings] = useState<
-    { time: string; title: string; type: string; color: string }[]
+    { time: string; title: string; meetingId: string; color: string }[]
   >([]);
 
   useEffect(() => {
@@ -354,7 +354,7 @@ export default function Dashboard() {
           }
         );
 
-        const allMeetings: Meeting[] = response.data.data.meetings;
+        const allMeetings: Meeting[] = response.data.meetings;
 
         // console.log("✅ Full Meetings Data:", allMeetings);
 
@@ -368,30 +368,60 @@ export default function Dashboard() {
 
         setMeetingDays(allMeetingDays);
 
-        // ✅ Filter today's meetings
-        const todayMeetings = allMeetings
-          .filter((meeting) => {
-            const meetingDate = new Date(meeting.selectedDate);
-            return meetingDate.toDateString() === today.toDateString();
-          })
-          .map((meeting) => {
-            let color = "bg-blue-100 text-blue-800"; // Default color
+        const now = new Date();
 
-            if (meeting.meetingStatus === "Scheduled") {
-              color = "bg-amber-100 text-amber-800";
-            } else if (meeting.meetingStatus === "Reschedule") {
-              color = "bg-green-100 text-green-800";
-            }
+// Step 1: Date + Time format
+const formattedMeetings = allMeetings.map((meeting) => {
+  const datePart = meeting.selectedDate.split("T")[0];
 
-            return {
-              time: meeting.startTime,
-              title: meeting.meetingName,
-              type: meeting.meetingStatus.toLowerCase(),
-              color,
-            };
-          });
+  const meetingDateTime = new Date(
+    `${datePart}T${meeting.startTime}:00`
+  );
 
-        setTodayMeetings(todayMeetings);
+  return {
+    ...meeting,
+    meetingDateTime,
+  };
+});
+
+// Step 2: Unique by meetingId only
+const uniqueMap = new Map();
+
+formattedMeetings.forEach((meeting) => {
+  if (!uniqueMap.has(meeting.meetingId)) {
+    uniqueMap.set(meeting.meetingId, meeting);
+  }
+});
+
+const uniqueMeetings = Array.from(uniqueMap.values());
+
+// Step 3: Upcoming + sort + limit
+const upcomingMeetings = uniqueMeetings
+  .filter((m) => m.meetingDateTime >= now)
+
+  .sort((a, b) => a.meetingDateTime - b.meetingDateTime)
+
+  .slice(0, 5)
+
+  .map((m) => {
+    let color = "bg-blue-100 text-blue-800";
+
+    if (m.meetingStatus === "Scheduled") {
+      color = "bg-amber-100 text-amber-800";
+    }
+
+    return {
+      time: m.startTime,
+      title: m.meetingName,
+      meetingId: m.meetingId,
+      color,
+    };
+  });
+
+setTodayMeetings(upcomingMeetings);
+
+        
+        
       } catch (error) {
         console.error("🚨 Error fetching meetings:", error);
       }
@@ -739,7 +769,7 @@ export default function Dashboard() {
         <div className="w-[310px] flex flex-col gap-4">
           {/* Calendar */}
           <div className="rounded-xl shadow-lg">
-            <div className="h-[350px] bg-white rounded-xl flex items-center justify-center text-gray-400 dark:bg-[#343434]">
+            <div className="h-[342px] bg-white rounded-xl flex items-center justify-center text-gray-400 dark:bg-[#343434]">
               <Calendar />
             </div>
           </div>
@@ -827,7 +857,7 @@ export default function Dashboard() {
           </div>
 
           {/* Schedule */}
-          <div className="bg-white rounded-xl shadow-lg p-4 dark:bg-[#343434] h-[332px]">
+          <div className="bg-white rounded-xl shadow-lg p-4 dark:bg-[#343434] h-[320px]">
             {/* Header */}
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-[16px] font-semibold text-gray-700 dark:text-[#ffff]">
