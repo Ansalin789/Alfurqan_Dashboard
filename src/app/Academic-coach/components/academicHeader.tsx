@@ -99,7 +99,7 @@ export default function AcademicHeader({
 
         setDashboardWrite(modules?.dashboard?.write !== false);
         setLeaveWrite(modules?.leave !== false);
-        setTrailWrite(modules?.trailmanagement?.write !== false);
+        setTrailWrite(modules?.trialmanagement?.write !== false);
         setCalendarWrite(modules?.schedule?.write !== false);
         setStudentListWrite(modules?.managestudents?.write !== false);
         setTeacherRescheduleWrite(modules?.manageteachers?.write !== false);

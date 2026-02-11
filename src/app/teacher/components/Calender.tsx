@@ -63,16 +63,19 @@ const Calender: React.FC = () => {
     fetchEvents();
   }, []);
 
-  const isMeetingDate = (date: Date): boolean => {
-    return classEvents.some((event) => {
-      const eventStart = new Date(event.startDate);
-      return (
-        eventStart.getFullYear() === date.getFullYear() &&
-        eventStart.getMonth() === date.getMonth() &&
-        eventStart.getDate() === date.getDate()
-      );
-    });
-  };
+ const isMeetingDate = (date: Date): boolean => {
+  if (!classEvents || classEvents.length === 0) return false;
+
+  return classEvents.some((event) => {
+    const eventStart = new Date(event.startDate);
+    return (
+      eventStart.getFullYear() === date.getFullYear() &&
+      eventStart.getMonth() === date.getMonth() &&
+      eventStart.getDate() === date.getDate()
+    );
+  });
+};
+
 
   return (
     <div className="dark:bg-[#343434] w-full rounded-xl h-full">
