@@ -7,7 +7,7 @@ import axios from "axios";
 import { Search, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { MdTune } from "react-icons/md";
-import { useRouter } from "next/navigation";
+
 
 export interface UnifiedClassSchedule {
   _id: string;
@@ -437,6 +437,7 @@ const uniqueStatuses = Array.from(new Set(uniqueStudentSchedules.map(s => s.sche
                       [
                         "Student ID",
                         "Name",
+                        "Family ID",
                         "Courses",
                         "Course Type",
                         "Course Duration",

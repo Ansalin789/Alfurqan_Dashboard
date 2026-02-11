@@ -15,6 +15,21 @@ interface Props {
 
 const RecordedClassesTable: React.FC<Props> = ({ displayedClassesRC }) => {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+const fetchAndOpenFile = async (fileId: string) => {
+  const token = localStorage.getItem('StudentAuthToken');
+      if (!token) return;
+  const res = await fetch(`http://localhost:5001/files/videoview/${fileId}`, {
+  method: "GET",
+  headers: {
+    Authorization: `Bearer ${token}`,
+    Range: "bytes=0-"
+  }
+});
+
+  const blob = await res.blob();
+  const blobUrl = URL.createObjectURL(blob);
+  setSelectedVideo(blobUrl);
+};
 
   return (
     <div className="overflow-x-auto  shadow-sm border dark:border-[#3a3a3a]">
@@ -49,7 +64,7 @@ const RecordedClassesTable: React.FC<Props> = ({ displayedClassesRC }) => {
                 </td>
                 <td className="px-4 py-3 text-center">
                   <button
-                    onClick={() => setSelectedVideo(video.videoUrl)}
+                    onClick={() => fetchAndOpenFile(video.videoUrl)}
                     className="text-xs px-4 py-1 rounded-md transition bg-[#4459A9] text-white hover:bg-[#3a4c90]"
                   >
                     View file
@@ -72,20 +87,34 @@ const RecordedClassesTable: React.FC<Props> = ({ displayedClassesRC }) => {
 
       {/* Video Modal */}
       {selectedVideo && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg overflow-hidden max-w-2xl w-full">
-            <video src={selectedVideo} controls className="w-full h-[300px]" />
-            <div className="flex justify-end p-3">
-              <button
-                onClick={() => setSelectedVideo(null)}
-                className="px-4 py-2 text-white bg-gray-800 rounded-lg"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg overflow-hidden max-w-2xl w-full">
+      <video
+        controls
+        autoPlay
+        className="w-full h-[300px]"
+      >
+        <source src={selectedVideo} type="video/webm" />
+        Your browser does not support the video tag.
+      </video>
+      <div className="flex justify-end p-3">
+        <button
+          onClick={() => {
+            // Revoke blob URL if used to free memory
+            if (selectedVideo.startsWith("blob:")) {
+              URL.revokeObjectURL(selectedVideo);
+            }
+            setSelectedVideo(null);
+          }}
+          className="px-4 py-2 text-white bg-gray-800 rounded-lg"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };

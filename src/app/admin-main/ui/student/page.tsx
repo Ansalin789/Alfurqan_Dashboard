@@ -33,7 +33,7 @@ const Dashboard = () => {
 
           <div className="flex justify-end">
             <button
-              className="bg-transparent border border-[#576CBC] text-[#576CBC] text-[12px] px-4 py-2 rounded-md shadow transition"
+              className="bg-transparent border border-[#576CBC] text-[#576CBC] text-xs px-3 py-1 rounded-md shadow transition"
               onClick={handleView}
             >
               View all

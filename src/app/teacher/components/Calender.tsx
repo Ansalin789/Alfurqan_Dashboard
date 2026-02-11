@@ -320,13 +320,9 @@ const Calender: React.FC = () => {
   }, []);
 
  const isMeetingDate = (date: Date): boolean => {
-  if (!Array.isArray(classEvents) || classEvents.length === 0) {
-    return false;
-  }
+  if (!classEvents || classEvents.length === 0) return false;
 
   return classEvents.some((event) => {
-    if (!event?.startDate) return false;
-
     const eventStart = new Date(event.startDate);
     return (
       eventStart.getFullYear() === date.getFullYear() &&

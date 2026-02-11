@@ -98,6 +98,7 @@ const Popup: React.FC<PopupProps> = ({
         const modules = roleAccess?.academicmodules || roleAccess;
 
         setTrailWrite(modules?.trialmanagement?.write === true); // ✅ already present
+        setTrailWrite(modules?.trialmanagement?.write === true); // ✅ already present
       } catch (error) {
         console.error("Invalid AcademicRolePermission JSON", error);
       }
@@ -339,23 +340,7 @@ const Popup: React.FC<PopupProps> = ({
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
-            </div>
-
-            {/* Number of Students */}
-            {/* <div>
-              <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
-                Number of Students
-              </label>
-              <input
-                type="number"
-                name="numberofstudents"
-                value={formData.numberofstudents}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              />
-            </div> */}
-
-
+            </div>     
 
             {/* Preferred Time */}
             <div>

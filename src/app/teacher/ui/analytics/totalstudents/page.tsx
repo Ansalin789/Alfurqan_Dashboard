@@ -11,6 +11,7 @@ import Pagination from "@/components/Pagination";
 interface SimpleStudent {
   studentId: string;
   name: string;
+  familyId?: string;
   level?: string;
   studentDetails: {
     student: {
@@ -408,6 +409,7 @@ const Totalstudents = () => {
                     <tr>
                       <th className="px-4 py-3 text-left w-[10%]">Student ID</th>
                       <th className="px-4 py-3 text-left w-[14%]">Student Name</th>
+                      <th className="px-4 py-3 text-left w-[14%]">Family Id</th>
                       <th className="px-4 py-3 text-left w-[14%]">Course</th>
                       <th className="px-4 py-3 text-left w-[10%]">Class Type</th>
                       <th className="px-4 py-3 text-left w-[14%]">Joined Date</th>
@@ -424,7 +426,7 @@ const Totalstudents = () => {
                         >
                           {/* Student ID */}
                           <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                            {student.studentId || "-"}
+                            {student.studentDetails.student.studentId || "-"}
                           </td>
 
                           {/* Student Name */}
@@ -433,7 +435,11 @@ const Totalstudents = () => {
                               {student.name || "-"}
                             </div>
                           </td>
-
+            <td className="px-4 py-2 text-left">
+                            <div className="text-[#3D8FDE] font-medium">
+                              {student.familyId || "-"}
+                            </div>
+                          </td>
                           {/* Course / Learning Interest */}
                           <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                             {student.studentDetails.student?.learningInterest || "-"}

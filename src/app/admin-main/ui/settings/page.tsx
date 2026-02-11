@@ -117,8 +117,8 @@ const Page: React.FC = () => {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredEmployees.slice(indexOfFirstItem, indexOfLastItem);
-  
-  
+
+
 
   const handleFilterChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -140,8 +140,8 @@ const Page: React.FC = () => {
       return (
         (filterCriteria.name
           ? emp.userName
-              .toLowerCase()
-              .includes(filterCriteria.name.toLowerCase())
+            .toLowerCase()
+            .includes(filterCriteria.name.toLowerCase())
           : true) &&
         (filterCriteria.designation
           ? emp.role.includes(filterCriteria.designation)
@@ -168,6 +168,15 @@ const Page: React.FC = () => {
   };
 
   const handleChanges = (empId: string, role: string[]) => {
+    // If the employee has multiple roles, navigate to a multi‑role settings page that renders tabs for each role.
+    if (role.length > 1) {
+      const rolesParam = role.join(',');
+      const multiPath = `/admin-main/ui/settings/multi?employeeId=${empId}&roles=${rolesParam}`;
+      router.push(multiPath);
+      return;
+    }
+
+    // Single role – keep the existing behaviour.
     let path = "";
     console.log(role[0]);
     switch (role[0]) {
@@ -196,93 +205,121 @@ const Page: React.FC = () => {
   return (
     <BaseLayout4>
       <AdminHeader currentSection="Role Access" />
-        <div className="mt-0">
-          <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
-            <div className="flex justify-between items-center px-4 py-0">
-              <Search className="w-3 h-3 text-gray-400 dark:text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by keyword"
-                className="bg-transparent outline-none text-[12px] ml-1 w-52 py-3"
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-              />
-            </div>
-            <div
-              className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-              onClick={() => setFilterPopupOpen(true)}
-            >
-              <MdTune className="w-4 h-4" />
-              <span>Filter</span>
-            </div>
-            <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
-              <span className="text-left -ml-60">
-                Showing {currentItems.length} of {filteredEmployees.length}  
-              </span>
-            </div>
+      <div className="mt-0">
+        <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
+          <div className="flex justify-between items-center px-4 py-0">
+            <Search className="w-3 h-3 text-gray-400 dark:text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by keyword"
+              className="bg-transparent outline-none text-[12px] ml-1 w-52 py-3"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+            />
+          </div>
+          <div
+            className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+            onClick={() => setFilterPopupOpen(true)}
+          >
+            <MdTune className="w-4 h-4" />
+            <span>Filter</span>
+          </div>
+          <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+            <span className="text-left -ml-60">
+              Showing {currentItems.length} of {filteredEmployees.length}
+            </span>
           </div>
         </div>
+      </div>
 
-        <div className="w-full bg-[#FAFAFB] dark:bg-[#343434]">
+      <div className="w-full bg-[#FAFAFB] dark:bg-[#343434]">
         <table className="w-full table-auto">
           <thead className="text-[12px] bg-[#4C6993] text-white">
-              <tr>
-                <th className="px-3 py-4 text-left break-words w-[14%]">Employee ID</th>
-                <th className="px-3 py-4 text-left">Employee Name</th>
-                <th className="px-3 py-4 text-left break-words w-[14%]">Contact</th>
-                <th className="px-3 py-4 text-left">Designation</th>
-                <th className="px-3 py-4 text-left">Date of Joining</th>
-                <th className="px-3 py-4 text-left">Role Access</th>
-                <th className="px-3 py-4 text-left">Module Access</th>
-              </tr>
-            </thead>
-            <tbody>
+            <tr>
+              <th className="px-3 py-4 text-left break-words w-[14%]">Employee ID</th>
+              <th className="px-3 py-4 text-left">Employee Name</th>
+              <th className="px-3 py-4 text-left break-words w-[14%]">Contact</th>
+              <th className="px-3 py-4 text-left">Designation</th>
+              <th className="px-3 py-4 text-left">Date of Joining</th>
+              <th className="px-3 py-4 text-left">Role Access</th>
+              <th className="px-3 py-4 text-left">Module Access</th>
+            </tr>
+          </thead>
+          <tbody>
             {currentItems.map((emp, index) => (
-                <tr
-                  key={emp._id}
-                  className="text-[11px] odd:bg-white even:bg-[#F8F8F8] dark:odd:bg-[#2C2C2C] dark:even:bg-[#303030]"
-                >
-                  <td className="px-2 py-5 text-left text-[#17243E] break-words w-[14%] max-w-[120px] dark:text-[#FDFDFD]">
-                    {emp.userId}
-                  </td>
-                  <td className="px-2 py-5 text-left text-[#17243E] dark:text-[#FDFDFD] w-[10%]">
-                    {emp.userName}
-                  </td>
-                  <td className="py-5 px-2 text-left break-words w-[14%] max-w-[120px] text-[#17243E] dark:text-[#FDFDFD]">
-                    {emp.email}
-                  </td>
-                  <td className="py-5 px-2 text-left text-[#17243E] break-words dark:text-[#FDFDFD] w-[10%]">
-                    {emp.role}
-                  </td>
-                  <td className="py-5 px-2 text-left  text-[#17243E] dark:text-[#FDFDFD] w-[10%]">
-                    {new Date(emp.createdDate).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </td>
-                  <td className="py-4 px-2 text-left text-[#17243E] dark:text-[#FDFDFD] w-[10%]">
-                    {emp.role}
-                  </td>
-                  <td className="py-1 px-2 w-[10%] text-left">
-                    <button
-                      className="w-full py-[6px] px-[2px] rounded-md bg-[#576CBC] text-[#fff] text-[9px]"
-                      onClick={() => handleChanges(emp._id, emp.role)}
-                    >
-                      {emp.role}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              <tr
+                key={emp._id}
+                className="text-[11px] odd:bg-white even:bg-[#F8F8F8] dark:odd:bg-[#2C2C2C] dark:even:bg-[#303030]"
+              >
+                <td className="px-2 py-5 text-left text-[#17243E] break-words w-[14%] max-w-[120px] dark:text-[#FDFDFD]">
+                  {emp.userId}
+                </td>
+                <td className="px-2 py-5 text-left text-[#17243E] dark:text-[#FDFDFD] w-[10%]">
+                  {emp.userName}
+                </td>
+                <td className="py-5 px-2 text-left break-words w-[14%] max-w-[120px] text-[#17243E] dark:text-[#FDFDFD]">
+                  {emp.email}
+                </td>
+                <td className="py-5 px-2 text-left text-[#17243E] break-words dark:text-[#FDFDFD] w-[10%]">
+                  {emp.role.join(', ')}
+                </td>
+                <td className="py-5 px-2 text-left  text-[#17243E] dark:text-[#FDFDFD] w-[10%]">
+                  {new Date(emp.createdDate).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </td>
+                <td className="py-4 px-2 text-left text-[#17243E] dark:text-[#FDFDFD] w-[10%]">
+                  {emp.role.join(", ")}
+                </td>
+                <td className="py-1 px-2 w-[18%] text-left">
+  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+    {emp.role.map((roleName, rIndex) => (
+      <div key={rIndex} className="flex items-center">
+        <button
+          className="
+            w-[140px]
+            py-[4px]
+            px-[8px]
+            rounded-md
+            bg-[#576CBC]
+            text-white
+            text-[10px]
+            text-center
+            uppercase
+            truncate
+          "
+          title={roleName}
+          onClick={() => handleChanges(emp._id, emp.role)}
+        >
+          {roleName}
+        </button>
 
-        <Pagination
-  currentPage={currentPage}
-  totalPages={Math.ceil(filteredEmployees.length / itemsPerPage)}
-  onPageChange={setCurrentPage}
-/>
+        {/* Comma outside button */}
+        {rIndex < emp.role.length - 1 && (
+          <span className="ml-1 text-[#344054] dark:text-white text-[17px]">
+            ,
+          </span>
+        )}
+      </div>
+    ))}
+  </div>
+</td>
+
+
+
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={Math.ceil(filteredEmployees.length / itemsPerPage)}
+        onPageChange={setCurrentPage}
+      />
       {/* </div> */}
 
       {/* Filter popup remains unchanged */}

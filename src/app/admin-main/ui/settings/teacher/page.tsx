@@ -2,12 +2,8 @@
 
 import AdminHeader from "@/app/admin-main/components/AdminHeader";
 import BaseLayout4 from "@/components/BaseLayout4";
-import axios from "axios";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { FaRegSquare, FaRegCheckSquare } from "react-icons/fa";
-import { toast, ToastContainer } from "react-toastify";
-import { FaRegMinusSquare } from "react-icons/fa";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 type PermissionType = "read" | "write" | "delete";
@@ -32,47 +28,12 @@ const TeacherModuleAccess = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const employeeId = searchParams.get("employeeId");
-
-  const [permissions, setPermissions] = useState<Record<string, ModuleAccess>>({
-    teachermodules: {},
-  });
-
-  const [selectedModules, setSelectedModules] = useState<Record<string, boolean>>(
-    {}
-  );
-
   const [isRedirecting, setIsRedirecting] = useState(false);
-
-  const modules = [
-    "Dashboard",
-    "Meeting",
-    "Schedule",
-    "Liveclass",
-    "Assignment",
-    "messages",
-    "Analytics",
-    "Support",
-  ];
-
-  const getModuleKey = (moduleName: string) =>
-    moduleName.toLowerCase().replace(/ & /g, "").replace(/\s+/g, "");
 
   useEffect(() => {
     if (!employeeId) {
       toast.error("Employee ID not found in the URL!");
       setIsRedirecting(true);
-      return;
-    }
-
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("AdminAuthToken")
-        : null;
-
-    if (token) {
-      fetchEmployeeData(token);
-    } else {
-      console.log("No auth token found.");
     }
   }, [employeeId]);
 

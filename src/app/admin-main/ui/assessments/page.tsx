@@ -1,26 +1,15 @@
 "use client";
 
 import BaseLayout4 from "@/components/BaseLayout4";
-import { Star, Search } from "lucide-react";
-import { useState } from "react";
-import { MdTune } from "react-icons/md";
+import { Star } from "lucide-react";
 import AdminHeader from "../../components/AdminHeader";
+import { useState } from "react";
+import { MoreVertical, Search } from "lucide-react";
+import { MdTune } from "react-icons/md";
+import { useRouter } from "next/navigation";
+import Pagination from "@/components/Pagination";
+import { IoCloseOutline } from "react-icons/io5";
 
-const allUsers = Array.from({ length: 47 }, (_, i) => ({
-  name: `User ${i + 1}`,
-  level: `Level : ${(i % 5) + 1}`,
-  language: "Arabic Language",
-  rating: 4,
-}));
-
-const ITEMS_PER_PAGE = 5;
-
-const dummyStudents = [
-  { fullName: "Abdullah Sulaiman", courseName: "Arabic" },
-  { fullName: "Iman Gabell", courseName: "Islamic Studies" },
-  { fullName: "Gia Rose", courseName: "Quran" },
-  { fullName: "Samantha Neil", courseName: "Arabic" },
-];
 
 export default function DashboardPage() {
   const teacher = {
@@ -33,260 +22,538 @@ export default function DashboardPage() {
     profileImage:
       "/assets/images/portrait-happy-smiling-young-businessman-blue-suit-isolated-white-wall.svg",
   };
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(allUsers.length / ITEMS_PER_PAGE);
 
-  const currentItems = allUsers.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+const ASSESSMENTS = [
+  {
+    _id: "a1",
+    assessmentId: "#0938867",
+    assessmentDate: "2020-01-20T00:00:00Z",
+    studentName: "Robert James",
+    course: "Arabic",
+    level: 1,
+    lesson: "Surah Al-Fatihah",
+    reviewDate: "2020-01-25T00:00:00Z",
+    status: "Pending",
+  },
+  {
+    _id: "a2",
+    assessmentId: "#0938868",
+    assessmentDate: "2020-01-20T00:00:00Z",
+    studentName: "Stefan Salvatore",
+    course: "Quran",
+    level: 4,
+    lesson: "Surah Al-Fatihah",
+    reviewDate: "2020-01-25T00:00:00Z",
+    status: "Pending",
+  },
+  {
+    _id: "a3",
+    assessmentId: "#0938869",
+    assessmentDate: "2020-01-20T00:00:00Z",
+    studentName: "Gia Rose",
+    course: "Arabic",
+    level: 3,
+    lesson: "Surah Al-Fatihah",
+    reviewDate: "2020-01-25T00:00:00Z",
+    status: "Completed",
+  },
+  {
+    _id: "a4",
+    assessmentId: "#0938870",
+    assessmentDate: "2020-01-20T00:00:00Z",
+    studentName: "Aisha Khan",
+    course: "Arabic",
+    level: 2,
+    lesson: "Surah Al-Fatihah",
+    reviewDate: "2020-01-25T00:00:00Z",
+    status: "Completed",
+  },
+  {
+    _id: "a5",
+    assessmentId: "#0938871",
+    assessmentDate: "2020-01-20T00:00:00Z",
+    studentName: "John Doe",
+    course: "Quran",
+    level: 5,
+    lesson: "Surah Al-Fatihah",
+    reviewDate: "2020-01-25T00:00:00Z",
+    status: "Pending",
+  }
+];
+ const router = useRouter();
+  const [openMenu, setOpenMenu] = useState<number | null>(null);
+  const [assessments, setAssessments] = useState<any[]>(ASSESSMENTS);
+  const [viewItem, setViewItem] = useState<any | null>(null);
+  const [editItem, setEditItem] = useState<any | null>(null);
+  const [cancelItem, setCancelItem] = useState<any | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showModal, setShowModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const itemsPerPage = 10;
+  const [positionApplied, setPositionApplied] = useState("");
+  const [applicationStatus, setApplicationStatus] = useState("");
+  const positionOptions = ["Student", "Teacher"];
+  const statusOptions = ["Pending", "Completed"];
+  const handlePositionChange = (e: any) => setPositionApplied(e.target.value);
+  const handleStatusChange = (e: any) => setApplicationStatus(e.target.value);
+
+  const filteredAssessments = assessments.filter((a) => {
+    if (!searchQuery || !searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      String(a.assessmentId).toLowerCase().includes(q) ||
+      String(a.studentName).toLowerCase().includes(q) ||
+      String(a.course).toLowerCase().includes(q) ||
+      String(a.lesson).toLowerCase().includes(q) ||
+      String(a.status).toLowerCase().includes(q)
+    );
+  });
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredAssessments.length / itemsPerPage)
   );
-  const studentInfoList = dummyStudents;
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentAssessments = filteredAssessments.slice(
+    indexOfFirst,
+    indexOfLast
+  );
+
+  const statusClass = (status: string) =>
+    status === "Completed"
+      ? "bg-green-100 text-green-700"
+      : "bg-red-100 text-red-600";
+  const getStatusClass = statusClass;
+ const handleView = () => {
+    router.push("/admin-main/ui/assessment");
+  };
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Assessment" showBackButton={true} showBackPath="courses" />
+      <AdminHeader
+        currentSection="Assessment"
+        showBackButton={true}
+        showBackPath="courses"
+      />
       <div className="min-h-100vh flex flex-col  p-1 w-full overflow-x-hidden">
         {/* Top Panel */}
-        <div className="grid grid-cols-1 xl:grid-cols-10 gap-6 flex-wrap mb-2">
-          {/* 50% Profile Info = 5/10 cols */}
-          <div className="col-span-1 xl:col-span-5 bg-[#5E6578] text-white rounded-2xl shadow-lg p-6 flex flex-wrap xl:flex-nowrap items-start gap-6 relative w-full">
-            {/* Badge */}
-            <div className="absolute top-4 right-4 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-bold">1</span>
-            </div>
-
-            {/* Profile */}
-            <div className="flex flex-col items-center text-center px-2 w-full xl:w-1/3">
-              <img
-                src={teacher.profileImage}
-                alt="Profile"
-                className="w-24 h-24 rounded-full  object-cover mb-3"
-              />
-              <h2 className="text-xl font-semibold text-white break-words">
-                {teacher.candidateFirstName}
-              </h2>
-              <p className="text-sm text-[#C9C9C9] break-words">
-                {teacher.candidateEmail}
-              </p>
-            </div>
-
-            {/* Divider */}
-            <div className=" xl:block w-[2px] h-full bg-gray-300 opacity-30" />
-
-            {/* Info */}
-            <div className="w-full xl:w-2/3 mt-4 xl:mt-0">
-              <h3 className="text-base font-semibold mb-4">Personal Info</h3>
-              <ul className="text-sm space-y-2 text-white">
-                <li className="flex justify-between">
-                  <span>Contact</span>
-                  <span className="text-[#DADADA]/80">
-                    {teacher.candidatePhoneNumber}
-                  </span>
-                </li>
-                <li className="flex justify-between">
-                  <span>Country</span>
-                  <span className="text-[#DADADA]/80">
-                    {teacher.candidateCountry}
-                  </span>
-                </li>
-                <li className="flex justify-between">
-                  <span>Role</span>
-                  <span className="text-[#DADADA]/80">
-                    {teacher.positionApplied}
-                  </span>
-                </li>
-                <li className="flex justify-between">
-                  <span>Level</span>
-                  <span className="text-[#DADADA]/80">
-                    {teacher.overallRating}
-                  </span>
-                </li>
-                <li className="flex justify-between items-center">
-                  <span>Performance</span>
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < teacher.overallRating
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "text-white/20"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* 20% Stat Box 1 = 2/10 cols */}
-          <div className="col-span-1 xl:col-span-2 flex flex-col gap-4">
-            <div className="bg-[#7689BD] text-white rounded-2xl p-5 shadow-lg">
-              <h3 className="font-semibold text-lg mb-2">Total Assessments</h3>
-              <p className="text-2xl font-bold">62</p>
-            </div>
-            <div className="bg-[#7689BD] text-white rounded-2xl p-5 shadow-lg">
-              <h3 className="font-semibold text-lg mb-2">Total Pending</h3>
-              <p className="text-2xl font-bold">12</p>
-            </div>
-          </div>
-
-          {/* 30% Student List = 3/10 cols */}
-          <div className="col-span-1 xl:col-span-3 bg-white dark:bg-[#2f2f2f] rounded-2xl p-4 flex flex-col gap-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-[14px] font-semibold text-[#111827] dark:text-white">
-                Total Completed
-              </h2>
-              <span className="bg-[#576CBC] text-white text-[12px] font-semibold rounded-md px-2 py-1">
-                {studentInfoList.length}
-              </span>
-            </div>
-
-            <ul className="space-y-3 overflow-y-auto max-h-[200px] md:max-h-[300px] pr-1 scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600">
-              {studentInfoList.map((student, index) => (
-                <li
-                  key={index}
-                  className="flex items-center justify-between border-b pb-2 border-gray-200 dark:border-gray-700"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
-                      <img
-                        src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                        alt="avatar"
-                        className="w-6 h-6 rounded-full object-cover"
-                      />
-                    </div>
-                    <span className="text-[12px] font-medium text-[#111827] dark:text-white">
-                      {student.fullName}
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-[#576CBC] font-medium whitespace-nowrap">
-                    {student.courseName}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <div className="flex flex-col gap-1 mt-3  w-full bg-[#F5F5F5] dark:bg-[#3B3B3B] rounded-xl ">
-          {/* Filter & Search */}
-          <div className="flex flex-col md:flex-row items-start md:items-center dark:bg-[#343434] bg-[#FAFAFB] rounded-xl px-4 gap-4 md:gap-0">
-            <div className="flex-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-300 justify-start py-3 sm:py-2 px-4">
-              <Search className="w-5 h-5 text-gray-400 dark:text-gray-300" />
-              <input
-                type="text"
-                placeholder="Search by Course Name"
-                className="w-full text-sm outline-none bg-transparent placeholder-gray-400 dark:placeholder-gray-500 text-gray-800 dark:text-gray-100"
-              />
-            </div>
-
-            <button className="flex-1 flex items-center gap-2 text-sm sm:py-2 text-gray-400 dark:text-gray-300 cursor-pointer justify-start border-y-0 border-l-2 border-r-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4">
-              <MdTune className="w-5 h-5" />
-              <span>Filter</span>
-            </button>
-
-            <div className="flex-1 flex items-center text-sm text-gray-500 sm:py-2 dark:text-gray-300 py-3 px-4 justify-start">
-              <span>Showing {currentItems.length} entries</span>
-            </div>
-          </div>
-
-          {/* Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 p-3">
-            {currentItems.map((user, i) => (
-              <div
-                key={i}
-                className="bg-white dark:bg-[#343434] rounded-2xl shadow-lg p-3 text-center flex flex-col items-center justify-between hover:shadow-xl transition-shadow w-full"
-              >
+        {/* Top Panel */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-2">
+          {/* LEFT : Large Student Profile */}
+          <div className=" h-[246px] bg-[#54638C] rounded-lg text-white p-4 sm:p-6 flex flex-col sm:flex-row items-center sm:items-start">
+            {/* Profile Image + Name */}
+            <div className="flex flex-col items-center px-5 py-6">
+              <div className="relative">
                 <img
-                  src="/assets/images/profilePicture11.svg"
-                  alt="User"
-                  className="w-full aspect-video object-contain mb-3"
+                  src={"/assets/images/stportfolio.svg"}
+                  alt="profile"
+                  className="w-[112px] h-[112px] rounded-full object-cover bg-center"
                 />
-                <div className="text-sm text-gray-800 dark:text-white font-semibold mb-1">
-                  {user.name}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-300 mb-1">
-                  {user.level}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-300 mb-1">
-                  {user.language}
-                </div>
-                <div className="flex justify-center gap-1 mb-4">
-                  {[...Array(user.rating)].map((_, idx) => (
-                    <Star
-                      key={idx}
-                      className="w-3 h-3 fill-yellow-400 text-yellow-400"
-                    />
-                  ))}
-                </div>
-                <button className="w-full bg-[#576CBC] text-white  hover:bg-[#4459A9] text-[12px] rounded-lg py-[7px] mb-2  transition-colors">
-                  View Profile
-                </button>
-                <button className="w-full border border-[#576CBC] text-[#576CBC] hover:border-[#4459A9] text-[12px] rounded-lg py-[7px] hover:bg-[#E6E9F5] dark:hover:bg-[#333]  transition-colors">
-                  Portal Access
-                </button>
+                {/* Edit Icon */}
+
+                <h2 className="text-center text-[18px] font-semibold mt-2">
+                  jani{" "}
+                </h2>
+                <p className="text-[12px] text-[#C9C9C9] mt-0">
+                  Jani@gmail.com{" "}
+                </p>
               </div>
-            ))}
-          </div>
-        </div>
-        {/* Pagination */}
-        <div className="flex flex-wrap justify-end items-center gap-2 mt-3 w-full">
-          {/* Prev Button */}
-          <button
-            onClick={() => setCurrentPage(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="w-8 h-8 rounded-md border flex items-center justify-center bg-[#F5F5F2] text-sm disabled:opacity-50 hover:bg-gray-300 dark:bg-[#565656] dark:hover:bg-[#939393]"
-          >
-            &lt;
-          </button>
+            </div>
 
-          {/* Page Numbers with Ellipsis */}
-          {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .filter(
-              (page) =>
-                page === 1 ||
-                page === totalPages ||
-                (page >= currentPage - 1 && page <= currentPage + 1)
-            )
-            .map((page, idx, arr) => {
-              const prevPage = arr[idx - 1];
-
-              return (
-                <div key={`pagination-${page}`} className="flex items-center">
-                  {Boolean(
-                    prevPage && page - prevPage > 1 && (
-                      <span
-                        key={`ellipsis-${page}`}
-                        className="px-2 text-sm text-gray-500 dark:text-gray-400"
-                      >
-                        …
-                      </span>
-                    )
-                  )}
-                  <button
-                    onClick={() => setCurrentPage(page)}
-                    className={`w-8 h-8 rounded-md border flex items-center justify-center text-sm transition ${
-                      page === currentPage
-                        ? "bg-[#FAFAFB] text-[#203F78] border-[#203F78] dark:bg-[#939393]"
-                        : "bg-white dark:bg-[#565656] text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#939393]"
-                    }`}
-                  >
-                    {page}
-                  </button>
+            {/* Personal Info */}
+            <div className=" pl-8 ml-6 w-full sm:border-l border-[#BCBCBC] h-full ">
+              <h3 className="text-[16px] font-semibold ">Personal Info</h3>
+              <br/>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-white text-[14px]">Contact</span>
+                  <span className="text-[#DADADACC] text-[12px]">
+                    9876374334
+                  </span>
                 </div>
-              );
-            })}
+                <div className="flex justify-between">
+                  <span className="text-white text-[14px]">Level</span>
+                  <span className="text-[#DADADACC] text-[12px]">1</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white text-[14px]">Package</span>
+                  <span className="text-[#DADADACC] text-[12px]">PRO</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white text-[14px]">Course</span>
+                  <span className="text-[#DADADACC] text-[12px]">Quran </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white text-[14px]">Family Id</span>
+                  <span className="text-[#DADADACC] text-[12px]">FAM-10</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
-          {/* Next Button */}
-          <button
-            onClick={() => setCurrentPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="w-8 h-8 rounded-md border flex items-center justify-center text-sm bg-[#F5F5F2] disabled:opacity-50 hover:bg-gray-300 dark:bg-[#565656] dark:hover:bg-[#939393]"
-          >
-            &gt;
-          </button>
+          {/* RIGHT SIDE */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  {/* LEFT SIDE – Teachers */}
+  <div className="flex flex-col gap-3">
+    {/* Andrew */}
+    <div className="bg-[#6B7A9D] text-white rounded-xl shadow-lg p-4 h-[116px] relative">
+      <div className="absolute top-3 right-3 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold">
+        2
+      </div>
+
+      <div className="flex items-center gap-3 mb-2">
+        <img src={teacher.profileImage} className="w-12 h-12 rounded-full" />
+        <div>
+          <p className="text-sm font-semibold">Andrew Williams</p>
+          <p className="text-xs text-gray-200">93 marks</p>
         </div>
+      </div>
+
+      <div className="flex gap-0.5">
+        {[...Array(5)].map((_, i) => (
+          <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+        ))}
+      </div>
+    </div>
+
+    {/* Will Cooper */}
+    <div className="bg-[#6B7A9D] text-white rounded-xl shadow-lg p-4 h-[116px] relative">
+      <div className="absolute top-3 right-3 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold">
+        3
+      </div>
+
+      <div className="flex items-center gap-3 mb-2">
+        <img src={teacher.profileImage} className="w-12 h-12 rounded-full" />
+        <div>
+          <p className="text-sm font-semibold mt-1">Will Cooper</p>
+          <p className="text-xs text-gray-200">90 marks</p>
+        </div>
+      </div>
+
+      <div className="flex gap-0.5 text-center ">
+        {[...Array(5)].map((_, i) => (
+          <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+        ))}
+      </div>
+    </div>
+  </div>
+
+  {/* RIGHT SIDE – Stats */}
+  <div className="flex flex-col gap-3">
+    <div className="bg-[#7689BD] text-white rounded-xl p-3 shadow-lg h-[116px]">
+      <h3 className="text-lg font-semibold mb-1">Total Assessments</h3>
+      <p className="text-[20px] font-bold mt-8">62</p>
+    </div>
+
+    <div className="bg-[#7689BD] text-white rounded-xl p-3 shadow-lg h-[116px]">
+      <h3 className="text-lg font-semibold mb-1">Total Pending</h3>
+      <p className="text-[20px] font-bold mt-8">12</p>
+    </div>
+  </div>
+</div>
+
+        </div>
+
+ <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-4 py-4">
+            {/* Table */}
+            <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
+              {/* Header Search & Filter */}
+              <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by keywords"
+                    className="bg-transparent outline-none text-[15px] w-52 py-3"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                  />
+                </div>
+
+                <div
+                  className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                  // onClick={() => setShowModal(true)}
+                >
+                  {/* <BsFilterLeft /> */}
+                  <MdTune className="w-4 h-4" />
+                  <span>Filter</span>
+                </div>
+                {/* Modal */}
+                {showModal && (
+                  <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
+                    <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
+                      {/* X Icon for close */}
+                      <button
+                        className="absolute top-2 right-3 text-gray-400 text-2xl font-bold hover:text-gray-600"
+                        onClick={() => setShowModal(false)}
+                        aria-label="Close filter modal"
+                      >
+                        <IoCloseOutline />
+                      </button>
+                      <h2 className="text-lg font-semibold mb-4">Filter by</h2>
+                      {/* Date Input */}
+                      <div className="mb-4">
+                        <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                          Date Range
+                        </label>
+                        <div className="flex gap-2 mb-2">
+                          <input
+                            type="date"
+                            className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                            value={fromDate}
+                            onChange={(e) => setFromDate(e.target.value)}
+                          />
+                          <input
+                            type="date"
+                            className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                            value={toDate}
+                            onChange={(e) => setToDate(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      {/* Position Applied */}
+                      <div className="mb-4">
+                        <label
+                          htmlFor="position"
+                          className="block text-sm font-medium mb-1"
+                        >
+                          Position Applied
+                        </label>
+                        <select
+                          className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                          value={positionApplied}
+                          onChange={handlePositionChange}
+                        >
+                          <option value="">All</option>
+                          {positionOptions.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {/* Status */}
+                      <div className="mb-6">
+                        <label
+                          htmlFor="status"
+                          className="block text-sm font-medium mb-1"
+                        >
+                          Application Status
+                        </label>
+                        <select
+                          className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                          value={applicationStatus}
+                          onChange={handleStatusChange}
+                        >
+                          <option value="">All</option>
+                          {statusOptions.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {/* Buttons */}
+                      <div className="flex justify-end gap-3">
+                        <button
+                          // onClick={handleResetFilter}
+                          className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+                        >
+                          Reset
+                        </button>
+                        <button
+                          className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                          // onClick={handleFilter}
+                        >
+                          Submit
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="flex  gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                  <span className="text-center">
+                    {filteredAssessments.length === 0
+                      ? "Showing 0 of 0"
+                      : `Showing ${indexOfFirst + 1} - ${Math.min(
+                          indexOfLast,
+                          filteredAssessments.length
+                        )} of ${filteredAssessments.length}`}
+                  </span>
+                </div>
+              </div>
+
+              {/* Table */}
+              <div className="max-h-[650px] overflow-y-auto overflow-x-auto ">
+                <table className="w-full table-auto border-collapse text-[13px] sm:text-sm">
+                  <thead>
+                    <tr>
+                      {[
+                        "Assessment ID",
+                        "Assessment Date",
+                        "Student Name",
+                        "Course",
+                        "Level",
+                        "Lesson",
+                        "Next Review Date",
+                        "Status",
+                        "Action",
+                      ].map((col) => (
+                        <th
+                          key={col}
+                          className="px-2 py-3 text-left font-medium border border-[#4C6993] bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                        >
+                          {col}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentAssessments.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="text-center py-6 text-sm">
+                          No assessments found.
+                        </td>
+                      </tr>
+                    ) : (
+                      currentAssessments.map((a, index) => (
+                        <tr
+                          key={`${a._id}-${index}`}
+                          className={`${
+                            index % 2 === 0
+                              ? "bg-white dark:bg-[#2C2C2C]"
+                              : "bg-[#F8F8F8] dark:bg-[#303030]"
+                          }`}
+                        >
+                          <td className="px-4 py-3 text-left break-words">
+                            <span className="text-[12px]">
+                              {a.assessmentId}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-left text-[12px]">
+                            {new Date(a.assessmentDate).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "2-digit",
+                                year: "numeric",
+                              }
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-left text-[#576CBC] text-[12px]">
+                            {a.studentName}
+                          </td>
+                          <td className="px-4 py-3 text-left text-[12px]">
+                            {a.course}
+                          </td>
+                          <td className="px-4 py-3 text-left text-[12px]">
+                            {a.level}
+                          </td>
+                          <td className="px-4 py-3 text-left text-[12px]">
+                            {a.lesson}
+                          </td>
+                          <td className="px-4 py-3 text-left text-[12px]">
+                            {new Date(a.reviewDate).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "2-digit",
+                                year: "numeric",
+                              }
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-left text-[12px]">
+                            <span
+                              className={`w-24 px-3 py-1 rounded-sm inline-flex justify-center text-[12px] text-center ${getStatusClass(
+                                a.status
+                              )}`}
+                            >
+                              {a.status}
+                            </span>
+                          </td>
+
+                          <td className="px-4 py-3 text-left relative">
+                            <div className="relative">
+                              <button
+                                onClick={() =>
+                                  setOpenMenu(openMenu === index ? null : index)
+                                }
+                                className="inline-flex justify-center p-1"
+                              >
+                                <MoreVertical className="w-4 h-4 text-slate-900 dark:text-white" />
+                              </button>
+
+                              {openMenu === index && (
+                                <div className="absolute right-0 mt-2 w-36 bg-white  rounded-lg shadow-lg z-10 dark:bg-[#252525] dark:text-[#fff]">
+                                  <button
+                                    onClick={() => {
+                                      router.push(
+                                        `/admin-main/ui/assessment/${a._id}`
+                                      );
+                                      setOpenMenu(null);
+                                    }}
+                                    className="block w-full px-4 py-2 text-left text-xs text-gray-700 dark:text-[#ECFDF3] hover:bg-gray-100 dark:hover:bg-gray-600"
+                                  >
+                                    View
+                                  </button>
+                                  <div className="w-full h-px bg-[#D4D4D4] mx-auto" />
+                                  <button
+                                    onClick={() => {
+                                      router.push(
+                                        `/admin-main/ui/assessment/${a._id}?mode=edit`
+                                      );
+                                      setOpenMenu(null);
+                                    }}
+                                    className="block w-full px-4 py-2 text-left text-xs text-gray-700 dark:text-[#ECFDF3] hover:bg-gray-100 dark:hover:bg-gray-600"
+                                  >
+                                    Edit
+                                  </button>
+                                  <div className="w-full h-px bg-[#D4D4D4] mx-auto" />
+                                  <button
+                                    onClick={() => {
+                                      setCancelItem(a);
+                                      setOpenMenu(null);
+                                    }}
+                                    className="block w-full px-4 py-2 text-left text-xs text-gray-700 dark:text-[#ECFDF3] hover:bg-gray-100 dark:hover:bg-gray-600"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+                  <div className="flex justify-end">
+              <button
+                className="text-[#576CBC] mt-3 text-[12px] bg-[#576CBC]/10 cursor-pointer rounded-md border-[#576CBC] px-3 py-2 "
+                onClick={handleView}
+              >
+                View all
+              </button>
+            </div>
+              </div>
+            </div>
+          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(p) =>
+              setCurrentPage(Math.max(1, Math.min(totalPages, p)))
+            }
+          />
       </div>
     </BaseLayout4>
   );
 }
+
+
+

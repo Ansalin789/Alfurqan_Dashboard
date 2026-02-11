@@ -115,10 +115,12 @@ export interface ApiResponse {
   trialclasses: TrialClass[];
 }
 
+
 interface SimpleStudent {
   studentId: string;
   name: string;
   level?: string;
+  familyId?: string;
   studentDetails: {
     student: {
       studentFirstName?: string;
@@ -690,6 +692,7 @@ const sortedClasses = allClasses.sort(
     students: [
       { label: "Student ID", width: "w-[10%]" },
       { label: "Student Name", width: "w-[14%]" },
+      { label: "Family Id", width: "w-[10%]" },
       { label: "Course", width: "w-[14%]" },
       { label: "Class Type", width: "w-[10%]" },
       { label: "Joined Date", width: "w-[14%]" },
@@ -699,6 +702,7 @@ const sortedClasses = allClasses.sort(
     classes: [
       { label: "Class ID", width: "w-[10%]" },
       { label: "Student Name", width: "w-[14%]" },
+      { label: "Family Id", width: "w-[10%]" },
       { label: "Courses", width: "w-[14%]" },
       { label: "Class Type", width: "w-[12%]" },
       { label: "Course Duration", width: "w-[10%]" },
@@ -709,6 +713,7 @@ const sortedClasses = allClasses.sort(
     earnings: [
       { label: "Class ID", width: "w-[10%]" },
       { label: "Student Name", width: "w-[14%]" },
+      { label: "Family Id", width: "w-[10%]" },
       { label: "Course", width: "w-[12%]" },
       { label: "Class Type", width: "w-[12%]" },
       { label: "Course Duration", width: "w-[10%]" },
@@ -894,7 +899,11 @@ const sortedClasses = allClasses.sort(
                                 "-"}
                             </div>
                           </td>
-
+                          <td className="px-3 py-2 text-left">
+                            <div className="text-[#3D8FDE] font-medium">
+                              {schedule.familyId || "-"}
+                            </div>
+                          </td>
                           {/* Course / Learning Interest */}
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left break-words">
                             {schedule.studentDetails.student

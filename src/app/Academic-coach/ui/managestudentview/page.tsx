@@ -111,6 +111,7 @@ interface StudentDetails {
     expectedFinishingDate: number;
     __v: number;
     teacherStatus: string;
+    familyId: string;
   };
 }
 
@@ -216,8 +217,8 @@ const ManageStudentView = () => {
     activeTab === "scheduled"
       ? scheduledClasses
       : activeTab === "completed"
-      ? completedClasses
-      : unscheduledClasses;
+        ? completedClasses
+        : unscheduledClasses;
 
   const totalPages = Math.ceil(dataToShow.length / itemsPerPage);
 
@@ -226,9 +227,8 @@ const ManageStudentView = () => {
     const queryLower = query.toLowerCase();
 
     const filtered = dataToShow.filter((item) => {
-      const studentFullName = `${item.student?.studentFirstName || ""} ${
-        item.student?.studentLastName || ""
-      }`;
+      const studentFullName = `${item.student?.studentFirstName || ""} ${item.student?.studentLastName || ""
+        }`;
       const course = item.package || "";
       const date = new Date(item.startDate).toLocaleDateString("en-US", {
         month: "short",
@@ -238,7 +238,7 @@ const ManageStudentView = () => {
 
       const time = `${item.startTime?.[0] || ""} - ${item.endTime?.[0] || ""}`;
       const status = item.scheduleStatus || "";
-      const classType = "Group Class"; 
+      const classType = "Group Class";
 
       const combinedText =
         `${studentFullName} ${course} ${date} ${time} ${status} ${classType}`.toLowerCase();
@@ -256,18 +256,16 @@ const ManageStudentView = () => {
     if (searchText.trim() !== "") {
       const queryLower = searchText.toLowerCase();
       filtered = dataToShow.filter((item) => {
-        const studentFullName = `${item.student?.studentFirstName || ""} ${
-          item.student?.studentLastName || ""
-        }`;
+        const studentFullName = `${item.student?.studentFirstName || ""} ${item.student?.studentLastName || ""
+          }`;
         const course = item.package || "";
         const date = new Date(item.startDate).toLocaleDateString("en-US", {
           month: "short",
           day: "2-digit",
           year: "numeric",
         });
-        const time = `${item.startTime?.[0] || ""} - ${
-          item.endTime?.[0] || ""
-        }`;
+        const time = `${item.startTime?.[0] || ""} - ${item.endTime?.[0] || ""
+          }`;
         const status = item.scheduleStatus || "";
         const classType = "Group Class";
 
@@ -316,34 +314,34 @@ const ManageStudentView = () => {
     fetchData();
   }, []);
 
-useEffect(() => {
-  const alstudentsId = localStorage.getItem("studentManageID");
-  const token = localStorage.getItem("AcademicCoachAuthToken"); 
+  useEffect(() => {
+    const alstudentsId = localStorage.getItem("studentManageID");
+    const token = localStorage.getItem("AcademicCoachAuthToken");
 
-  const fetchStudentStats = async () => {
-    try {
-      const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/studentattendanceperformance?studentId=${alstudentsId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,  
-            "Content-Type": "application/json",
-          },
-        }
-      );
+    const fetchStudentStats = async () => {
+      try {
+        const res = await fetch(
+          `https://api.blackstoneinfomaticstech.com/studentattendanceperformance?studentId=${alstudentsId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-      if (!res.ok) throw new Error("Failed to fetch student stats");
-      const stats = await res.json();
-      setStudentStats(stats);
-    } catch (error) {
-      console.error("Error fetching student stats:", error);
+        if (!res.ok) throw new Error("Failed to fetch student stats");
+        const stats = await res.json();
+        setStudentStats(stats);
+      } catch (error) {
+        console.error("Error fetching student stats:", error);
+      }
+    };
+
+    if (alstudentsId && token) {
+      fetchStudentStats();
     }
-  };
-
-  if (alstudentsId && token) {
-    fetchStudentStats();
-  }
-}, []);
+  }, []);
 
   useEffect(() => {
     const studentId =
@@ -386,9 +384,9 @@ useEffect(() => {
         console.log("Fetched data from API:", data);
 
         const allSchedules: ClassSchedule[] = data.classSchedule;
-         const sortedSchedules = [...allSchedules].sort(
-        (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-      );
+        const sortedSchedules = [...allSchedules].sort(
+          (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+        );
 
         setScheduledClasses(
           sortedSchedules.filter(
@@ -400,7 +398,7 @@ useEffect(() => {
         );
 
         setCompletedClasses(
-          sortedSchedules.filter((c) => c.scheduleStatus === "Completed" || c.scheduleStatus === "BothAbsent" || c.scheduleStatus === "TeacherAbsent" || c.scheduleStatus === "StudentAbsent" )
+          sortedSchedules.filter((c) => c.scheduleStatus === "Completed" || c.scheduleStatus === "BothAbsent" || c.scheduleStatus === "TeacherAbsent" || c.scheduleStatus === "StudentAbsent")
         );
 
         setUnscheduledClasses(
@@ -604,7 +602,7 @@ useEffect(() => {
                   onClick={handleApply}
                   className="px-3 py-1 text-[12px] rounded-md bg-[#576CBC] text-white font-medium hover:bg-[#455bb1]"
                 >
-                 Apply
+                  Apply
                 </button>
               </div>
             </div>
@@ -630,9 +628,8 @@ useEffect(() => {
 
     if (filters.studentName) {
       filtered = filtered.filter((user) =>
-        `${user.student?.studentFirstName ?? ""} ${
-          user.student?.studentLastName ?? ""
-        }`
+        `${user.student?.studentFirstName ?? ""} ${user.student?.studentLastName ?? ""
+          }`
           .toLowerCase()
           .includes(filters.studentName.toLowerCase())
       );
@@ -673,7 +670,7 @@ useEffect(() => {
     }
 
     setPaginatedData(filtered);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const CompletedClassDetailsModal = ({
@@ -688,184 +685,184 @@ useEffect(() => {
     if (!classData) return null;
 
     return (
-    <Modal
-  isOpen={isOpen}
-  onRequestClose={onClose}
-  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-4 rounded-lg w-[600px] max-h-[80vh]"
-  overlayClassName="fixed inset-0 bg-black bg-opacity-50"
->
-  <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-lg w-[580px] relative max-h-[80vh] overflow-y-auto border-2 border-gray-200 dark:border-[#404040] scrollbar-none shadow-xl dark:shadow-2xl">
-
-    <div className="flex justify-between items-center mb-6 sticky top-0 bg-white dark:bg-[#1a1a1a] ">
-      <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-        Class Details
-      </h2>
-    </div>
-
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
-            Student Name
-          </label>
-          <input
-            type="text"
-            value={`${classData.student.studentFirstName} ${classData.student.studentLastName}`}
-            readOnly
-            className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
-            Course
-          </label>
-          <input
-            type="text"
-            value={classData.course.courseName}
-            readOnly
-            className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
-            Start Date
-          </label>
-          <input
-            type="text"
-            value={new Date(classData.startDate).toLocaleDateString("en-GB", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            })}
-            readOnly
-            className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
-            End Date
-          </label>
-          <input
-            type="text"
-            value={new Date(classData.endDate).toLocaleDateString("en-GB", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            })}
-            readOnly
-            className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
-            Start Time
-          </label>
-          <input
-            type="text"
-            value={classData.startTime?.[0]?.replace(/ AM| PM/, "") || "--:--"}
-            readOnly
-            className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
-            End Time
-          </label>
-          <input
-            type="text"
-            value={classData.endTime?.[0]?.replace(/ AM| PM/, "") || "--:--"}
-            readOnly
-            className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
-            Teacher Name
-          </label>
-          <input
-            type="text"
-            value={classData.teacher.teacherName}
-            readOnly
-            className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
-            Class Type
-          </label>
-          <input
-            type="text"
-            value={formatSessionType(classData.sessionClassType)}
-            readOnly
-            className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
-            Package
-          </label>
-          <input
-            type="text"
-            value={classData.package || "Not specified"}
-            readOnly
-            className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
-            Status
-          </label>
-          <input
-            type="text"
-            value={classData.scheduleStatus}
-            readOnly
-            className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
-          Class Days
-        </label>
-        <input
-          type="text"
-          value={classData.classDay?.join(", ") || "Not specified"}
-          readOnly
-          className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
-        />
-      </div>
-
-    </div>
-
-    <div className="flex justify-end space-x-3 pt-4 sticky bottom-0 bg-white dark:bg-[#1a1a1a] pb-3 border-t border-gray-200 dark:border-[#404040]">
-      <button
-        onClick={onClose}
-        className="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-[#404040] dark:hover:bg-[#505050] dark:text-white rounded text-xs font-medium transition-colors duration-200"
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={onClose}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-4 rounded-lg w-[600px] max-h-[80vh]"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
       >
-        Cancel
-      </button>
-      <button
-        onClick={onClose}
-        className="px-4 py-1.5 bg-[#576CBC] hover:bg-[#4A5CA8] dark:bg-[#4A5CA8] dark:hover:bg-[#3d4c8f] text-white rounded text-xs font-medium transition-colors duration-200"
-      >
-        Close
-      </button>
-    </div>
-  </div>
-</Modal>
+        <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-lg w-[580px] relative max-h-[80vh] overflow-y-auto border-2 border-gray-200 dark:border-[#404040] scrollbar-none shadow-xl dark:shadow-2xl">
+
+          <div className="flex justify-between items-center mb-6 sticky top-0 bg-white dark:bg-[#1a1a1a] ">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+              Class Details
+            </h2>
+          </div>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Student Name
+                </label>
+                <input
+                  type="text"
+                  value={`${classData.student.studentFirstName} ${classData.student.studentLastName}`}
+                  readOnly
+                  className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Course
+                </label>
+                <input
+                  type="text"
+                  value={classData.course.courseName}
+                  readOnly
+                  className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Start Date
+                </label>
+                <input
+                  type="text"
+                  value={new Date(classData.startDate).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}
+                  readOnly
+                  className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  End Date
+                </label>
+                <input
+                  type="text"
+                  value={new Date(classData.endDate).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}
+                  readOnly
+                  className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Start Time
+                </label>
+                <input
+                  type="text"
+                  value={classData.startTime?.[0]?.replace(/ AM| PM/, "") || "--:--"}
+                  readOnly
+                  className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  End Time
+                </label>
+                <input
+                  type="text"
+                  value={classData.endTime?.[0]?.replace(/ AM| PM/, "") || "--:--"}
+                  readOnly
+                  className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Teacher Name
+                </label>
+                <input
+                  type="text"
+                  value={classData.teacher.teacherName}
+                  readOnly
+                  className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Class Type
+                </label>
+                <input
+                  type="text"
+                  value={formatSessionType(classData.sessionClassType)}
+                  readOnly
+                  className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Package
+                </label>
+                <input
+                  type="text"
+                  value={classData.package || "Not specified"}
+                  readOnly
+                  className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Status
+                </label>
+                <input
+                  type="text"
+                  value={classData.scheduleStatus}
+                  readOnly
+                  className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Class Days
+              </label>
+              <input
+                type="text"
+                value={classData.classDay?.join(", ") || "Not specified"}
+                readOnly
+                className="w-full px-2 py-1.5 border border-gray-300 dark:border-[#505050] rounded text-xs bg-gray-50 dark:bg-[#2a2a2a] text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+              />
+            </div>
+
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4 sticky bottom-0 bg-white dark:bg-[#1a1a1a] pb-3 border-t border-gray-200 dark:border-[#404040]">
+            <button
+              onClick={onClose}
+              className="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-[#404040] dark:hover:bg-[#505050] dark:text-white rounded text-xs font-medium transition-colors duration-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onClose}
+              className="px-4 py-1.5 bg-[#576CBC] hover:bg-[#4A5CA8] dark:bg-[#4A5CA8] dark:hover:bg-[#3d4c8f] text-white rounded text-xs font-medium transition-colors duration-200"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </Modal>
 
     );
   };
@@ -899,13 +896,13 @@ useEffect(() => {
         <div className="flex flex-col lg:flex-row gap-6 mb-6">
           <div className="w-[560px] h-[246px] bg-[#5E6578] rounded-lg text-white p-4 sm:p-6 flex flex-col sm:flex-row items-center sm:items-start">
             <div className="flex flex-col items-center sm:pr-6 sm:border-r border-white/30">
-            <div className="w-[150px] h-[150px] rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-  <img
-    src="/assets/images/student-portfolio.svg"
-    alt="profile"
-    className="w-full h-full object-contain"
-  />
-</div>
+              <div className="w-[150px] h-[150px] rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                <img
+                  src="/assets/images/student-portfolio.svg"
+                  alt="profile"
+                  className="w-full h-full object-contain"
+                />
+              </div>
 
               <h2 className="text-center text-[18px] font-semibold mt-3">
                 {data?.studentDetails?.username}
@@ -916,8 +913,8 @@ useEffect(() => {
             </div>
 
             {/* Personal Info */}
-            <div className="pt-8 sm:pl-6 w-full">
-              <h3 className="text-[16px] font-semibold mb-3">Personal Info</h3>
+            <div className="pt-6 sm:pl-6 w-full">
+              <h3 className="text-[16px] font-semibold mb-2">Personal Info</h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-white text-[14px]">Contact</span>
@@ -940,12 +937,23 @@ useEffect(() => {
                 <div className="flex justify-between">
                   <span className="text-white text-[14px]">Class Type</span>
                   <span className="text-[#DADADACC] text-[14px]">
-                     {(() => {
-                            const val = data?.studentEvaluationDetails?.classType
-                            return val
-                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
-                              : "-";
-                          })()}
+                    {(() => {
+                      const val = data?.studentEvaluationDetails?.classType
+                      return val
+                        ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                        : "-";
+                    })()}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white text-[14px]">Family Id</span>
+                  <span className="text-[#DADADACC] text-[14px]">
+                    {(() => {
+                      const val = data?.studentEvaluationDetails?.familyId
+                      return val
+                        ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                        : "-";
+                    })()}
                   </span>
                 </div>
               </div>
@@ -978,11 +986,10 @@ useEffect(() => {
 
         <div className="flex space-x-6  px-4 py-2 rounded-md">
           <button
-            className={`relative text-[14px] transition font-medium ${
-              activeTab === "scheduled"
+            className={`relative text-[14px] transition font-medium ${activeTab === "scheduled"
                 ? "text-[#576CBC] font-semibold"
                 : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-            }`}
+              }`}
             onClick={() => {
               setActiveTab("scheduled");
               setCurrentPage(1);
@@ -995,11 +1002,10 @@ useEffect(() => {
           </button>
 
           <button
-            className={`relative text-[14px] transition font-medium ${
-              activeTab === "unscheduled"
+            className={`relative text-[14px] transition font-medium ${activeTab === "unscheduled"
                 ? "text-[#576CBC] font-semibold"
                 : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-            }`}
+              }`}
             onClick={() => {
               setActiveTab("unscheduled");
               setCurrentPage(1);
@@ -1012,11 +1018,10 @@ useEffect(() => {
           </button>
 
           <button
-            className={`relative text-[14px] transition font-medium ${
-              activeTab === "completed"
+            className={`relative text-[14px] transition font-medium ${activeTab === "completed"
                 ? "text-[#576CBC] font-semibold"
                 : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-            }`}
+              }`}
             onClick={() => {
               setActiveTab("completed");
               setCurrentPage(1);
@@ -1091,11 +1096,10 @@ useEffect(() => {
               {sortedPaginatedData.map((item, index) => (
                 <tr
                   key={item._id}
-                  className={`text-[12px] h-[50px] ${
-                    index % 2 === 0
+                  className={`text-[12px] h-[50px] ${index % 2 === 0
                       ? "bg-[#fff] dark:bg-[#2C2C2C]"
                       : "bg-[#F8F8F8] dark:bg-[#303030]"
-                  }`}
+                    }`}
                 >
                   <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left">
                     {toTitleCase(item.teacher.teacherName)}
@@ -1122,13 +1126,12 @@ useEffect(() => {
                   </td>
                   <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                     <span
-                      className={`font-semibold px-3 py-1 rounded-md text-[10px] inline-block text-center min-w-[120px] ${
-                        item.scheduleStatus === "Scheduled"
+                      className={`font-semibold px-3 py-1 rounded-md text-[10px] inline-block text-center min-w-[120px] ${item.scheduleStatus === "Scheduled"
                           ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
                           : item.scheduleStatus === "Rescheduled"
-                          ? "bg-[#E4E4E4] text-[#000] dark:bg-[#555] dark:text-[#fff]"
-                          : "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
-                      }`}
+                            ? "bg-[#E4E4E4] text-[#000] dark:bg-[#555] dark:text-[#fff]"
+                            : "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
+                        }`}
                     >
                       {item.scheduleStatus}
                     </span>
@@ -1137,85 +1140,82 @@ useEffect(() => {
                   <td className="py-1 text-center relative" ref={dropdownRef}>
                     <button
                       onClick={() => toggleDropdown(index)}
-                      className={`${
-                        (activeTab === "scheduled" && 
-                         ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
-                        activeTab === "completed" ||
-                        activeTab === "unscheduled"
+                      className={`${(activeTab === "scheduled" &&
+                          ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
+                          activeTab === "completed" ||
+                          activeTab === "unscheduled"
                           ? "cursor-pointer"
                           : "cursor-default"
-                      }`}
+                        }`}
                       disabled={
-                        !((activeTab === "scheduled" && 
-                         ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
-                        activeTab === "completed" ||
-                        activeTab === "unscheduled")
+                        !((activeTab === "scheduled" &&
+                          ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
+                          activeTab === "completed" ||
+                          activeTab === "unscheduled")
                       }
                     >
                       <MoreVertical
-                        className={`w-4 h-4 mr-12 ${
-                          (activeTab === "scheduled" && 
-                           ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
-                          activeTab === "completed" ||
-                          activeTab === "unscheduled"
+                        className={`w-4 h-4 mr-12 ${(activeTab === "scheduled" &&
+                            ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
+                            activeTab === "completed" ||
+                            activeTab === "unscheduled"
                             ? "text-slate-600 dark:text-[#FDFDFD]"
                             : "text-gray-500 dark:text-gray-200 opacity-50"
-                        }`}
+                          }`}
                       />
                     </button>
 
-                    {activeDropdown === index && 
-                     ((activeTab === "scheduled" && 
-                       ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
-                      activeTab === "completed" ||
-                      activeTab === "unscheduled") && (
-                      <div
-                        ref={dropdownRef}
-                        className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border dark:border-[#5c5c5c] dark:bg-[#343434]"
-                      >
-                        <div className="py-1">
-                          {activeTab === "completed" ? (
-                            <button
-                              className="w-full text-left px-4 py-2 text-[12px] text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
-                              onClick={() => {
-                                handleViewCompletedDetails(item);
-                                setActiveDropdown(null);
-                              }}
-                            >
-                              View Details
-                            </button>
-                          ) : (
-                            <button
-                              className={`w-full text-left px-4 py-2 text-[12px] ${
-                                studentListWrite
-                                  ? "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
-                                  : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444] cursor-not-allowed"
-                              }`}
-                              onClick={
-                                studentListWrite
-                                  ? () => {
+                    {activeDropdown === index &&
+                      ((activeTab === "scheduled" &&
+                        ["Scheduled", "Reschedulerequested"].includes(item.scheduleStatus)) ||
+                        activeTab === "completed" ||
+                        activeTab === "unscheduled") && (
+                        <div
+                          ref={dropdownRef}
+                          className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border dark:border-[#5c5c5c] dark:bg-[#343434]"
+                        >
+                          <div className="py-1">
+                            {activeTab === "completed" ? (
+                              <button
+                                className="w-full text-left px-4 py-2 text-[12px] text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
+                                onClick={() => {
+                                  handleViewCompletedDetails(item);
+                                  setActiveDropdown(null);
+                                }}
+                              >
+                                View Details
+                              </button>
+                            ) : (
+                              <button
+                                className={`w-full text-left px-4 py-2 text-[12px] ${studentListWrite
+                                    ? "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
+                                    : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444] cursor-not-allowed"
+                                  }`}
+                                onClick={
+                                  studentListWrite
+                                    ? () => {
                                       handleReschedule(
                                         item._id,
                                         item.course.courseName
                                       );
                                       setActiveDropdown(null);
                                     }
-                                  : undefined
-                              }
-                              disabled={!studentListWrite}
+                                    : undefined
+                                }
+                                disabled={!studentListWrite}
+                              >
+                                {activeTab === "unscheduled" ? "Schedule" : "Reschedule"}
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setActiveDropdown(null)}
+                              className="w-full text-left px-4 py-2 text-red-600"
                             >
-                              {activeTab === "unscheduled" ? "Schedule" : "Reschedule"}
+                              Cancel
                             </button>
-                          )}
-                          <button
-                            onClick={() => setActiveDropdown(null)}
-                            className="w-full text-left px-4 py-2 text-red-600"
-                          >
-                            Cancel
-                        </button>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </td>
                 </tr>
               ))}
@@ -1238,8 +1238,8 @@ useEffect(() => {
           activeTab === "scheduled"
             ? scheduledClasses
             : activeTab === "completed"
-            ? completedClasses
-            : unscheduledClasses
+              ? completedClasses
+              : unscheduledClasses
         }
       />
       <CompletedClassDetailsModal

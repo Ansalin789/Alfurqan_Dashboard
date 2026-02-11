@@ -63,91 +63,76 @@ const Knowledge: React.FC = () => {
     )
     .slice((currentPageRC - 1) * itemsPerPageRC, currentPageRC * itemsPerPageRC);
 
-  // Check user package
-  useEffect(() => {
-    const userPackage = localStorage.getItem('StudentPackage');
-    if (userPackage !== 'Pro') setShowPopup(true);
-  }, []);
-
-  // Fetch Knowledge Base data
-  useEffect(() => {
-    const fetchKnowledgeList = async () => {
-      try {
-        const token = localStorage.getItem('StudentAuthToken');
-        if (!token) return;
-
-        const response = await fetch(
-          'https://api.blackstoneinfomaticstech.com/knowledgebase/list',
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const result = await response.json();
-        if (result.status === 'success' && result.data) {
-          const formatted : Knowledge[]= result.data.map((item: any) => ({
-            id: item._id,
-            subjectTitle: item.subjectTitle,
-            pdfUrl: `data:application/pdf;base64,${arrayBufferToBase64(
-              item.uploadedFile?.data || []
-            )}` || '',
-             courseName: item.courseName || 'Course Name',
-             time: item.createdDate
-            ? new Date(item.createdDate).toLocaleDateString()
-            : 'Date not specified',
-          }));
-          setFilteredClass(formatted);
-        }
-      } catch (error) {
-        console.error('❌ Error fetching knowledge list:', error);
-      }
-    };
-    fetchKnowledgeList();
-  }, []);
-
   // Fetch Recorded Classes (example static or API)
-    useEffect(() => {
-    const fetchRecordedClasses = async () => {
-      try {
-        const token = localStorage.getItem('StudentAuthToken');
-        if (!token) {
-          return;
+   useEffect(() => {
+  const fetchRecordedClasses = async () => {
+    try {
+      const token = localStorage.getItem('StudentAuthToken');
+      if (!token) return;
+
+      const studentId = localStorage.getItem("StudentPortalId");
+      const course = localStorage.getItem("StudentcourseName");
+
+      const response = await axios.get(
+        `http://localhost:5001/knowledgebaseforstudent/list?studentId=${studentId}&course=${course}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
+      );
 
-        const response = await axios.get(
-          'https://api.blackstoneinfomaticstech.com/knowledgebase/list',
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+      console.log("API RAW RESPONSE:", response.data);
 
-        const filteredVideos = (response.data.data || []).filter(
-          (item: any) =>
-            item.uploadedFormat?.toLowerCase() === 'video' && item.uploadedFile?.data
-        );
+      // Ensure we always work with an array
+      const data = Array.isArray(response.data?.data)
+        ? response.data.data
+        : [];
 
-        const transformed : RecordedClass1[] = filteredVideos.map((item: any, index: number) => ({
-          id: item._id || `video-${index}`,
-          courseName: item.courseName || 'Course Name',
-          videoUrl: `data:video/mp4;base64,${arrayBufferToBase64(item.uploadedFile.data)}`,
-          subjectTitle: item.subjectTitle || 'Class Title',
-          time: item.createdDate
-            ? new Date(item.createdDate).toLocaleDateString()
-            : 'Date not specified',
-        }));
+      console.log("Parsed KnowledgeBase Array:", data);
 
-        setRecordedClasses(transformed);
-      } catch (err) {
-        console.error('Failed to fetch recorded classes:', err);
-      }
-    };
+   const filteredVideos = data.filter((item: any) =>
+  item.uploadedFormat?.toLowerCase() === "video" && item.uploadedFile
+);
 
-    fetchRecordedClasses();
-  }, []);
+const filteredVideos1 = data.filter((item: any) =>
+  item.uploadedFormat?.toLowerCase() === "pdf" && item.uploadedFile
+);
 
+// FIXED: removed .data
+const formatted: Knowledge[] = filteredVideos1.map((item: any) => ({
+  id: item._id,
+  subjectTitle: item.subjectTitle,
+  pdfUrl: item.uploadedFile,
+  courseName: item.courseName || "Course Name",
+  time: item.createdDate
+    ? new Date(item.createdDate).toLocaleDateString()
+    : "Date not specified",
+}));
+
+setFilteredClass(formatted);
+
+const transformed: RecordedClass1[] = filteredVideos.map(
+  (item: any, index: number) => ({
+    id: item._id || `video-${index}`,
+    courseName: item.courseName || "Course Name",
+    videoUrl: item.uploadedFile,
+    subjectTitle: item.subjectTitle || "Class Title",
+    time: item.createdDate
+      ? new Date(item.createdDate).toLocaleDateString()
+      : "Date not specified",
+  })
+);
+
+setRecordedClasses(transformed);
+
+    } catch (err) {
+      console.error("Failed to fetch recorded classes:", err);
+    }
+  };
+
+  fetchRecordedClasses();
+}, []);
+
+ 
   const totalPagesKB = Math.ceil(
     filteredClass.filter((item) =>
       item.subjectTitle?.toLowerCase().includes(searchQueryKB.toLowerCase())

@@ -195,7 +195,7 @@ const NextScheduledClass = () => {
 
 
   const handleJoinClass = () => {
-    if (!classData?.classLink) return;
+    if (!classData?._id) return;
 
     const isCountdownFinished = timeRemaining <= 0;
     if (!isCountdownFinished) {

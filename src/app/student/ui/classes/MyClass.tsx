@@ -182,6 +182,7 @@ const NextClass = () => {
           typeof window !== "undefined"
             ? localStorage.getItem("StudentPortalId")
             : null;
+          
         const token =
           typeof window !== "undefined"
             ? localStorage.getItem("StudentAuthToken")

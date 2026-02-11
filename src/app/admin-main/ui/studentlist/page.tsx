@@ -27,6 +27,7 @@ interface StudentItem {
   __v: number;
   classScheduleCount: number;
   student: StudentDetails;
+  familyId:string;
 }
 
 interface StudentDetails {
@@ -170,33 +171,39 @@ export default function StudentList() {
                 </span>
               </div>
 
-              <div className="flex flex-col md:w-1/2 gap-4 px-3 border-r border-[#BCBCBC]">
-                <h4 className="text-[13px] font-semibold mb-2">
+              <div className="flex flex-col md:w-1/2 gap-4 px-3 border-r border-[#BCBCBC] ">
+                <h4 className="text-[14px] font-semibold mb-2 mt-2">
                   Contact & Details
                 </h4>
                 <div className="text-xs">
                   <div className="py-2 flex flex-row justify-between">
                     <span className="text-gray-200">Student ID</span>{" "}
-                    <span className="text-gray-200 px-2 text-[10px]">
+                    <span className="text-gray-200 px-2 text-[11px]">
                       {student.student.studentId}
                     </span>
                   </div>
                   <div className="py-2 flex flex-row justify-between">
                     <span className="text-gray-200">Email:</span>{" "}
-                    <span className="text-gray-200 px-2 text-[10px]">
+                    <span className="text-gray-200 px-2 text-[11px]">
                       {student.student.studentEmail}
                     </span>
                   </div>
                   <div className="py-2 flex flex-row justify-between">
                     <span className="text-gray-200">Gender:</span>{" "}
-                    <span className="text-gray-200 px-2 text-[10px]">
+                    <span className="text-gray-200 px-2 text-[11px]">
                       {student.student.gender}
                     </span>
                   </div>
                   <div className="py-2 flex flex-row justify-between">
                     <span className="text-gray-200">Courses:</span>{" "}
-                    <span className="text-gray-200 px-2 text-[10px]">
+                    <span className="text-gray-200 px-2 text-[11px]">
                       {student.student.course}
+                    </span>
+                  </div>
+                  <div className="py-2 flex flex-row justify-between">
+                    <span className="text-gray-200">Family Id:</span>{" "}
+                    <span className="text-gray-200 px-2 text-[11px]">
+                      {student.familyId}
                     </span>
                   </div>
                 </div>
@@ -209,25 +216,25 @@ export default function StudentList() {
                 <div className="text-xs">
                   <div className="py-2 flex flex-row justify-between">
                     <span className="text-gray-200">Country:</span>{" "}
-                    <span className="text-gray-200 px-2 text-[10px]">
+                    <span className="text-gray-200 px-2 text-[11px]">
                       {student.student.country}
                     </span>
                   </div>
                   <div className="py-2 flex flex-row justify-between">
                     <span className="text-gray-200">City:</span>{" "}
-                    <span className="text-gray-200 px-2 text-[10px]">
+                    <span className="text-gray-200 px-2 text-[11px]">
                       {student.student.city}
                     </span>
                   </div>
                   <div className="py-2 flex flex-row justify-between">
                     <span className="text-gray-200">Phone:</span>{" "}
-                    <span className="text-gray-200 px-2 text-[10px]">
+                    <span className="text-gray-200 px-2 text-[11px]">
                       {student.student.studentPhone}
                     </span>
                   </div>
                   <div className="py-2 flex flex-row justify-between">
                     <span className="text-gray-200">Packages:</span>{" "}
-                    <span className="text-gray-200 px-2 text-[10px]">
+                    <span className="text-gray-200 px-2 text-[11px]">
                       {student.student.package}
                     </span>
                   </div>

@@ -8,6 +8,7 @@ import {
   MdContactSupport,
   MdOutlinePayment,
   MdAssignment,
+  MdAnalytics,
 } from "react-icons/md";
 import { IoPeopleSharp } from "react-icons/io5";
 import { TbLayoutDashboardFilled } from "react-icons/tb";
@@ -31,6 +32,11 @@ const SidebarItems = [
     name: "Assignment",
     href: "/student/ui/assignment",
     icon: MdAssignment,
+  },
+  {
+    name: "Assessments",
+    href: "/student/ui/assessment",
+    icon: MdAnalytics,
   },
   {
     name: "Payments",
@@ -70,10 +76,11 @@ export default function Sidebar2() {
         <ul>
           {SidebarItems.map(({ name, href, icon: Icon }) => (
             <li
-              className={`text-center justify-center ml-6 ${currentPath === href
+              className={`text-center justify-center ml-6 ${
+                currentPath === href
                   ? "bg-[#476a9b] text-[#fff] rounded-lg"
                   : ""
-                }`}
+              }`}
               key={name}
             >
               <Link

@@ -87,6 +87,7 @@ const StudentProfile = () => {
     _id: string;
     username: string;
     role: string;
+    familyId?: string;
     status: string;
     createdDate: string;
     createdBy: string;
@@ -325,6 +326,7 @@ const StudentProfile = () => {
                 <p className="text-[12px] text-[#C9C9C9] mt-0">
                   {studentData?.student?.studentEmail}
                 </p>
+                
               </div>
             </div>
 
@@ -358,6 +360,12 @@ const StudentProfile = () => {
                   <span className="text-white text-[14px]">Course</span>
                   <span className="text-[#DADADACC] text-[12px]">
                     {studentData?.student?.course}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white text-[14px]">Family Id</span>
+                  <span className="text-[#DADADACC] text-[12px]">
+                    {studentData?.familyId}
                   </span>
                 </div>
               </div>

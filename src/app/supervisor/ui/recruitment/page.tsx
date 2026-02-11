@@ -25,6 +25,7 @@ import { MdTune } from "react-icons/md";
 import SuccessPopup from "../../components/successPopup";
 import FailedPopup from "../../components/failedPopup";
 import { getSocket } from "@/app/utils/socket";
+import ApprovedEditForm from "../../components/ApprovedEditForm";
 
 interface Applicant {
   _id: string;
@@ -758,6 +759,25 @@ export default function ApplicantsPage() {
     setMode("edit");
   };
 
+  const handleApprovedEdit = (applicant: Applicant) => {
+  setSelectedApplicant(applicant);
+  setShowApprovedForm(true); 
+};
+
+const [showApprovedForm, setShowApprovedForm] = useState(false);
+
+const handleApprovedUpdate = (updatedData: any) => {
+  console.log("Updated Approved Data:", updatedData);
+
+  // TODO: Call API here if needed
+  // await updateApprovedApplicant(selectedApplicant._id, updatedData);
+
+  setShowApprovedForm(false);
+};
+
+
+
+
   const handleviewclose = () => {
     setSelectedApplicant(null);
     setResumeImages(null);
@@ -1186,6 +1206,14 @@ const handlesendupdate = async (id: string, status: string) => {
                                           className="block w-full px-4 py-2 text-left text-[12px] text-slate-600 dark:text-[#fff]"
                                         >
                                           Edit
+                                        </button>
+                                      )}
+                                      {applicant.applicationStatus === "APPROVED" && (
+                                        <button
+                                          onClick={() => handleApprovedEdit(applicant)} // new function
+                                          className="block w-full px-4 py-2 text-left text-[12px] text-blue-600 dark:text-blue-400"
+                                        >
+                                          Edit (Approved)
                                         </button>
                                       )}
 
@@ -1684,6 +1712,17 @@ const handlesendupdate = async (id: string, status: string) => {
           </div>
         </>
       )}
+
+{showApprovedForm && (
+  <ApprovedEditForm
+    applicant={selectedApplicant}
+    onClose={() => setShowApprovedForm(false)}
+    onSubmit={handleApprovedUpdate}   // <-- ADD THIS
+  />
+)}
+
+
+
     </BaseLayout3>
   );
 }

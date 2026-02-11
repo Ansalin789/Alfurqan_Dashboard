@@ -66,9 +66,15 @@ export interface UnifiedStudent {
   student: {
     id: string;
     studentId: string;
+    studentEmail: string;
+    studentPhone: number;
+    familyId: string;
     studentFirstName: string;
     studentLastName: string;
-    studentEmail: string;
+    course: string;
+    package: string;
+    city: string;
+    country: string;
     gender: string;
     level: string;
     studnetSessionStart: string[] | null;
@@ -95,7 +101,6 @@ export interface TrialClass {
   meetingLink: string;
 
   course: {
-    courseId: string;
     courseName: string;
   };
   scheduledStartDate: string;
@@ -111,6 +116,7 @@ export interface ApiResponse {
   classScheduleList: UnifiedClassSchedule[];
   trialclasses: TrialClass[];
 }
+
 
 const Classes = () => {
   const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<UnifiedClassSchedule[]>([]);

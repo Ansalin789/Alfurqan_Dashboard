@@ -9,7 +9,7 @@ import { FaRegCalendarAlt } from "react-icons/fa";
 import { FaBookOpenReader } from 'react-icons/fa6';
 import { LuMessagesSquare } from 'react-icons/lu';
 import { SiGoogleclassroom } from "react-icons/si";
-import { Users, CircleHelp } from 'lucide-react';
+import { Users, CircleHelp, NewspaperIcon } from 'lucide-react';
 import { PermissionsContext } from "./contexts/PermissionsContext";
 import { BsFileBarGraphFill } from "react-icons/bs";
 
@@ -35,11 +35,12 @@ const SidebarItems = [
     ),
   },
   { name: 'Assignment', href: '/teacher/ui/assignment', icon: FaBookOpenReader },
+  { name: 'Assessments', href: '/teacher/ui/assessment', icon: NewspaperIcon },
+
   { name: 'Analytics', href: '/teacher/ui/analytics', icon: BsFileBarGraphFill },
 
   { name: 'Messages', href: '/teacher/ui/messages', icon: LuMessagesSquare },
 
-  
   { name: 'Support', href: '/teacher/ui/support', icon: CircleHelp }
 ];
 

@@ -52,6 +52,7 @@ export interface TransformedUser {
   isGrammarLevel: boolean;
   grammarLevel: string;
   hours: number;
+  familyId:string;
   planTotalPrice: number;
   classStartDate: string; // ISO Date string
   classEndDate: string; // ISO Date string
@@ -214,6 +215,7 @@ const TrailManagement = () => {
                     { label: "Student Name", width: "w-[12%]" },
                     { label: "Mobile", width: "w-[10%]" },
                     { label: "Country", width: "w-[8%]" },
+                    { label: "Family ID", width: "w-[10%]" },
                     { label: "Course", width: "w-[10%]" },
                     { label: "Preferred Teacher", width: "w-[9%]" },
                     { label: "Assigned Teacher", width: "w-[13%]" },
@@ -253,6 +255,9 @@ const TrailManagement = () => {
                       </td>
                       <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] w-[8%]">
                         {item.student.studentCountry}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] break-words w-[10%]">
+                        {item.familyId}
                       </td>
                       <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] w-[10%]">
                         {item.student.learningInterest}

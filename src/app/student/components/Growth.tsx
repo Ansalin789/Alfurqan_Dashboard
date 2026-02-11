@@ -73,8 +73,17 @@ const Growth: React.FC = () => {
 
     const fetchData = async () => {
       try {
+        const token = localStorage.getItem("StudentAuthToken");
+        if (!token) {
+          console.warn("Missing StudentAuthToken for studentslevel request");
+          return;
+        }
+
         const res = await axios.get<APIResponse>(
-          `https://api.blackstoneinfomaticstech.com/alstudents/studentslevel?studentId=${studentId}`
+          `https://api.blackstoneinfomaticstech.com/alstudents/studentslevel?studentId=${studentId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
         const data = res.data.studentCountByLevel;
 

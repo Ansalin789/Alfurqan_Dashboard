@@ -220,6 +220,7 @@ interface StudentDetails {
     expectedFinishingDate: number;
     __v: number;
     teacherStatus: string;
+    familyId?: string;
   };
 }
 
@@ -772,7 +773,7 @@ const ManageStudentView = () => {
   return (
     <BaseLayout>
       <div>
-        <TeacherHeader currentSection="Assignments" />
+        <TeacherHeader currentSection="Assignments" showBackButton showBackPath="/teacher/ui/assignment" />
 
         {/* Top section */}
         <div className="grid grid-cols-2 lg:flex-row  gap-6 mb-6">
@@ -792,7 +793,7 @@ const ManageStudentView = () => {
               </p>
             </div>
 
-            <div className="pt-2 sm:pl-6 w-full">
+            <div className="pl-6 w-full">
               <h3 className="text-[16px] font-semibold mb-2">Personal Info</h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
@@ -818,6 +819,17 @@ const ManageStudentView = () => {
                   <span className="text-[#DADADACC] text-[12px]">
                      {(() => {
                             const val = data?.studentEvaluationDetails?.classType
+                            return val
+                              ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
+                              : "-";
+                          })()}
+                  </span>
+                </div>
+                  <div className="flex justify-between">
+                  <span className="text-white text-[14px]">Family Id</span>
+                  <span className="text-[#DADADACC] text-[12px]">
+                     {(() => {
+                            const val = data?.studentEvaluationDetails?.familyId
                             return val
                               ? `${val.charAt(0).toUpperCase()}${val.slice(1).toLowerCase()}`
                               : "-";

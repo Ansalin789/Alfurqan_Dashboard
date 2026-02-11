@@ -11,6 +11,7 @@ import axios from 'axios';
 type QuizData = {
   _id: string;
   question: string;
+  questionName?: string;
   options?: string[];
   answer?: string;
   placeholder?: string;
@@ -298,12 +299,37 @@ const QuizPage = () => {
         );
         const data: AssignmentApiResponse = await res.json();
 
-        // Transform API data to QuizData[]
-        const quizItems: QuizData[] = data.data.map((item) => {
-          let type = item.assignmentType?.type?.toLowerCase();
+        // Transform API data to QuizData[] (async map so we can fetch protected images)
+        const quizItems: QuizData[] = await Promise.all(
+          data.data.map(async (item) => {
+          const rawType = (item.assignmentType?.type || "").toLowerCase();
+
+          // Normalize a few common assignment type variants so the UI
+          // can handle new or slightly different backend type strings.
+          // We keep `rawType` so we can preserve distinctions like
+          // "reading" vs "reading comprehension" when needed.
+          let type = rawType;
+          if (type) {
+            const t = type.replace(/[_\s]+/g, " ");
+            if (t.includes("reading") && t.includes("comprehension")) {
+              // Keep reading comprehension distinct from plain reading.
+              type = "reading-comprehension";
+            } else if (t.includes("reading") && !t.includes("quiz")) {
+              type = "reading";
+            } else if (t.includes("writing")) {
+              type = "writing";
+            } else if (t.includes("quiz") || t.includes("multiple")) {
+              type = "quiz";
+            } else if (t.includes("word") && t.includes("match")) {
+              type = "word-match";
+            } else if (t.includes("image") && (t.includes("ident") || t.includes("pic") || t.includes("photo"))) {
+              type = "image-identification";
+            }
+          }
+
           let options: string[] | undefined = undefined;
 
-          // Quiz type logic
+          // Quiz type logic for explicit quiz types or true/false
           if (type === "quiz") {
             if (item.chooseType) {
               type = "quiz-choose";
@@ -317,6 +343,16 @@ const QuizPage = () => {
               type = "quiz-truefalse";
               options = ["True", "False"];
             }
+          }
+          // If backend set hasOptions but type wasn't resolved yet, prefer quiz-choose
+          if (!options && item.hasOptions && item.chooseType) {
+            options = [
+              item.options.optionOne,
+              item.options.optionTwo,
+              item.options.optionThree,
+              item.options.optionFour,
+            ].filter(Boolean);
+            if (options.length > 0 && !type) type = "quiz-choose";
           }
 
           // Writing
@@ -410,28 +446,55 @@ const QuizPage = () => {
           // Utility: normalize image URL (absolute, relative, or raw base64)
           const normalizeImageUrl = (value?: string): string | undefined => {
             if (!value || value === "null") return undefined;
+            // Trim and normalize whitespace
+            let v = String(value).trim();
+            if (!v) return undefined;
             // Already a data URL
-            if (value.startsWith("data:")) return value;
+            if (v.startsWith("data:")) return v;
             // Absolute URL
-            if (value.startsWith("http://") || value.startsWith("https://")) return value;
+            if (v.startsWith("http://") || v.startsWith("https://")) return v;
             // Relative path from backend
-            if (value.startsWith("/")) {
-              return `https://api.blackstoneinfomaticstech.com${value}`;
+            if (v.startsWith("/")) {
+              return `https://api.blackstoneinfomaticstech.com${v}`;
             }
-            // Heuristics for common base64 image signatures
-            const looksBase64Image =
-              value.length > 100 &&
-              (/^(iVBOR|\/9j\/|UklG|R0lG)/.test(value)); // PNG, JPEG, WEBP, GIF
-            if (looksBase64Image) {
-              // Prefer webp if signature matches, else default jpeg
-              const mime = value.startsWith("UklG") ? "image/webp" :
-                           value.startsWith("iVBOR") ? "image/png" :
-                           value.startsWith("R0lG") ? "image/gif" :
-                           "image/jpeg";
-              return `data:${mime};base64,${value}`;
+
+            // Remove whitespace/newlines for base64 detection
+            const compact = v.replace(/\s+/g, "");
+
+            // If the value already contains the literal 'base64,' assume it's a data body
+            const base64Index = compact.toLowerCase().indexOf("base64,");
+            if (base64Index !== -1) {
+              // If it already has a data: prefix, return as-is, otherwise build a data URL
+              if (compact.startsWith("data:")) return compact;
+              const body = compact.substring(base64Index + 7);
+              // Try to infer mime from the portion before 'base64,' if present
+              const prefix = compact.substring(0, base64Index);
+              const mimeMatch = prefix.match(/data:([^;]+);?/i);
+              const mime = mimeMatch ? mimeMatch[1] : "image/*";
+              return `data:${mime};base64,${body}`;
             }
-            // Fallback: try treating as relative
-            return `https://api.blackstoneinfomaticstech.com/${value.replace(/^\/+/, "")}`;
+
+            // Heuristic: if compact contains only base64 chars and is reasonably long,
+            // treat it as base64 image data and build a data URL.
+            if (/^[A-Za-z0-9+/=]+$/.test(compact) && compact.length > 20) {
+              // Detect common signatures
+              const sig = compact.substring(0, 4);
+              let mime = "image/jpeg";
+              if (compact.startsWith("iVBOR")) mime = "image/png";
+              else if (compact.startsWith("UklG")) mime = "image/webp";
+              else if (compact.startsWith("R0lG")) mime = "image/gif";
+              else if (sig === "/9j/" || compact.startsWith("9j/")) mime = "image/jpeg";
+              return `data:${mime};base64,${compact}`;
+            }
+
+            // Fallback: assume it's a relative path (or filename) on the backend
+            // and build an absolute URL. Encode unsafe characters.
+            try {
+              const path = encodeURI(compact.replace(/^\/+/, ""));
+              return `https://api.blackstoneinfomaticstech.com/${path}`;
+            } catch (err) {
+              return undefined;
+            }
           };
 
           // Image identification
@@ -439,7 +502,51 @@ const QuizPage = () => {
             type === "image identification" ||
             type === "image-identification"
           ) {
-            const uploadFile = normalizeImageUrl(item.uploadFile);
+            // Backend may return image in multiple shapes: a direct string,
+            // an object with `url` or `data`, or base64 without data: prefix.
+            let rawImage: any = item.uploadFile;
+            if (!rawImage && (item as any).image) rawImage = (item as any).image;
+            if (!rawImage && (item as any).uploadFile && typeof (item as any).uploadFile === 'object') {
+              rawImage = (item as any).uploadFile.url || (item as any).uploadFile.data || (item as any).uploadFile.path || rawImage;
+            }
+            // Normalize to a URL or data: URL first
+            let uploadFile = normalizeImageUrl(rawImage);
+
+            // If the backend stores images behind protected endpoints (same backend)
+            // the plain <img> tag can't include Authorization headers. If we detect
+            // an absolute URL on our API host and we have a token, fetch it with
+            // Authorization and convert to a data URL so the browser can render it.
+            const apiHost = "localhost:5001";
+            const token =
+              typeof window !== "undefined"
+                ? localStorage.getItem("StudentAuthToken")
+                : null;
+
+            if (
+              uploadFile &&
+              uploadFile.startsWith("http") &&
+              uploadFile.includes(apiHost) &&
+              token
+            ) {
+              try {
+                const resp = await fetch(uploadFile, {
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                if (resp.ok) {
+                  const blob = await resp.blob();
+                  uploadFile = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result as string);
+                    reader.onerror = (e) => reject(e);
+                    reader.readAsDataURL(blob);
+                  });
+                } else {
+                  console.warn("Failed to fetch protected image:", resp.status, uploadFile);
+                }
+              } catch (err) {
+                console.error("Error fetching protected image:", err, uploadFile);
+              }
+            }
             options = [
               item.options.optionOne,
               item.options.optionTwo,
@@ -451,6 +558,7 @@ const QuizPage = () => {
               question: item.question || "",
               options,
               uploadFile,
+              imageUrl: uploadFile,
               correctAnswer:
                 item.answerValidation !== "null"
                   ? item.answerValidation
@@ -461,7 +569,8 @@ const QuizPage = () => {
 
           // fallback
           return { _id: item._id, question: item.question || "", type: type || "unknown" };
-        });
+        })
+        );
         setQuizData(quizItems);
         if (data.data && data.data.length > 0) {
           // Map assignmentType to string for Assignment type
@@ -1039,7 +1148,53 @@ const QuizPage = () => {
       );
     }
 
-    // Reading
+    // Reading comprehension (display-only: show question name + question, no recording)
+    if (q?.type === "reading-comprehension") {
+      return (
+        <div className="flex justify-center items-center w-full">
+          <div className="w-full max-w-full p-16 px-40 flex flex-col items-center mx-auto">
+            <h2 className="text-2xl font-bold text-[#223857] mb-2 text-center dark:text-[#fff] dark:opacity-80">
+              {q.questionName || `Question ${currentQuestionIndex + 1}`} 
+            </h2>
+            <div className="w-full flex flex-col max-w-full bg-[#f4f5fb] dark:bg-[#343434] rounded-xl p-4 items-center mx-auto min-h-[200px] justify-center">
+              <p className="text-[14px] text-gray-800 mb-4 text-left dark:text-[#fff] dark:opacity-90">
+                {q.question}
+              </p>
+            </div>
+            <div className="flex w-full justify-between mt-4">
+              <button
+                onClick={() => handleBackClick(currentQuestionIndex, setCurrentQuestionIndex, setSelectedOption, setWrittenAnswer)}
+                disabled={currentQuestionIndex === 0}
+                className={`px-6 py-2 rounded-md font-semibold ${
+                  currentQuestionIndex === 0
+                    ? "bg-[#e1e4f3] border border-[#c2cae7] text-[#c2cae7] cursor-not-allowed"
+                    : " hover:bg-gray-300 bg-[#e1e4f3] dark:bg-[#252628] border border-[#c2cae7] dark:border-[#303538] dark:text-[#303538] text-[#c2cae7]"
+                }`}
+              >
+                Previous
+              </button>
+              {currentQuestionIndex < quizData.length - 1 ? (
+                <button
+                  onClick={handleNextClick}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  onClick={submitAnswers}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Submit
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Reading (spoken): existing UI with recording controls
     if (q?.type === "reading") {
       return (
         <div className="flex justify-center items-center w-full">
@@ -1315,7 +1470,7 @@ const QuizPage = () => {
                 </h3>
                 <div className="flex-shrink-0 w-full flex justify-center">
                   <img
-                    src={q.uploadFile}
+                    src={q.uploadFile || q.imageUrl || "https://via.placeholder.com/600x250?text=No+Image"}
                     alt="Character"
                     style={{
                       objectFit: "cover",
@@ -1323,8 +1478,8 @@ const QuizPage = () => {
                       borderRadius: "8px",
                     }}
                     onError={(e) => {
-                      e.currentTarget.src =
-                        "https://via.placeholder.com/600x250?text=No+Image";
+                      console.error("Image failed to load, showing placeholder:", e.currentTarget.src);
+                      e.currentTarget.src = "https://via.placeholder.com/600x250?text=No+Image";
                     }}
                     className="w-full max-w-[500px] h-auto ml-0 md:ml-1 pl-10"
                   />

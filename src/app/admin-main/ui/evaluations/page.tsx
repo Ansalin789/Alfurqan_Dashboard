@@ -37,7 +37,9 @@ interface TransformedUser {
   assignedTeacher: string;
   paymentLink: string;
   studentStatus: string; // Optional if not always present
-  createdDate: Date; // Optional if not always present
+  createdDate: Date; 
+  familyId?:string;
+  // Optional if not always present
 }
 
 // Define the return type of the getAllUsers function
@@ -60,6 +62,8 @@ interface User {
   students?: number;
   comment?: string;
   createdDate: Date;
+  familyId?:string;
+
 }
 
 interface GetAllUsersResponse {
@@ -102,6 +106,7 @@ interface ClassPayload {
   isLanguageLevel: boolean;
   languageLevel: string;
   isReadingLevel: boolean;
+  familyId?:string;
   readingLevel: string;
   isGrammarLevel: boolean;
   grammarLevel: string;
@@ -184,6 +189,7 @@ const getAllUser = async (): Promise<{
             : "",
           country: item.student.studentCountry,
           city: item.city,
+          familyId:item.familyId,
           course: item.student.learningInterest,
           preferredTeacher: item.student.preferredTeacher,
           time: item.student.preferredFromTime,
@@ -264,6 +270,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
         email: string;
         phoneNumber: string;
         city: string;
+        familyId:string;
         country: string;
         learningInterest: string;
         preferredTeacher: string;
@@ -285,6 +292,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
           lname: item.lastName,
           email: item.email,
           city: item.city,
+          familyId:item.familyId,
           number: item.phoneNumber.toString(),
           country: item.country,
           course: item.learningInterest,
@@ -363,6 +371,7 @@ const TrailSection = () => {
           fname: user.fname,
           lname: user.lname,
           email: user.email,
+          familyId:user.familyId,
           number: user.number,
           country: user.country,
           city: user.city,
@@ -507,6 +516,7 @@ const TrailSection = () => {
                   { label: "Student ID" },
                   { label: "Student Name" },
                   { label: "Date" },
+                  {label: "Family Id"},
                   { label: "Mobile" },
                   { label: "Country" },
                   { label: "Course" },
@@ -540,6 +550,7 @@ const TrailSection = () => {
                         year: "numeric",
                       })}
                     </td>
+                    <td className="py-4 px-2 text-left">{item.familyId}</td>
                     <td className="py-4 px-2 text-left">{item.number}</td>
                     <td className="py-4 px-2 text-left">{item.country}</td>
                     <td className="py-4 px-2 text-left">{item.course}</td>

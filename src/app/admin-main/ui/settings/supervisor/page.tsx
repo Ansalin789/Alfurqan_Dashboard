@@ -1,16 +1,12 @@
-'use client';
+"use client";
 
 import AdminHeader from '@/app/admin-main/components/AdminHeader';
 import BaseLayout4 from '@/components/BaseLayout4';
-import axios from 'axios';
-import { Search } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { MdTune } from "react-icons/md";
-import { FaRegSquare, FaRegCheckSquare } from 'react-icons/fa';
-import { toast, ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaRegMinusSquare } from "react-icons/fa";
+import { useEffect, useState } from 'react';
 
 type PermissionType = 'read' | 'write' | 'delete';
 
@@ -28,12 +24,6 @@ const SupervisorModuleAccess = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const employeeId = searchParams.get('employeeId');
-
-  const [permissions, setPermissions] = useState<Record<string, ModuleAccess>>({
-    supervisormodules: {},
-  });
-
-  const [selectedModules, setSelectedModules] = useState<Record<string, boolean>>({});
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   const modules = [
@@ -52,7 +42,6 @@ const SupervisorModuleAccess = () => {
     if (!employeeId) {
       toast.error('Employee ID not found in the URL!');
       setIsRedirecting(true);
-      return;
     }
 
     const token =

@@ -14,17 +14,29 @@ interface Props {
 }
 
 const PdfTable: React.FC<Props> = ({ displayedPdfs }) => {
-   const openPdfBlob = (base64: string) => {
-    const byteCharacters = atob(base64);
-    const byteArray = new Uint8Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteArray[i] = byteCharacters.charCodeAt(i);
-    }
+   const fetchAndOpenFile = async (fileId: string) => {
+  try {
+    console.log("file ",fileId)
+    const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${fileId}`, {
+      method: "GET",
+    });
 
-    const blob = new Blob([byteArray], { type: "application/pdf" });
-    const blobUrl = URL.createObjectURL(blob);
-    window.open(blobUrl, "_blank");
-  };
+    if (!res.ok) throw new Error("Failed to fetch file");
+   const blob = await res.blob();     // ✅ ONLY READ ONCE
+console.log("res", blob.type);
+      const newBlobUrl = URL.createObjectURL(blob);
+      if (!newBlobUrl) {
+        console.log("Failed to load resume");
+        return;
+      }
+
+      // Open in new tab
+      window.open(newBlobUrl, "_blank");
+  } catch (err) {
+    console.error("Error fetching file:", err);
+  }
+};
+  
 
   return (
     <div className="overflow-x-auto shadow-sm border dark:border-[#3a3a3a]">
@@ -59,7 +71,7 @@ const PdfTable: React.FC<Props> = ({ displayedPdfs }) => {
                 </td>
                 <td className="px-4 py-3 text-center">
                   <button
-                   onClick={() => openPdfBlob(pdf.pdfUrl?.split(",")[1]  ?? '')}
+                   onClick={() =>fetchAndOpenFile(pdf.pdfUrl || "") }
                     className="text-xs px-4 py-1 rounded-md transition bg-[#4459A9] text-white hover:bg-[#3a4c90]"
                   >
                     View file

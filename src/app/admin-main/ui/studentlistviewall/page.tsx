@@ -33,6 +33,7 @@ export interface Student {
   createdDate: string; // ISO string
   createdBy: string;
   updatedDate: string;
+  familyId:string;
   __v: number;
   classScheduleCount: number;
   level: number;
@@ -264,6 +265,8 @@ const [meetingFilters, setMeetingFilters] = useState({
                 {[
                   "Student ID",
                   "Student Name",
+                  "Family ID",
+                  "Package",
                   "Date of Joining",
                   "Teacher Name",
                   "Course Name",
@@ -296,6 +299,10 @@ const [meetingFilters, setMeetingFilters] = useState({
                     <td className="p-3 text-blue-600 cursor-pointer">
                       {student.username}
                     </td>
+                          <td className="p-3 break-words">
+                      {student.familyId}
+                    </td>
+                    <td className="p-3">{student.student.package}</td>
                     <td className="p-3">
                       {new Date(
                         student.evaluation[0].joiningDate
@@ -308,9 +315,7 @@ const [meetingFilters, setMeetingFilters] = useState({
                             day: "numeric",
                           })
                         : ""}{" "}
-                      {/* Display "N/A" if the date is invalid */}
                     </td>
-
                     <td className="p-3">{student.teacherName}</td>
                     <td className="p-3">{student.student.course}</td>
                     <td className="p-3">{student.student.studentPhone}</td>

@@ -24,6 +24,8 @@ interface TransformedUser {
   course: string; // Assuming this corresponds to `learningInterest`
   preferredTeacher: string;
   time: string;
+  familyId?: string;
+  familyEmail?: string;
   classStatus?: string;
   status?: string;
   trialClassStatus: string;
@@ -41,6 +43,8 @@ interface User {
   email: string;
   number: string;
   country: string;
+  familyId: string;
+  familyEmail: string;
   course: string;
   preferredTeacher: string;
   date: string;
@@ -128,6 +132,8 @@ interface ClassPayload {
   createdBy: string;
   updatedDate: Date;
   updatedBy: string;
+  familyId: string; 
+  familyEmail: string;
 }
 
 const getAllUser = async (): Promise<{
@@ -182,6 +188,8 @@ const getAllUser = async (): Promise<{
           assignedTeacher: item.assignedTeacher,
           paymentLink: item.paymentLink,
           studentStatus: item.studentStatus,
+          familyId: item.familyId,
+          familyEmail: item.familyEmail,
         };
       }
     );
@@ -251,6 +259,8 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
         phoneNumber: string;
         city: string;
         country: string;
+        familyId: string;
+        familyEmail: string;
         learningInterest: string;
         preferredTeacher: string;
         startDate: string;
@@ -271,6 +281,8 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
           lname: item.lastName,
           email: item.email,
           city: item.city,
+          familyId: item.familyId,
+          familyEmail: item.familyEmail,
           number: item.phoneNumber.toString(),
           country: item.country,
           course: item.learningInterest,
@@ -548,6 +560,8 @@ const TrailManagement = () => {
           fname: user.fname,
           lname: user.lname,
           email: user.email,
+          familyEmail: user.familyEmail,
+          familyId: user.familyId,
           number: user.number,
           country: user.country,
           city: user.city,
@@ -802,6 +816,7 @@ const TrailManagement = () => {
                         {[
                           { label: "Student ID", width: "w-[10%]" },
                           { label: "Student Name", width: "w-[12%]" },
+                          { label: "Family ID", width: "w-[10%]" },
                           { label: "Date", width: "w-[12%]" },
                           { label: "Mobile", width: "w-[10%]" },
                           { label: "Country", width: "w-[8%]" },
@@ -845,6 +860,9 @@ const TrailManagement = () => {
                             <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] whitespace-nowrap w-[12%]">
                               {item.fname} {item.lname}
                             </td>
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
+                              {item.familyId}
+                            </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[15%]">
                               {new Date(item.createdDate).toLocaleDateString(
                                 "en-US",
@@ -855,6 +873,7 @@ const TrailManagement = () => {
                                 }
                               )}
                             </td>
+                        
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.number}
                             </td>
