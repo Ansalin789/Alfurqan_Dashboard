@@ -140,7 +140,7 @@ console.log(feesPerDay);
       {invoiceshow && (
         <div style={{ fontFamily: 'Arial, sans-serif' }} className="bg-[#f9f9f9] p-6 rounded-lg w-[900px] ml-72">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <Image src="/assets/images/alf2.png" width={150} height={150} className="p-6 w-52" alt="AL FURQAN Academy" />
+            <Image src="/assets/images/bsicon.png" width={150} height={150} className="p-6 w-52" alt="AL FURQAN Academy" />
             <div className="text-right p-10">
               <h2 className="text-right text-[30px]">INVOICE</h2>
               <p className="text-right text-[13px]">Invoice# AFA-24E928E-869</p>
