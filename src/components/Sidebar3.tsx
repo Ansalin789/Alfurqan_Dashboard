@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
 import Image from "next/image";
-import Link from 'next/link';
-import React from 'react';
-import { usePathname } from 'next/navigation';
+import Link from "next/link";
+import React from "react";
+import { usePathname } from "next/navigation";
 
 import { RiDashboardFill } from "react-icons/ri";
 import { MdContactSupport, MdAssignment } from "react-icons/md";
@@ -15,35 +15,35 @@ import "@/styles/globals.css";
 
 const SidebarItems = [
   {
-    name: 'Dashboard',
-    href: '/supervisor/ui/dashboard',
+    name: "Dashboard",
+    href: "/supervisor/ui/dashboard",
     icon: RiDashboardFill,
   },
   {
-    name: 'Recruitment',
-    href: '/supervisor/ui/recruitment',
+    name: "Recruitment",
+    href: "/supervisor/ui/recruitment",
     icon: IoPeopleSharp,
   },
   {
-    name: 'Meeting & Training',
-    href: '/supervisor/ui/meetingandtraining',
+    name: "Meeting & Training",
+    href: "/supervisor/ui/meetingandtraining",
     icon: MdAssignment,
   },
   {
-    name: 'Teachers',
-    href: '/supervisor/ui/teachers',
+    name: "Teachers",
+    href: "/supervisor/ui/teachers",
     icon: FaBookOpenReader,
   },
   {
-    name: 'Messages',
-    href: '/supervisor/ui/message',
+    name: "Messages",
+    href: "/supervisor/ui/message",
     icon: LuMessagesSquare,
   },
   {
-    name: 'Support',
-    href: '/supervisor/ui/support',
+    name: "Support",
+    href: "/supervisor/ui/support",
     icon: MdContactSupport,
-  }
+  },
 ];
 
 export default function Sidebar3() {
@@ -53,13 +53,14 @@ export default function Sidebar3() {
     <div className="sidebar__wrapper bg-[#012A4A] dark:bg-[#1D1D1D] h-full overflow-y-auto">
       <aside className="sidebar bg-[#012A4A] dark:bg-[#1D1D1D] p-4 h-full flex flex-col">
         {/* Logo Section */}
-        <div className='flex items-center gap-2 mt-5 mb-6 px-2'>
-        <Image     src="/assets/images/blackstone.png" width={150} height={150} className='bg-cover bg-center w-8 h-12' alt='logo' />
-
-          {/* <div className="text-white leading-tight">
-            <h3 className="font-bold text-[18px]">AL FURQAN</h3>
-            <h4 className="font-light text-[14px] font-sans">academy</h4>
-          </div> */}
+        <div className="flex justify-center align-middle gap-2 p-4">
+          <Image
+            src="/assets/images/blackstone.png"
+            width={150}
+            height={150}
+            className="bg-cover bg-center w-8 h-12"
+            alt="logo"
+          />
         </div>
 
         {/* Menu List */}
@@ -71,9 +72,11 @@ export default function Sidebar3() {
                   className={`
                     w-full flex items-center gap-3 px-3 py-3
                     text-[13px] cursor-pointer rounded
-                    ${currentPath === href
-                      ? 'text-white font-medium bg-[#576CBC]'
-                      : 'text-[#818790] hover:text-[#a0c4ff]'}
+                    ${
+                      currentPath === href
+                        ? "text-white font-medium bg-[#576CBC]"
+                        : "text-[#818790] hover:text-[#a0c4ff]"
+                    }
                     transition-colors duration-200
                   `}
                 >
