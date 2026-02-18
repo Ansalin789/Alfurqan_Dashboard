@@ -334,6 +334,10 @@ const NewAssignment = () => {
     // Reset answer text when assignment type changes
     setAnswerText("");
     setSelectedAnswer("");
+    // If switching to reading/writing, ensure question type is 'choose'
+    if (assignmentType === "writing" || assignmentType === "reading") {
+      setQuestionType("choose");
+    }
   }, [assignmentType]);
 
   // In the component, update the handleFileUpload to handle images separately:
@@ -858,20 +862,17 @@ const NewAssignment = () => {
           </div>
 
           {/* For reading/writing show a single 'Type the Answer' field (remove specific prompts) */}
-          {(assignmentType === "reading" || assignmentType === "writing") && (
+         {(assignmentType === "writing" || assignmentType === "reading") && (
             <div className="mb-4">
-              <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff] ">
-                Answer
+              <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                Type the Answer
               </label>
               <textarea
                 placeholder="Type the answer"
-                rows={4}
+                rows={3}
                 value={answerText}
-                onChange={(e) => {
-                  setAnswerText(e.target.value);
-                  setSelectedAnswer(e.target.value); // Use for validation
-                }}
-                className="w-full p-3 px-5 text-[11px] border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff] "
+                onChange={(e) => setAnswerText(e.target.value)}
+                className="w-full p-3 px-5 text-[11px] border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
               />
             </div>
           )}
