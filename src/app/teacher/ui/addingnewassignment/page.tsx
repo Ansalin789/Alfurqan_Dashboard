@@ -337,6 +337,10 @@ const NewAssignment = () => {
     // Reset answer text when assignment type changes
     setAnswerText("");
     setSelectedAnswer("");
+    // If switching to reading/writing, ensure question type is 'choose'
+    if (assignmentType === "writing" || assignmentType === "reading") {
+      setQuestionType("choose");
+    }
   }, [assignmentType]);
 
 
@@ -845,21 +849,20 @@ const NewAssignment = () => {
           </div>
 
           {/* Only show choose/truefalse options if not writing/reading/image identification */}
-          {questionType === "choose" &&
-            (assignmentType === "writing" || assignmentType === "reading") && (
-              <div className="mb-4">
-                <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                  Type the Answer
-                </label>
-                <textarea
-                  placeholder="Type the answer"
-                  rows={3}
-                  value={answerText}
-                  onChange={(e) => setAnswerText(e.target.value)}
-                  className="w-full p-3 px-5 text-[11px] border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
-                />
-              </div>
-            )}
+          {(assignmentType === "writing" || assignmentType === "reading") && (
+            <div className="mb-4">
+              <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                Type the Answer
+              </label>
+              <textarea
+                placeholder="Type the answer"
+                rows={3}
+                value={answerText}
+                onChange={(e) => setAnswerText(e.target.value)}
+                className="w-full p-3 px-5 text-[11px] border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
+              />
+            </div>
+          )}
           {(assignmentType === "image identification" ||
             assignmentType === "word match" ||
             (questionType === "choose" && assignmentType === "quiz")) && (
