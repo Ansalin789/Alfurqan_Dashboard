@@ -6,7 +6,6 @@ import { FaStar } from "react-icons/fa";
 import WaveSurfer from "wavesurfer.js";
 import StudentHeader from "../../components/StudentHeader";
 import BaseLayout2 from "@/components/BaseLayout2";
-import axios from 'axios';
 
 type QuizData = {
   _id: string;
@@ -236,10 +235,7 @@ const QuizPage = () => {
   const [quizData, setQuizData] = useState<QuizData[]>([]);
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunks = useRef<Blob[]>([]);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  
   const [writtenAnswer, setWrittenAnswer] = useState("");
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -300,8 +296,75 @@ const QuizPage = () => {
 
         // Transform API data to QuizData[]
         const quizItems: QuizData[] = data.data.map((item) => {
-          let type = item.assignmentType?.type?.toLowerCase();
+          // Normalize assignment type whether it's an object or a string
+          const rawType =
+            typeof item.assignmentType === "object" && item.assignmentType !== null
+              ? (item.assignmentType as any).type
+              : (item.assignmentType as any);
+          let type = rawType ? String(rawType).toLowerCase() : "";
           let options: string[] | undefined = undefined;
+
+          // Helper: normalize image URL (absolute, relative, raw base64, or MongoDB $binary)
+          const normalizeImageUrl = (value?: any): string | undefined => {
+            if (!value || value === "null") return undefined;
+            // handle MongoDB binary object: { $binary: { base64: '...' } }
+            if (typeof value === "object") {
+              const bin = (value.$binary || value.binary) as any;
+              if (bin && bin.base64) {
+                const b64 = bin.base64 as string;
+                const sig = b64.slice(0, 8);
+                const mime = sig.startsWith("iVBOR")
+                  ? "image/png"
+                  : sig.startsWith("/9j/")
+                  ? "image/jpeg"
+                  : sig.startsWith("UklG")
+                  ? "image/webp"
+                  : sig.startsWith("R0lG")
+                  ? "image/gif"
+                  : "image/png";
+                return `data:${mime};base64,${b64}`;
+              }
+              if (typeof value.url === "string") return normalizeImageUrl(value.url);
+              return undefined;
+            }
+            if (typeof value !== "string") return undefined;
+            if (value.startsWith("data:")) return value;
+            if (value.startsWith("http://") || value.startsWith("https://")) return value;
+            if (value.startsWith("/")) return `https://api.blackstoneinfomaticstech.com${value}`;
+            const looksBase64Image = value.length > 100 && /^(iVBOR|\/9j\/|UklG|R0lG)/.test(value);
+            if (looksBase64Image) {
+              const mime = value.startsWith("UklG")
+                ? "image/webp"
+                : value.startsWith("iVBOR")
+                ? "image/png"
+                : value.startsWith("R0lG")
+                ? "image/gif"
+                : "image/jpeg";
+              return `data:${mime};base64,${value}`;
+            }
+            return `https://api.blackstoneinfomaticstech.com/${value.replace(/^\/+/, "")}`;
+          };
+
+          // Helper: normalize audio (supports raw base64 strings or MongoDB $binary)
+          const normalizeAudioUrl = (value?: any): string | undefined => {
+            if (!value || value === "null") return undefined;
+            if (typeof value === "object") {
+              const bin = (value.$binary || value.binary) as any;
+              if (bin && bin.base64) {
+                const b64 = bin.base64 as string;
+                const sig = b64.slice(0, 8);
+                const mime = sig.startsWith("SUQz") || sig.startsWith("/+M") ? "audio/mpeg" : "audio/wav";
+                return `data:${mime};base64,${b64}`;
+              }
+              if (typeof value.url === "string") return normalizeAudioUrl(value.url);
+              return undefined;
+            }
+            if (typeof value !== "string") return undefined;
+            if (value.startsWith("data:audio") || value.startsWith("http://") || value.startsWith("https://")) return value;
+            // assume raw base64 audio
+            if (value.length > 100 && !value.includes("/")) return `data:audio/wav;base64,${value}`;
+            return value.startsWith("/") ? `https://api.blackstoneinfomaticstech.com${value}` : `https://api.blackstoneinfomaticstech.com/${value}`;
+          };
 
           // Quiz type logic
           if (type === "quiz") {
@@ -322,31 +385,48 @@ const QuizPage = () => {
           // Writing
           if (type === "writing") {
             return {
-              _id: item._id, // <-- this is critical!
+              _id: item._id,
               question: item.question,
-              audioUrl:
-                item.audioFile &&
-                item.audioFile.length > 10 &&
-                item.audioFile !== "null"
-                  ? `data:audio/wav;base64,${item.audioFile}`
-                  : undefined,
-              correctAnswer:
-                item.answerValidation !== "null"
-                  ? item.answerValidation
-                  : undefined,
+              audioUrl: normalizeAudioUrl(item.audioFile),
+              uploadFile: normalizeImageUrl(item.uploadFile),
+              correctAnswer: item.answerValidation !== "null" ? item.answerValidation : undefined,
               type: "writing",
             };
           }
 
-          // Reading
+          if (
+            type &&
+            (type.includes("reading comprehension") ||
+              type.includes("reading-comprehension") ||
+              type.replace(/[-_\s]/g, "").includes("readingcomprehension"))
+          ) {
+            options = item.chooseType || item.hasOptions
+              ? [
+                  item.options.optionOne,
+                  item.options.optionTwo,
+                  item.options.optionThree,
+                  item.options.optionFour,
+                ].filter(Boolean)
+              : undefined;
+            return {
+              _id: item._id,
+              question: item.question,
+              options,
+              audioUrl: normalizeAudioUrl(item.audioFile),
+              uploadFile: normalizeImageUrl(item.uploadFile),
+              correctAnswer: item.answerValidation !== "null" ? item.answerValidation : undefined,
+              type: "reading-comprehension",
+            };
+          }
+
+          // Reading (may include image or audio provided by backend)
           if (type === "reading") {
             return {
-              _id: item._id, // <-- this is critical!
+              _id: item._id,
               question: item.question,
-              correctAnswer:
-                item.answerValidation !== "null"
-                  ? item.answerValidation
-                  : undefined,
+              uploadFile: normalizeImageUrl(item.uploadFile),
+              audioUrl: normalizeAudioUrl(item.audioFile),
+              correctAnswer: item.answerValidation !== "null" ? item.answerValidation : undefined,
               type: "reading",
             };
           }
@@ -395,44 +475,16 @@ const QuizPage = () => {
               words = item.question.split(" ");
             }
             return {
-              _id: item._id, // <-- this is critical!
+              _id: item._id,
               question: item.question || "",
               words,
-              correctAnswer:
-                item.answerValidation !== "null"
-                  ? item.answerValidation
-                  : undefined,
+              correctAnswer: item.answerValidation !== "null" ? item.answerValidation : undefined,
               type: "word-match",
+              uploadFile: normalizeImageUrl(item.uploadFile),
               audioFile: item.audioFile,
+              audioUrl: normalizeAudioUrl(item.audioFile),
             };
           }
-
-          // Utility: normalize image URL (absolute, relative, or raw base64)
-          const normalizeImageUrl = (value?: string): string | undefined => {
-            if (!value || value === "null") return undefined;
-            // Already a data URL
-            if (value.startsWith("data:")) return value;
-            // Absolute URL
-            if (value.startsWith("http://") || value.startsWith("https://")) return value;
-            // Relative path from backend
-            if (value.startsWith("/")) {
-              return `https://api.blackstoneinfomaticstech.com${value}`;
-            }
-            // Heuristics for common base64 image signatures
-            const looksBase64Image =
-              value.length > 100 &&
-              (/^(iVBOR|\/9j\/|UklG|R0lG)/.test(value)); // PNG, JPEG, WEBP, GIF
-            if (looksBase64Image) {
-              // Prefer webp if signature matches, else default jpeg
-              const mime = value.startsWith("UklG") ? "image/webp" :
-                           value.startsWith("iVBOR") ? "image/png" :
-                           value.startsWith("R0lG") ? "image/gif" :
-                           "image/jpeg";
-              return `data:${mime};base64,${value}`;
-            }
-            // Fallback: try treating as relative
-            return `https://api.blackstoneinfomaticstech.com/${value.replace(/^\/+/, "")}`;
-          };
 
           // Image identification
           if (
@@ -782,11 +834,7 @@ const QuizPage = () => {
                     <audio
                       ref={sentenceBuilderAudioRef}
                       src={
-                        q.audioFile &&
-                        q.audioFile.length > 10 &&
-                        q.audioFile !== "null"
-                          ? `data:audio/wav;base64,${q.audioFile}`
-                          : undefined
+                        q.audioUrl || (typeof q.uploadFile === 'string' && q.uploadFile.startsWith('data:audio') ? q.uploadFile : undefined)
                       }
                       preload="auto"
                       onError={() =>
@@ -808,6 +856,13 @@ const QuizPage = () => {
                   </svg>
                 </div>
               </div>
+              {/* Display image if provided (word-match may include an image) */}
+              {q.uploadFile && typeof q.uploadFile === "string" && (q.uploadFile.startsWith("data:image") || q.uploadFile.startsWith("http")) && (
+                <div className="mb-6 flex justify-center">
+                  <img src={q.uploadFile} alt="question" className="max-w-full max-h-48 rounded-md" />
+                </div>
+              )}
+
               {/* Word buttons */}
               <div className="flex flex-wrap gap-4 mb-6 justify-center">
                 {q.words &&
@@ -1060,6 +1115,17 @@ const QuizPage = () => {
                   <p className="text-[13px] text-gray-700 mb-4 text-left w-full dark:text-[#fff] dark:opacity-80">
                     {q.question}
                   </p>
+                  {/* Render provided audio (teacher) and image if present */}
+                  {q.audioUrl && (
+                    <div className="mb-4 w-full flex justify-center">
+                      <AudioWavePlayer audioUrl={q.audioUrl} />
+                    </div>
+                  )}
+                  {q.uploadFile && typeof q.uploadFile === "string" && (q.uploadFile.startsWith("data:image") || q.uploadFile.startsWith("http")) && (
+                    <div className="mb-6 flex justify-center w-full">
+                      <img src={q.uploadFile} alt="question" className="max-w-full max-h-48 rounded-md" />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1198,6 +1264,74 @@ const QuizPage = () => {
                     {isSpeechCorrect ? "Correct!" : "Try again!"}
                   </div>
                 )}
+              </div>
+            </div>
+
+            <div className="flex w-full justify-between mt-4">
+              <button
+                onClick={() => handleBackClick(currentQuestionIndex, setCurrentQuestionIndex, setSelectedOption, setWrittenAnswer)}
+                disabled={currentQuestionIndex === 0}
+                className={`px-6 py-2 rounded-md font-semibold ${
+                  currentQuestionIndex === 0
+                    ? "bg-[#e1e4f3] border border-[#c2cae7] text-[#c2cae7] cursor-not-allowed"
+                    : " hover:bg-gray-300 bg-[#e1e4f3] dark:bg-[#252628] border border-[#c2cae7] dark:border-[#303538] dark:text-[#303538] text-[#c2cae7]"
+                }`}
+              >
+                Previous
+              </button>
+              {currentQuestionIndex < quizData.length - 1 ? (
+                <button
+                  onClick={handleNextClick}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  onClick={submitAnswers}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Submit
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+if (q?.type === "reading-comprehension" || q?.type === "reading comprehension") {
+      return (
+        <div className="flex justify-center items-center w-full">
+          <div className="w-full max-w-full p-16 px-40 flex flex-col items-center mx-auto">
+            <h2 className="text-2xl font-bold text-[#223857] mb-2 text-center dark:text-[#fff] dark:opacity-80">
+              Question {currentQuestionIndex + 1} / {quizData.length}
+            </h2>
+            <div className="w-full flex flex-col max-w-full bg-[#f4f5fb] dark:bg-[#343434] rounded-xl p-4 items-center mx-auto min-h-[400px] justify-center">
+              <div className="flex flex-row">
+                <div className="flex flex-col items-center justify-center mr-20 p-0">
+                 
+                </div>
+                {/* Right: Question and controls */}
+                <div className="flex flex-col  justify-start flex-1 min-w-[320px] max-w-[500px] -ml-48">
+                  <h2 className="text-[18px] font-semibold text-[#223857] mb-2 text-left w-full dark:text-[#fff] dark:opacity-90">
+                    Instructions
+                  </h2>
+                  <p className="text-[13px] text-gray-700 mb-4 text-left w-full dark:text-[#fff] dark:opacity-80">
+                    {q.question}
+                  </p>
+                  {/* Render provided audio (teacher) and image if present */}
+                  {q.audioUrl && (
+                    <div className="mb-4 w-full flex justify-center">
+                      <AudioWavePlayer audioUrl={q.audioUrl} />
+                    </div>
+                  )}
+                  {q.uploadFile && typeof q.uploadFile === "string" && (q.uploadFile.startsWith("data:image") || q.uploadFile.startsWith("http")) && (
+                    <div className="mb-6 flex justify-center w-full">
+                      <img src={q.uploadFile} alt="question" className="max-w-full max-h-48 rounded-md" />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
