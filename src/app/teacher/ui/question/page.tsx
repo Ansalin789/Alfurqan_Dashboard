@@ -34,7 +34,7 @@ export interface Assignment {
       | "writing"
       | "reading"
       | "image identification"
-      | "word-match";
+      | "word match";
     name?: string;
   };
 
@@ -89,7 +89,7 @@ export default function Page() {
         return;
       }
     const fetchAssignment = async () => {
-      const assigmnetId = search.get('id');
+const assigmnetId = search.get('id');
       const token = localStorage.getItem("TeacherAuthToken");
 
         if (!token) {
@@ -151,6 +151,8 @@ export default function Page() {
             studentAnswer={assignments?.answer ?? ""}
             rating={assignments?.rating}
             assignmentStatus={assignments?.assignmentStatus}
+            uploadFile={assignments?.uploadFile}
+
           />
         )}
         {assignments?.assignmentType?.type === "writing" && (
@@ -174,15 +176,17 @@ export default function Page() {
             assignmentStatus={assignments?.assignmentStatus}
           />
         )}
-        {assignments?.assignmentType?.type === "word-match" && (
+        {assignments?.assignmentType?.type === "word match" && (
           <MatchWordCard
             questionText={assignments?.question ?? ""}
             audioFile={assignments?.audioFile ?? ""}
             options={optionArray}
-            selectedOption={assignments?.answerValidation ?? ""}
-            correctAnswer={assignments?.answer ?? ""}
+           selectedOption={assignments?.answer ?? ""}
+           correctAnswer={assignments?.answerValidation ?? ""}
+
             rating={assignments?.rating}
             assignmentStatus={assignments?.assignmentStatus}
+            uploadFile={assignments?.uploadFile ?? ""}
           />
         )}
       </BaseLayout>

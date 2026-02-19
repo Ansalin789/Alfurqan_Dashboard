@@ -22,6 +22,7 @@ interface ReadingAnswerCardProps {
   studentAnswer: string;
   rating?: string;
   assignmentStatus?: string;
+  uploadFile?: string;
 }
 interface WritingAnswerCardProps {
   question: string;
@@ -48,6 +49,7 @@ interface MatchWordCardProps {
   correctAnswer: string;
   rating?: string;
   assignmentStatus?: string;
+  uploadFile: string;
 }
 const AssignmentFooter = ({
   rating,
@@ -194,6 +196,7 @@ export function ReadingAnswerCard({
   correctAnswer,
   studentAnswer,
   rating,
+  uploadFile,
   assignmentStatus,
 }: Readonly<ReadingAnswerCardProps>) {
   const isCorrect =
@@ -209,13 +212,31 @@ export function ReadingAnswerCard({
     <div className="w-full max-w-4xl mx-auto bg-white dark:bg-[#1D1D1D] p-6 md:p-8 rounded-xl shadow-md mt-20 mb-6">
       {/* Image & Question */}
       <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-6">
-        <div className="w-full md:w-1/3 flex justify-center">
-          <img
-            src="/assets/images/e29f5a242d90e893b072f94ab653fc21c7800912.png"
-            alt="Reading girl"
-            className="max-h-52 w-auto border border-white dark:border-[#1D1D1D]"
-          />
-        </div>
+             <div className="w-full md:w-1/3 flex flex-col items-center gap-3">
+
+  {/* Default UI Image */}
+  <img
+    src="/assets/images/e29f5a242d90e893b072f94ab653fc21c7800912.png"
+    alt="Reading girl"
+    className="max-h-40 w-auto border border-white dark:border-[#1D1D1D]"
+  />
+
+  {/* Uploaded Image */}
+  {uploadFile && (
+    <img
+      src={
+        uploadFile.startsWith("data:image")
+          ? uploadFile
+          : uploadFile.startsWith("http")
+          ? uploadFile
+          : `data:image/jpeg;base64,${uploadFile}`
+      }
+      alt="Uploaded"
+      className="max-h-40 w-auto rounded-md shadow border items-center border-white dark:border-[#1D1D1D]"
+    />
+  )}
+
+</div>
         <div className="w-full md:w-2/3">
           <h2 className="text-lg md:text-xl font-semibold text-[#223857] dark:text-white mb-2">
             Question
@@ -477,6 +498,7 @@ export const MatchWordCard = ({
   selectedOption,
   correctAnswer,
   rating,
+  uploadFile,
   assignmentStatus,
 }: MatchWordCardProps) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -500,21 +522,45 @@ export const MatchWordCard = ({
       </h2>
 
       {/* Character with Audio */}
-      <div className="flex items-center justify-center gap-4 mb-6">
-        <img
-          src="/assets/images/q4.svg"
-          alt="character"
-          className="w-24 h-24"
-        />
-        <button
-          className="relative bg-indigo-500 text-white px-4 py-2 rounded-full cursor-pointer text-sm flex items-center gap-2"
-          onClick={handleAudioPlay}
-        >
-          <span>🔊</span>
-          <span>Play</span>
-          <audio ref={audioRef} src={`data:audio/mp3;base64,${audioFile}`} />
-        </button>
-      </div>
+     {/* Character with Audio */}
+{/* Character + Uploaded Image + Audio */}
+<div className="flex flex-col items-center justify-center gap-3 mb-6">
+
+  {/* Uploaded Image */}
+  {uploadFile && (
+    <img
+      src={
+        uploadFile.startsWith("data:image")
+          ? uploadFile
+          : uploadFile.startsWith("http")
+          ? uploadFile
+          : `data:image/jpeg;base64,${uploadFile}`
+      }
+      alt="Uploaded"
+      className="w-40 h-auto rounded-lg shadow border"
+    />
+  )}
+
+  {/* Default Character */}
+  <img
+    src="/assets/images/q4.svg"
+    alt="character"
+    className="w-24 h-24"
+  />
+
+  {/* Play Button */}
+  <button
+    className="relative bg-indigo-500 text-white px-4 py-2 rounded-full cursor-pointer text-sm flex items-center gap-2"
+    onClick={handleAudioPlay}
+  >
+    <span>🔊</span>
+    <span>Play</span>
+    <audio ref={audioRef} src={`data:audio/mp3;base64,${audioFile}`} />
+  </button>
+
+</div>
+
+
 
       <div className="flex flex-wrap justify-center gap-3 mb-4">
         {options.map((option, index) => {
