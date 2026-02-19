@@ -34,10 +34,9 @@ export interface Assignment {
       | "writing"
       | "reading"
       | "image identification"
-      | "word-match";
+      | "word match";
     name?: string;
   };
-
   chooseType?: boolean;
   trueorfalseType?: boolean;
   question: string;
@@ -57,17 +56,13 @@ export interface Assignment {
   createdBy: string;
   updatedDate: string;
   updatedBy: string;
-
   level?: string;
   courses?: string;
-
   assignedDate: string;
   dueDate: string;
-
   answer?: string;
   answerValidation: string;
   assignmentStatus: string;
-
   commends?: string;
   score?: number;
   rating?: string;
@@ -113,6 +108,13 @@ useEffect(() => {
 }, []);
 
 
+useEffect(() => {
+  console.log("ASSIGNMENT FULL DATA:", assignments);
+  console.log("TYPE:", assignments?.assignmentType?.type);
+  console.log("OPTIONS:", optionArray);
+  console.log("ANSWER:", assignments?.answer);
+  console.log("VALIDATION:", assignments?.answerValidation);
+}, [assignments]);
 
   const optionArray = assignments?.options
     ? Object.values(assignments.options).filter(
@@ -150,6 +152,9 @@ useEffect(() => {
             studentAnswer={assignments?.answer ?? ""}
             rating={assignments?.rating}
             assignmentStatus={assignments?.assignmentStatus}
+            uploadFile={assignments?.uploadFile ?? ""} 
+
+
           />
         )}
         {assignments?.assignmentType?.type === "writing" && (
@@ -173,15 +178,16 @@ useEffect(() => {
             assignmentStatus={assignments?.assignmentStatus}
           />
         )}
-        {assignments?.assignmentType?.type === "word-match" && (
+        {assignments?.assignmentType?.type === "word match" && (
           <MatchWordCard
             questionText={assignments?.question ?? ""}
             audioFile={assignments?.audioFile ?? ""}
             options={optionArray}
-            selectedOption={assignments?.answerValidation ?? ""}
-            correctAnswer={assignments?.answer ?? ""}
+             selectedOption={assignments?.answer ?? ""}
+            correctAnswer={assignments?.answerValidation ?? ""}
             rating={assignments?.rating}
             assignmentStatus={assignments?.assignmentStatus}
+            uploadFile={assignments?.uploadFile ?? ""}
           />
         )}
       </BaseLayout2>
