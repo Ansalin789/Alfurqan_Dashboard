@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 type StudentData = {
   id: number;
@@ -29,7 +30,7 @@ const StudentEvaluation = () => {
     return;
   }
     axios
-      .get(`https://api.blackstoneinfomaticstech.com/evaluationlist`, {
+      .get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.EVALUATION.GET_LIST}`, {
         params: { academicCoachId: academicId },
         headers: {
           "Content-Type": "application/json",

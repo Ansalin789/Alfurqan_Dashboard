@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
 
 
 const localizer = momentLocalizer(moment);
@@ -35,7 +36,7 @@ const ScheduleCalender: React.FC = () => {
     console.error("❌ AdminAuthToken not found");
     return;
   }
-    fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist`,{
+    fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CALENDAR.GET}`,{
       headers:{
         'Authorization': `Bearer ${token}`,
       }

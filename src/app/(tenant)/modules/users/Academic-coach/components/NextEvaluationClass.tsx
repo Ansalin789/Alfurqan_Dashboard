@@ -4,6 +4,7 @@ import { FaUserAlt } from "react-icons/fa";
 import { AiOutlineClockCircle } from "react-icons/ai";
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface AcademicCoach {
   academicCoachId: string;
@@ -52,7 +53,7 @@ const NextEvaluationClass = () => {
         }
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/dashboard/ac/upcomingclass`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.GET_UPCOMING_CLASSES}`,
           {
             method: "GET",
             params: { academicCoachId: academicId },

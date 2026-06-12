@@ -19,6 +19,7 @@ import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import SupervisorHeader from "@/app/(tenant)/modules/users/supervisor/components/supervisorHeader";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 // Define the return type of the getAllUsers function
 interface User {
@@ -59,7 +60,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
       console.error("❌ AdminAuthToken not found");
     }
     const response = await axios.get(
-      `https://api.blackstoneinfomaticstech.com/studentlist`,
+      `{AppApiEndpoints.API_END_POINT}${AppApiEndpoints.STUDENT.GET_LIST}`,
       {
         params: { academicCoachId: academicId },
         headers: {

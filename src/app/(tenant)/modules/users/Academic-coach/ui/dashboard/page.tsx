@@ -14,6 +14,7 @@ import AcademicHeader from "../../components/academicHeader";
 import { useRouter } from "next/navigation";
 
 import { getSocket } from "@/app/utils/socket";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 // Define the transformed user structure
 interface TransformedUser {
@@ -153,7 +154,7 @@ const getAllUser = async (): Promise<{
       console.error("❌ AdminAuthToken not found");
     }
     const response = await axios.get(
-      `https://api.blackstoneinfomaticstech.com/evaluationlist`,
+      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.EVALUATION.GET_LIST}`,
       {
         params: { academicCoachId: academicId },
         headers: {

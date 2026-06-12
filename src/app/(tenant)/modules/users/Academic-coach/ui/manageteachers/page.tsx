@@ -10,6 +10,7 @@ import BaseLayout1 from "@/app/(tenant)/modules/users/Academic-coach/components/
 import AcademicHeader from "../../components/academicHeader"
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints"
 
 interface CalendarControlsProps {
   activeView: "monthly" | "weekly" | "daily";
@@ -150,7 +151,7 @@ const TeachersSchedule = () => {
         }
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${teacherId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET}?teacherId=${teacherId}`,
           {
             headers: {
               "Content-Type": "application/json",

@@ -11,6 +11,7 @@ import Modal from "react-modal";
 import { getSocket } from "@/app/utils/socket";
 import Swal from "sweetalert2";
 import axios from "axios";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 export interface Student {
   _id: string;
@@ -173,7 +174,7 @@ const ManageStudents = () => {
     academicCoachId: acId,
 };
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/alstudents`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}`,
         {
           params,
           headers: {

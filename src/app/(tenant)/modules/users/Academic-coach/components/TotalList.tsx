@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import axios from "axios";
 import { getSocket } from "@/app/utils/socket";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 
 interface ApiResponse {
@@ -45,7 +46,7 @@ const TotalList = () => {
 
       try {
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/dashboard/widgets?academicCoachId=${id}`,{
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.GET_WIDGETS}?academicCoachId=${id}`,{
             headers:{
               "Authorization" : `Bearer ${token}`
             },

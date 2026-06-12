@@ -10,6 +10,7 @@ import {
 import axios from "axios";
 import { AlertCircle, ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 export interface RoleModuleAccess {
   read: boolean;
@@ -126,7 +127,7 @@ const SignIn: React.FC = () => {
   }, [error]);
 
   const signIn = async (username: string, password: string) => {
-    return axios.post("https://api.blackstoneinfomaticstech.com/signin", {
+    return axios.post(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.AUHT.LOGIN}`, {
       username,
       password,
     });

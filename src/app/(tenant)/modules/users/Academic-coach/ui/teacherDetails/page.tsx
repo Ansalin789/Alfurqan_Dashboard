@@ -13,6 +13,7 @@ import axios from "axios";
 import AcademicHeader from "../../components/academicHeader";
 import { getSocket } from "@/app/utils/socket";
 import { AiOutlineMenuUnfold } from "react-icons/ai";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 // --- Interfaces from ScheduledClasses (Unified) ---
 export interface UnifiedClassSchedule {
@@ -184,7 +185,7 @@ const TeacherDetails = () => {
         const token = localStorage.getItem("AcademicCoachAuthToken");
         if (!token) return;
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/applicants/${teacherId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.APPLICANTS.GET_LIST}/${teacherId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setTeachers(response.data);

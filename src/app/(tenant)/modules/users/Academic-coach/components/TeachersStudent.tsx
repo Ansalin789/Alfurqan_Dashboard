@@ -5,6 +5,7 @@ import { FaUserCircle } from "react-icons/fa";
 import Link from "next/link";
 import axios from "axios";
 import { getSocket } from "@/app/utils/socket";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface TeacherData {
   _id: string | null;
@@ -53,7 +54,7 @@ export default function Academic() {
   }
         const teacherId = "some_teacher_id";
         const response = await axios.get<ApiResponse>(
-          `https://api.blackstoneinfomaticstech.com/teacher-student-count`,
+          `{AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_STUDENT_COUNT}?teacherId=${teacherId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

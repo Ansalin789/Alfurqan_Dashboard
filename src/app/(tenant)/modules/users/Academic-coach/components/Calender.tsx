@@ -4,7 +4,7 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "./Calendar.css";
 import { useRouter } from "next/navigation";
-import {  } ;
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Event {
   title: string;

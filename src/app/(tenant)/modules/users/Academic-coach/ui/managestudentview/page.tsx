@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Pagination from "@/components/Pagination";
 import AcademicHeader from "../../components/academicHeader";
 import Modal from "react-modal";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface StudentDetails {
   studentDetails: {
@@ -302,7 +303,7 @@ const ManageStudentView = () => {
       }
       const alstudentsId = localStorage.getItem("studentManageID");
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/alstudents/${alstudentsId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}/${alstudentsId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -323,7 +324,7 @@ useEffect(() => {
   const fetchStudentStats = async () => {
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/studentattendanceperformance?studentId=${alstudentsId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.STUDENT_ATTENDANCE_PERFORMANCE}?studentId=${alstudentsId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,  
@@ -369,7 +370,7 @@ useEffect(() => {
 
       try {
         const res = await fetch(
-          `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE. GET_CLASSSHEDULE_STUDENTS}?studentId=${studentId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

@@ -10,6 +10,7 @@ import {
 } from '@stripe/react-stripe-js';
 import type { StripeCardNumberElementChangeEvent } from '@stripe/stripe-js';
 import { CreditCard } from 'lucide-react';
+import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
 
 interface CheckoutFormProps {
   clientSecret: string;
@@ -114,7 +115,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret, evaluationId 
         };
 
         const backendRes = await fetch(
-          `https://api.blackstoneinfomaticstech.com/create-payment-intent`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.PAYMENT.CREATE_PAYMENT_INTENT}`,
           {
             method: 'POST',
             headers: {

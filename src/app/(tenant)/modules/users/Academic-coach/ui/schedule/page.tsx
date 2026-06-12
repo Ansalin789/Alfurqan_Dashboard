@@ -8,6 +8,7 @@ import AcademicHeader from "../../components/academicHeader";
 import { FaClock } from "react-icons/fa";
 import { BsFillCalendar2WeekFill } from "react-icons/bs";
 import { useRouter } from "next/navigation";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Event {
   id: string;
@@ -16,25 +17,25 @@ interface Event {
   end: string;
   description: string;
   date: string;
-  studentName: string,
-  studentEmail: string,
+  studentName: string;
+  studentEmail: string;
   meetingId?: string;
 }
 
 const SchedulePage = () => {
   const [activeView, setActiveView] = useState<"monthly" | "weekly" | "daily">(
-    "monthly"
+    "monthly",
   );
   const [selectedDate, setSelectedDate] = useState<string>(
-    moment().format("YYYY-MM-DD")
+    moment().format("YYYY-MM-DD"),
   );
   const [eventsForSelectedDate, setEventsForSelectedDate] = useState<Event[]>(
-    []
+    [],
   );
   const [events, setEvents] = useState<Event[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-const router = useRouter();
+  const router = useRouter();
 
   const tabs = ["monthly", "weekly", "daily"] as const;
 
@@ -44,23 +45,26 @@ const router = useRouter();
       console.error("❌ AcademicCoachAuthToken not found");
       return;
     }
-  const acId = typeof window !== "undefined" ? localStorage.getItem("AcademicCoachPortalId") : null;   
+    const acId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AcademicCoachPortalId")
+        : null;
 
-         const params = {
-    academicCoachId: acId,
-}; 
- fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist?academicCoachId=${params.academicCoachId}`, {
-  method: "GET",
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-})
+    const params = {
+      academicCoachId: acId,
+    };
+    fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CALENDAR.GET}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((response) => response.json())
       .then((data) => {
         console.log("dataaa", data);
         const mappedAcademicEvents = data.academicCoach.map((item: any) => ({
           id: item._id,
-            meetingId: item._id, // or item.meetingId if exists
+          meetingId: item._id, // or item.meetingId if exists
 
           title: item.subject,
           start: item.scheduledFrom,
@@ -71,9 +75,9 @@ const router = useRouter();
           date: moment(item.scheduledStartDate).format("YYYY-MM-DD"),
         }));
 
-          const addSupervisorEvents = data.meetingList.map((item: any) => ({
+        const addSupervisorEvents = data.meetingList.map((item: any) => ({
           id: item._id,
-           meetingId: item.meetingId,
+          meetingId: item.meetingId,
           title: item.meetingName,
           start: item.startTime,
           end: item.endTime,
@@ -83,7 +87,7 @@ const router = useRouter();
           date: moment(item.selectedDate).format("YYYY-MM-DD"),
         }));
 
-          const adminEvents = data.adminMeetingList.map((item: any) => ({
+        const adminEvents = data.adminMeetingList.map((item: any) => ({
           id: item._id,
           meetingId: item.meetingId,
           title: item.meetingName,
@@ -94,11 +98,11 @@ const router = useRouter();
           studentEmail: item.admin.adminEmail,
           date: moment(item.selectedDate).format("YYYY-MM-DD"),
         }));
-         const mappedEvents = [
-    ...mappedAcademicEvents,
-    ...addSupervisorEvents,
-    ...adminEvents,
-  ];
+        const mappedEvents = [
+          ...mappedAcademicEvents,
+          ...addSupervisorEvents,
+          ...adminEvents,
+        ];
         setEvents(mappedEvents);
         console.log("Fetched Events: ", mappedEvents);
       })
@@ -108,15 +112,15 @@ const router = useRouter();
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('.calendar-dropdown-container') && openDropdown) {
+      if (!target.closest(".calendar-dropdown-container") && openDropdown) {
         setOpenDropdown(null);
       }
     };
 
     if (openDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
       return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener("mousedown", handleClickOutside);
       };
     }
   }, [openDropdown]);
@@ -125,7 +129,7 @@ const router = useRouter();
     const formattedDate = moment(date).format("YYYY-MM-DD");
     setSelectedDate(formattedDate);
     const filteredEvents = events.filter(
-      (event) => event.date === formattedDate
+      (event) => event.date === formattedDate,
     );
     setEventsForSelectedDate(filteredEvents);
   };
@@ -141,13 +145,13 @@ const router = useRouter();
 
   const handlePrevMonth = () => {
     setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1)
+      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1),
     );
   };
 
   const handleNextMonth = () => {
     setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1)
+      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1),
     );
   };
 
@@ -190,9 +194,9 @@ const router = useRouter();
       daysInWeek.push({
         name: currentDay.format("dddd"),
         date: currentDay.format("YYYY-MM-DD"),
-        formattedDate: currentDay.format("MMMM D, YYYY")
+        formattedDate: currentDay.format("MMMM D, YYYY"),
       });
-      currentDay = currentDay.clone().add(1, 'days');
+      currentDay = currentDay.clone().add(1, "days");
     }
 
     const weekEvents = events.filter((event) => {
@@ -200,14 +204,17 @@ const router = useRouter();
       return eventDate >= startOfWeek && eventDate <= endOfWeek;
     });
 
-    const eventsByDay = weekEvents.reduce((acc, event) => {
-      const day = moment(event.date).format("dddd");
-      if (!acc[day]) {
-        acc[day] = [];
-      }
-      acc[day].push(event);
-      return acc;
-    }, {} as Record<string, Event[]>);
+    const eventsByDay = weekEvents.reduce(
+      (acc, event) => {
+        const day = moment(event.date).format("dddd");
+        if (!acc[day]) {
+          acc[day] = [];
+        }
+        acc[day].push(event);
+        return acc;
+      },
+      {} as Record<string, Event[]>,
+    );
 
     const handleDayClick = (day: string) => {
       setSelectedDay(selectedDay === day ? null : day);
@@ -217,8 +224,7 @@ const router = useRouter();
       <div className="space-y-4 h-[540px] overflow-y-scroll scrollbar-none">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[16px] font-semibold">
-            {startOfWeek.format("MMM D")} -{" "}
-            {endOfWeek.format("MMM D, YYYY")}
+            {startOfWeek.format("MMM D")} - {endOfWeek.format("MMM D, YYYY")}
           </h3>
         </div>
 
@@ -231,29 +237,32 @@ const router = useRouter();
               <div key={dayInfo.name} className="flex flex-col">
                 <button
                   onClick={() => handleDayClick(dayInfo.name)}
-                  className={`w-full p-4 rounded-xl cursor-pointer transition-all duration-200 ${isSelected
+                  className={`w-full p-4 rounded-xl cursor-pointer transition-all duration-200 ${
+                    isSelected
                       ? "dark:bg-[#414141] bg-[#f7f7f7] dark:text-white text-black"
                       : dayEvents.length > 0
                         ? "dark:bg-[#414141] bg-[#f7f7f7] hover:shadow-lg text-black"
                         : "bg-[#f7f7f7] dark:bg-[#414141] text-black"
-                    }`}
+                  }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div>
                         <div
-                          className={`text-base font-semibold ${isSelected
+                          className={`text-base font-semibold ${
+                            isSelected
                               ? "dark:text-white text-black"
                               : "text-gray-800 dark:text-white"
-                            }`}
+                          }`}
                         >
                           {dayInfo.name}
                         </div>
                         <div
-                          className={`text-[10px] ${isSelected
+                          className={`text-[10px] ${
+                            isSelected
                               ? "bg:text-white/80"
                               : "text-gray-500 dark:text-gray-400"
-                            }`}
+                          }`}
                         >
                           {dayInfo.formattedDate}
                         </div>
@@ -261,10 +270,11 @@ const router = useRouter();
                     </div>
                     {dayEvents.length > 0 && (
                       <div
-                        className={`text-[10px] px-3 py-1 rounded-lg ${isSelected
+                        className={`text-[10px] px-3 py-1 rounded-lg ${
+                          isSelected
                             ? "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]"
                             : "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]"
-                          }`}
+                        }`}
                       >
                         {dayEvents.length}{" "}
                         {dayEvents.length === 1 ? "Event" : "Events"}
@@ -290,7 +300,9 @@ const router = useRouter();
                           <div className="flex items-center gap-2 mt-1">
                             <div className="flex items-center gap-1 text-[10px] text-gray-600 dark:text-gray-300">
                               <Clock size={12} />
-                              {moment(event.start, 'HH:mm').format("h:mm A")} - {moment(event.end, 'HH:mm').format("h:mm A")}
+                              {moment(event.start, "HH:mm").format(
+                                "h:mm A",
+                              )} - {moment(event.end, "HH:mm").format("h:mm A")}
                             </div>
                           </div>
                         </div>
@@ -325,7 +337,8 @@ const router = useRouter();
               </div>
               <div className="flex items-center gap-1 text-[10px] text-gray-600 dark:text-gray-300">
                 <Clock size={12} />
-                {moment(event.start, 'HH:mm').format("h:mm A")} - {moment(event.end, 'HH:mm').format("h:mm A")}
+                {moment(event.start, "HH:mm").format("h:mm A")} -{" "}
+                {moment(event.end, "HH:mm").format("h:mm A")}
               </div>
             </div>
 
@@ -374,7 +387,7 @@ const router = useRouter();
             const date = new Date(
               currentDate.getFullYear(),
               currentDate.getMonth(),
-              day
+              day,
             );
             const dayEvents = getEventsForDate(date);
             const hasEvents = dayEvents.length > 0;
@@ -387,28 +400,33 @@ const router = useRouter();
               <div key={i} className="relative calendar-dropdown-container">
                 <button
                   onClick={() => handleDayClick(date, day)}
-                  className={`min-h-[80px] w-full rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${hasEvents
+                  className={`min-h-[80px] w-full rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${
+                    hasEvents
                       ? "border border-[#576cbc] text-[#576cbc] bg-[#576cbc]/10"
                       : isToday(day)
                         ? "bg-[#27176518] text-white"
                         : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"
-                    }`}
+                  }`}
                 >
                   <div
-                    className={`font-semibold ${isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""
-                      }`}
+                    className={`font-semibold ${
+                      isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""
+                    }`}
                   >
                     {day}
                   </div>
                   {hasEvents && (
                     <div className="mt-1 px-2 py-0.5 rounded-md bg-[#576cbc] text-white text-[10px] font-semibold">
-                      {dayEvents.length} {dayEvents.length === 1 ? "Event" : "Events"}
+                      {dayEvents.length}{" "}
+                      {dayEvents.length === 1 ? "Event" : "Events"}
                     </div>
                   )}
                 </button>
 
                 {isDropdownOpen && hasEvents && (
-                  <div className={`absolute top-full ${isRightSide ? 'right-0' : 'left-0'} mt-1 z-50 w-40 bg-white dark:bg-[#343434] rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 p-3`}>
+                  <div
+                    className={`absolute top-full ${isRightSide ? "right-0" : "left-0"} mt-1 z-50 w-40 bg-white dark:bg-[#343434] rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 p-3`}
+                  >
                     <div className="text-[10px] font-semibold mb-2 text-gray-700 dark:text-gray-300">
                       {moment(date).format("MMMM D, YYYY")}
                     </div>
@@ -434,27 +452,25 @@ const router = useRouter();
     );
   };
 
+  const canJoinNow = (event: Event) => {
+    const now = moment();
 
-const canJoinNow = (event: Event) => {
-  const now = moment();
+    const eventDateTime = moment(
+      `${event.date} ${event.start}`,
+      "YYYY-MM-DD HH:mm",
+    );
 
-  const eventDateTime = moment(
-    `${event.date} ${event.start}`,
-    "YYYY-MM-DD HH:mm"
-  );
+    const eventEndTime = moment(
+      `${event.date} ${event.end}`,
+      "YYYY-MM-DD HH:mm",
+    );
 
-  const eventEndTime = moment(
-    `${event.date} ${event.end}`,
-    "YYYY-MM-DD HH:mm"
-  );
-
-  // Allow join from 10 mins before till end
-  return now.isBetween(
-    eventDateTime.clone().subtract(10, "minutes"),
-    eventEndTime
-  );
-};
-
+    // Allow join from 10 mins before till end
+    return now.isBetween(
+      eventDateTime.clone().subtract(10, "minutes"),
+      eventEndTime,
+    );
+  };
 
   return (
     <BaseLayout1>
@@ -468,10 +484,11 @@ const canJoinNow = (event: Event) => {
                   <button
                     key={tab}
                     onClick={() => setActiveView(tab)}
-                    className={`capitalize ${activeView === tab
+                    className={`capitalize ${
+                      activeView === tab
                         ? "text-[#576cbc] border-b-2 border-[#576cbc]"
                         : "text-gray-400"
-                      } pb-1`}
+                    } pb-1`}
                   >
                     {tab}
                   </button>
@@ -514,24 +531,29 @@ const canJoinNow = (event: Event) => {
                       "text-[#BF63B3]",
                       "text-[#BFBC63]",
                       "text-[#BF8C63]",
-                      "text-[#6EBF63]"
+                      "text-[#6EBF63]",
                     ];
-                    const currentTextColor = textColors[index % textColors.length];
+                    const currentTextColor =
+                      textColors[index % textColors.length];
                     return (
                       <div
                         key={item.id}
                         className="border-b pb-2 border-[#dadada] dark:border-[#5b5b5b]"
                       >
                         <div className="flex justify-between">
-                          <h3 className={`font-medium text-[14px] ${currentTextColor}`}>
+                          <h3
+                            className={`font-medium text-[14px] ${currentTextColor}`}
+                          >
                             {item.title}
                           </h3>
                           <div>
                             <div className="flex gap-4">
                               <div className="text-[10px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
                                 <FaClock size={10} />
-                                {moment(item.start, 'HH:mm').format("h:mm A")} -{" "}
-                                {moment(item.end, 'HH:mm').format("h:mm A")}
+                                {moment(item.start, "HH:mm").format(
+                                  "h:mm A",
+                                )} -{" "}
+                                {moment(item.end, "HH:mm").format("h:mm A")}
                               </div>
                               <span className="text-[10px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
                                 <BsFillCalendar2WeekFill size={10} />{" "}
@@ -546,13 +568,17 @@ const canJoinNow = (event: Event) => {
                         </p>
 
                         {canJoinNow(item) && (
-  <button
-    onClick={() => router.push(`/modules/users/Academic-coach/ui/videocall?id=${item.meetingId || item.id}`)}
-    className="mt-2 px-3 py-1 text-[11px] bg-green-600 text-white rounded hover:bg-green-700 transition"
-  >
-    ▶ Start Now
-  </button>
-)}
+                          <button
+                            onClick={() =>
+                              router.push(
+                                `/modules/users/Academic-coach/ui/videocall?id=${item.meetingId || item.id}`,
+                              )
+                            }
+                            className="mt-2 px-3 py-1 text-[11px] bg-green-600 text-white rounded hover:bg-green-700 transition"
+                          >
+                            ▶ Start Now
+                          </button>
+                        )}
                       </div>
                     );
                   })

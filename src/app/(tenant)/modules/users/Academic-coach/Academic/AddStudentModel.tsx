@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { FaTimes } from "react-icons/fa";
 import { CountryDropdown } from "react-country-region-selector";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 if (typeof window !== "undefined") {
   Modal.setAppElement("body");
@@ -88,7 +89,7 @@ const AddStudentModal = ({
     console.error("❌ AdminAuthToken not found");
     return;
   }
-      const response = await fetch(`https://api.blackstoneinfomaticstech.com/student`, {
+      const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.STUDENT.CREATE}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

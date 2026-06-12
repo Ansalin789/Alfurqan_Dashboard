@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import countries from "i18n-iso-countries";
 import { FaGlobeAmericas } from "react-icons/fa";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 // Register English country names
 countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
@@ -33,7 +34,7 @@ export default function Countries() {
 
       try {
         const res = await fetch(
-          `https://api.blackstoneinfomaticstech.com/alstudents/studentscountrycount`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET_STUDENTS_COUNTRY_COUNT}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { FaTimes } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 if (typeof window !== "undefined") {
   Modal.setAppElement("body");
@@ -117,7 +118,7 @@ const Popup: React.FC<PopupProps> = ({
         console.error("❌ AdminAuthToken not found");
       }
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/studentlist`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.STUDENT.GET_LIST}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

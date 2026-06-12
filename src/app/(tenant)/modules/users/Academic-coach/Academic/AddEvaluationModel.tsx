@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { FaTimes } from 'react-icons/fa';
+import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
 
 
 
@@ -167,7 +168,7 @@ const AddEvaluationModal: React.FC<AddEvaluationModalProps> = ({
         console.error("❌ AdminAuthToken not found");
         return;
       }
-      const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation`, {
+      const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.EVALUATION.CREATE}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

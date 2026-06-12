@@ -1,5 +1,6 @@
 "use client";
 
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 
@@ -51,7 +52,7 @@ const UpcomingClasses: React.FC = () => {
         const academicId = localStorage.getItem("AcademicCoachPortalId");
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/dashboard/ac/upcomingclass`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.GET_AC_UPCOMING_CLASSES}?academicCoachId=${academicId}`,
           {
             params: { academicCoachId: academicId },
             headers: {

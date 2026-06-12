@@ -10,6 +10,7 @@ import Pagination from "@/components/Pagination";
 import { MdTune } from "react-icons/md";
 import { getSocket } from "@/app/utils/socket";
 import AcademicHeader from "../../components/academicHeader";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface IProfessionalExperience {
   jobRole: string;
@@ -142,7 +143,7 @@ const ManageTeacher: React.FC = () => {
           return;
         }
         const response = await fetch(
-          `https://api.blackstoneinfomaticstech.com/applicants`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.APPLICANTS.GET_LIST}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

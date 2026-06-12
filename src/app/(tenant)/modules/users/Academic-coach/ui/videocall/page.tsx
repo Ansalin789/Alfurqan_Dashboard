@@ -6,6 +6,7 @@ import axios from "axios";
 import BaseLayout1 from "@/app/(tenant)/modules/users/Academic-coach/components/BaseLayout1";
 import { useSearchParams } from "next/navigation";
 import AcademicHeader from "../../components/academicHeader";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 interface Attendance {
   id: string | null;
   studentId: string;
@@ -110,7 +111,7 @@ export default function Page() {
         const acId = localStorage.getItem("AcademicCoachPortalId");
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/meetingSchedulelist?academicCoachId=${acId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CALENDAR.GET}?academicCoachId=${acId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -265,7 +266,7 @@ console.log("Final Payload:", payload);
       }
 
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/meetingminutes/${meetingId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MEETING_MINUTES.UPDATE_MINUTES}/${meetingId}`,
         {
           method: "PUT",
           headers: {

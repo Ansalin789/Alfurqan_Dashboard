@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/app/(tenant)/modules/users/Academic-coach/CheckoutForm';
+import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
 
 
 
@@ -14,7 +15,7 @@ const HomePage = () => {
 
   const createPaymentIntent = async () => {
    
-    const response = await fetch(`https://api.blackstoneinfomaticstech.com/create-payment-intent`, {
+    const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.PAYMENT.CREATE_PAYMENT_INTENT}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

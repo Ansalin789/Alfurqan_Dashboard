@@ -8,6 +8,7 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import { CgAttachment } from "react-icons/cg";
 import AcademicHeader from "../../components/academicHeader";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface IMessage {
   _id: string;
@@ -122,7 +123,7 @@ const Message = () => {
       }
 
       const response = await axios.get<IStudentResponse>(
-        "https://api.blackstoneinfomaticstech.com/alstudents",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}`,
         {
           headers: {
             "Content-Type": "application/json",

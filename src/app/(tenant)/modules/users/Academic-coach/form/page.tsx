@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { CountryDropdown } from "react-country-region-selector";
 import { FcNext } from "react-icons/fc";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 // Replace TypeScript types with JSDoc type definitions
 /**
@@ -214,7 +215,7 @@ const MultiStepForm = () => {
       // Debug log to check the data being sent
       console.log("Sending data:", formattedData);
     
-      const response = await fetch(`https://api.blackstoneinfomaticstech.com/student`, {
+      const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.STUDENT.CREATE}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

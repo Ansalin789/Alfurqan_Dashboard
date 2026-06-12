@@ -1,4 +1,5 @@
 "use client";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import {
@@ -56,7 +57,7 @@ const Teacherscard: React.FC = () => {
       try {
         const token = localStorage.getItem("AcademicCoachAuthToken");
 
-        const res = await fetch(`https://api.blackstoneinfomaticstech.com/dashboard/ac/teachersattendance`,
+        const res = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.GET_TEACHERS_ATTENDANCE}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
