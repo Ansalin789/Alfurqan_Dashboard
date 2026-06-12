@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
-import "@/styles/globals.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { ThemeProvider } from "@/context/ThemeContext";
+import "../styles/globals.css";
 
 const poppins = Poppins({
   subsets: ["latin"],

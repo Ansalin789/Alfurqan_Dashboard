@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
-import CheckoutForm from '@/components/CheckoutForm';
+import CheckoutForm from '@/app/(tenant)/modules/users/Academic-coach/CheckoutForm';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 

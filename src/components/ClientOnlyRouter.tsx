@@ -3,7 +3,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Invoice from '@/components/Invoice';
-import Form from '@/app/invoice/page';
+import Form from '@/app/(tenant)/modules/users/Academic-coach/invoice/page';
 
 const ClientOnlyRouter = () => {
   return (
