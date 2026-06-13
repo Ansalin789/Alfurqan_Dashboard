@@ -9,12 +9,13 @@ import { FaEllipsisV } from "react-icons/fa";
 import Pagination from "@/components/Pagination";
 
 import Dashboard from "../../components/evaluationcard";
-import BaseLayout4 from "@/components/BaseLayout4";
 import error from "next/error";
 import { MdTune } from "react-icons/md";
 import AcademicHeader from "@/app/(tenant)/modules/users/Academic-coach/components/academicHeader";
 import axios from "axios";
 import { getSocket } from "@/app/utils/socket";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 
 // Define the transformed user structure
@@ -156,7 +157,7 @@ const getAllUser = async (): Promise<{
       console.error("❌ AdminAuthToken not found");
     }
     const response = await axios.get(
-      `https://api.blackstoneinfomaticstech.com/evaluationlist`,
+      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.EVALUATION.GET_LIST}`,
       {
         params: { adminId: academicId },
         headers: {
@@ -230,7 +231,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
       console.error("❌ AdminAuthToken not found");
     }
     const response = await axios.get(
-      `https://api.blackstoneinfomaticstech.com/studentlist`,
+      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.STUDENT.GET_LIST}`,
       {
         params: { adminId: academicId },
         headers: {

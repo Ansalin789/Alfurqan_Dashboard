@@ -1,5 +1,6 @@
 "use client";
 
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 import { X, Plus, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -97,7 +98,7 @@ export default function AddPackage({ onClose }: { onClose: () => void }) {
       console.log("Using token from login:", token.substring(0, 20) + "...");
       console.log("Payload being sent:", payload);
 
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/package", {
+      const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.PACKAGAE.POST}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

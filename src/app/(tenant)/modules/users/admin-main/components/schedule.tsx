@@ -1,5 +1,6 @@
 "use client";
 
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 import { Card } from "@nextui-org/react";
 import { useState, useEffect } from "react";
 import {
@@ -74,7 +75,7 @@ const DashboardClasses = () => {
   const fetchClassData = async (token: string) => {
     try {
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/classShedule/totalclasses?dateRange=${duration}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.CLASSCHEDULE_TOTAL_CLASSES}?dateRange=${duration}`,
         {
           method: "GET",
           headers: {
@@ -121,7 +122,7 @@ const DashboardClasses = () => {
           return;
         }
         const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/classShedule/classstatuscount",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.CLASS_STATUS_COUNT}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -176,7 +177,7 @@ const DashboardClasses = () => {
 
       try {
         const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/classShedule/classwisecount",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.CLASS_WISE_COUNT}`,
           {
             method: "GET",
             headers: {

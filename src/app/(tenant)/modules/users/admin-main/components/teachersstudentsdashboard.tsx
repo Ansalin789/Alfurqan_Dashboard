@@ -1,4 +1,5 @@
 "use client";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 import { useEffect, useState } from "react";
 
 type TeacherAPI = {
@@ -34,7 +35,7 @@ export default function TeachersStudents() {
 
   const fetchTeacherStudentCount = async (token: string) => {
     try {
-      const res = await fetch("https://api.blackstoneinfomaticstech.com/teacher-student-count", {
+      const res = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_STUDENT_COUNT}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

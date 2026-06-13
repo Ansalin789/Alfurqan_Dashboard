@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import BaseLayout4 from "@/components/BaseLayout4";
 import { dateFnsLocalizer, Views } from "react-big-calendar";
 import format from "date-fns/format";
 import parse from "date-fns/parse";
@@ -18,6 +17,8 @@ import { Search, Users } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 import FilterModal, { FilterField } from "@/components/FilterModal";
+import BaseLayout4 from "../../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 const locales = {
   "en-US": require("date-fns/locale/en-US"),
@@ -436,7 +437,7 @@ const Teacher = () => {
 
       // Step 4: Send API request
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/empwages/${wageId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.OTHEREMPLOYEE.UPDATE_EMP_WAGES}/${wageId}`,
         updatedWage,
         {
           headers: {
@@ -483,7 +484,7 @@ const Teacher = () => {
   const fetchUsers = async (token: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/users/${employeeId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.USER.GET}/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -501,7 +502,7 @@ const Teacher = () => {
   const fetchSchedule = async (token: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}?teacherId=${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -523,7 +524,7 @@ const Teacher = () => {
         const token = localStorage.getItem("AdminAuthToken");
       
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.GET_TEACHER_COUNTS}`,
           {
             params: { teacherId: employeeId },
             headers: {
@@ -547,7 +548,7 @@ const Teacher = () => {
   const fetchWages = async (token: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/empwages`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.OTHEREMPLOYEE.GET_OTHER_EMPLOYEE_WAGES}?employeeId=${employeeId}`,
         {
           params: {
             employeeId: employeeId,
@@ -570,7 +571,7 @@ const Teacher = () => {
   const fetchClasses = async (token: string) => {
     try {
       const res = await axios.get<StudentData[]>(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacher/list?teacherId=${employeeId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASS_LIST}?teacherId=${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -597,7 +598,7 @@ const Teacher = () => {
       }
       try {
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/shiftschedule/${employeeId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.SHIFTSCHEDULE.GET}/${employeeId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -627,7 +628,7 @@ const Teacher = () => {
       }
       try {
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/teacheroverview?teacherId=${employeeId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.RECRUITMENT.GET_TEACHER_OVERVIEW}?teacherId=${employeeId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -656,7 +657,7 @@ const Teacher = () => {
       }
       try {
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/salarywagesById?employeeId=${employeeId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.OTHEREMPLOYEE.SALARY_WAGES}?employeeId=${employeeId}`,
           {
             headers: {
               "Content-Type": "application/json",

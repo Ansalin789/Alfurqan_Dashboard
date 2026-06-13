@@ -2,12 +2,13 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import BaseLayout4 from "@/components/BaseLayout4";
 import axios from "axios";
 import AdminHeader from "../../components/AdminHeader";
 import Pagination from "@/components/Pagination";
 import { MdTune } from "react-icons/md";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 export interface StudentInfo {
   studentId: string;
@@ -147,7 +148,7 @@ const [meetingFilters, setMeetingFilters] = useState({
   const fetchStudents = async (token: string) => {
     try {
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/alstudents",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}`,
         {
           headers: {
             "Content-Type": "application/json",

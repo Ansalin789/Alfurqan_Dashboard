@@ -127,7 +127,7 @@ const SignIn: React.FC = () => {
   }, [error]);
 
   const signIn = async (username: string, password: string) => {
-    return axios.post(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.AUHT.LOGIN}`, {
+    return axios.post(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.AUTH.LOGIN}`, {
       username,
       password,
     });

@@ -6,7 +6,8 @@ import axios from "axios";
 import BaseLayout3 from "@/app/(tenant)/modules/users/supervisor/components/BaseLayout3";
 import { useSearchParams } from "next/navigation";
 import AdminHeader from "../../components/AdminHeader";
-import BaseLayout4 from "@/components/BaseLayout4";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 interface Attendance {
   id: string | null;
   studentId: string;
@@ -77,7 +78,7 @@ export default function Page() {
 
         // Use correct query string and expect array response
         const response = await axios.get<Meeting[]>(
-          `https://api.blackstoneinfomaticstech.com/allAdminMeeting/meetingId?meetingId=${meetingId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ADMIN_MEETING.GET}?meetingId=${meetingId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -152,7 +153,7 @@ export default function Page() {
       }
 
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/allAdminMeeting/update/${meetingId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ADMIN_MEETING.UPDATE_ADMIN}/${meetingId}`,
         {
           method: "PUT",
           headers: {

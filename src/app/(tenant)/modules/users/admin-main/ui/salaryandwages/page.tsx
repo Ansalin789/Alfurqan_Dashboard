@@ -10,6 +10,7 @@ import AdminHeader from "../../components/AdminHeader";
 import axios from "axios";
 import moment from "moment";
 import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 export interface ISalaryWage {
   _id?: string;
@@ -91,7 +92,7 @@ const SalaryCard = () => {
     const fetchSalaryCardCounts = async () => {
       try {
         const response = await axios.get<SalaryCardCounts>(
-          "https://api.blackstoneinfomaticstech.com/salarywagesCardCount",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.SALARYWAGES.GET_SALARY_CARD}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -121,7 +122,7 @@ const SalaryCard = () => {
     const fetchSalaryWages = async () => {
       try {
         const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/salarywages",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.OTHEREMPLOYEE.GET_WAGES}`,
           {
             method: "GET",
             headers: {
@@ -693,7 +694,7 @@ const SalaryCard = () => {
                         paymentStatus: editForm.paymentStatus,
                         paymentDate: editForm.paymentDate,
                       };
-                      const url = `https://api.blackstoneinfomaticstech.com/salarywages/${selectedSalarys.employeeId}`;
+                      const url = `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.OTHEREMPLOYEE.UPDATE_WAGES}/${selectedSalarys.employeeId}`;
                       console.log("PUT request to:", url);
                       console.log("Payload:", payload);
                       const response = await axios.put(url, payload, {

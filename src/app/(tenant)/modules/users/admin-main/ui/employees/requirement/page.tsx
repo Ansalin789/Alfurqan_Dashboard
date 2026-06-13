@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import BaseLayout4 from "@/components/BaseLayout4";
 import { BsCalendar4Event, BsClockHistory } from "react-icons/bs";
 import { RiMenu2Fill } from "react-icons/ri";
 import { GrCurrency } from "react-icons/gr";
 import { MdOutlineCurrencyExchange, MdOutlineTimer } from "react-icons/md";
 import { IoSunnyOutline } from "react-icons/io5";
+import BaseLayout4 from "../../../components/BaseLayout4";
 
 const Teacher = () => {
   const [activeTab, setActiveTab] = useState("Wages");

@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Video, Search } from "lucide-react";
-import BaseLayout4 from "@/components/BaseLayout4";
 import { MdTune } from "react-icons/md";
 import AdminHeader from "../../components/AdminHeader";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 type Video = {
   title: string;
   uploadedFile: {
@@ -89,7 +90,7 @@ export default function KnowledgeBase() {
     console.log("📥 Fetching courses...");
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/courses",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.COURSE.GET_LIST}`,
         {
           method: "GET",
           headers: {
@@ -144,7 +145,7 @@ export default function KnowledgeBase() {
 
      
     console.log("file " , resumeData)
-    const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${resumeData}`, {
+    const res = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.FILEUPLOAD.GET_UPLOAD}/${resumeData}`, {
       method: "GET",
     });
 
@@ -160,7 +161,7 @@ export default function KnowledgeBase() {
    const fetchAndOpenFile = async (fileId: string) => {
   try {
     console.log("file ",fileId)
-    const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${fileId}`, {
+    const res = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.FILEUPLOAD.GET_UPLOAD}/${fileId}`, {
       method: "GET",
     });
 
@@ -182,7 +183,7 @@ console.log("res", blob.type);
   const fetchKnowledgeBaseList = async (token: string) => {
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/knowledgebase/list",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.KNOWLEDGE_BASE.LIST}`,
         {
           method: "GET",
           headers: {

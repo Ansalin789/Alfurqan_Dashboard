@@ -1,6 +1,4 @@
 "use client";
-
-import BaseLayout4 from "@/components/BaseLayout4";
 import React, { useState, useRef, useEffect } from "react";
 import { GrAttachment } from "react-icons/gr";
 import { FaTelegramPlane } from "react-icons/fa";
@@ -10,6 +8,8 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import { Bell } from "lucide-react";
 import AdminHeader from "../../components/AdminHeader";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 // Define your interfaces
 interface IMessage {
@@ -101,7 +101,7 @@ const Message = () => {
       }
 
       const response = await axios.get<{ users: IUser[] }>(
-        "https://api.blackstoneinfomaticstech.com/users",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.USER.GET}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -160,7 +160,7 @@ const Message = () => {
       }
 
       const { data } = await axios.get<IMessageResponse>(
-        `https://api.blackstoneinfomaticstech.com/realtimemessage/${userId}/${receiverId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MESSAGES.GET}/${userId}/${receiverId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -381,7 +381,7 @@ const Message = () => {
         return;
       }
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/realtimemessage",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MESSAGES.CREATE}`,
         newMessage,
         {
           headers: {

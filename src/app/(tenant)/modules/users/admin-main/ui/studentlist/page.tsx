@@ -1,11 +1,12 @@
 "use client";
-import BaseLayout4 from "@/components/BaseLayout4";
 import { FaStar } from "react-icons/fa";
 import TabbedTable from "../../components/studenttab";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
 import AdminHeader from "../../components/AdminHeader";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface StudentResponse {
   students: StudentItem[];
@@ -76,7 +77,7 @@ export default function StudentList() {
   const fetchAndFilterStudent = async (token: string) => {
     try {
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/alstudents",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -108,7 +109,7 @@ export default function StudentList() {
     setPaymentError(null);
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/student/paymenthistory?userId=${userId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.PAYMENT.GET_STUDENT_PAYMENT_HISTORY}?userId=${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

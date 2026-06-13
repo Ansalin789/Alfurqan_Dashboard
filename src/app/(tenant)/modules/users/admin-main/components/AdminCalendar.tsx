@@ -6,7 +6,8 @@ import {  Clock } from "lucide-react";
 import AdminHeader from "./AdminHeader";
 import { FaClock } from "react-icons/fa";
 import { BsFillCalendar2WeekFill } from "react-icons/bs";
-import BaseLayout4 from "@/components/BaseLayout4";
+import BaseLayout4 from "./BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 type Teacher = {
   teacherId: string;
@@ -49,7 +50,7 @@ const fetchMeetings = async () => {
 
   try {
     const response = await fetch(
-      "https://api.blackstoneinfomaticstech.com/allAdminMeeting",
+      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ADMIN_MEETING.GET_LIST}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

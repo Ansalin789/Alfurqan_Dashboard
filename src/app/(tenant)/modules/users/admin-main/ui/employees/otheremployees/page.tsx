@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import BaseLayout4 from "@/components/BaseLayout4";
 
 import { MdOutlineCancel } from "react-icons/md";
 import { useSearchParams } from "next/navigation";
@@ -16,6 +15,8 @@ import { TooltipProps } from "recharts";
 import FilterModal, { FilterField } from "@/components/FilterModal";
 import { toDate } from "date-fns";
 import { MdEditSquare } from "react-icons/md";
+import BaseLayout4 from "../../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Employee {
   _id: string;
@@ -428,7 +429,7 @@ const EmployeePage = () => {
 
     try {
       const response = await axios.get<Employee>(
-        `https://api.blackstoneinfomaticstech.com/otheremp/${_id}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.OTHEREMPLOYEE.GET_OTHER_EMPLOYEE}/${_id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -458,7 +459,7 @@ const EmployeePage = () => {
       const response = await axios.get<
         EmployeeWagesResponse | EmployeeWage[] | EmployeeWage
       >(
-        `https://api.blackstoneinfomaticstech.com/empwages?employeeId=${employeeId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.OTHEREMPLOYEE.GET_OTHER_EMPLOYEE_WAGES}?employeeId=${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -510,7 +511,7 @@ const EmployeePage = () => {
   const fetchLeaveData = async (userId: string) => {
     try {
       const res = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/leaverequest?employeeId=${userId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE.GET}?employeeId=${userId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -532,7 +533,7 @@ const EmployeePage = () => {
   const fetchData = async (employeeId: string) => {
     try {
       const res = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/shiftschedule/${employeeId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.SHIFTSCHEDULE.GET}/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -566,7 +567,7 @@ const EmployeePage = () => {
       }
 
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/shiftschedule?employeeId=${selectedEmpId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.SHIFTSCHEDULE.PUT}?employeeId=${selectedEmpId}`,
         {
           method: "PUT",
           headers: {
@@ -622,7 +623,7 @@ const EmployeePage = () => {
       }
 
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/otheremployee/${employee?._id}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.OTHEREMPLOYEE.UPDATE}/${employee?._id}`,
         {
           method: "PUT",
           headers: {

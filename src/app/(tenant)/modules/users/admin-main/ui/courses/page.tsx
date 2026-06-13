@@ -1,8 +1,8 @@
 "use client";
-import BaseLayout4 from "@/components/BaseLayout4";
 import React from "react";
 import Link from "next/link";
 import AdminHeader from "../../components/AdminHeader";
+import BaseLayout4 from "../../components/BaseLayout4";
 
 const cardData = [
   {

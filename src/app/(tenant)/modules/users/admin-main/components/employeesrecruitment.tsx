@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { TiAttachment } from "react-icons/ti";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Supervisor {
   supervisorId: string;
@@ -185,7 +186,7 @@ const ApplicantsList: React.FC = () => {
   const fetchApplicants = async (token: string) => {
     try {
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/applicants",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.APPLICANTS.GET_LIST}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -221,7 +222,7 @@ const ApplicantsList: React.FC = () => {
       }
 
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/admin/${id}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.RECRUITMENT.UPDATE}/${id}`,
         {
           applicationStatus: status,
         },

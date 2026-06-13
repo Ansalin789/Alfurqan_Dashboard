@@ -5,7 +5,7 @@ import { Calendar, dateFnsLocalizer, View, Views } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import moment from "moment";
-import BaseLayout4 from "@/components/BaseLayout4";
+import BaseLayout4 from "../../../components/BaseLayout4";
 
 const locales = {
   "en-US": require("date-fns/locale/en-US"),

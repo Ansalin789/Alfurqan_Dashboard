@@ -5,8 +5,9 @@ import { MdTune } from "react-icons/md";
 import { PieChart, Pie, Cell } from "recharts";
 import { useRouter } from "next/navigation";
 import Pagination from "@/components/Pagination";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.blackstoneinfomaticstech.com";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || `${AppApiEndpoints.API_END_POINT}`; // Fallback to AppApiEndpoints if env variable is not set
 
 type TabbedTableProps = {
   studentId: string;
@@ -724,7 +725,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
           return;
         }
 
-        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/student/paymenthistory?userId=${applicationStudentId}`, { // Use applicationStudentId
+        const response = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.PAYMENT.GET_STUDENT_PAYMENT_HISTORY}?userId=${applicationStudentId}`, { // Use applicationStudentId
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

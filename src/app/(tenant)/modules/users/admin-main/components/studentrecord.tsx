@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface ChartDataItem {
   name: string;
@@ -55,7 +56,7 @@ const StudentsRecord = () => {
   const fetchStudentCounts = async (token: string) => {
     try {
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/alstudents/studentsrecordcount",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET_STUDENTS_RECORD_COUNT}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -100,7 +101,7 @@ const StudentsRecord = () => {
   const fetchGenderData = async (token: string) => {
     try {
       const response = await axios.get<GenderResponse>(
-        "https://api.blackstoneinfomaticstech.com/alstudents/studentsGender",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET_STUDENTS_GENDER_COUNT}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -188,7 +189,7 @@ const StudentsRecord = () => {
   const fetchCountryStats = async (token: string) => {
     try {
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/alstudents/studentscountrycount",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET_STUDENTS_COUNTRY_COUNT}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -9,11 +9,12 @@ import "react-datepicker/dist/react-datepicker.css";
 import { MdTune } from "react-icons/md";
 import AdminHeader from "../../components/AdminHeader";
 import { useRouter } from "next/navigation";
-import BaseLayout4 from "@/components/BaseLayout4";
 import { TiAttachment } from "react-icons/ti";
 import ReactDOM from "react-dom";
 import DatePicker from "react-datepicker";
 import { ImAttachment } from "react-icons/im";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 
 
@@ -66,7 +67,7 @@ const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
 
 
       console.log("file ", resumeData)
-      const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${resumeData}`, {
+      const res = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.FILEUPLOAD.GET_UPLOAD}/${resumeData}`, {
         method: "GET",
       });
 
@@ -210,7 +211,7 @@ export default function ApplicantsPage() {
 
 
       console.log("file ", resumeData)
-      const res = await fetch(`https://api.blackstoneinfomaticstech.com/files/view/${resumeData}`, {
+      const res = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.FILEUPLOAD.GET_UPLOAD}/${resumeData}`, {
         method: "GET",
       });
 
@@ -228,7 +229,7 @@ export default function ApplicantsPage() {
   const fetchApplicants = async (token: string) => {
     try {
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/applicants",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.APPLICANTS.GET_LIST}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -275,7 +276,7 @@ export default function ApplicantsPage() {
       }
 
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/admin/${id}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.RECRUITMENT.UPDATE}/${id}`,
         { applicationStatus: status },
         {
           headers: {

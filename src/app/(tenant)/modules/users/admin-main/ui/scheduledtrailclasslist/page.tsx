@@ -1,6 +1,5 @@
 "use client";
 
-import BaseLayout4 from "@/components/BaseLayout4";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
@@ -8,6 +7,8 @@ import { Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 import AdminHeader from "../../components/AdminHeader";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 export interface TransformedUser {
   _id: string;
@@ -122,7 +123,7 @@ const Trailclasslist = () => {
   const getAllUsers = async (token: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/alltrialclass", {
+      const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.ALL_TRIAL_CLASSES}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

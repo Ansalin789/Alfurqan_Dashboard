@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import BaseLayout4 from "@/components/BaseLayout4";
 import Link from "next/link";
 import AdminHeader from "@/app/(tenant)/modules/users/admin-main/components/AdminHeader";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface CourseInfo {
   courseId: string;
@@ -80,7 +81,7 @@ const Page = () => {
   const fetchCourses = async (token: string) => {
     console.log("📥 Fetching courses...");
     try {
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/courses", {
+      const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.COURSE.GET_LIST}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

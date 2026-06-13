@@ -4,6 +4,7 @@ import { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 type LeaveFormProps = {
   readonly onClose: () => void;
@@ -65,7 +66,7 @@ export default function KnowledgeBaseForm({ onClose }: LeaveFormProps) {
   const fetchCourses = async (token: string) => {
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/courses",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.COURSE.GET_LIST}`,
         {
           method: "GET",
           headers: {
@@ -161,7 +162,8 @@ formData.append("createdBy", knowledgeBaseData.createdBy);
 formData.append("updatedBy", knowledgeBaseData.updatedBy || "");
 formData.append("updatedDate", knowledgeBaseData.updatedDate || "");
 
-const response = await fetch("https://api.blackstoneinfomaticstech.com/knowledgebase", {
+const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.KNOWLEDGE_BASE.CREATE}`,
+   {
   method: "POST",
   headers: {
     Authorization: `Bearer ${token}`, 

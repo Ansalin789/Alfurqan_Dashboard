@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { useRouter } from "next/navigation";
 import Dashboard from "@/app/(tenant)/modules/users/admin-main/components/trailmanagementcard";
-import BaseLayout4 from "@/components/BaseLayout4";
 import { Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import AdminHeader from "../../components/AdminHeader";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 export interface TransformedUser {
   _id: string;
@@ -121,7 +122,7 @@ const TrailManagement = () => {
     try {
       setIsLoading(true);
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/alltrialclass",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.ALL_TRIAL_CLASSES}`,
         {
           headers: {
             "Content-Type": "application/json",

@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import "react-calendar/dist/Calendar.css";
-import BaseLayout4 from "@/components/BaseLayout4";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import TrialRequests from "../../components/trailclassdashboard";
 import Notifications from "../../components/notificationsdashboard";
@@ -12,6 +11,7 @@ import Calender from "../../components/calenderdashboard";
 import UpcomingClasses from "../../components/upcomingclassdasboard";
 import StudentTeacherStaff from "../../components/StudentTeacherStaff";
 import AdminHeader from "../../components/AdminHeader";
+import BaseLayout4 from "../../components/BaseLayout4";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 

@@ -1,6 +1,5 @@
 "use client";
 
-import BaseLayout4 from "@/components/BaseLayout4";
 import React, { useEffect, useState } from "react";
 import { FaChevronDown, FaFilter } from "react-icons/fa";
 import { useRouter } from "next/navigation";
@@ -9,6 +8,8 @@ import { Search } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { MdTune } from "react-icons/md";
 import AdminHeader from "../../components/AdminHeader";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 export interface TenantUser {
   _id: string;
@@ -70,7 +71,7 @@ const Page: React.FC = () => {
   const fetchTenantUsers = async (token: string) => {
     try {
       const res = await axios.get<TenantUsersResponse>(
-        "https://api.blackstoneinfomaticstech.com/users",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.USER.GET}`,
         {
           headers: {
             "Content-Type": "application/json",

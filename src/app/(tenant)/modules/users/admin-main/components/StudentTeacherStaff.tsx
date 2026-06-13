@@ -1,5 +1,6 @@
 "use client";
 
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 import React, { useEffect, useState } from "react";
 import {
   Tooltip,
@@ -46,7 +47,7 @@ const StudentTeacherStaff = () => {
   const fetchData = async (token: string) => {
     try {
       const res = await fetch(
-        "https://api.blackstoneinfomaticstech.com/dashboard/admin/count",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.GET_ADMIN_COUNT}`,
         {
           method: "GET",
           headers: {

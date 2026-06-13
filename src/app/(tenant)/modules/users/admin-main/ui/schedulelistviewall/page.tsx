@@ -2,12 +2,13 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import BaseLayout4 from "@/components/BaseLayout4";
 import { Bell, Sun, X, Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import Modal from "react-modal";
 import Pagination from "@/components/Pagination";
 import AdminHeader from "../../components/AdminHeader";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 export interface StudentClassData {
   _id: string;
@@ -84,7 +85,7 @@ const SalaryCard = () => {
   const fetchClassData = async (token: string) => {
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/classShedule",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET}`,
         {
           method: "GET",
           headers: {

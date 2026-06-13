@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { X } from "lucide-react";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface ExpenseFormData {
   paymentDate: string;
@@ -31,8 +32,7 @@ interface AddExpensesProps {
 }
 
 const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) => {
-  const API_URL = "https://api.blackstoneinfomaticstech.com";
-  const ADMIN_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IkFkbWluIiwic3ViIjoiNjgwNWRhOGMwNjU0MmFhMzM4NThiODg5IiwiaWF0IjoxNzUzMTYxMDQxLCJleHAiOjE3NTMyNDc0NDF9.EK8JgTJWzUDyQTY1ZReIAt0-LEhq2m1euQfPztK0-VE";
+  const API_URL = `${AppApiEndpoints.API_END_POINT}`;
 
   const [formData, setFormData] = useState<ExpenseFormData>({
     paymentDate: "",
@@ -111,14 +111,18 @@ const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) =
 
       const payload = formatPayload();
       console.log("Submitting payload:", payload);
-
+ const token = localStorage.getItem("AdminAuthToken");
+      if (!token) {
+        throw new Error("Authentication token not found");
+      }      
+      
       const response = await axios.post(
-        `${API_URL}/expense`,
+        `${API_URL}${AppApiEndpoints.EXPENSE.CREATE}`,
         payload,
         {
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${ADMIN_TOKEN}`
+            "Authorization": `Bearer ${token}`
           },
           timeout: 10000
         }

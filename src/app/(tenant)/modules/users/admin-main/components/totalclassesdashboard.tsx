@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 type TimeFrame = "Weekly" | "Monthly" | "Yearly";
 
@@ -39,7 +40,7 @@ export default function TotalClasses() {
   const fetchClassData = async (token: string, range: TimeFrame) => {
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/dashboard/admin/totalclass?dateRange=${getDateRangeParam(
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.DASHBOARD_ADMIN_TOTAL_CLASSES}?dateRange=${getDateRangeParam(
           range
         )}`,
         {

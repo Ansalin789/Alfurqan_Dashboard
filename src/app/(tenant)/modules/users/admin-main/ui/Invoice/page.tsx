@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import BaseLayout4 from "@/components/BaseLayout4";
 import { Sun, Bell, X, FileText, Search } from "lucide-react";
 import { Bar, Doughnut, Line } from "react-chartjs-2";
 import axios from "axios";
@@ -47,6 +46,8 @@ import { useRouter } from "next/navigation";
 import InvoicesDueByDays from "../../components/invoicedue";
 import { MdTune } from "react-icons/md";
 import AdminHeader from "../../components/AdminHeader";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 // Register ChartJS components
 ChartJS.register(
@@ -127,7 +128,7 @@ export default function Page() {
 
   const fetchInvoice = (token: string) => {
     axios
-      .get("https://api.blackstoneinfomaticstech.com/studentinvoice/list", {
+      .get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.INVOICE.STUDENT_INVOICE_LIST}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -241,7 +242,7 @@ export default function Page() {
   const fetchInvoiceCounts = async (token: string) => {
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/invoicecounts",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.INVOICE.INVOICE_COUNTS}`,
         {
           method: "GET",
           headers: {

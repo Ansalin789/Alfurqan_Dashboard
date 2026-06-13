@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from "react"
 import { Check, Clock, X } from "lucide-react"
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints"
 
 interface TrialRequestData {
   totalTrialRequest: number
@@ -28,7 +29,7 @@ export default function TrialRequests() {
 
   const fetchData = async (token: string) => {
     try {
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/dashboard/admin/totaltrialrequest",{
+      const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.DASHBOARD_ADMIN_TOTAL_TRIAL_REQUESTS}`,{
         method: "GET",
         headers: {
           'Content-Type': 'application/json',

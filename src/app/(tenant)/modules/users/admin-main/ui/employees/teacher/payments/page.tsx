@@ -1,7 +1,6 @@
 "use client";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import BaseLayout4 from "@/components/BaseLayout4";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import AdminHeader from "@/app/(tenant)/modules/users/admin-main/components/AdminHeader";
@@ -20,6 +19,8 @@ import {
 import axios from "axios";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
+import BaseLayout4 from "../../../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 // Register chart.js modules
 ChartJS.register(
@@ -83,7 +84,7 @@ const page = () => {
       }
       try {
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/salarywagesById?employeeId=${employeeId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.OTHEREMPLOYEE.SALARY_WAGES}?employeeId=${employeeId}`,
           {
             headers: {
               "Content-Type": "application/json",

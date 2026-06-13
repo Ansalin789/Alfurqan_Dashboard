@@ -1,13 +1,14 @@
 "use client";
 
 import AdminHeader from "@/app/(tenant)/modules/users/admin-main/components/AdminHeader";
-import BaseLayout4 from "@/components/BaseLayout4";
 import axios from "axios";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { FaRegMinusSquare } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import BaseLayout4 from "../../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 type PermissionType = "read" | "write" | "delete";
 
@@ -75,7 +76,7 @@ const AdminModuleAccess = () => {
   const fetchEmployeeData = async (token: string) => {
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.RBAC.GET_ACCESS}/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -170,7 +171,7 @@ const AdminModuleAccess = () => {
           : null;
 
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.RBAC.UPDATE_ACCESS}/${employeeId}`,
         { roleAccess },
         {
           headers: {

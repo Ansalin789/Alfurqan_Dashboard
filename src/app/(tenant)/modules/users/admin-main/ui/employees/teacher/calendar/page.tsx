@@ -5,10 +5,11 @@ import moment from "moment";
 import { CalendarDays, Clock } from "lucide-react";
 import { FaClock } from "react-icons/fa";
 import { BsFillCalendar2WeekFill } from "react-icons/bs";
-import BaseLayout4 from "@/components/BaseLayout4";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
 import AdminHeader from "@/app/(tenant)/modules/users/admin-main/components/AdminHeader";
+import BaseLayout4 from "../../../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 // --- Interfaces ---
 interface Student {
@@ -76,7 +77,7 @@ const SchedulePage = () => {
     return;
     }
     axios.get(
-          `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}?teacherId=${employeeId}`,
           {
             headers: {
           Authorization: `Bearer ${token}`,

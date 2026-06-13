@@ -13,7 +13,6 @@ import {
   Cell,
   DotProps,
 } from "recharts";
-import BaseLayout4 from "@/components/BaseLayout4";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import countries from "i18n-iso-countries";
@@ -21,6 +20,8 @@ import enLocale from "i18n-iso-countries/langs/en.json";
 import { io, Socket } from "socket.io-client";
 import AdminHeader from "../../components/AdminHeader";
 import { TooltipProps } from "recharts";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface CountryStat {
   revenue: number;
@@ -124,7 +125,7 @@ const CountriesCard = () => {
 
   const fetchData = async (token: string) => {
     try {
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/amountbycountry", {
+      const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ANALYTICS.AMOUNT_BY_COUNTRY}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -179,7 +180,7 @@ const CoursesChart = () => {
   useEffect(() => {
     const fetchData = async (token: string) => {
       try {
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/amountbycourse", {
+        const response = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ANALYTICS.AMOUNT_BY_COURSE}`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -336,7 +337,7 @@ useEffect(()=>{
   useEffect(() => {
     const fetchMeetings = async (token: string) => {
       try {
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/amountbycourse", {
+        const response = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ANALYTICS.AMOUNT_BY_COURSE}`, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
@@ -386,7 +387,7 @@ useEffect(()=>{
   useEffect(() => {
     const fetchInvoices = async (token: string) => {
       try {
-        const response = await fetch("https://api.blackstoneinfomaticstech.com/studentinvoice", {
+        const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.INVOICE.STUDENT_INVOICE}`, {
           method: "GET",
           headers: {
             'Content-Type': 'application/json',
@@ -422,7 +423,7 @@ useEffect(()=>{
 
   const fetchVisitorData = async (token: string) => {
     try {
-      const res = await fetch("https://api.blackstoneinfomaticstech.com/studentvisitor", {
+      const res = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ANALYTICS.STUDENT_VISITOR}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -449,7 +450,7 @@ useEffect(()=>{
   const fetchRevenueData = async (year: number, token: string) => {
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/studentrevenue?year=${year}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ANALYTICS.STUDENT_REVENUE}?year=${year}`,
         {
           method: "GET",
           headers: {

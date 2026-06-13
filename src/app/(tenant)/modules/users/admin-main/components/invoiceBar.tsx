@@ -12,6 +12,7 @@ import {
 
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 type InvoiceMonthData = {
     date: string;
@@ -40,7 +41,7 @@ const ApplicationChart = () => {
       
       const fetchMonthlyInvoices = async (token: string) => {
           try {
-            const res = await fetch("https://api.blackstoneinfomaticstech.com/totalinvoice",
+            const res = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.INVOICE.TOTAL_GET_LIST}`,
               {
                 method: "GET",
                 headers: {

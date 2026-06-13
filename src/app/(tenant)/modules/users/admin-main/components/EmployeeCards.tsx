@@ -6,6 +6,7 @@ import Image from "next/image";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useRouter } from "next/navigation";
 import Modal from "react-modal";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Teacher {
   _id: string;
@@ -52,7 +53,7 @@ const EmployeeCards: React.FC = () => {
       try {
         
         const response = await fetch(
-          `https://api.blackstoneinfomaticstech.com/users?role=TEACHER`,{
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.USER.GET}?role=TEACHER`,{
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -125,7 +126,7 @@ const EmployeeCards: React.FC = () => {
     console.error("❌ AdminAuthToken not found");
     return;
   }
-      const response = await fetch(`https://api.blackstoneinfomaticstech.com/users`, {
+      const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.USER.CREATE}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

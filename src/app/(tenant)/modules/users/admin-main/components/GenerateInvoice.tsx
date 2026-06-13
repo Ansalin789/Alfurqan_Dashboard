@@ -9,6 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { IoLocationSharp } from "react-icons/io5";
 import { MdEmail } from "react-icons/md";
 import { BsTelephoneFill } from "react-icons/bs";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface IStudent {
   student: {
@@ -179,7 +180,7 @@ export default function GenerateInvoice({ onClose }: { onClose: () => void }) {
 
   const fetchStudents = async (token: string) => {
     try {
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/alstudents", {
+      const response = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -236,7 +237,7 @@ export default function GenerateInvoice({ onClose }: { onClose: () => void }) {
       });
 
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/invoice/send",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.INVOICE.CREATE}`,
         payload,
         {
           headers: {

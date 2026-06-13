@@ -14,6 +14,7 @@ import KnowledgeBaseForm from "./AddKnowledgeBase";
 import GenerateInvoice from "./GenerateInvoice";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 type NotificationType = {
   _id: string;
@@ -78,7 +79,7 @@ export default function AdminHeader({
       const token = localStorage.getItem("AdminAuthToken");
       if (!token) return;
       await axios.put(
-        `https://api.blackstoneinfomaticstech.com/notification/${notificationId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.NOTIFICATION.UPDATE}/${notificationId}`,
         {
           isRead: true,
           notificationStatus: "Seen",

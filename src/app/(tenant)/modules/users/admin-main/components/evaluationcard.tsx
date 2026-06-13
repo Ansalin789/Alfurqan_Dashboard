@@ -16,6 +16,7 @@ import {
   ResponsiveContainer,
   TooltipProps,
 } from "recharts";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface CourseStats {
   totalPercentage: number;
@@ -56,7 +57,7 @@ const TotalRequestChart = () => {
   const fetchData = async (token: string) => {
     try {
       const res = await fetch(
-        "https://api.blackstoneinfomaticstech.com/totaltrialclass",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TOTAL_TRAIL_CLASS}`,
         {
           method: "GET",
           headers: {
@@ -173,7 +174,7 @@ const CountriesCard = () => {
   const fetchData = async (token: string) => {
     try {
       const res = await fetch(
-        "https://api.blackstoneinfomaticstech.com/countiescount",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.EVALUATION.GET_COUNTRIES_COUNT}`,
         {
           method: "GET",
           headers: {
@@ -262,7 +263,7 @@ const PreferredTeachersCard = () => {
 
   const fetchData = async (token: string) => {
     const response = await fetch(
-      "https://api.blackstoneinfomaticstech.com/preferedteacher",
+      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.EVALUATION.PREFERRED_TEACHERS}`,
       {
         method: "GET",
         headers: {
@@ -468,7 +469,7 @@ const CoursesChart = () => {
   const fetchCourseData = async (token: string) => {
     try {
       const res = await fetch(
-        "https://api.blackstoneinfomaticstech.com/studentcourse",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.EVALUATION.STUDENT_COURSE}`,
         {
           method: "GET",
           headers: {

@@ -5,11 +5,12 @@ import Modal from "react-modal";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import Pagination from "@/components/Pagination";
-import BaseLayout4 from "@/components/BaseLayout4";
 import { MdTune } from "react-icons/md";
 import axios from "axios";
 import AdminHeader from "../../components/AdminHeader";
 import { getSocket } from "@/app/utils/socket";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 
 interface TransformedUser {
@@ -148,7 +149,7 @@ const getAllUser = async (): Promise<{
       console.error("❌ AdminAuthToken not found");
     }
     const response = await axios.get(
-      `https://api.blackstoneinfomaticstech.com/evaluationlist`,
+      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.EVALUATION.GET_LIST}`,
       {
         params: { adminId: academicId },
         headers: {
@@ -222,7 +223,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
       console.error("❌ AdminAuthToken not found");
     }
     const response = await axios.get(
-      `https://api.blackstoneinfomaticstech.com/studentlist`,
+      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.STUDENT.GET_LIST}`,
       {
         params: { adminId: academicId },
         headers: {

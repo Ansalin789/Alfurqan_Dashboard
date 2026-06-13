@@ -1,6 +1,6 @@
 "use client";
 
-import BaseLayout4 from "@/components/BaseLayout4";
+
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import AdminHeader from "@/app/(tenant)/modules/users/admin-main/components/AdminHeader";
@@ -20,6 +20,8 @@ import {
 import axios from "axios";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
+import BaseLayout4 from "../../../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 
 // Register chart.js modules
@@ -219,7 +221,7 @@ const page = () => {
   const fetchUsers = async (token: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/users/${employeeId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.USER.GET}/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -236,7 +238,7 @@ const page = () => {
   const fetchSchedule = async (token: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}?teacherId=${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -253,7 +255,7 @@ const page = () => {
   const fetchClasses = async (token: string) => {
     try {
       const res = await axios.get<StudentData[]>(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacher/list?teacherId=${employeeId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASS_LIST}?teacherId=${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",

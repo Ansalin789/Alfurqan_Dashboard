@@ -1,11 +1,12 @@
 "use client";
-import BaseLayout4 from "@/components/BaseLayout4";
 import Modal from "react-modal"; // Ensure you have this import
 import AdminHeader from "../../components/AdminHeader";
 import { useEffect, useState } from "react";
 import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import Pagination from "@/components/Pagination";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface ClassSchedule {
   _id: string;
@@ -69,7 +70,7 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
           return;
         }
         const res = await fetch(
-          `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASSSHEDULE_STUDENTS}?studentId=${studentId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

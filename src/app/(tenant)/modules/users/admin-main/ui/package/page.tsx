@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Edit2 } from "lucide-react";
-import BaseLayout4 from "@/components/BaseLayout4";
 import AdminHeader from "../../components/AdminHeader";
+import BaseLayout4 from "../../components/BaseLayout4";
 
 // Type Definitions
 

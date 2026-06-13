@@ -11,6 +11,7 @@ import { MdEmail } from "react-icons/md";
 import { BsTelephoneFill } from "react-icons/bs";
 import SuccessPopup from "@/app/(tenant)/modules/users/admin-main/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/admin-main/components/failedPopup";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 
 interface IStudent {
@@ -168,7 +169,7 @@ export default function InvoicePage() {
   }, []);
   const fetchStudents = async (token: string) => {
     try {
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/alstudents", {
+      const response = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -264,7 +265,7 @@ export default function InvoicePage() {
 
       // Send data to backend
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/invoice/send",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.INVOICE.CREATE}`,
         payload,
         {
           headers: {

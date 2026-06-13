@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { MdTune } from "react-icons/md";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import axios from "axios";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 export interface StudentInfo {
   studentId: string;
@@ -68,7 +69,7 @@ const TrailManagement = () => {
   const fetchStudents = async (token: string) => {
     try {
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/alstudents",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}`,
         {
           headers: {
             "Content-Type": "application/json",

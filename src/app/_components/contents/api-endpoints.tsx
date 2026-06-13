@@ -3,14 +3,22 @@ import { environment } from "@/config/environment";
 export const AppApiEndpoints = {
   API_END_POINT: environment.baseURL,
 
-  AUHT: {
+  AUTH: {
     LOGIN: "/signin",
+    ADMIN_LOGIN: "/signin",
   },
   LEAVE_REQUEST: {
     CREATE: "/leaverequest",
+    LIST:"/leavesummary/list",
+    UPDATE :"/leavesummary",
   },
   USER: {
     GET: "/users",
+    CREATE: "/users",
+    GET_TEACHER_STATUS_COUNT: "/teacher/statuscount",
+    GET_TEACHER_GENDER_COUNT: "/teacher/gendercount",
+    GET_OTHER_EMPLOYEES: "/otheremployees",
+
   },
   NOTIFICATION: {
     GET_LIST: "/notification/getlist",
@@ -21,6 +29,10 @@ export const AppApiEndpoints = {
     GET_LIST: "/evaluationlist",
     CREATE: "/evaluation",
     UPDATE: "/evaluation",
+    GET_COUNTRIES_COUNT:"/countiescount",
+    PREFERRED_TEACHERS: "/preferredteachers",
+    STUDENT_COURSE: "/studentcourse",
+    TEACHER_STATUS: "/teacherstatus"
   },
   STUDENT: {
     GET_LIST: "/studentlist",
@@ -32,6 +44,13 @@ export const AppApiEndpoints = {
   },
   INVOICE: {
     GET_LIST: "/invoice",
+    TOTAL_GET_LIST: "/totalinvoice",
+    CREATE :"/invoice/send",
+    INVOICE_DUE_BY_DATES:"/invoiceduebydates",
+    STUDENT_INVOICE: "/studentinvoice",
+    STUDENT_INVOICE_LIST: "/studentinvoice/list",
+    INVOICE_COUNTS: "/invoicecounts",
+
   },
   CALENDAR: {
     GET: "/meetingSchedulelist",
@@ -42,15 +61,26 @@ export const AppApiEndpoints = {
   ALSTUDENTS: {
     GET: "/alstudents",
     GET_STUDENTS_COUNTRY_COUNT: "/alstudents/studentscountrycount",
+    GET_STUDENTS_RECORD_COUNT: "/alstudents/studentsrecordcount",
+    GET_STUDENTS_GENDER_COUNT: "/alstudents/studentsGender",
   },
   LEAVE: {
     CREATE: "/leaverequest",
+    GET:"/leaverequest",
+    LEAVE_CARD:"/leaverequest/card",
+    LEAVE_SUMMARY_LIST:"/leavesummary/list",
+    UPDATE :"/leavesummary",
   },
   DASHBOARD: {
     GET_UPCOMING_CLASSES: "/dashboard/ac/upcomingclass",
     GET_TEACHERS_ATTENDANCE: "dashboard/ac/teachersattendance",
     GET_WIDGETS: "/dashboard/widgets",
     GET_AC_UPCOMING_CLASSES: "/dashboard/ac/upcomingclass",
+    GET_ADMIN_COUNT: "/dashboard/admin/count",
+    DASHBOARD_ADMIN_TOTAL_CLASSES: "/dashboard/admin/totalclass",
+    DASHBOARD_ADMIN_TOTAL_TRIAL_REQUESTS: "/dashboard/admin/totaltrialrequest",
+    GET_TEACHER_COUNTS: "/dashboard/teacher/counts",
+    GET_SUPERVISOR_COUNTS: "/dashboard/supervisor/counts",
   },
   CLASSSHEDULE: {
     GET: "/classShedule",
@@ -58,19 +88,112 @@ export const AppApiEndpoints = {
     UPDATE_SLECTED_CLASS: "/classShedule",
     TEACHER_STUDENT_COUNT: "/teacher-student-count",
     STUDENT_ATTENDANCE_PERFORMANCE: "/studentattendanceperformance",
+    TOTAL_TRAIL_CLASS :"/totaltrialclass",
+    CLASSCHEDULE_TOTAL_CLASSES: "/classShedule/totalclasses",
+    CLASS_STATUS_COUNT: "/classShedule/classstatuscount",
+    CLASS_WISE_COUNT: "/classShedule/classwisecount",
+    TEACHER_CLASSES: "/classShedule/teacher",
+    TEACHER_CLASS_LIST: "/classShedule/teacher/list",
+    ALL_TRIAL_CLASSES: "/alltrialclass"
   },
   AVAILABLE_TIME_SLOT: {
     GET: "/teacher/availabletime",
   },
   PAYMENT: {
     CREATE_PAYMENT_INTENT: "/create-payment-intent",
+    GET_STUDENT_PAYMENT_HISTORY: "/student/paymenthistory"
   },
-  APPLICANTS:{
+  APPLICANTS: {
     GET_LIST: "/applicants",
+    GET_APPLICANT_COUNT_BY_COUNTRY: "/applicants/countriescount",
   },
   MEETING_MINUTES: {
     UPDATE_MINUTES: "/meetingminutes",
-}
+  },
+  OTHEREMPLOYEE: {
+    CREATE: "/otheremployee",
+    GET_OTHER_EMPLOYEE:"/otheremp",
+    GET_OTHER_EMPLOYEE_WAGES:"/empwages",
+    UPDATE:"/otheremployee",
+    SALARY_WAGES:"/salarywagesById" ,
+    UPDATE_EMP_WAGES:"/empwages",
+    GET_OTHER_EMPLOYEE_COUNT: "/otherempcount",  
+    GET_OTHER_EMPLOYEE_GENDER_COUNT: "/otheremp/gendercount",
+    GET_OTHER_EMPLOYEE_COUNT_BY_COUNTRY: "/otheremp/countriescount",
+    GET_WAGES:"salarywages",
+    UPDATE_WAGES:"/salarywages"
+  },
+  EXPENSE: {
+    CREATE: "/expense",
+    GET_EXPENSE:"/expenseCardCounts",
+    GET :"/expense",
+  },
+  COURSE:{
+    GET_LIST: "/courses",
+    CREATE: "/courses",
+  },
+  KNOWLEDGE_BASE: {
+    CREATE: "/knowledgebase",
+    LIST: "/knowledgebase/list",
+
+  },
+  ADMIN_MEETING: {
+    CREATE: "/addadminMeeting",
+    UPDATE: "/allAdminMeeting",
+    GET_LIST: "/allAdminMeeting",
+    GET :"/allAdminMeeting/meetingId",
+    UPDATE_ADMIN:"/allAdminMeeting/update",
+  },
+  PACKAGAE :{
+    POST: "/package",
+  },
+  RECRUITMENT: {
+    UPDATE: "/admin",
+    GET_TEACHER_OVERVIEW:"/teacheroverview" ,
+  },
+  ANALYTICS: {
+    STUDENT_VISITOR: "/studentvisitor",
+    AMOUNT_BY_COUNTRY: "/amountbycountry",
+    AMOUNT_BY_COURSE: "/amountbycourse",
+    STUDENT_REVENUE:"/studentrevenue"
+  },
+ASSIGNMENT: {
+  GET_LIST: "/assignments",
+  CREATE: "/assignments",
+  GET_ADMIN_ASSIGNMENT :"/adminassignment",
+  CREATE_ADMIN_ASSIGNMENT :"/adminassignment",
+  GET_STUDENT_ASSIGNMENTS: "/assignments/student"
+},
+
+LEVELS: {
+  GET_LIST: "/levels",
+  CREATE:"/levels",
+  UPDATE:"/update-levels",
+},
+
+SHIFTSCHEDULE :{
+  GET:"/shiftschedule",
+  PUT :"/shiftschedule",
+},
+FILEUPLOAD: { 
+ GET_UPLOAD: "/files/view",
+},  
+RBAC: {
+  UPDATE_ACCESS: "/update-access",
+  GET_ACCESS: "/update-access",
+},
+CHECKMAIL:{
+CREATE_CHECK: "/allcheck-email",
+},
+MESSAGES: {
+GET:"/realtimemessage/",
+CREATE:"/realtimemessage",
+},
+
+SALARYWAGES: {
+GET_SALARY_CARD:"/salarywagesCardCount"
+},
+
 
 
 

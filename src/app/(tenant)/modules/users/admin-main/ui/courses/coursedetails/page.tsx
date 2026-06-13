@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
-import BaseLayout4 from "@/components/BaseLayout4";
 import Link from "next/link";
 import { AxiosError } from "axios";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
 import AdminHeader from "@/app/(tenant)/modules/users/admin-main/components/AdminHeader";
+import BaseLayout4 from "../../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface CourseInfo {
   courseId: string;
@@ -100,7 +101,7 @@ const Page = () => {
     console.log("📥 Fetching courses...");
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/courses",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.COURSE.GET_LIST}`,
         {
           method: "GET",
           headers: {
@@ -217,7 +218,7 @@ const Page = () => {
       }
       // API call to create course
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/courses",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.COURSE.CREATE}`,
         {
           method: "POST",
           headers: {

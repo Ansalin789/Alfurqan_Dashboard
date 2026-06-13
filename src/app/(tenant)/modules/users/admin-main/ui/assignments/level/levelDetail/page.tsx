@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { AlertTriangle, Plus } from "lucide-react";
-import BaseLayout4 from "@/components/BaseLayout4";
 import { useSearchParams } from "next/navigation";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
@@ -10,6 +9,8 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios, { AxiosError } from "axios";
 import AdminHeader from "@/app/(tenant)/modules/users/admin-main/components/AdminHeader";
+import BaseLayout4 from "../../../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Assignment {
   assignmentName: string;
@@ -174,7 +175,7 @@ const Page = () => {
   ) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/adminassignment`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GET_ADMIN_ASSIGNMENT}`,
         {
           params: { courseId, levelId },
           headers: {
@@ -341,7 +342,7 @@ const Page = () => {
         console.error("❌ AdminAuthToken not found");
         return;
       }
-      const res = await fetch(`https://api.blackstoneinfomaticstech.com/adminassignment`, {
+      const res = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.CREATE_ADMIN_ASSIGNMENT}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

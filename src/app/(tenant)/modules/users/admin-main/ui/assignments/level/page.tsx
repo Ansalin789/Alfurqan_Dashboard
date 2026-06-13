@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import BaseLayout4 from "@/components/BaseLayout4";
 import { useSearchParams } from "next/navigation";
 import AdminHeader from "@/app/(tenant)/modules/users/admin-main/components/AdminHeader";
 import Link from "next/link";
+import BaseLayout4 from "../../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Course {
   courseId: string;
@@ -64,7 +65,7 @@ const Page = () => {
   }, []);
   const fetchLevels = async (token: string) => {
     try {
-      const response = await fetch(`https://api.blackstoneinfomaticstech.com/levels/${courseId}`, {
+      const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEVELS.GET_LIST}/${courseId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

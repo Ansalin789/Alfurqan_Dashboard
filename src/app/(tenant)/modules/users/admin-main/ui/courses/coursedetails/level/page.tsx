@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
-import BaseLayout4 from "@/components/BaseLayout4";
 import { useSearchParams } from "next/navigation";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
@@ -10,6 +9,8 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AxiosError } from "axios";
 import AdminHeader from "@/app/(tenant)/modules/users/admin-main/components/AdminHeader";
+import BaseLayout4 from "../../../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Course {
   courseId: string;
@@ -94,7 +95,7 @@ const Page = () => {
   const fetchLevels = async (token: string) => {
     try {
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/levels/${courseId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEVELS.GET_LIST}/${courseId}`,
         {
           method: "GET",
           headers: {
@@ -177,7 +178,7 @@ const Page = () => {
         return;
       }
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/levels`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEVELS.CREATE}`,
         {
           method: "POST",
           headers: {
@@ -274,7 +275,7 @@ const Page = () => {
         return;
       }
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/update-levels`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEVELS.UPDATE}`,
         {
           method: "PUT",
           headers: {

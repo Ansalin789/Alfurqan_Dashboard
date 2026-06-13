@@ -1,7 +1,7 @@
 "use client";
 
-import BaseLayout4 from '@/components/BaseLayout4';
 import React, { useState } from 'react';
+import BaseLayout4 from '../../../../components/BaseLayout4';
 
 
 const MonthDataPage = () => {

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface ClassItem {
   id: string;
@@ -33,7 +34,7 @@ const UpcomingClasses: React.FC = () => {
 
   const fetchMeetings = async (token: string) => {
     try {
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/allAdminMeeting", {
+      const response = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ADMIN_MEETING.GET_LIST}`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,

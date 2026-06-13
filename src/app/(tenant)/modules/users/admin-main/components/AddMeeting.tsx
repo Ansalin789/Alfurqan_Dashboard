@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import axios from "axios";
 import { FaUserCircle } from "react-icons/fa";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface User {
   id: string;
@@ -75,7 +76,7 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
         }
 
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/users",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.USER.GET}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -221,8 +222,8 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
       };
 
       const url = meetingToEdit?._id 
-        ? `https://api.blackstoneinfomaticstech.com/allAdminMeeting/${meetingToEdit._id}`
-        : "https://api.blackstoneinfomaticstech.com/addadminMeeting";
+        ? `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ADMIN_MEETING.UPDATE}/${meetingToEdit._id}`
+        : `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ADMIN_MEETING.CREATE}`;
 
       const method = meetingToEdit?._id ? "PUT" : "POST";
 

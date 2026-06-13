@@ -9,10 +9,11 @@ import "react-datepicker/dist/react-datepicker.css";
 import { MdTune } from "react-icons/md";
 import AdminHeader from "../../components/AdminHeader";
 import { useRouter } from "next/navigation";
-import BaseLayout4 from "@/components/BaseLayout4";
 import { TiAttachment } from "react-icons/ti";
 import ReactDOM from "react-dom";
 import DatePicker from "react-datepicker";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface LeaveRequest {
   _id: string;
@@ -124,7 +125,7 @@ export default function ApplicantsPage() {
   const fetchLeaveRequests = async (token: string) => {
     try {
       const res = await axios.get<LeaveSummaryListResponse>(
-        "https://api.blackstoneinfomaticstech.com/leavesummary/list",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE_REQUEST.LIST}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const sortedData = res.data.leavesummary.sort(
@@ -155,7 +156,7 @@ export default function ApplicantsPage() {
 
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/leavesummary/${selectedLeave?.summaryId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE_REQUEST.UPDATE}/${selectedLeave?.summaryId}`,
         {
           method: "PUT",
           headers: {
@@ -203,7 +204,7 @@ export default function ApplicantsPage() {
 
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/leavesummary/${selectedLeave?.summaryId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE_REQUEST.UPDATE}/${selectedLeave?.summaryId}`,
         {
           method: "PUT",
           headers: {

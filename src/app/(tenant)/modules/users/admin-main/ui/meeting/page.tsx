@@ -15,11 +15,12 @@ import { MdTune } from "react-icons/md";
 import { setTime } from "react-datepicker/dist/date_utils";
 import { getSocket } from "@/app/utils/socket";
 import AdminHeader from "../../components/AdminHeader";
-import BaseLayout4 from "@/components/BaseLayout4";
 import SuccessPopup from "../../components/successPopup";
 import FailedPopup from "../../components/failedPopup";
 import NextMeetingSchedule from "../../components/NextMeetingSchedule";
 import Modal from "react-modal";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface ApiResponse {
   candidateFirstName: string;
@@ -129,7 +130,7 @@ const Meetings = () => {
     
     axios
       .get<{ totalCount: number; applicants: ApiResponse[] }>(
-        "https://api.blackstoneinfomaticstech.com/otheremployees",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.USER.GET_OTHER_EMPLOYEES}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -176,7 +177,7 @@ const Meetings = () => {
     const fetchMeetings = async () => {
       try {
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/allAdminMeeting",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ADMIN_MEETING.GET_LIST}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -355,7 +356,7 @@ const Meetings = () => {
       );
       const meetingIdToSend = selectedMeeting?.meetingId;
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/allAdminMeeting/${meetingIdToSend}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ADMIN_MEETING.UPDATE}/${meetingIdToSend}`,
         {
           method: "PUT",
           headers: {

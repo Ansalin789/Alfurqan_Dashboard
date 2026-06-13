@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Country, State, City, ICountry, ICity } from "country-state-city";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface EmployeeFormData {
   firstName: string;
@@ -186,7 +187,7 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
       console.log("Form data being sent:", Object.fromEntries(formPayload));
 
       await axios.post(
-        "https://api.blackstoneinfomaticstech.com/otheremployee",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.OTHEREMPLOYEE.CREATE}`,
         formPayload,
         {
           headers: {

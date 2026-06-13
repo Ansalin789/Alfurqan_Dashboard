@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import Modal from "react-modal";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 export interface StudentClassData {
   _id: string;
@@ -114,7 +115,7 @@ const SalaryCard = () => {
     const fetchClassData = async (token: string) => {
       try {
         const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/classShedule",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET}`,
           {
             method: "GET",
             headers: {

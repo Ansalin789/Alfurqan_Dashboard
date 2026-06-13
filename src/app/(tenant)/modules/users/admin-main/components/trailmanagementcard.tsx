@@ -1,4 +1,5 @@
 "use client";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 import { useState, useEffect } from "react";
 
 
@@ -54,7 +55,7 @@ const TotalScheduledChart = () => {
   const fetchChartData = async (token: string) => {
     try {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/totaltrialclass",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TOTAL_TRAIL_CLASS}`,
         {
           method: "GET",
           headers: {
@@ -197,7 +198,7 @@ const CoursesChart = () => {
   }, []);
 
   const fetchData = async (token: string) => {
-    const response = await fetch("https://api.blackstoneinfomaticstech.com/totaltrialclass", {
+    const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TOTAL_TRAIL_CLASS}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -317,7 +318,7 @@ const PreferredTeachersCard = () => {
   const fetchData = async (token: string) => {
     try {
       const res = await fetch(
-        "https://api.blackstoneinfomaticstech.com/teacherstatus",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.EVALUATION.TEACHER_STATUS}`,
         {
           method: "GET",
           headers: {
@@ -497,7 +498,7 @@ const TrialByTeachers = () => {
   }, []);
 
   const fetchData = (token: string) => {
-    fetch("https://api.blackstoneinfomaticstech.com/teacher-student-count", {
+    fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_STUDENT_COUNT}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

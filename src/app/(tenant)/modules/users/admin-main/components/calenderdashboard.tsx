@@ -5,6 +5,7 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './Calendaradmin.css';
 import { useRouter } from 'next/navigation';
+import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
 
 interface Event {
   title: string;
@@ -54,7 +55,7 @@ const Academic: React.FC = () => {
 
   const fetchMeetings = async (token: string) => {
     try {
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/allAdminMeeting", {
+      const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ADMIN_MEETING.GET_LIST}`, {
         method: "GET",
         headers: {
           'Content-Type': 'application/json',

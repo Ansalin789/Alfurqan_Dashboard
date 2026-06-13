@@ -3,6 +3,7 @@ import { AiOutlineClockCircle } from "react-icons/ai";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 // Interfaces based on your API response
 interface Teacher {
   teacherId: string;
@@ -53,7 +54,7 @@ const NextMeetingSchedule = () => {
           return;
         }
 
-        const res = await axios.get("https://api.blackstoneinfomaticstech.com/allAdminMeeting", {
+        const res = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ADMIN_MEETING.GET_LIST}`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

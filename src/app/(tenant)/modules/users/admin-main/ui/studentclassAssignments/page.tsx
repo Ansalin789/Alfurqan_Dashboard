@@ -3,9 +3,10 @@ import { MdTune } from "react-icons/md";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation"; // Import useSearchParams
 import BaseLayout2 from "@/app/(tenant)/modules/users/student/components/BaseLayout2";
-import BaseLayout4 from "@/components/BaseLayout4";
 import AdminHeader from "../../components/AdminHeader";
 import Pagination from "@/components/Pagination";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 // Interfaces
 interface Assignment {
   _id?: string;
@@ -82,7 +83,7 @@ const StudentClassAssignmentsPage = () => {
           return;
         }
 
-        const res = await fetch(`https://api.blackstoneinfomaticstech.com/assignments/student?studentId=${studentId}`, { // Use the studentId state
+        const res = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GET_STUDENT_ASSIGNMENTS}?studentId=${studentId}`, { // Use the studentId state
           headers: {
             "Authorization": `Bearer ${token}`,
           },
@@ -124,7 +125,7 @@ const StudentClassAssignmentsPage = () => {
           return;
         }
 
-        const res = await fetch(`https://api.blackstoneinfomaticstech.com/assignments/student?studentId=${studentId}`, {
+        const res = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GET_STUDENT_ASSIGNMENTS}?studentId=${studentId}`, {
           headers: {
             "Authorization": `Bearer ${token}`,
           },

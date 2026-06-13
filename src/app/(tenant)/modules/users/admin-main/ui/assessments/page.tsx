@@ -1,10 +1,10 @@
 "use client";
 
-import BaseLayout4 from "@/components/BaseLayout4";
 import { Star, Search } from "lucide-react";
 import { useState } from "react";
 import { MdTune } from "react-icons/md";
 import AdminHeader from "../../components/AdminHeader";
+import BaseLayout4 from "../../components/BaseLayout4";
 
 const allUsers = Array.from({ length: 47 }, (_, i) => ({
   name: `User ${i + 1}`,

@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import BaseLayout4 from "@/components/BaseLayout4";
 import {  Search } from "lucide-react";
 import axios from "axios";
 import Pagination from "@/components/Pagination";
 import { MdTune } from "react-icons/md";
 import AdminHeader from "../../components/AdminHeader";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import BaseLayout4 from "../../components/BaseLayout4";
 
 // Define the Expense interface
 interface Expense {
@@ -56,7 +57,7 @@ const Expenses = () => {
     }
       const fetchCardCounts = async () => {
         try {
-          const response = await axios.get<ExpenseCardCounts>("https://api.blackstoneinfomaticstech.com/expenseCardCounts",{
+          const response = await axios.get<ExpenseCardCounts>(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.EXPENSE.GET_EXPENSE}`,{
             headers: {
               "Content-Type": "application/json",
               "Authorization": `Bearer ${token}`,
@@ -87,7 +88,7 @@ const Expenses = () => {
     // Fetch salary data only if it's empty
     if (salaryData.length === 0) {
       axios
-        .get("https://api.blackstoneinfomaticstech.com/expense", {
+        .get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.EXPENSE.GET}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

@@ -1,6 +1,5 @@
 "use client";
 
-import BaseLayout4 from "@/components/BaseLayout4";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight, FaEdit, FaFilter } from "react-icons/fa";
@@ -9,6 +8,8 @@ import { Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 import AdminHeader from "../../components/AdminHeader";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Student {
   studentId: string;
@@ -88,7 +89,7 @@ useEffect(() => {
 
 const fetchInvoice = (token: string) => {
   axios
-    .get("https://api.blackstoneinfomaticstech.com/studentinvoice/list", {
+    .get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.INVOICE.STUDENT_INVOICE_LIST}`, {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,

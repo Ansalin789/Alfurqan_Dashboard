@@ -1,12 +1,13 @@
 "use client";
 
-import BaseLayout4 from "@/components/BaseLayout4";
 import React, { useEffect, useState } from "react";
 import AdminHeader from "@/app/(tenant)/modules/users/admin-main/components/AdminHeader";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
+import BaseLayout4 from "../../../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 /* ---------------- TYPES ---------------- */
 
@@ -73,8 +74,7 @@ export default function Page() {
   const fetchSchedule = async (token: string) => {
     try {
       const res = await axios.get(
-        `
-https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}?teacherId=${employeeId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },

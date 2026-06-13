@@ -1,10 +1,10 @@
 "use client";
 import React from "react";
 import StudentsRecord from "../../components/studentrecord";
-import BaseLayout4 from "@/components/BaseLayout4";
 import TrailManagement from "../../components/studentlist";
 import { useRouter } from "next/navigation";
 import AdminHeader from "../../components/AdminHeader";
+import BaseLayout4 from "../../components/BaseLayout4";
 
 const Dashboard = () => {
   const router = useRouter();

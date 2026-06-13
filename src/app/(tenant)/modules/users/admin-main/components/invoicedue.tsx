@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
 import type { TooltipItem } from 'chart.js';
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 const InvoicesDueByDays = () => {
   const COLORS = ["#AFC0FF", "#78A1DB", "#9FD0FF", "#B9DDFF"];
@@ -66,7 +67,7 @@ const InvoicesDueByDays = () => {
 
   const fetchData = async (token: string) => {
     try {
-      const res = await fetch("https://api.blackstoneinfomaticstech.com/invoiceduebydates", {
+      const res = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.INVOICE.INVOICE_DUE_BY_DATES}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

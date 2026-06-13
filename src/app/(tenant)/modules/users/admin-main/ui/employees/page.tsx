@@ -1,6 +1,5 @@
 "use client";
 
-import BaseLayout4 from "@/components/BaseLayout4";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -35,6 +34,8 @@ import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 import ReactDOM from "react-dom";
 import AdminHeader from "../../components/AdminHeader";
+import BaseLayout4 from "../../components/BaseLayout4";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 // Register chart.js modules
 ChartJS.register(
@@ -404,7 +405,7 @@ const Page = () => {
 
     // Fetch teacher status count
     axios
-      .get("https://api.blackstoneinfomaticstech.com/teacher/statuscount", {
+      .get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.USER.GET_TEACHER_STATUS_COUNT}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -452,7 +453,7 @@ const Page = () => {
     // Fetch teacher gender count
     axios
       .get<GenderResponse>(
-        "https://api.blackstoneinfomaticstech.com/teacher/gendercount",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.USER.GET_TEACHER_GENDER_COUNT}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -482,7 +483,7 @@ const Page = () => {
     // Fetch student count by country
     axios
       .get(
-        "https://api.blackstoneinfomaticstech.com/applicants/countriescount",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.APPLICANTS.GET_APPLICANT_COUNT_BY_COUNTRY}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -498,7 +499,7 @@ const Page = () => {
     const fetchTeachers = async () => {
       try {
         const res = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/users?role=TEACHER",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.USER.GET}?role=TEACHER`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -527,7 +528,7 @@ const Page = () => {
     const fetchDataemp = async () => {
       try {
         const res = await fetch(
-          "https://api.blackstoneinfomaticstech.com/otherempcount",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.OTHEREMPLOYEE.GET_OTHER_EMPLOYEE_COUNT}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -554,7 +555,7 @@ const Page = () => {
     const fetchGenderData = async () => {
       try {
         const res = await fetch(
-          "https://api.blackstoneinfomaticstech.com/otheremp/gendercount",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.OTHEREMPLOYEE.GET_OTHER_EMPLOYEE_GENDER_COUNT}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -585,7 +586,7 @@ const Page = () => {
     const fetchEmployees = async () => {
       try {
         const res = await fetch(
-          "https://api.blackstoneinfomaticstech.com/otheremployees",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.USER.GET_OTHER_EMPLOYEES}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -605,7 +606,7 @@ const Page = () => {
     const fetchCounts = async () => {
       try {
         const response = await axios.get<DashboardCounts>(
-          "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.GET_SUPERVISOR_COUNTS}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -621,7 +622,7 @@ const Page = () => {
 
     // Fetch other employee count by country
     axios
-      .get("https://api.blackstoneinfomaticstech.com/otheremp/countriescount", {
+      .get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.OTHEREMPLOYEE.GET_OTHER_EMPLOYEE_COUNT_BY_COUNTRY}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -640,7 +641,7 @@ const Page = () => {
       if (!token) return;
       try {
         const res = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/leaverequest/card",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE.LEAVE_CARD}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -661,7 +662,7 @@ const Page = () => {
       if (!token) return;
       try {
         const res = await axios.get<LeaveSummaryListResponse>(
-          "https://api.blackstoneinfomaticstech.com/leavesummary/list",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE.LEAVE_SUMMARY_LIST}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const sortedData = res.data.leavesummary.sort(
@@ -757,7 +758,7 @@ const Page = () => {
   function handlePortalAccess(username: string, password: string) {
     const encodedUsername = encodeURIComponent(username);
     const encodedPassword = encodeURIComponent(password);
-    const portalURL = `https://blackstoneinfomaticstech.com/modules/users/teacher/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
+    const portalURL = `${AppApiEndpoints.API_END_POINT}/modules/users/teacher/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
     window.location.href = portalURL;
   }
   function handlePortalAccessforemployee(username: string, password: string, roles: string[]) {
@@ -767,11 +768,11 @@ const Page = () => {
     let portalURL = "";
 
     if (roles.includes("ACADEMICCOACH")) {
-      portalURL = `https://blackstoneinfomaticstech.com/modules/users/Academic-coach/ui/login?username=${encodedUsername}&password=${encodedPassword}`;
+      portalURL = `${AppApiEndpoints.API_END_POINT}/modules/users/Academic-coach/ui/login?username=${encodedUsername}&password=${encodedPassword}`;
     } else if (roles.includes("ADMIN")) {
-      portalURL = `https://blackstoneinfomaticstech.com/modules/users/admin-main/ui/login?username=${encodedUsername}&password=${encodedPassword}`;
+      portalURL = `${AppApiEndpoints.API_END_POINT}/modules/users/admin-main/ui/login?username=${encodedUsername}&password=${encodedPassword}`;
     } else {
-      portalURL = `https://blackstoneinfomaticstech.com/modules/users/supervisor/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
+      portalURL = `${AppApiEndpoints.API_END_POINT}/modules/users/supervisor/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
     }
 
     window.location.href = portalURL;
@@ -815,7 +816,7 @@ const Page = () => {
         return;
       }
       await axios.post(
-        "https://api.blackstoneinfomaticstech.com/otheremployee",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.OTHEREMPLOYEE.CREATE}`,
         form,
         {
           headers: {
@@ -852,7 +853,7 @@ const Page = () => {
 
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/leavesummary/${selectedLeave?.id}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE.UPDATE}/${selectedLeave?.id}`,
         {
           method: "PUT",
           headers: {
