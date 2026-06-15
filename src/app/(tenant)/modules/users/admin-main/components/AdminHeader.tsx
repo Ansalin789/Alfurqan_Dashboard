@@ -136,7 +136,7 @@ export default function AdminHeader({
       if (!userId || !token) return;
       try {
         const { data } = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/notification/getlist?receiverId=${userId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.NOTIFICATION.GET_LIST}?receiverId=${userId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

@@ -384,7 +384,7 @@ const TeachersSchedule = () => {
       console.log("PUT Request Payload:", payload)
       console.log("PUT Request URL:", `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`)
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.UPDATE_TEACHER_RESCHEDULE}/${meetingToReschedule._id}`,
         payload,
         {
           headers: {
@@ -409,7 +409,7 @@ const TeachersSchedule = () => {
       }
 
       const refreshResponse = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${meetingToReschedule.teacher.teacherId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET}?teacherId=${meetingToReschedule.teacher.teacherId}`,
         { headers: { Authorization: `Bearer ${token}` } },
       )
 

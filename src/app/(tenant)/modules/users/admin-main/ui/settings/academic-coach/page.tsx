@@ -170,7 +170,7 @@ const AcademiccoachModuleAccess = () => {
       }
 
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.RBAC.UPDATE_ACCESS}/${employeeId}`,
         { roleAccess },
         {
           headers: {

@@ -199,7 +199,7 @@ const TeacherDetails = () => {
         const token = localStorage.getItem("AcademicCoachAuthToken");
         if (!token) return;
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/classstudentsattendancecounts?teacherId=${teacherId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASS_STUDENT_ATT_COUNT}?teacherId=${teacherId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setStats(response.data);
@@ -224,7 +224,7 @@ const TeacherDetails = () => {
 
       console.log("Fetching classes for Teacher:", teacherId);
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}`,
         {
           params: { teacherId },
           headers: {

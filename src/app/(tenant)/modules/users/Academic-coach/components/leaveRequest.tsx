@@ -51,7 +51,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
     if (Id) {
       const token = typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
       axios
-        .get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE_REQUEST.CREATE}?employeeId=${Id}`, {
+        .get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE.CREATE}?employeeId=${Id}`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

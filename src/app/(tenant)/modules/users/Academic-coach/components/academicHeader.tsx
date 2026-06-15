@@ -209,7 +209,7 @@ export default function AcademicHeader({
           ? localStorage.getItem("AcademicCoachAuthToken")
           : null;
       await axios.post(
-        "https://api.blackstoneinfomaticstech.com/signout",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.AUTH.LOGOUT}`,
         {},
         {
           headers: {

@@ -1,5 +1,6 @@
 "use client";
 
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell } from "recharts";
@@ -47,7 +48,7 @@ useEffect(() => {
       }
 
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/assignments/teacher/cardcount?teacherId=${teacherId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GET_TEACHER_ASS_CARD_COUNT}?teacherId=${teacherId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

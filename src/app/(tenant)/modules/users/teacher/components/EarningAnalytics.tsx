@@ -1,4 +1,5 @@
 'use client';
+import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
 import React, { useState, useEffect } from 'react';
 
 type TimePeriod = 'monthly' | 'weekly' | 'daily';
@@ -47,7 +48,7 @@ const EarningAnalytics = () => {
         console.log('[DEBUG] Fetching data for:', { teacherId, timePeriod });
 
         const response = await fetch(
-          `https://api.blackstoneinfomaticstech.com/teacher/earnings?teacherId=${teacherId}&dateRange=${timePeriod}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_EARNINGS}?teacherId=${teacherId}&dateRange=${timePeriod}`,
           {
             headers: {
               'Authorization': `Bearer ${authToken}`,

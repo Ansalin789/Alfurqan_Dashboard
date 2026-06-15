@@ -140,7 +140,7 @@ const SignIn: React.FC = () => {
   ) => {
     try {
       const response = await axios.get<AccessApiResponse>(
-        `https://api.blackstoneinfomaticstech.com/update-access/${id}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.RBAC.GET_ACCESS}/${id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -260,7 +260,7 @@ router.push("/modules/users/Academic-coach/ui/dashboard");
     const checkEmail = async (email: string) => {
       try {
         const response = await axios.post(
-          `https://api.blackstoneinfomaticstech.com/allcheck-email`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CHECKMAIL.CREATE_CHECK}`,
           { email }
         );
 

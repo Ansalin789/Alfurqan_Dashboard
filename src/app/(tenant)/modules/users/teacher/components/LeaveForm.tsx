@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import axios, { AxiosError } from "axios";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 type LeaveFormProps = {
   readonly onClose: () => void;
 };
@@ -51,7 +52,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
     if (Id) {
       const token = typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
       axios
-        .get(`https://api.blackstoneinfomaticstech.com/leaverequest?employeeId=${Id}`,
+        .get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE.GET}?employeeId=${Id}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -97,7 +98,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
           : null;
 
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/leaverequest",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE.CREATE}`,
         form,
         {
           headers: {

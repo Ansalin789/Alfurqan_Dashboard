@@ -5,6 +5,7 @@ import 'react-calendar/dist/Calendar.css';
 import axios from 'axios';
 import './Calender.css';
 import { useRouter } from 'next/navigation';
+import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
  
 
 export interface UnifiedClassSchedule {
@@ -134,7 +135,7 @@ const Calender: React.FC = () => {
       }
 
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}`,
         {
           params: { teacherId },
           headers: {

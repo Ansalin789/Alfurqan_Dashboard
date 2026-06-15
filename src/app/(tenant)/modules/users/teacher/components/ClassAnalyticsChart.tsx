@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface StatsData {
   scheduled: number;
@@ -32,7 +33,7 @@ const ClassAnalyticsChart = () => {
       if (!teacherId || !token) throw new Error("Authentication info missing");
 
       const response = await axios.get<StatsData>(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacher/count?teacherId=${teacherId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_COUNT}?teacherId=${teacherId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

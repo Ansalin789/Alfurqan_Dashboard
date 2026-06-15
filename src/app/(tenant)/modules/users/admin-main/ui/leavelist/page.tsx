@@ -125,7 +125,7 @@ export default function ApplicantsPage() {
   const fetchLeaveRequests = async (token: string) => {
     try {
       const res = await axios.get<LeaveSummaryListResponse>(
-        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE_REQUEST.LIST}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE.LEAVE_SUMMARY_LIST}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const sortedData = res.data.leavesummary.sort(
@@ -156,7 +156,7 @@ export default function ApplicantsPage() {
 
     try {
       const res = await fetch(
-        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE_REQUEST.UPDATE}/${selectedLeave?.summaryId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE.UPDATE}/${selectedLeave?.summaryId}`,
         {
           method: "PUT",
           headers: {
@@ -204,7 +204,7 @@ export default function ApplicantsPage() {
 
     try {
       const res = await fetch(
-        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE_REQUEST.UPDATE}/${selectedLeave?.summaryId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE.UPDATE}/${selectedLeave?.summaryId}`,
         {
           method: "PUT",
           headers: {

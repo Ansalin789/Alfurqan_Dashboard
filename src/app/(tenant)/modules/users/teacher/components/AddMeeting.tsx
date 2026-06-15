@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import axios, { AxiosError } from "axios";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 type Props = {
   readonly onClose: () => void;
@@ -139,7 +140,7 @@ export default function AddMeeting({ onClose }: Props) {
         };
 
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASS_LIST}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -284,7 +285,7 @@ endTime,
       }
 
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/teacherMeeting", // ✅ NEW LOCAL API ENDPOINT
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.TEACHERMEETING.CREATE}`, // ✅ NEW LOCAL API ENDPOINT
         requestData,
         {
           headers: {
