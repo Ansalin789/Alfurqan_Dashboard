@@ -11,6 +11,7 @@ import TeacherHeader from "../../components/TeacherHeader";
 import axios from "axios";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import Pagination from "@/components/Pagination";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 export interface AssignmentItem {
   assignmentId?: string;
@@ -377,7 +378,7 @@ const ManageStudentView = () => {
         }
 
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/assignments/questionlist`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GET_ASSIGNMNET_QUESTIONLIST}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -477,7 +478,7 @@ const ManageStudentView = () => {
         }
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/assignments/cardcount?studentId=${studentId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.ASS_CARD_COUNT}?studentId=${studentId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -631,7 +632,7 @@ const ManageStudentView = () => {
       }
 
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}/${studentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

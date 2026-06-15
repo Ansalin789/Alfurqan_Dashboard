@@ -13,6 +13,7 @@ import {
 } from "../../components/viewAssignment";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 export interface Assignment {
   _id?: string;
@@ -99,7 +100,7 @@ const assigmnetId = search.get('id');
       if(!assigmnetId) return;
       try {
         const res = await axios.get<Assignment>(
-          `https://api.blackstoneinfomaticstech.com/assignments/${assigmnetId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GET_LIST}/${assigmnetId}`,
           {
             headers: {
               "Content-Type": "application/json",

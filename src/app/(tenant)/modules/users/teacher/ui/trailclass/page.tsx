@@ -4,6 +4,7 @@ import BaseLayout from "@/app/(tenant)/modules/users/teacher/components/BaseLayo
 import axios from "axios";
 import NextTrailSession from "../../components/NextTrailSession";
 import TeacherHeader from "../../components/TeacherHeader";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Student {
   studentId: string;
@@ -571,7 +572,7 @@ function LiveClass() {
         }
         console.log("teacherid", teacherId);
         const response = await axios.get<ApiResponse>(
-          `https://api.blackstoneinfomaticstech.com/classShedule/teacher`,
+      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}`,
           {
             params: { teacherId },
             headers: {

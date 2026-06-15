@@ -1,10 +1,10 @@
-              href="/modules/users/teacher/ui/allstudents"
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import RegularStudents from "../ui/allstudents/RegularStudents/page";
 import GroupStudents from "../ui/allstudents/GroupStudents/page";
 import Link from "next/link";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 // Import the interfaces
 export interface AssignmentItem {
@@ -132,7 +132,7 @@ const Page = () => {
         console.log("Fetching data for teacherId:", teacherId);
 
         const res = await axios.get<StudentWithAssignments[]>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASS_LIST}`,
           {
             headers: {
               "Content-Type": "application/json",

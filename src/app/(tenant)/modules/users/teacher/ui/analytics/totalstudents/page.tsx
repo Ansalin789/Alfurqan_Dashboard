@@ -7,6 +7,7 @@ import axios from "axios";
 import TeacherHeader from "@/app/(tenant)/modules/users/teacher/components/TeacherHeader";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface SimpleStudent {
   studentId: string;
@@ -82,7 +83,8 @@ const Totalstudents = () => {
             : null;
 
         const response = await axios.get<SimpleStudent[]>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list",
+                  `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASS_LIST}`,
+          
           {
             params: { teacherId },
             headers: {

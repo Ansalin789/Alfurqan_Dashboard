@@ -10,6 +10,7 @@ import TeacherHeader from "../../components/TeacherHeader";
 import { MdTune } from "react-icons/md";
 import Modal from "react-modal";
 import { clearScreenDown } from "node:readline";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 export interface UnifiedClassSchedule {
   _id: string;
@@ -257,7 +258,7 @@ const [openEarningId, setOpenEarningId] = useState<string | null>(null);
 
       try {
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts?teacherId=${teacherId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.GET_TEACHER_COUNTS}?teacherId=${teacherId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -296,7 +297,7 @@ const [openEarningId, setOpenEarningId] = useState<string | null>(null);
         }
 
         const response = await axios.get<SimpleStudent[]>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE}`,
           {
             params: { teacherId },
             headers: {
@@ -331,7 +332,7 @@ useEffect(()=>{
       }
 
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}`,
         {
           params: { teacherId },
           headers: {

@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import Pagination from "@/components/Pagination";
 import Modal from "react-modal";
 import { getSocket } from "@/app/utils/socket";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 export interface UnifiedClassSchedule {
   _id: string;
@@ -162,7 +163,7 @@ const ScheduledClasses = () => {
       }
 
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}`,
         {
           params: { teacherId },
           headers: {

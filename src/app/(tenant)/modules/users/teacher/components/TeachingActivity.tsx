@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
 
 const TeachingActivity: React.FC = () => {
   const [monthlyHours, setMonthlyHours] = useState<number[]>(Array(12).fill(0));
@@ -17,7 +18,7 @@ const TeachingActivity: React.FC = () => {
           return;
         }
 
-        const response = await axios.get('https://api.blackstoneinfomaticstech.com/classShedule', {
+        const response = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET}`, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,

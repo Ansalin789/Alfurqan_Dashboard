@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { isToday } from 'date-fns';
+import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
 
 interface ClassEvent {
   _id: string;
@@ -147,7 +148,7 @@ const UpcomingTasks: React.FC = () => {
       }
 
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}`,
         {
           params: { teacherId },
           headers: {

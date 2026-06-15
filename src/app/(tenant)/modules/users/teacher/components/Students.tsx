@@ -1,5 +1,6 @@
 'use client';
 
+import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
@@ -31,7 +32,7 @@ const StudentsCard: React.FC = () => {
       }
 
       const response = await axios.get<TeacherAnalyticsResponse>(
-        `https://api.blackstoneinfomaticstech.com/teacher-student-count?teacherId=${teacherId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_STUDENT_COUNT}?teacherId=${teacherId}`,
         {
           headers: {
             'Content-Type': 'application/json',

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import axios from "axios"
 import { getSocket } from "@/app/utils/socket"
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints"
 
 interface TeacherDashboardStats {
   totalclasses: number
@@ -48,7 +49,7 @@ const Total = () => {
     if (!teacherId || !token) return
 
     try {
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts", {
+      const response = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD. GET_TEACHER_COUNTS}`, {
         params: { teacherId },
         headers: {
           Authorization: `Bearer ${token}`,

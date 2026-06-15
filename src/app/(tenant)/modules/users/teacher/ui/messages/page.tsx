@@ -11,6 +11,7 @@ import { io } from "socket.io-client";
 import { Bell } from "lucide-react";
 import TeacherHeader from "../../components/TeacherHeader";
 import { getSocket } from "@/app/utils/socket";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 
 // Define your interfaces
@@ -135,7 +136,7 @@ const Message = () => {
     console.error("❌ AdminAuthToken not found");
   }
       const response = await axios.get<IStudentResponse>(
-        "https://api.blackstoneinfomaticstech.com/alstudents",{
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}`,{
           headers: {
             'Authorization': `Bearer ${token}`
           },

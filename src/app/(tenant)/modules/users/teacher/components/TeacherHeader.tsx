@@ -9,6 +9,7 @@ import axios from "axios";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
 import LeaveForm from "./LeaveForm";
 import AddMeeting from "./AddMeeting";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 type Props = {
   readonly currentSection: string;
@@ -83,7 +84,7 @@ export default function TeacherHeader({
           ? localStorage.getItem("TeacherPortalId")
           : null;
       const { data } = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/notification/getlist?receiverId=${userId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.NOTIFICATION.GET_LIST}?receiverId=${userId}`,
         {
           method: "GET",
           headers: {
@@ -117,7 +118,7 @@ export default function TeacherHeader({
       }
 
       await axios.put(
-        `https://api.blackstoneinfomaticstech.com/notification/${notificationId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.NOTIFICATION.UPDATE}/${notificationId}`,
         {
           isRead: true,
           notificationStatus: "Seen",

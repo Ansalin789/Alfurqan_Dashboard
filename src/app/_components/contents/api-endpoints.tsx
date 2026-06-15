@@ -115,6 +115,9 @@ export const AppApiEndpoints = {
     CLASS_SESSION_END:"/classSession/triggerEnd",
     GET_TEACHERMEETINGLIST:"/teacherMeetinglist",
     GET_TEACHER_TRAILCLASS :"/teachertrialclass",
+    UPDATE_CLASS_ATTENDANCE:"/classShedule/attendanceupdate",
+    UPDATE_GROUP_CLASSSCHEDULE:"/groupclassschedule/bulkupdate",
+    UPDATE_CLASS_REQUEST_RESCHEDULE:"/classShedule/requestReshedule"
   },
 
   AVAILABLE_TIME_SLOT: {
@@ -199,7 +202,9 @@ export const AppApiEndpoints = {
     GET_ALL_ASS:"/allAssignment",
     UPDATE:"/assignments",
     GROUP_ASSIGNMENTS:"/groupAssignments",
-    GET_ADMIN_ASS:"/adminassignment/assignment"
+    GET_ADMIN_ASS:"/adminassignment/assignment",
+    GET_ASSIGNMNET_QUESTIONLIST:"/assignments/questionlist",
+    ASS_CARD_COUNT :"/assignments/cardcount"
   },
 
   LEVELS: {
@@ -237,8 +242,12 @@ export const AppApiEndpoints = {
 
   TEACHERMEETING: {
     CREATE: "/teacherMeeting",
-    UPDATE :"/updateTeacherMeeting"
+    UPDATE :"/updateTeacherMeeting",
+    GET_MEETING :"/teacherMeeting"
   },
 
+  FEEBACK :{
+    TEACHER_FEEDBACK:"/teacherfeedback"
+  }
 
 };

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { JitsiMeeting } from "@jitsi/react-sdk";
 import axios from "axios";
 import { useSearchParams, useRouter } from "next/navigation";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Student {
   studentId: string;
@@ -114,7 +115,7 @@ export default function LiveClass() {
         const id = params.get("id");
         console.log("teacherid", teacherId);
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/classShedule/${id}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET}/${id}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -170,7 +171,7 @@ export default function LiveClass() {
         return;
       }
       const res = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/classShedule/attendanceupdate/${id}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.UPDATE_CLASS_ATTENDANCE}/${id}`,
         { teacher: data },
         {
           headers: {
@@ -194,7 +195,7 @@ export default function LiveClass() {
 
     if (classData?.sessionClassType === 'GROUPCLASS') {
       await fetch(
-        `https://api.blackstoneinfomaticstech.com/groupclassschedule/bulkupdate/${classData.classLink}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.UPDATE_GROUP_CLASSSCHEDULE}/${classData.classLink}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -219,7 +220,7 @@ export default function LiveClass() {
 
     if (classData?.sessionClassType === 'GROUPCLASS') {
       res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/groupclassschedule/bulkupdate/${classData.classLink}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.UPDATE_GROUP_CLASSSCHEDULE}/${classData.classLink}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -326,7 +327,7 @@ export default function LiveClass() {
         return;
       }
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/teacherfeedback",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.FEEBACK.TEACHER_FEEDBACK}`,
         feedbackData,
         {
           headers: {

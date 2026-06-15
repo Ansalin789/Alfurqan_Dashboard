@@ -11,6 +11,7 @@ import Pagination from "@/components/Pagination";
 import { IoMdClose } from "react-icons/io";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Meeting {
   _id: string;
@@ -128,7 +129,7 @@ const TeacherFilter = () => {
         if (!token || !teacherId) return;
 
         const response = await axios.get<MeetingResponse>(
-          `https://api.blackstoneinfomaticstech.com/teacherMeetinglist`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_TEACHERMEETINGLIST}`,
           {
             params: { teacherId },
             headers: {
@@ -316,7 +317,7 @@ console.log({
     console.log("Sending payload:", payload);
     try {
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${meetingId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.TEACHERMEETING.UPDATE}/${meetingId}`,
         payload,
         {
           headers: {

@@ -6,6 +6,7 @@ import { FaMicrophone, FaTrash, FaUpload } from "react-icons/fa";
 import { useSearchParams } from "next/navigation";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 // Update the AssignmentType type definition
 type AssignmentType =
@@ -568,7 +569,7 @@ const NewAssignment = () => {
     }
     try {
       const response = await fetch(
-        "http://localhost:5001/assignments",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.CREATE}`,
         {
           method: "POST",
           body: formData, // ✅ Use FormData directly

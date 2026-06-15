@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import BaseLayout from "@/app/(tenant)/modules/users/teacher/components/BaseLayout";
 import TeacherHeader from "../../components/TeacherHeader";
 import { JitsiMeeting } from "@jitsi/react-sdk";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Attendance {
   id: string | null;
@@ -57,7 +58,7 @@ const LiveMeeting = () => {
         }
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/teacherMeeting`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.TEACHERMEETING.GET_MEETING}`,
           {
             params: { meetingId },
             headers: {
@@ -148,7 +149,7 @@ const LiveMeeting = () => {
     try {
       const token = localStorage.getItem("TeacherAuthToken");
       await axios.put(
-        `https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${meetingId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.TEACHERMEETING.UPDATE}/${meetingId}`,
         payload,
         {
           headers: {

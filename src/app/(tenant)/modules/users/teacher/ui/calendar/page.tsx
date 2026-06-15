@@ -7,6 +7,7 @@ import { Clock } from "lucide-react";
 import { FaClock } from "react-icons/fa";
 import { BsFillCalendar2WeekFill } from "react-icons/bs";
 import TeacherHeader from "../../components/TeacherHeader";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Student {
   studentId: string;
@@ -98,7 +99,7 @@ const TeacherSchedulePage = () => {
     }
 
     fetch(
-      `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${teacherId}`,
+      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}?teacherId=${teacherId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

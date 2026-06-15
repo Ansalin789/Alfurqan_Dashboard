@@ -9,6 +9,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { FiVideo } from "react-icons/fi";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Student {
   studentId: string;
@@ -60,7 +61,7 @@ const NextScheduledClass = () => {
       if (!teacherId || !token) return;
 
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}`,
         {
           params: { teacherId },
           headers: { Authorization: `Bearer ${token}` },
@@ -173,7 +174,7 @@ const NextScheduledClass = () => {
 
         try {
           await axios.post(
-            "https://api.blackstoneinfomaticstech.com/classSession/triggerEnd",
+            `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.CLASS_SESSION_END}`,
             { sessionId: nextClass._id },
             { headers: { Authorization: `Bearer ${token}` } }
           );

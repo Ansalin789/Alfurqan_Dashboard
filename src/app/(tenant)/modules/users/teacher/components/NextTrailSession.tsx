@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface TrialClass {
   _id: string;
@@ -68,7 +69,7 @@ const NextTrailSession = () => {
 
       try {
         const response = await axios.get<TrialClass[]>(
-          `https://api.blackstoneinfomaticstech.com/teachertrialclass`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_TEACHER_TRAILCLASS}`,
           {
             params: { teacherId },
             headers: {

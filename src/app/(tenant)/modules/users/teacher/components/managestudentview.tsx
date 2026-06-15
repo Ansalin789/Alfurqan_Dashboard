@@ -5,6 +5,7 @@ import BaseLayout from '@/app/(tenant)/modules/users/teacher/components/BaseLayo
 import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
+import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
 
 const ManageStudentView = () => {
   const router = useRouter();
@@ -107,7 +108,7 @@ const ManageStudentView = () => {
     console.error("❌ TeacherAuthToken not found");
     return;
   }
-          const response = await fetch(`https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
+          const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}/${studentId}`,
             {
                 headers:{
                  'Content-Type': 'application/json',

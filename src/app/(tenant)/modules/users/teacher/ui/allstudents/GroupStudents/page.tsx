@@ -10,6 +10,7 @@ import Pagination from "@/components/Pagination";
 import { AnimatePresence, motion } from "framer-motion";
 import SuccessPopup from "@/app/(tenant)/modules/users/admin-main/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/admin-main/components/failedPopup";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 export interface AssignmentItem {
   assignmentId?: string;
   assignmentType: string;
@@ -443,7 +444,7 @@ const GroupStudents = () => {
         console.log("Fetching data for teacherId:", teacherId);
 
         const res = await axios.get<StudentWithAssignments[]>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASS_LIST}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -599,7 +600,7 @@ const GroupStudents = () => {
       setOpenModal(true);
 
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/adminassignment/assignment",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GET_ADMIN_ASS}`,
         {
           params: {
             courseName: course,
@@ -959,7 +960,7 @@ const GroupStudents = () => {
 
       // Submit to API
       const res = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/groupAssignments",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GROUP_ASSIGNMENTS}`,
         formData,
         {
           headers: {

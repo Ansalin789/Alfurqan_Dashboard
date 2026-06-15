@@ -8,6 +8,7 @@ import "react-circular-progressbar/dist/styles.css";
 import { FiVideo } from "react-icons/fi";
 import { TimerReset } from "lucide-react";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 // Interfaces based on your API response
 interface Teacher {
@@ -127,7 +128,7 @@ const [timeRemaining, setTimeRemaining] = useState(0);
           return;
         }
 
-        const res = await axios.get("https://api.blackstoneinfomaticstech.com/teacherMeetinglist", {
+        const res = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_TEACHERMEETINGLIST}`, {
           params: { teacherId },
           headers: {
             "Content-Type": "application/json",

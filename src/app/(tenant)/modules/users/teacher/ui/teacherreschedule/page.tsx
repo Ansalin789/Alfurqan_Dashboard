@@ -10,6 +10,7 @@ import BaseLayout from "@/app/(tenant)/modules/users/teacher/components/BaseLayo
 import TeacherHeader from "../../components/TeacherHeader";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface ClassScheduleResponse {
   totalCount: number;
@@ -132,7 +133,8 @@ const TeachersSchedule = () => {
         }
 
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
+      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}`,
+
           {
             params: { teacherId },
             headers: {
@@ -318,7 +320,8 @@ const TeachersSchedule = () => {
       };
 
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/classShedule/requestReshedule`,
+             `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.UPDATE_CLASS_REQUEST_RESCHEDULE}`,
+
         payload,
         {
           headers: {

@@ -8,6 +8,7 @@ import { Search, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { MdTune } from "react-icons/md";
 import { useRouter } from "next/navigation";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 export interface UnifiedClassSchedule {
   _id: string;
@@ -147,7 +148,7 @@ const Earnings = () => {
       }
 
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}`,
         {
           params: { teacherId },
           headers: {

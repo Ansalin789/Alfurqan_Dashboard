@@ -6,6 +6,7 @@ import { FaMicrophone, FaTrash, FaUpload } from "react-icons/fa";
 import { useSearchParams } from "next/navigation";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Assignment {
   name: string;
@@ -581,7 +582,7 @@ const NewAssignment = () => {
       return;
     }
     try {
-      const response = await fetch("http://localhost:5001/groupAssignments", {
+      const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GROUP_ASSIGNMENTS}`, {
         method: "POST",
         body: formData, // ✅ Use FormData directly
 
