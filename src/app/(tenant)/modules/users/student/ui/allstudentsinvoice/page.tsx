@@ -16,6 +16,7 @@ import { MdTune } from "react-icons/md";
 import StudentHeader from "../../components/StudentHeader";
 import React from "react";
 import Pagination from "@/components/Pagination";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Student {
   studentId: string;
@@ -103,7 +104,7 @@ const Invoice = () => {
           return;
         }
         const response = await axios.get<InvoiceResponse>(
-          "https://api.blackstoneinfomaticstech.com/studentinvoice",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.INVOICE.STUDENT_INVOICE}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -151,7 +152,7 @@ const Invoice = () => {
 
     try {
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/student/create-payment-intent",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.PAYMENT.CREATE_STUDENT_PAYMENT}`,
         {
           amount: totalprice * 100,
           currency: "usd",

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell } from "recharts";
 import axios from "axios";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 function Assignment() {
   const [assignmentData, setAssignmentData] = useState({
@@ -29,7 +30,7 @@ function Assignment() {
         }
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/assignments/cardcount?studentId=${studentId}`
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.ASS_CARD_COUNT}?studentId=${studentId}`
           , {
             headers: {
               "Authorization": `Bearer ${token}`,

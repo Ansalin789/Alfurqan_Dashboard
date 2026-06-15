@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import axios from "axios"; // Added axios import
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Invoice {
   student: {
@@ -41,7 +42,7 @@ const Profile = () => {
     return;
   }
           const response = await axios.get<{ invoice: Invoice[] }>(
-            "https://api.blackstoneinfomaticstech.com/classShedule/totalhours",
+            `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASS_TOTAL_HOURS}`,
             {
               params: { studentId },
               headers: { "Content-Type": "application/json",

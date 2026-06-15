@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface ClassData {
   _id: string;
@@ -67,7 +68,7 @@ const UpcomingTable = () => {
         }
 
         const response = await axios.get<ApiResponse>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/students",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASSSHEDULE_STUDENTS}`,
           {
             params: { studentId },
             headers: {

@@ -2,6 +2,7 @@
 import { CircularProgress, Card, CardBody } from "@nextui-org/react";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 export default function App() {
   const [data, setData] = useState({
@@ -25,7 +26,7 @@ export default function App() {
         }
         const studentId = localStorage.getItem("StudentPortalId");
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/dashboard/student/counts",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.DASHBOARD_STUDENT_COUNTS}`,
           {
             params: { studentId },
             headers: {

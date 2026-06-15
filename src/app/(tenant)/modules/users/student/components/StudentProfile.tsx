@@ -9,6 +9,7 @@ import Link from "next/link";
 import { FaWhatsappSquare } from "react-icons/fa";
 import { IoLogoLinkedin } from "react-icons/io";
 import { RiExternalLinkFill } from "react-icons/ri";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 
 export interface IStudentInvoice {
@@ -62,7 +63,7 @@ useEffect(() => {
       const token = localStorage.getItem("StudentAuthToken");
       const courseName = localStorage.getItem("StudentcourseName");
       const res = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/alstudents/${loginStudentId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}/${loginStudentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -131,7 +132,7 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
 
       try {
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}/${studentId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -157,7 +158,7 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
       try {
         const localToken = localStorage.getItem("StudentAuthToken");
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}/${studentId}`,
           {
             headers: localToken ? { Authorization: `Bearer ${localToken}` } : {},
           }
@@ -183,7 +184,7 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
         }
 
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/studentinvoiceById",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.INVOICE.STUDENT_INVOICE_BYID}`,
           {
             params: { studentId, paymentStatus, courseName }, // Include paymentStatus here
             headers: {
@@ -230,7 +231,7 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
         const courseName = localStorage.getItem("StudentCourseName");
 
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/dashboard/student/counts",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.DASHBOARD_STUDENT_COUNTS}`,
           {
             params: { studentId, courseName },
             headers: {

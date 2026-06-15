@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 type ViewMode = "weekly" | "monthly" | "yearly";
 
@@ -74,7 +75,7 @@ const Growth: React.FC = () => {
     const fetchData = async () => {
       try {
         const res = await axios.get<APIResponse>(
-          `https://api.blackstoneinfomaticstech.com/alstudents/studentslevel?studentId=${studentId}`
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.ALSTUDENTS_STUDENTS_LEVEL}?studentId=${studentId}`
         );
         const data = res.data.studentCountByLevel;
 

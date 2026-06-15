@@ -58,6 +58,7 @@ export const AppApiEndpoints = {
     STUDENT_INVOICE: "/studentinvoice",
     STUDENT_INVOICE_LIST: "/studentinvoice/list",
     INVOICE_COUNTS: "/invoicecounts",
+    STUDENT_INVOICE_BYID:"/studentinvoiceById"
   },
 
   CALENDAR: {
@@ -73,6 +74,7 @@ export const AppApiEndpoints = {
     GET_STUDENTS_COUNTRY_COUNT: "/alstudents/studentscountrycount",
     GET_STUDENTS_RECORD_COUNT: "/alstudents/studentsrecordcount",
     GET_STUDENTS_GENDER_COUNT: "/alstudents/studentsGender",
+    ALSTUDENTS_STUDENTS_LEVEL:"/alstudents/studentslevel"
   },
 
   LEAVE: {
@@ -93,6 +95,7 @@ export const AppApiEndpoints = {
     DASHBOARD_ADMIN_TOTAL_TRIAL_REQUESTS: "/dashboard/admin/totaltrialrequest",
     GET_TEACHER_COUNTS: "/dashboard/teacher/counts",
     GET_SUPERVISOR_COUNTS: "/dashboard/supervisor/counts",
+    DASHBOARD_STUDENT_COUNTS:"/dashboard/student/counts"
   },
 
   CLASSSHEDULE: {
@@ -117,7 +120,8 @@ export const AppApiEndpoints = {
     GET_TEACHER_TRAILCLASS :"/teachertrialclass",
     UPDATE_CLASS_ATTENDANCE:"/classShedule/attendanceupdate",
     UPDATE_GROUP_CLASSSCHEDULE:"/groupclassschedule/bulkupdate",
-    UPDATE_CLASS_REQUEST_RESCHEDULE:"/classShedule/requestReshedule"
+    UPDATE_CLASS_REQUEST_RESCHEDULE:"/classShedule/requestReshedule",
+    GET_CLASS_TOTAL_HOURS:"/classShedule/totalhours"
   },
 
   AVAILABLE_TIME_SLOT: {
@@ -127,6 +131,7 @@ export const AppApiEndpoints = {
   PAYMENT: {
     CREATE_PAYMENT_INTENT: "/create-payment-intent",
     GET_STUDENT_PAYMENT_HISTORY: "/student/paymenthistory",
+    CREATE_STUDENT_PAYMENT :"/student/create-payment-intent"
   },
 
   APPLICANTS: {
@@ -243,7 +248,8 @@ export const AppApiEndpoints = {
   TEACHERMEETING: {
     CREATE: "/teacherMeeting",
     UPDATE :"/updateTeacherMeeting",
-    GET_MEETING :"/teacherMeeting"
+    GET_MEETING :"/teacherMeeting",
+    GET_STUDENTMEETING_LIST:"/StudentMeetinglist"
   },
 
   FEEBACK :{

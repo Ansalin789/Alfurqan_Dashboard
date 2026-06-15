@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Student {
   studentId: string;
@@ -106,7 +107,7 @@ const NextClass = () => {
         }
 
         const response = await axios.get<ApiResponse>(
-          `https://api.blackstoneinfomaticstech.com/classShedule/students`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASSSHEDULE_STUDENTS}`,
           {
             params: { studentId },
    headers: { "Content-Type": "application/json",

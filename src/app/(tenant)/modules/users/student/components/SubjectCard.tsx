@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell } from "recharts";
 import axios from "axios";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface PieChartData {
   name: string;
@@ -35,7 +36,7 @@ const Subjectcard: React.FC = () => {
         if (!studentId || !token) return;
 
         const response = await axios.get<ApiResponse>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/students",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASSSHEDULE_STUDENTS}`,
           {
             params: { studentId },
             headers: {
@@ -118,7 +119,7 @@ const Subjectcard: React.FC = () => {
           return;
         }
 
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/dashboard/student/counts", {
+        const response = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.DASHBOARD_STUDENT_COUNTS}`, {
           params: { studentId, courseName },
           headers: {
             "Content-Type": "application/json",

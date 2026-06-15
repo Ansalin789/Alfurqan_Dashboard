@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface ApiResponse {
   pendingPercentage: number;
@@ -26,7 +27,7 @@ const Page = () => {
     return;
   }  
 
-        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule/totalhours", {
+        const response = await axios.get<ApiResponse>(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASS_TOTAL_HOURS}`, {
           params: { studentId },
          headers: { "Content-Type": "application/json",
                'Authorization': `Bearer ${token}`,

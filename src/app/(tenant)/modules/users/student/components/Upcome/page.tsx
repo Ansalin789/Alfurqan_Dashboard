@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Calendar, User } from "lucide-react";
 import axios from "axios";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 const UpcomingClasses = () => {
   interface ClassEvent {
@@ -55,7 +56,7 @@ const UpcomingClasses = () => {
     return;
   }  
         const response = await axios.get<ApiResponse>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/students",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASSSHEDULE_STUDENTS}`,
           {
             params: { studentId: studentId },
             headers: {

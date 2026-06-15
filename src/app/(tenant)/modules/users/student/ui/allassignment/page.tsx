@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation"; // Add this at the top
 import Pagination from "@/components/Pagination";
 import BaseLayout2 from "@/app/(tenant)/modules/users/student/components/BaseLayout2";
 import StudentHeader from "../../components/StudentHeader";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface AssignmentType {
   _id: string;
@@ -177,7 +178,7 @@ const StudentList = () => {
           console.error("Missing token or teacher ID");
           return;
         }
-        const res = await fetch(`https://api.blackstoneinfomaticstech.com/assignments/student?studentId=${studentId}`,
+        const res = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GET_STUDENT_ASSIGNMENTS}?studentId=${studentId}`,
           {
             headers: {
               "Authorization": `Bearer ${token}`,

@@ -11,6 +11,7 @@ import { IoMdClose } from "react-icons/io";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
 import { getSocket } from "@/app/utils/socket";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 // Interfaces based on your API response
 interface Teacher {
@@ -115,7 +116,7 @@ const ScheduledMeetings = () => {
         if (!token || !teacherId) return;
 
         const response = await axios.get<MeetingApiResponse>(
-          "https://api.blackstoneinfomaticstech.com/StudentMeetinglist",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.TEACHERMEETING.GET_STUDENTMEETING_LIST}`,
           {
             params: { studentId: teacherId },
             headers: {
