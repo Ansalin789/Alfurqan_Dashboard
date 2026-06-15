@@ -112,6 +112,9 @@ export const AppApiEndpoints = {
     TEACHER_EARNINGS :"/teacher/earnings",
     UPDATE_TEACHER_RESCHEDULE:"/classShedule/teacherreschedule",
     GET_CLASS_STUDENT_ATT_COUNT:"/classstudentsattendancecounts",
+    CLASS_SESSION_END:"/classSession/triggerEnd",
+    GET_TEACHERMEETINGLIST:"/teacherMeetinglist",
+    GET_TEACHER_TRAILCLASS :"/teachertrialclass",
   },
 
   AVAILABLE_TIME_SLOT: {
@@ -195,6 +198,8 @@ export const AppApiEndpoints = {
     GET_TEACHER_ASS_CARD_COUNT: "/assignments/teacher/cardcount",
     GET_ALL_ASS:"/allAssignment",
     UPDATE:"/assignments",
+    GROUP_ASSIGNMENTS:"/groupAssignments",
+    GET_ADMIN_ASS:"/adminassignment/assignment"
   },
 
   LEVELS: {
@@ -232,6 +237,7 @@ export const AppApiEndpoints = {
 
   TEACHERMEETING: {
     CREATE: "/teacherMeeting",
+    UPDATE :"/updateTeacherMeeting"
   },
 
 
