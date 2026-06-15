@@ -160,7 +160,7 @@ const Message = () => {
     console.error("❌ AdminAuthToken not found");
   }
       const response = await axios.get<{ users: IUser[] }>(
-        "https://api.blackstoneinfomaticstech.com/users",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.USER.GET}`,
         {
           params: { role },
           headers: {
@@ -225,7 +225,7 @@ const Message = () => {
       }
 
       const { data } = await axios.get<IMessageResponse>(
-        `https://api.blackstoneinfomaticstech.com/realtimemessage/${userId}/${receiverId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MESSAGES.GET}/${userId}/${receiverId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 10000,
@@ -340,7 +340,7 @@ const Message = () => {
   }
       // Send the new message to the backend API
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/realtimemessage",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MESSAGES.CREATE}`,
         newMessage,
         {
           headers: {

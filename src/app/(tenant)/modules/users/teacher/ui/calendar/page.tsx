@@ -99,7 +99,7 @@ const TeacherSchedulePage = () => {
     }
 
     fetch(
-      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}?teacherId=${teacherId}`,
+      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}Y?teacherId=${teacherId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

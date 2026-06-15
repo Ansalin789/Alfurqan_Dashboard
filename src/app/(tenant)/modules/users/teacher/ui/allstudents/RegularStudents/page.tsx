@@ -772,7 +772,7 @@ const RegularStudents = () => {
 
       // Submit to API
       const res = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/assignments",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.CREATE}`,
         formData,
         {
           headers: {
