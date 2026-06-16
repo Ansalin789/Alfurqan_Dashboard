@@ -22,6 +22,7 @@ import {
 import PhoneInput from "react-phone-number-input";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 type Props = {
   readonly onClose: () => void;
 };
@@ -235,7 +236,7 @@ const minutes = ["00", "30"];
         return;
       }
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/recruit",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.RECRUITMENT.CREATE_SUPERVISOR_RECRUIT}`,
         formData,
         {
           headers: {

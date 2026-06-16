@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import "../../../../public/assets/css/supervisordashcalendar.css";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 const ApplicationChart = () => {
   const [range, setRange] = useState<Range[]>([
@@ -49,7 +50,7 @@ const ApplicationChart = () => {
       }
 
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/application?fromDate=${from}&toDate=${to}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.APPLICANTS.GET_APPLICATION_SUPERVISOR}?fromDate=${from}&toDate=${to}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

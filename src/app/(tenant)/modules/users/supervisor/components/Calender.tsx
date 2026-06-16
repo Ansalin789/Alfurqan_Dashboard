@@ -5,6 +5,7 @@ import "react-calendar/dist/Calendar.css";
 import "./Calendar.css";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 interface Event {
   title: string;
   start: Date;
@@ -60,7 +61,7 @@ const Academic: React.FC = () => {
         }
 
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/allMeetings",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MEETING.GET_SUPERVISOR_MEETING}`,
           {
             headers: {
               "Content-Type": "application/json",

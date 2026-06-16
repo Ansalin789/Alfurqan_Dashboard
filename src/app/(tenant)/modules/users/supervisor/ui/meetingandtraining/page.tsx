@@ -17,6 +17,7 @@ import SuccessPopup from "../../components/successPopup";
 import FailedPopup from "../../components/failedPopup";
 import { setTime } from "react-datepicker/dist/date_utils";
 import { getSocket } from "@/app/utils/socket";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface ApiResponse {
   candidateFirstName: string;
@@ -354,7 +355,7 @@ const ScheduledClasses = () => {
 
     axios
       .get<{ totalCount: number; applicants: ApiResponse[] }>(
-        "https://api.blackstoneinfomaticstech.com/applicants",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.APPLICANTS.GET_LIST}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -416,7 +417,7 @@ const ScheduledClasses = () => {
         console.log("fetchMeetings - starting fetch");
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/allMeetings?supervisorId=${supervisorId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MEETING.GET_SUPERVISOR_MEETING}?supervisorId=${supervisorId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -553,7 +554,7 @@ const ScheduledClasses = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/meeting/${selectedItemId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MEETING.GET_SUPERVISOR_MEET}/${selectedItemId}`,
         {
           method: "PUT",
           headers: {
@@ -683,7 +684,7 @@ const ScheduledClasses = () => {
     if (status) params["meetingStatus"] = status;
 
     try {
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", {
+      const response = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MEETING.GET_SUPERVISOR_MEETING}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

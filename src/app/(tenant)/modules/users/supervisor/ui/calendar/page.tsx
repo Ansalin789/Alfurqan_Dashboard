@@ -6,6 +6,7 @@ import { CalendarDays, Clock } from "lucide-react";
 import SupervisorHeader from "../../components/supervisorHeader";
 import axios from "axios";
 import moment from "moment";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Meeting {
   _id: string;
@@ -85,13 +86,13 @@ const SchedulePage = () => {
         }
 
         const [supervisorResponse, adminResponse] = await Promise.all([
-          axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", {
+          axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MEETING.GET_SUPERVISOR_MEETING}`, {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
           }),
-          axios.get("https://api.blackstoneinfomaticstech.com/allAdminMeeting", {
+          axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ADMIN_MEETING.GET_LIST}`, {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,

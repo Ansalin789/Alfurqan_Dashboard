@@ -24,6 +24,7 @@ import { getSocket } from "@/app/utils/socket";
 import { ImAttachment } from "react-icons/im";
 import Subject from "../../components/Subject";
 import { useTheme } from "@/context/ThemeContext";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Applicant {
   _id: string;
@@ -214,7 +215,7 @@ export default function Dashboard() {
     };
 
     const fetchApplicants = axios.get(
-      "https://api.blackstoneinfomaticstech.com/applicants",
+      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.APPLICANTS.GET_LIST}`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -224,7 +225,7 @@ export default function Dashboard() {
     );
 
     const fetchDashboardCounts = axios.get(
-      "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts",
+      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.GET_SUPERVISOR_COUNTS}`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -345,7 +346,7 @@ export default function Dashboard() {
           return;
         }
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/allMeetings",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MEETING.GET_SUPERVISOR_MEETING}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -443,7 +444,7 @@ setTodayMeetings(upcomingMeetings);
         return;
       }
       const response = await axios.get(
-        "https://api.blackstoneinfomaticstech.com/applicants",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.APPLICANTS.GET_LIST}`,
         {
           headers: {
             "Content-Type": "application/json",

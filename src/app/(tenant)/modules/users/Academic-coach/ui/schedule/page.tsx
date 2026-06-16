@@ -520,9 +520,9 @@ const SchedulePage = () => {
 
           {/* List Schedule */}
           <div className="w-full lg:w-1/3 bg-white dark:bg-[#343434] shadow-md rounded-xl flex flex-col min-h-[630px] lg:h-[630px]">
-            <div className="p-4 md:p-6">
+            <div className="p-4 md:p-4">
               <h2 className="text-[18px] font-semibold">List Schedule</h2>
-              <div className="space-y-3 md:space-y-4 mt-6">
+              <div className="space-y-3 md:space-y-4 mt-7 overflow-y-scroll scrollbar-none h-[520px] p-3 bg-gray-50 rounded-lg">
                 {eventsForSelectedDate.length > 0 ? (
                   eventsForSelectedDate.map((item, index) => {
                     const textColors = [
@@ -542,20 +542,20 @@ const SchedulePage = () => {
                       >
                         <div className="flex justify-between">
                           <h3
-                            className={`font-medium text-[14px] ${currentTextColor}`}
+                            className={`font-medium p-2 bg-gray-100 rounded-tl-lg rounded-bl-lg rounded-br-full rounded-tr-full w-40 text-[11px] ${currentTextColor}`}
                           >
                             {item.title}
                           </h3>
                           <div>
-                            <div className="flex gap-4">
-                              <div className="text-[10px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
+                            <div className="flex gap-4 align-middle justify-center mt-3">
+                              <div className="text-[9px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
                                 <FaClock size={10} />
                                 {moment(item.start, "HH:mm").format(
                                   "h:mm A",
                                 )} -{" "}
                                 {moment(item.end, "HH:mm").format("h:mm A")}
                               </div>
-                              <span className="text-[10px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
+                              <span className="text-[9px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
                                 <BsFillCalendar2WeekFill size={10} />{" "}
                                 {moment(item.date).format("DD MMM YYYY")}
                               </span>

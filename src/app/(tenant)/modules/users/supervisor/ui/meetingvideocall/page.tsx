@@ -6,6 +6,7 @@ import axios from "axios";
 import BaseLayout3 from "@/app/(tenant)/modules/users/supervisor/components/BaseLayout3";
 import SupervisorHeader from "../../components/supervisorHeader";
 import { useSearchParams } from "next/navigation";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Attendance {
   id: string | null;
@@ -111,7 +112,7 @@ export default function Page() {
         console.log("🌐 CALLING API FOR MEETING ID:", meetingId);
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/teacherMeeting?meetingId=${meetingId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.TEACHERMEETING.GET_MEETING}?meetingId=${meetingId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -234,12 +235,12 @@ export default function Page() {
       }
 
       console.log("📤 SENDING PUT REQUEST");
-      console.log("URL:", `https://api.blackstoneinfomaticstech.com/meetingminutes/${meetingId}`);
+      console.log("URL:", `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MEETING_MINUTES.UPDATE_MINUTES}/${meetingId}`);
       console.log("METHOD: PUT");
       console.log("BODY:", JSON.stringify(payload, null, 2));
 
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/meetingminutes/${meetingId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MEETING_MINUTES.UPDATE_MINUTES}/${meetingId}`,
         {
           method: "PUT",
           headers: {

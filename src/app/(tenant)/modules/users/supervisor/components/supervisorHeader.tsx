@@ -10,6 +10,7 @@ import AddApplicants from "@/app/(tenant)/modules/users/supervisor/components/ad
 import { getSocket } from "@/app/utils/socket";
 import axios from "axios";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 type Props = {
   readonly currentSection: string;
@@ -111,7 +112,7 @@ export default function SupervisorHeader({
           ? localStorage.getItem("SupervisorPortalId")
           : null;
       const { data } = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/notification/getlist?receiverId=${userId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.NOTIFICATION.GET_LIST}?receiverId=${userId}`,
         {
           method: "GET",
           headers: {
@@ -145,7 +146,7 @@ export default function SupervisorHeader({
       }
 
       await axios.put(
-        `https://api.blackstoneinfomaticstech.com/notification/${notificationId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.NOTIFICATION.CREATE}/${notificationId}`,
         {
           isRead: true,
           notificationStatus: "Seen",

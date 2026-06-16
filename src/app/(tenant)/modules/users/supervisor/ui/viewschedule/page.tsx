@@ -10,6 +10,7 @@ import { Search } from "lucide-react";
 import { FaChevronDown } from "react-icons/fa";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 const ViewSchedule = () => {
   interface Student {
@@ -116,7 +117,7 @@ const ViewSchedule = () => {
           return;
         }
         const response = await axios.get<ApiResponse>(
-          "https://api.blackstoneinfomaticstech.com/classShedule",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -247,7 +248,7 @@ const ViewSchedule = () => {
     if (course) params.course = course; // course name
 
     try {
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/classShedule", {
+      const response = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

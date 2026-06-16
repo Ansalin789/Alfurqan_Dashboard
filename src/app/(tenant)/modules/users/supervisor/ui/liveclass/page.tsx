@@ -8,6 +8,7 @@ import BaseLayout3 from "@/app/(tenant)/modules/users/supervisor/components/Base
 import SupervisorHeader from "../../components/supervisorHeader";
 import SuccessPopup from "../../components/successPopup";
 import FailedPopup from "../../components/failedPopup";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Student {
   studentId: string;
@@ -78,7 +79,7 @@ function LiveClass() {
         }
         console.log(classScheduleid);
         const response = await axios.get<ClassData>(
-          `https://api.blackstoneinfomaticstech.com/classShedule/${classScheduleid}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET}/${classScheduleid}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -152,7 +153,7 @@ function LiveClass() {
         return;
       }
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/supervisorfeedback",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.FEEBACK.SUPERVISORS_FEEDBACK}`,
         feedbackData,
         {
           headers: {

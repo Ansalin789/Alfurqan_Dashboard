@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import axios, { AxiosError } from "axios";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 type Props = {
   readonly onClose: () => void;
@@ -45,7 +46,7 @@ export default function AddMeeting({ onClose }: Props) {
           typeof window !== "undefined"
             ? localStorage.getItem("SupervisorAuthToken")
             : null;
-        const url = `https://api.blackstoneinfomaticstech.com/teacher`;
+        const url = `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.TEACHERMEETING.GET_TEACHER_MEET}`;
 
         const params: Record<string, string> = {
           supervisorId: Id ?? "",
@@ -135,7 +136,7 @@ export default function AddMeeting({ onClose }: Props) {
       }
 
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/addMeeting",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MEETING.CREATE}`,
         requestData,
         {
           headers: {

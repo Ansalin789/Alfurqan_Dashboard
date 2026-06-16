@@ -11,6 +11,7 @@ import { MdTune } from "react-icons/md";
 import axios from "axios";
 import { IoPersonOutline } from "react-icons/io5";
 import { AiOutlineMenuUnfold } from "react-icons/ai";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface FlattenedFeedbackItem {
   _id: string;
@@ -190,8 +191,8 @@ const resetFilters = () => {
 
         // 🔹 UPDATED: Send courseId or empty
         const url = selectedCourse 
-          ? `https://api.blackstoneinfomaticstech.com/allfeedback?course=${selectedCourse}`
-          : "https://api.blackstoneinfomaticstech.com/allfeedback";
+          ? `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.FEEBACK.SUPERVISOR_FEEDBACK}?course=${selectedCourse}`
+          : `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.FEEBACK.SUPERVISOR_FEEDBACK}`;
 
         const response = await axios.get(url, {
           headers: {

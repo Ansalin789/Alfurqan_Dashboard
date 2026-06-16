@@ -758,7 +758,7 @@ const Page = () => {
   function handlePortalAccess(username: string, password: string) {
     const encodedUsername = encodeURIComponent(username);
     const encodedPassword = encodeURIComponent(password);
-    const portalURL = `${AppApiEndpoints.API_END_POINT}/modules/users/teacher/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
+    const portalURL = `/modules/users/teacher/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
     window.location.href = portalURL;
   }
   function handlePortalAccessforemployee(username: string, password: string, roles: string[]) {
@@ -768,11 +768,11 @@ const Page = () => {
     let portalURL = "";
 
     if (roles.includes("ACADEMICCOACH")) {
-      portalURL = `${AppApiEndpoints.API_END_POINT}/modules/users/Academic-coach/ui/login?username=${encodedUsername}&password=${encodedPassword}`;
+      portalURL = `/modules/users/Academic-coach/ui/login?username=${encodedUsername}&password=${encodedPassword}`;
     } else if (roles.includes("ADMIN")) {
-      portalURL = `${AppApiEndpoints.API_END_POINT}/modules/users/admin-main/ui/login?username=${encodedUsername}&password=${encodedPassword}`;
+      portalURL = `/modules/users/admin-main/ui/login?username=${encodedUsername}&password=${encodedPassword}`;
     } else {
-      portalURL = `${AppApiEndpoints.API_END_POINT}/modules/users/supervisor/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
+      portalURL = `/modules/users/supervisor/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
     }
 
     window.location.href = portalURL;

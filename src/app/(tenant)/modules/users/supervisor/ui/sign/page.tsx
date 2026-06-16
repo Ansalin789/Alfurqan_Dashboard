@@ -11,6 +11,7 @@ import {
 import axios from "axios";
 import { AlertCircle, ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { AppApiEndpoints } from "../../../../../../_components/contents/api-endpoints";
 
 export interface RoleModuleAccess {
   read: boolean;
@@ -134,7 +135,7 @@ const SignIn: React.FC = () => {
   }, [error]);
 
   const signIn = async (username: string, password: string) => {
-    return axios.post("https://api.blackstoneinfomaticstech.com/signin", {
+    return axios.post(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.AUTH.LOGIN}`, {
       username,
       password,
     });
@@ -147,7 +148,7 @@ const SignIn: React.FC = () => {
   ) => {
     try {
       const response = await axios.get<AccessApiResponse>(
-        `https://api.blackstoneinfomaticstech.com/update-access/${id}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.RBAC.GET_ACCESS}/${id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -263,7 +264,7 @@ const SignIn: React.FC = () => {
     const checkEmail = async (email: string) => {
       try {
         const response = await axios.post(
-          `https://api.blackstoneinfomaticstech.com/allcheck-email`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CHECKMAIL.CREATE_CHECK}`,
           { email }
         );
 

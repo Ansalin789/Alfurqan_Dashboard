@@ -1,4 +1,5 @@
 "use client";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 
@@ -42,7 +43,7 @@ const GenderPieChart: React.FC = () => {
         }
 
         const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/teacherfemalemale",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.GET_TEACHER_FEMALEMALE}`,
           {
             headers: {
               "Content-Type": "application/json",

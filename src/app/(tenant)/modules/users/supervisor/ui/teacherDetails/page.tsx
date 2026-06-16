@@ -8,6 +8,7 @@ import { ImAttachment } from "react-icons/im";
 
 import BaseLayout3 from "@/app/(tenant)/modules/users/supervisor/components/BaseLayout3";
 import SupervisorHeader from "../../components/supervisorHeader";
+import { AppApiEndpoints } from "../../../../../../_components/contents/api-endpoints";
 
 const TeacherDetails = () => {
   interface IProfessionalExperience {
@@ -86,7 +87,7 @@ const TeacherDetails = () => {
           return;
         }
         const response = await fetch(
-          `https://api.blackstoneinfomaticstech.com/applicants/${teacherId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.APPLICANTS.GET_LIST}/${teacherId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -114,7 +115,7 @@ const TeacherDetails = () => {
         }
 
         const response = await fetch(
-          `https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts?teacherId=${teacherId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.GET_TEACHER_COUNTS}?teacherId=${teacherId}`,
           {
             method: "GET",
             headers: {
@@ -131,7 +132,7 @@ const TeacherDetails = () => {
         let overallPerformance = 0;
         try {
           const perfResponse = await fetch(
-            `https://api.blackstoneinfomaticstech.com/classstudentsattendancecounts?teacherId=${teacherId}`,
+            `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASS_STUDENT_ATT_COUNT}?teacherId=${teacherId}`,
             {
               method: "GET",
               headers: {

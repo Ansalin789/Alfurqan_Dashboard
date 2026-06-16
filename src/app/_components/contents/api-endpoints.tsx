@@ -9,13 +9,6 @@ export const AppApiEndpoints = {
     LOGOUT :"/signout"
   },
 
-  LEAVE_REQUEST: {
-    CREATE: "/leaverequest",
-    LIST: "/leavesummary/list",
-    UPDATE: "/leavesummary",
-    GET:"/leaverequest"
-  },
-
   USER: {
     GET: "/users",
     CREATE: "/users",
@@ -48,6 +41,8 @@ export const AppApiEndpoints = {
   MEETING: {
     GET_LIST: "/meetinglist",
     CREATE: "/addMeeting",
+    GET_SUPERVISOR_MEETING: "/allMeetings",
+    GET_SUPERVISOR_MEET: "/meeting"
   },
 
   INVOICE: {
@@ -95,7 +90,8 @@ export const AppApiEndpoints = {
     DASHBOARD_ADMIN_TOTAL_TRIAL_REQUESTS: "/dashboard/admin/totaltrialrequest",
     GET_TEACHER_COUNTS: "/dashboard/teacher/counts",
     GET_SUPERVISOR_COUNTS: "/dashboard/supervisor/counts",
-    DASHBOARD_STUDENT_COUNTS:"/dashboard/student/counts"
+    DASHBOARD_STUDENT_COUNTS:"/dashboard/student/counts",
+    GET_TEACHER_FEMALEMALE: "/teacherfemalemale"
   },
 
   CLASSSHEDULE: {
@@ -137,6 +133,7 @@ export const AppApiEndpoints = {
   APPLICANTS: {
     GET_LIST: "/applicants",
     GET_APPLICANT_COUNT_BY_COUNTRY: "/applicants/countriescount",
+    GET_APPLICATION_SUPERVISOR: "/application"
   },
 
   MEETING_MINUTES: {
@@ -188,6 +185,7 @@ export const AppApiEndpoints = {
   RECRUITMENT: {
     UPDATE: "/admin",
     GET_TEACHER_OVERVIEW: "/teacheroverview",
+    CREATE_SUPERVISOR_RECRUIT: "/recruit",
   },
 
   ANALYTICS: {
@@ -249,11 +247,15 @@ export const AppApiEndpoints = {
     CREATE: "/teacherMeeting",
     UPDATE :"/updateTeacherMeeting",
     GET_MEETING :"/teacherMeeting",
-    GET_STUDENTMEETING_LIST:"/StudentMeetinglist"
+    GET_STUDENTMEETING_LIST:"/StudentMeetinglist",
+    GET_TEACHER_MEET: "/teacher"
+
   },
 
   FEEBACK :{
-    TEACHER_FEEDBACK:"/teacherfeedback"
+    TEACHER_FEEDBACK:"/teacherfeedback",
+    SUPERVISOR_FEEDBACK: "/allfeedback",
+    SUPERVISORS_FEEDBACK: "/supervisorfeedback"
   }
 
 };

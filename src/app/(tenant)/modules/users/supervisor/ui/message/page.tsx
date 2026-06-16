@@ -9,6 +9,7 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import { CgAttachment } from "react-icons/cg";
 import SupervisorHeader from "../../components/supervisorHeader";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 
 
@@ -143,7 +144,7 @@ const Message = () => {
         return [];
       }
 
-      const res = await axios.get<any>("https://api.blackstoneinfomaticstech.com/alstudents", {
+      const res = await axios.get<any>(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -211,7 +212,7 @@ const Message = () => {
 
     for (const r of roleCandidates) {
       try {
-        const response = await axios.get<any>("https://api.blackstoneinfomaticstech.com/users", {
+        const response = await axios.get<any>(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.USER.GET}`, {
           params: { role: r },
           headers: {
             "Content-Type": "application/json",
@@ -293,7 +294,7 @@ const Message = () => {
       }
 
       const { data } = await axios.get<IMessageResponse>(
-        `https://api.blackstoneinfomaticstech.com/realtimemessage/${userId}/${receiverId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MESSAGES.GET}/${userId}/${receiverId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -513,7 +514,7 @@ const Message = () => {
         return;
       }
 
-      const response = await axios.post("https://api.blackstoneinfomaticstech.com/realtimemessage", newMessage, {
+      const response = await axios.post(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MESSAGES.CREATE}`, newMessage, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
