@@ -6,6 +6,9 @@ import { use, useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { toast } from "react-toastify";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 // Interfaces based on your API response
 interface Teacher {
   teacherId: string;
@@ -68,16 +71,25 @@ const NextMeetingSchedule = () => {
       setError(null);
       try {
         const studentId = localStorage.getItem("StudentPortalId");
+        if (!studentId) {
+  toast.error(
+    AppValidationMessages.AUTH.STUDENT_REQUIRED
+  );
+  setLoading(false);
+  return;
+}
         const token =
           typeof window !== "undefined"
             ? localStorage.getItem("StudentAuthToken")
             : null;
 
-        if (!token) {
-          console.error("❌ Student AuthToken not found");
-          setLoading(false);
-          return;
-        }
+       if (!token) {
+  toast.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+  setLoading(false);
+  return;
+}
 
         const res = await axios.get<StudentMeetingApiResponse>(
           `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.TEACHERMEETING.GET_STUDENTMEETING_LIST}`,
@@ -123,12 +135,20 @@ const NextMeetingSchedule = () => {
     return aDateTime.getTime() - bDateTime.getTime();
   })[0] || null;
 
-        setClassData(upcoming);
-        setLoading(false);
+if (!upcoming) {
+  console.log(
+    AppValidationMessages.MEETING.NO_MEETING_FOUND
+  );
+}        setLoading(false);
       } catch (err: any) {
         console.error(err);
-        setError("Failed to fetch meeting data");
-        setLoading(false);
+ toast.error(
+    AppFailureToastMessages.MEETING_FETCH
+  );
+
+  setError(
+    AppFailureToastMessages.MEETING_FETCH
+  );        setLoading(false);
       }
     };
 

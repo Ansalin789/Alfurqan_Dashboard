@@ -3,6 +3,9 @@ import { CircularProgress, Card, CardBody } from "@nextui-org/react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { toast } from "react-toastify";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 export default function App() {
   const [data, setData] = useState({
@@ -20,11 +23,20 @@ export default function App() {
             ? localStorage.getItem("StudentAuthToken")
             : null;
 
-        if (!token) {
-          console.error("❌ StudentAuthToken not found");
-          return;
-        }
+       if (!token) {
+  toast.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+  return;
+}
         const studentId = localStorage.getItem("StudentPortalId");
+
+if (!studentId) {
+  toast.error(
+    AppValidationMessages.AUTH.STUDENT_REQUIRED
+  );
+  return;
+}
         const response = await axios.get(
           `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.DASHBOARD_STUDENT_COUNTS}`,
           {
@@ -37,8 +49,12 @@ export default function App() {
         );
         setData(response.data); // Set the fetched data into the state
       } catch (error) {
-        console.error("Error fetching data:", error);
-      }
+  console.error(error);
+
+  toast.error(
+    AppFailureToastMessages.STUDENT_DASHBOARD_COUNT_FETCH
+  );
+}
     };
 
     fetchData(); // Fetch data when component mounts, passing dynamic studentId

@@ -12,6 +12,8 @@ import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/suc
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
 import { getSocket } from "@/app/utils/socket";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 // Interfaces based on your API response
 interface Teacher {
@@ -113,7 +115,21 @@ const ScheduledMeetings = () => {
       try {
         const teacherId = localStorage.getItem("StudentPortalId");
         const token = localStorage.getItem("StudentAuthToken");
-        if (!token || !teacherId) return;
+        if (!token || !teacherId) return;if (!token) {
+  setFailedMessage(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+  setFailed(true);
+  return;
+}
+
+if (!teacherId) {
+  setFailedMessage(
+    AppValidationMessages.AUTH.STUDENT_REQUIRED
+  );
+  setFailed(true);
+  return;
+}
 
         const response = await axios.get<MeetingApiResponse>(
           `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.TEACHERMEETING.GET_STUDENTMEETING_LIST}`,
@@ -142,8 +158,11 @@ const ScheduledMeetings = () => {
         setUpcomingClasses(upcoming);
         setCompletedData(completed);
       } catch (error) {
-        console.error("Error fetching meeting data:", error);
-      }
+  setFailedMessage(
+    AppFailureToastMessages.MEETING_FETCH
+  );
+  setFailed(true);
+}
     };
 
     fetchClasses();
@@ -204,7 +223,18 @@ const ScheduledMeetings = () => {
   // Filter logic
   const handleApplyMeetingFilters = () => {
     let filtered = [...dataToShow];
-
+if (
+  meetingFilters.fromDate &&
+  meetingFilters.toDate &&
+  new Date(meetingFilters.fromDate) >
+    new Date(meetingFilters.toDate)
+) {
+  setFailedMessage(
+    AppValidationMessages.FILTER.INVALID_DATE_RANGE
+  );
+  setFailed(true);
+  return;
+}
     if (meetingFilters.meetingName) {
       filtered = filtered.filter((m) =>
         m.meetingName
@@ -261,11 +291,36 @@ const ScheduledMeetings = () => {
     indexOfLastItem
   );
 
-  function handleRescheduleSubmit(
-    event: React.MouseEvent<HTMLButtonElement>
-  ): void {
-    throw new Error("Function not implemented.");
+ function handleRescheduleSubmit(
+  event: React.MouseEvent<HTMLButtonElement>
+) {
+
+  if (!rescheduleReason.trim()) {
+    setFailedMessage(
+      AppValidationMessages.RESCHEDULE.REASON_REQUIRED
+    );
+    setFailed(true);
+    return;
   }
+
+  if (!rescheduleDate) {
+    setFailedMessage(
+      AppValidationMessages.RESCHEDULE.DATE_REQUIRED
+    );
+    setFailed(true);
+    return;
+  }
+
+  if (!rescheduleTime) {
+    setFailedMessage(
+      AppValidationMessages.RESCHEDULE.TIME_REQUIRED
+    );
+    setFailed(true);
+    return;
+  }
+
+  // API CALL HERE
+}
 
   return (
     <>

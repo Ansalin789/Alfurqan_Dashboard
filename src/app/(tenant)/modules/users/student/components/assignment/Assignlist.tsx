@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell } from "recharts";
 import axios from "axios";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
+import { toast } from "react-toastify";
 
 function Assignment() {
   const [assignmentData, setAssignmentData] = useState({
@@ -48,9 +50,12 @@ function Assignment() {
         } else {
           console.error("Failed to fetch data:", response.data.message);
         }
-      } catch (error) {
-        console.error("API error:", error);
-      } 
+      }catch (error) {
+  console.error("API error:", error);
+  toast.error(
+    AppFailureToastMessages.ASSIGNMENT_CARD_FETCH
+  );
+}
     };
 
     fetchAssignmentData();
