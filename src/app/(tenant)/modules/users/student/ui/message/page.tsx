@@ -9,6 +9,7 @@ import { FiSearch } from "react-icons/fi";
 import axios from "axios";
 import { io } from "socket.io-client";
 import StudentHeader from "../../components/StudentHeader";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface IMessage {
   _id: string;
@@ -124,7 +125,7 @@ const Message = () => {
       }
 
       const response = await axios.get<{ users: IUser[] }>(
-        "https://api.blackstoneinfomaticstech.com/users",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.USER.GET}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -173,7 +174,7 @@ const Message = () => {
       }
 
       const { data } = await axios.get<IMessageResponse>(
-        `https://api.blackstoneinfomaticstech.com/realtimemessage/${userData.userId}/${receiverId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MESSAGES.GET}/${userData.userId}/${receiverId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -361,7 +362,7 @@ const Message = () => {
       }
 
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/realtimemessage",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MESSAGES.CREATE}`,
         newMessage,
         {
           headers: {

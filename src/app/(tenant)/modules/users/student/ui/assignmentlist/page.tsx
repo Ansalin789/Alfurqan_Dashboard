@@ -9,6 +9,7 @@ import Pagination from "@/components/Pagination";
 import BaseLayout2 from "@/app/(tenant)/modules/users/student/components/BaseLayout2";
 import StudentHeader from "../../components/StudentHeader";
 import { useRouter } from "next/navigation"; // Add this at the top
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface AssignmentType {
   _id: string;
@@ -170,7 +171,7 @@ useEffect(() => {
         return;
       }
 
-      const res = await fetch(`https://api.blackstoneinfomaticstech.com/assignments/?assignmentId=${assignmentId}&studentId=${studentId}`, {
+      const res = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GET_LIST}/?assignmentId=${assignmentId}&studentId=${studentId}`, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`

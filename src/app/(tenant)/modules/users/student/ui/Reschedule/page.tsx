@@ -12,6 +12,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import StudentHeader from "../../components/StudentHeader";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 
 interface ClassSchedule {
@@ -133,7 +134,7 @@ const TeachersSchedule = () => {
         }
 
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/classShedule/students",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASSSHEDULE_STUDENTS}`,
           {
             params: { studentId },
             headers: {
@@ -319,7 +320,7 @@ const TeachersSchedule = () => {
       };
 
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/classShedule/requestReshedule`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.UPDATE_CLASS_REQUEST_RESCHEDULE}`,
         payload,
         {
           headers: {

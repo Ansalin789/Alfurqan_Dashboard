@@ -6,7 +6,8 @@ export const AppApiEndpoints = {
   AUTH: {
     LOGIN: "/signin",
     ADMIN_LOGIN: "/signin",
-    LOGOUT :"/signout"
+    LOGOUT :"/signout",
+    STUDENTS_SIGNIN: "/studentsignin"
   },
 
   USER: {
@@ -255,7 +256,8 @@ export const AppApiEndpoints = {
   FEEBACK :{
     TEACHER_FEEDBACK:"/teacherfeedback",
     SUPERVISOR_FEEDBACK: "/allfeedback",
-    SUPERVISORS_FEEDBACK: "/supervisorfeedback"
+    SUPERVISORS_FEEDBACK: "/supervisorfeedback",
+    CREATE_FEEDBACK: "/feedback",
   }
 
 };

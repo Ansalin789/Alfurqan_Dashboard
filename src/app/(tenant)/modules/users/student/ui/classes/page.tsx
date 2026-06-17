@@ -12,6 +12,7 @@ import Pagination from "@/components/Pagination";
 import moment from "moment";
 import { getSocket } from "@/app/utils/socket";
 import StudentHeader from "../../components/StudentHeader";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Student {
   studentId: string;
@@ -97,7 +98,7 @@ const Classes = () => {
         }
 
         const response = await axios.get<ApiResponse>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/students",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASSSHEDULE_STUDENTS}`,
           {
             params: { studentId },
             headers: {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { ThemeProvider } from "@/context/ThemeContext";
+import ApiSetupInitializer from "@/app/_components/ApiSetupInitializer";
 import "../styles/globals.css";
 
 const poppins = Poppins({
@@ -23,6 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={poppins.className}>
+        <ApiSetupInitializer />
         <ThemeProvider>
           <GoogleOAuthProvider clientId="672400357916-n7nem2lvccl389dtpg50guj2i6gdsl8t.apps.googleusercontent.com">
             {children}

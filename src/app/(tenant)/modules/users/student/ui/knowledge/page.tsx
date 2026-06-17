@@ -8,6 +8,7 @@ import { Search, Zap } from 'lucide-react';
 import RecordedClassesBase from '../../components/knowlegdebase/RecordedClassesBase';
 import StudentHeader from '../../components/StudentHeader';
 import axios from 'axios';
+import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
 
 interface Knowledge {
   id: string;
@@ -77,7 +78,7 @@ const Knowledge: React.FC = () => {
         if (!token) return;
 
         const response = await fetch(
-          'https://api.blackstoneinfomaticstech.com/knowledgebase/list',
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.KNOWLEDGE_BASE.LIST}`,
           {
             headers: {
               'Content-Type': 'application/json',
@@ -118,7 +119,7 @@ const Knowledge: React.FC = () => {
         }
 
         const response = await axios.get(
-          'https://api.blackstoneinfomaticstech.com/knowledgebase/list',
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.KNOWLEDGE_BASE.LIST}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

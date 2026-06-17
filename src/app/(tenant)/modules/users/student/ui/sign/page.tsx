@@ -48,7 +48,7 @@ const SignIn: React.FC = () => {
 
   const signIn = async (username: string, password: string) => {
     try {
-      const url = "https://api.blackstoneinfomaticstech.com/studentsignin";
+      const url = `${"https://api.blackstoneinfomaticstech.com/studentsignin"}`;
       const payload = {
         username,
         password,

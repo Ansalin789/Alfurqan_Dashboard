@@ -54,7 +54,7 @@ export default function Academic() {
   }
         const teacherId = "some_teacher_id";
         const response = await axios.get<ApiResponse>(
-          `{AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_STUDENT_COUNT}?teacherId=${teacherId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_STUDENT_COUNT}?teacherId=${teacherId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

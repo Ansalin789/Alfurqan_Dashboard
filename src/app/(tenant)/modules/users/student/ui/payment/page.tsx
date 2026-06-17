@@ -18,6 +18,7 @@ import { MdTune } from "react-icons/md";
 import StudentHeader from "../../components/StudentHeader";
 import React from "react";
 import Link from "next/link";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 const stripePromise = loadStripe(
   "pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE"
@@ -190,7 +191,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
     } else if (paymentIntent?.status === "succeeded") {
       try {
         const response = await axios.post(
-          "https://api.blackstoneinfomaticstech.com/student/create-payment-intent",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.PAYMENT.CREATE_STUDENT_PAYMENT}`,
           {
             amount,
             currency,
@@ -381,7 +382,7 @@ const Invoice = () => {
 
         // ✅ API call with query param
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/studentinvoiceById`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.INVOICE.STUDENT_INVOICE_BYID}`,
           {
             params: { studentId: studentIdQuery, courseName: courseName },
             headers: {
@@ -444,7 +445,7 @@ const Invoice = () => {
 
     try {
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/student/create-payment-intent",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.PAYMENT.CREATE_STUDENT_PAYMENT}`,
         {
           amount: totalprice * 100,
           currency: "usd",

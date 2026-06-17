@@ -8,6 +8,7 @@ import { FaUser } from "react-icons/fa";
 import { MdDateRange } from "react-icons/md";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Student {
   studentId: string;
@@ -74,7 +75,7 @@ function LiveClass() {
         }
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/classShedule/${id}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET}/${id}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -131,7 +132,7 @@ function LiveClass() {
       });
 
       navigator.sendBeacon(
-        `https://api.blackstoneinfomaticstech.com/classShedule/attendanceupdate/${id}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.UPDATE_CLASS_ATTENDANCE}/${id}`,
         blob
       );
     };
@@ -155,7 +156,7 @@ function LiveClass() {
         return;
       }
       const res = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/classShedule/attendanceupdate/${id}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.UPDATE_CLASS_ATTENDANCE}/${id}`,
         { student: data },
         {
           headers: {
@@ -239,7 +240,7 @@ function LiveClass() {
         return;
       }
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/feedback",
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.FEEBACK.CREATE_FEEDBACK}`,
         feedbackData,
         {
           headers: {

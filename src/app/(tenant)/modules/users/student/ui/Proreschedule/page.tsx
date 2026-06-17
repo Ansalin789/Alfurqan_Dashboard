@@ -15,6 +15,7 @@ import { useSearchParams } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import StudentHeader from "../../components/StudentHeader";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface ClassSchedule {
   _v: { __v: any };
@@ -155,7 +156,7 @@ const TeachersSchedule = () => {
         }
 
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/classShedule/students",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASSSHEDULE_STUDENTS}`,
           {
             params: { studentId },
             headers: {
@@ -332,7 +333,7 @@ const TeachersSchedule = () => {
     try {
       const classId = seacrh.get("classId");
       const existingRes = await fetch(
-        `https://api.blackstoneinfomaticstech.com/classShedule/${classId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET}/${classId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -401,7 +402,7 @@ const TeachersSchedule = () => {
       };
 
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/classShedule/${classId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET}/${classId}`,
         {
           method: "PUT",
           headers: {
