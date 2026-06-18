@@ -23,6 +23,8 @@ import PhoneInput from "react-phone-number-input";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 type Props = {
   readonly onClose: () => void;
 };
@@ -194,6 +196,97 @@ const minutes = ["00", "30"];
     }
   }, [addApplicantForm.country, countries]);
 
+const validateForm = () => {
+
+  if (!addApplicantForm.firstName.trim()) {
+    toast.error(
+      AppValidationMessages.APPLICANT.FIRST_NAME.required
+    );
+    return false;
+  }
+
+  if (!addApplicantForm.lastName.trim()) {
+    toast.error(
+      AppValidationMessages.APPLICANT.LAST_NAME.required
+    );
+    return false;
+  }
+
+  if (!addApplicantForm.email.trim()) {
+    toast.error(
+      AppValidationMessages.APPLICANT.EMAIL.required
+    );
+    return false;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(addApplicantForm.email)) {
+    toast.error(
+      AppValidationMessages.APPLICANT.EMAIL.pattern
+    );
+    return false;
+  }
+
+  if (!addApplicantForm.phone.trim()) {
+    toast.error(
+      AppValidationMessages.APPLICANT.PHONE.required
+    );
+    return false;
+  }
+
+  if (!addApplicantForm.city.trim()) {
+    toast.error(
+      AppValidationMessages.APPLICANT.CITY.required
+    );
+    return false;
+  }
+
+  if (!addApplicantForm.country.trim()) {
+    toast.error(
+      AppValidationMessages.APPLICANT.COUNTRY.required
+    );
+    return false;
+  }
+
+  if (!addApplicantForm.gender) {
+    toast.error(
+      AppValidationMessages.APPLICANT.GENDER.required
+    );
+    return false;
+  }
+
+  if (!addApplicantForm.expectedSalary) {
+    toast.error(
+      AppValidationMessages.APPLICANT.EXPECTED_SALARY.required
+    );
+    return false;
+  }
+
+  if (!addApplicantForm.workingHours) {
+    toast.error(
+      AppValidationMessages.APPLICANT.WORKING_HOURS.required
+    );
+    return false;
+  }
+
+  if (addApplicantForm.skillList.length === 0) {
+    toast.error(
+      AppValidationMessages.APPLICANT.SKILLS.required
+    );
+    return false;
+  }
+
+  if (!addApplicantForm.resume) {
+    toast.error(
+      AppValidationMessages.APPLICANT.RESUME.required
+    );
+    return false;
+  }
+
+  return true;
+};
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -223,8 +316,9 @@ const minutes = ["00", "30"];
       formData.append("uploadResume", addApplicantForm.resume);
     }
 
-   
-
+  if (!validateForm()) {
+    return;
+  }
     try {
       const token =
         typeof window !== "undefined"

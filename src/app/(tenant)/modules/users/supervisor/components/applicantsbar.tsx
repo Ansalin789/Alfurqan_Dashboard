@@ -15,7 +15,7 @@ import {
 import { format } from "date-fns";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
-import "../../../../public/assets/css/supervisordashcalendar.css";
+// import "../../../../public/assets/css/supervisordashcalendar.css";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 const ApplicationChart = () => {

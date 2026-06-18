@@ -72,6 +72,55 @@ ASSIGNMENT: {
   ASSIGNED_DATE_REQUIRED: "Assigned date is required",
   DUE_DATE_REQUIRED: "Due date is required",
   CORRECT_ANSWER_REQUIRED: "Please select a correct answer",
-}
+},
   
+  
+APPLICANT: {
+    FIRST_NAME: {
+      required: "First name is required",
+    },
+
+    LAST_NAME: {
+      required: "Last name is required",
+    },
+
+    EMAIL: {
+      required: "Email is required",
+      pattern: "Invalid email address",
+    },
+
+    PHONE: {
+      required: "Phone number is required",
+      pattern: "Invalid phone number",
+    },
+
+    CITY: {
+      required: "City is required",
+    },
+
+    COUNTRY: {
+      required: "Country is required",
+    },
+
+    GENDER: {
+      required: "Gender is required",
+    },
+
+    EXPECTED_SALARY: {
+      required: "Expected salary is required",
+    },
+
+    WORKING_HOURS: {
+      required: "Working hours is required",
+    },
+
+    SKILLS: {
+      required: "Please select at least one skill",
+    },
+
+    RESUME: {
+      required: "Resume is required",
+    },
+  },
 });
+

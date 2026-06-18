@@ -31,3 +31,22 @@ export const AppSuccessToastMessages = Object.freeze({
   ASSIGNMENT_CREATED: "Assignment created successfully",
   ASSIGNMENT_ASSIGNED: "Assignment assigned successfully",
 });
+
+    APPLICANT_CREATE: "Unable to create applicant",
+
+  INVALID_INPUTS: "Please check the input fields",
+
+  LOGIN_AGAIN: "Please login again",
+
+  NO_PERMISSION: "You don't have permission to perform this action",
+
+  SERVER_ERROR: "Internal server error",
+});
+
+export const appSuccessToastMessages = Object.freeze({
+  SIGNIN: "Welcome back",
+  USER_CREATE: "User created successfully",
+
+  APPLICANT_CREATE: "Applicant created successfully",
+});
+
