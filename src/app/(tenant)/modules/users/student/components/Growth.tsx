@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 type ViewMode = "weekly" | "monthly" | "yearly";
 
@@ -67,20 +69,42 @@ const Growth: React.FC = () => {
 
   useEffect(() => {
     const studentId = localStorage.getItem("StudentPortalId");
-    if (!studentId) {
-      console.warn("No studentId found in localStorage");
-      return;
-    }
+   if (!studentId) {
+  console.error(
+    AppValidationMessages.AUTH.STUDENT_REQUIRED
+  );
+  return;
+}
 
+  const token = localStorage.getItem("StudentAuthToken");
+
+if (!token) {
+  console.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+  return;
+}
     const fetchData = async () => {
       try {
         const res = await axios.get<APIResponse>(
-          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.ALSTUDENTS_STUDENTS_LEVEL}?studentId=${studentId}`
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.ALSTUDENTS_STUDENTS_LEVEL}?studentId=${studentId}`,{
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
         );
         const data = res.data.studentCountByLevel;
+           if (!data || data.length === 0) {
+  console.log(
+    AppValidationMessages.GROWTH.NO_PROGRESS_DATA
+  );
 
+  setLevels([]);
+  return;
+}
         let updatedLevels: number[] = [];
-        let highestLevel = 5;
+        let highestLevel = 5;    
 
         if (viewMode === "monthly") {
           updatedLevels = Array(12).fill(0);
@@ -138,9 +162,12 @@ const Growth: React.FC = () => {
 
         setLevels(updatedLevels);
         setMaxLevel(highestLevel);
-      } catch (err) {
-        console.error("Failed to fetch student levels:", err);
-      }
+      }catch (err) {
+  console.error(
+    AppFailureToastMessages.GROWTH_FETCH,
+    err
+  );
+}
     };
 
     fetchData();

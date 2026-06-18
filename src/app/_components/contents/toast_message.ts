@@ -24,6 +24,10 @@ export const AppFailureToastMessages = Object.freeze({
   CLASS_FETCH: "Unable to fetch class schedule",
   CLASS_ANALYTICS_FETCH: "Unable to fetch class analytics data",
 
+ 
+GROWTH_FETCH:
+"Unable to fetch learning progress details",
+
 });
 
 export const AppSuccessToastMessages = Object.freeze({

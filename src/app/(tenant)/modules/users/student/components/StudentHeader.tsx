@@ -70,6 +70,9 @@ export default function StudentHeader({
         typeof window !== "undefined"
           ? localStorage.getItem("StudentAuthToken")
           : null;
+
+
+          
       const userId =
         typeof window !== "undefined"
           ? localStorage.getItem("StudentPortalId")

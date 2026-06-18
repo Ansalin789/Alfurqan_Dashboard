@@ -5,7 +5,7 @@ import { PieChart, Pie, Cell } from "recharts";
 import axios from "axios";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
-import { toast } from "react-toastify";
+import { toast , ToastContainer } from "react-toastify";
 
 function Assignment() {
   const [assignmentData, setAssignmentData] = useState({
