@@ -8,6 +8,7 @@ import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/suc
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 type Props = {
   readonly onClose: () => void;
@@ -375,16 +376,14 @@ try {
       const status = error.response?.status;
 
       if (status === 400) {
-        setFailedMessage("Please check the form inputs.");
+        setFailedMessage(AppFailureToastMessages.BAD_REQUEST);
       } else if (status === 401) {
-        setFailedMessage("Please login again.");
+        setFailedMessage(AppFailureToastMessages.UNAUTHORIZED);
       } else if (status === 403) {
-        setFailedMessage("You don't have permission to perform this action.");
+        setFailedMessage(AppFailureToastMessages.FORBIDDEN);
       } else if (status === 500) {
-        setFailedMessage("Server error");
-      } else {
-        setFailedMessage("An unexpected error occurred.");
-      }
+        setFailedMessage(AppFailureToastMessages.SERVER_ERROR);
+      } 
 
       setFailed(true);
       console.error(`Error (${status}):`, error.message);

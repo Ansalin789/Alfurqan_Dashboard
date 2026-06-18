@@ -13,9 +13,14 @@ export const AppFailureToastMessages = Object.freeze({
     "Unable to fetch upcoming classes",
 
 COURSE_OVERVIEW_FETCH:
-"Unable to fetch course overview details"
+"Unable to fetch course overview details",
   TEACHER_SIGNIN: "Only Teachers are allowed to log in.",
-  MEETING_CREATE: "Unable to create meeting"
+  MEETING_CREATE: "Unable to create meeting",
+
+    BAD_REQUEST: "Please check the form inputs",
+  UNAUTHORIZED: "Please login again",
+  FORBIDDEN: "You don't have permission to perform this action",
+  SERVER_ERROR: "Server error",
 });
 
 export const AppSuccessToastMessages = Object.freeze({
