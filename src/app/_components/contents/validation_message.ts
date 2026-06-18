@@ -4,8 +4,9 @@ export const AppValidationMessages = Object.freeze({
   AUTH: {
     TOKEN_REQUIRED: "Please login again",
     STUDENT_REQUIRED: "Student information not found",
-      COURSE_REQUIRED: "Course information not found",
-
+    COURSE_REQUIRED: "Course information not found",
+    TEACHER_REQUIRED: "Teacher information not found",
+    PERMISSION_REQUIRED: "Role permission information not found",
   },
 
   FILTER: {
@@ -63,6 +64,12 @@ GROWTH: {
 ASSIGNMENT: {
   TEACHER_REQUIRED: "Teacher information not found",
   NO_ASSIGNMENT_DATA: "No assignment data available",
+  ASSIGNMENT_NAME_REQUIRED: "Assignment name is required",
+  ASSIGNMENT_TYPE_REQUIRED: "Assignment type is required",
+  QUESTION_REQUIRED: "Question is required",
+  ASSIGNED_DATE_REQUIRED: "Assigned date is required",
+  DUE_DATE_REQUIRED: "Due date is required",
+  CORRECT_ANSWER_REQUIRED: "Please select a correct answer",
 }
   
 });

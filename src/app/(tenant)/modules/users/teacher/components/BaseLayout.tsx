@@ -12,6 +12,9 @@ import { SiGoogleclassroom } from "react-icons/si";
 import { Users, CircleHelp } from 'lucide-react';
 import { PermissionsContext } from "../../../../../../contexts/PermissionsContext";
 import { BsFileBarGraphFill } from "react-icons/bs";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { console } from "inspector/promises";
 
 
 interface Props {
@@ -55,7 +58,10 @@ function Sidebar() {
         const modules = roleAccess?.academicmodules || roleAccess;
         setPermissions(modules);
       } catch (error) {
-        console.error("❌ Invalid TeacherRolePermission JSON", error);
+         console.error(
+    AppFailureToastMessages.PERMISSION_FETCH,
+    error
+  );
       }
     }
   }, []);
@@ -124,12 +130,23 @@ export default function BaseLayout({ children }: Props) {
   useEffect(() => {
     const roleAccessRaw = localStorage.getItem("TeacherRolePermission");
     if (roleAccessRaw) {
+
+  if (!roleAccessRaw) {
+    console.warn(
+      AppValidationMessages.AUTH.PERMISSION_REQUIRED
+    );
+    return;
+  }
+
       try {
         const roleAccess = JSON.parse(roleAccessRaw);
         const modules = roleAccess?.teachermodules || roleAccess;
         setPermissions(modules);
       } catch (error) {
-        console.error("❌ Invalid TeacherRolePermission JSON", error);
+        console.error(
+    AppFailureToastMessages.PERMISSION_FETCH,
+    error
+  );
       }
     }
 
