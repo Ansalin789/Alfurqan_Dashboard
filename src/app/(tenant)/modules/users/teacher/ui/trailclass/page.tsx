@@ -231,7 +231,7 @@ function LiveClass() {
 
     axios
       .get<TrialClass[]>(
-        `https://api.blackstoneinfomaticstech.com/teachertrialclass`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_TEACHER_TRAILCLASS}`,
         {
           params: { teacherId },
           headers: {
@@ -383,7 +383,7 @@ function LiveClass() {
         }
 
         const response = await fetch(
-          `https://api.blackstoneinfomaticstech.com/evaluationlist/${selectedTrial?.trialId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.EVALUATION.GET_LIST}/${selectedTrial?.trialId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -511,7 +511,7 @@ function LiveClass() {
         return;
       }
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/evaluation/${formData?._id}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.EVALUATION.UPDATE}/${formData?._id}`,
         {
           method: "PUT",
           headers: {
@@ -657,7 +657,7 @@ function LiveClass() {
           ? localStorage.getItem("TeacherAuthToken")
           : null;
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/classShedule/${classData._id}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.UPDATE_SLECTED_CLASS}/${classData._id}`,
         payload,
         {
           headers: {

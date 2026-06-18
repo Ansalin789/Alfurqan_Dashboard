@@ -17,6 +17,22 @@ export const AppValidationMessages = Object.freeze({
   MEETING: {
     NO_MEETING_FOUND: "No upcoming meetings available",
     INVALID_MEETING_ID: "Meeting information is unavailable",
+    
+    TITLE_REQUIRED: "Meeting name is required",
+    TITLE_MIN: "Meeting name must be at least 3 characters long",
+
+    PARTICIPANT_REQUIRED: "Please select at least one participant",
+
+    DATE_REQUIRED: "Meeting date is required",
+    FUTURE_DATE_REQUIRED: "Please select a future date",
+
+    START_TIME_REQUIRED: "Start time is required",
+    END_TIME_REQUIRED: "End time is required",
+
+    INVALID_TIME: "End time must be greater than start time",
+
+    DESCRIPTION_REQUIRED: "Description is required",
+    DESCRIPTION_MIN: "Description must be at least 10 characters long",
   },
 
   RESCHEDULE: {
@@ -43,4 +59,5 @@ export const AppValidationMessages = Object.freeze({
 GROWTH: {
   NO_PROGRESS_DATA: "No learning progress data available",
 },
+  
 });

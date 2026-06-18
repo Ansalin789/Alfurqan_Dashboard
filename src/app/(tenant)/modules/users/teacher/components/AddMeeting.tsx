@@ -7,6 +7,7 @@ import axios, { AxiosError } from "axios";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 
 type Props = {
   readonly onClose: () => void;
@@ -202,16 +203,77 @@ export default function AddMeeting({ onClose }: Props) {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (
-      !meetingTitle ||
-      !selectedDate ||
-      !startTime ||
-      !endTime ||
-      selectedParticipants.length === 0
-    ) {
-      alert("Please fill all required fields!");
-      return;
-    }
+    if (!meetingTitle.trim()) {
+  setFailedMessage(
+    AppValidationMessages.MEETING.TITLE_REQUIRED
+  );
+  setFailed(true);
+  return;
+}
+
+if (meetingTitle.trim().length < 3) {
+  setFailedMessage(
+    AppValidationMessages.MEETING.TITLE_MIN
+  );
+  setFailed(true);
+  return;
+}
+
+if (selectedParticipants.length === 0) {
+  setFailedMessage(
+    AppValidationMessages.MEETING.PARTICIPANT_REQUIRED
+  );
+  setFailed(true);
+  return;
+}
+
+if (!selectedDate) {
+  setFailedMessage(
+    AppValidationMessages.MEETING.DATE_REQUIRED
+  );
+  setFailed(true);
+  return;
+}
+
+if (!startTime) {
+  setFailedMessage(
+    AppValidationMessages.MEETING.START_TIME_REQUIRED
+  );
+  setFailed(true);
+  return;
+}
+
+if (!endTime) {
+  setFailedMessage(
+    AppValidationMessages.MEETING.END_TIME_REQUIRED
+  );
+  setFailed(true);
+  return;
+}
+
+if (startTime >= endTime) {
+  setFailedMessage(
+    AppValidationMessages.MEETING.INVALID_TIME
+  );
+  setFailed(true);
+  return;
+}
+
+if (!description.trim()) {
+  setFailedMessage(
+    AppValidationMessages.MEETING.DESCRIPTION_REQUIRED
+  );
+  setFailed(true);
+  return;
+}
+
+if (description.trim().length < 10) {
+  setFailedMessage(
+    AppValidationMessages.MEETING.DESCRIPTION_MIN
+  );
+  setFailed(true);
+  return;
+}
 
     // Prevent scheduling on the same date or past dates
     const now = new Date();
@@ -278,37 +340,37 @@ endTime,
       createdBy: localStorage.getItem("TeacherPortalName"),
     };
 
-    try {
-      const token = localStorage.getItem("TeacherAuthToken");
-      if (!token) {
-        throw new Error("TeacherAuthToken not found");
-      }
+try {
+  const token = localStorage.getItem("TeacherAuthToken");
 
-      const response = await axios.post(
-        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.TEACHERMEETING.CREATE}`, // ✅ NEW LOCAL API ENDPOINT
-        requestData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+  const response = await axios.post(
+    `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.TEACHERMEETING.CREATE}`,
+    requestData,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
 
-      console.log("Meeting created successfully:", response.data);
+  console.log("Meeting created successfully:", response.data);
 
-      if ([200, 201, 400].includes(response.status)) {
-        setSuccess(true);
-        setTimeout(() => {
-          setMeetingTitle("");
-          setSelectedDate("");
-          setStartTime("");
-          setEndTime("");
-          setSelectedParticipants([]);
-          setDescription("");
-        }, 2000);
-      }
-    } catch (err) {
+  if ([200, 201].includes(response.status)) {
+    setSuccess(true);
+
+    setTimeout(() => {
+      setMeetingTitle("");
+      setSelectedDate("");
+      setStartTime("");
+      setEndTime("");
+      setSelectedParticipants([]);
+      setDescription("");
+    }, 2000);
+  }
+}
+    
+    catch (err) {
       const error = err as AxiosError;
       const status = error.response?.status;
 

@@ -14,4 +14,10 @@ export const AppFailureToastMessages = Object.freeze({
 
 COURSE_OVERVIEW_FETCH:
 "Unable to fetch course overview details"
+  TEACHER_SIGNIN: "Only Teachers are allowed to log in.",
+  MEETING_CREATE: "Unable to create meeting"
+});
+
+export const AppSuccessToastMessages = Object.freeze({
+  MEETING_CREATE: "Meeting created successfully",
 });

@@ -11,6 +11,8 @@ import axios from "axios";
 import { AlertCircle, ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 export interface RoleModuleAccess {
   read: boolean;
@@ -196,7 +198,7 @@ const SignIn: React.FC = () => {
       const userEmail: string = data.email ?? data.userEmail ?? "";
 
       if (!role?.includes("TEACHER")) {
-        setLoginError("Only Teachers are allowed to log in.");
+        setLoginError(AppFailureToastMessages.TEACHER_SIGNIN);
         return;
       }
 
