@@ -21,6 +21,7 @@ export const AppFailureToastMessages = Object.freeze({
   ASSIGNMENT_CREATE: "Unable to create assignment",
   ASSIGNMENT_UPDATE: "Unable to assign assignment",
   PERMISSION_FETCH: "Unable to load user permissions",
+  CLASS_FETCH: "Unable to fetch class schedule",
 });
 
 export const AppSuccessToastMessages = Object.freeze({

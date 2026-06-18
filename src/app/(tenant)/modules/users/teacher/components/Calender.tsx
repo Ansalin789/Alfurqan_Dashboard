@@ -6,6 +6,9 @@ import axios from 'axios';
 import './Calender.css';
 import { useRouter } from 'next/navigation';
 import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
+import { AppValidationMessages } from '@/app/_components/contents/validation_message';
+import { toast } from 'react-toastify';
+import { AppFailureToastMessages } from '@/app/_components/contents/toast_message';
  
 
 export interface UnifiedClassSchedule {
@@ -129,10 +132,19 @@ const Calender: React.FC = () => {
       console.log("Teacher ID:", teacherId);
       console.log("Auth Token Present:", !!token);
 
-      if (!token || !teacherId) {
-        console.warn("Missing token or teacher ID.");
-        return;
-      }
+      if (!token) {
+  toast.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+  return;
+}
+
+if (!teacherId) {
+  toast.error(
+    AppValidationMessages.AUTH.TEACHER_REQUIRED
+  );
+  return;
+}
 
       const response = await axios.get(
         `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}`,
@@ -144,6 +156,16 @@ const Calender: React.FC = () => {
           },
         }
       );
+
+if (
+  !response.data.classScheduleList?.length &&
+  !response.data.trialclasses?.length
+) {
+  toast.warning(
+    AppValidationMessages.CLASS.NO_CLASS_FOUND
+  );
+  return;
+}
 
       console.log("API Response:", response.data);
 
@@ -313,8 +335,12 @@ const Calender: React.FC = () => {
       setClassEvents(upcoming);
       console.log("Class data successfully set to state.");
     } catch (error) {
-      console.error("Error fetching class data:", error);
-    }
+  toast.error(
+    AppFailureToastMessages.CLASS_FETCH
+  );
+
+  console.error(error);
+}
   };
 
     fetchClasses();
