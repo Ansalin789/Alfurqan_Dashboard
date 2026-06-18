@@ -1,6 +1,8 @@
 "use client";
 
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell } from "recharts";
@@ -44,8 +46,16 @@ useEffect(() => {
         const token = localStorage.getItem("TeacherAuthToken") ?? "";
 
       if (!teacherId) {
-        throw new Error('Teacher ID is required in query parameters');
+          setError(
+    AppValidationMessages.ASSIGNMENT.TEACHER_REQUIRED
+  );
       }
+
+      if (!token) {
+  setError(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+}
 
       const response = await fetch(
         `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GET_TEACHER_ASS_CARD_COUNT}?teacherId=${teacherId}`,
@@ -61,10 +71,27 @@ useEffect(() => {
       }
       
       const result = await response.json();
-      setData(result.data);
+
+if (!result?.data) {
+  setError(
+    AppValidationMessages.ASSIGNMENT.NO_ASSIGNMENT_DATA
+  );
+  return;
+}
+
+setData(result.data);
+      
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-    } finally {
+  console.error(
+    AppFailureToastMessages.ASSIGNMENT_CARD_FETCH,
+    err
+  );
+
+  setError(
+    AppFailureToastMessages.ASSIGNMENT_CARD_FETCH
+  );
+}  
+finally {
       setLoading(false);
     }
   };

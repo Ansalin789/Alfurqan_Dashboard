@@ -59,5 +59,10 @@ export const AppValidationMessages = Object.freeze({
 GROWTH: {
   NO_PROGRESS_DATA: "No learning progress data available",
 },
+
+ASSIGNMENT: {
+  TEACHER_REQUIRED: "Teacher information not found",
+  NO_ASSIGNMENT_DATA: "No assignment data available",
+}
   
 });
