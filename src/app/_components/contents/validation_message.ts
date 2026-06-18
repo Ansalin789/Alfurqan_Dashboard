@@ -47,6 +47,7 @@ export const AppValidationMessages = Object.freeze({
     CLASS_LINK_REQUIRED: "Class link is unavailable",
     NO_CLASS_HOURS_FOUND: "No class hours data available",
     NO_CLASS_FOUND: "No upcoming classes found",
+    NO_ANALYTICS_DATA: "No class analytics data found",
 
   },
 

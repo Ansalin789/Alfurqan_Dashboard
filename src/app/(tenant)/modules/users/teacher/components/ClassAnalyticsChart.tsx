@@ -3,6 +3,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { toast } from "react-toastify";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 interface StatsData {
   scheduled: number;
@@ -30,12 +33,36 @@ const ClassAnalyticsChart = () => {
       const teacherId = localStorage.getItem("TeacherPortalId");
       const token = localStorage.getItem("TeacherAuthToken");
 
-      if (!teacherId || !token) throw new Error("Authentication info missing");
+      if (!teacherId) {
+  toast.error(
+    AppValidationMessages.AUTH.TEACHER_REQUIRED
+  );
+  setLoading(false);
+  return;
+}
+
+if (!token) {
+  toast.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+  setLoading(false);
+  return;
+}
 
       const response = await axios.get<StatsData>(
         `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_COUNT}?teacherId=${teacherId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
+      if (
+  response.data.scheduled === 0 &&
+  response.data.completed === 0 &&
+  response.data.absent === 0
+) {
+  toast.warning(
+    AppValidationMessages.CLASS.NO_ANALYTICS_DATA
+  );
+}
 
       setData({
         scheduled: response.data.scheduled || 0,
@@ -43,8 +70,16 @@ const ClassAnalyticsChart = () => {
         absent: response.data.absent || 0,
       });
     } catch (err: any) {
-      setError(err?.response?.data?.message || err.message || "API Error");
-    } finally {
+  toast.error(
+    AppFailureToastMessages.CLASS_ANALYTICS_FETCH
+  );
+
+  setError(
+    err?.response?.data?.message ||
+    err.message ||
+    "API Error"
+  );
+} finally {
       setLoading(false);
     }
   };
