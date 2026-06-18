@@ -17,6 +17,7 @@ import { getSocket } from "@/app/utils/socket";
 import moment from "moment";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface AcademicCoach {
   academicCoachId: string; // Assuming it's a string or number
@@ -228,7 +229,7 @@ const Step2: React.FC<{
           return;
         }
         const response = await fetch(
-          `https://api.blackstoneinfomaticstech.com/studentlist/${studentId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.STUDENT.GET_LIST}/${studentId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -2337,7 +2338,7 @@ const Step9 = ({
         console.error("❌ AdminAuthToken not found");
         return;
       }
-      const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation`, {
+      const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.EVALUATION.CREATE}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

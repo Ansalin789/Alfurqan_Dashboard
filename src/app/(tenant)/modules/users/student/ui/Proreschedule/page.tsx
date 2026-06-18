@@ -219,7 +219,7 @@ const TeachersSchedule = () => {
     try {
     const adjustedPosition =
      position === "Islamic Studies" ? "Islamic" : position;
-      const url = `https://api.blackstoneinfomaticstech.com/teacher/availabletime?scheduleDate=${formattedDate}&position=${encodeURIComponent(
+      const url = `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.AVAILABLE_TIME_SLOT}?scheduleDate=${formattedDate}&position=${encodeURIComponent(
         adjustedPosition + " Teacher"
       )}`;
 

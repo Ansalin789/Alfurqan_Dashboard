@@ -1,7 +1,7 @@
 "use client";
 
 
-import BaseLayout2 from "../../../../components/BaseLayout2";
+import BaseLayout2 from "@/app/(tenant)/modules/users/student/components/BaseLayout2";
 import ApplicationChart from "../../components/Growth";
 import Subject from "../../components/SubjectCard";
 import CourseOverview from "../../components/CourseOverview";

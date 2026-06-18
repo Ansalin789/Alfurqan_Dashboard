@@ -8,6 +8,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/app/(tenant)/modules/users/Academic-coach/CheckoutForm';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
 
 const stripePromise = loadStripe('pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE');
 
@@ -55,7 +56,7 @@ const Invoice = () => {
 
     try {
      
-      const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluationlist/${studentId}`, {
+      const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.EVALUATION.GET_LIST}/${studentId}`, {
         headers: {
           'Content-Type': 'application/json',
           
@@ -121,7 +122,7 @@ console.log(feesPerDay);
     const evaluationid = evaluationData._id; // Replace with your actual evaluation ID
     const totalprice = evaluationData.planTotalPrice;
    
-    const response = await fetch(`https://api.blackstoneinfomaticstech.com/create-payment-intent`, {
+    const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.PAYMENT.CREATE_PAYMENT_INTENT}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

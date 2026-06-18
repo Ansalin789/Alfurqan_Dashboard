@@ -6,6 +6,7 @@ import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import axios from "axios";
 import { AlertCircle, ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 const slides = [
   {
@@ -48,7 +49,7 @@ const SignIn: React.FC = () => {
 
   const signIn = async (username: string, password: string) => {
     try {
-      const url = `${"https://api.blackstoneinfomaticstech.com/studentsignin"}`;
+      const url = `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.AUTH.STUDENTS_SIGNIN}`;
       const payload = {
         username,
         password,
@@ -146,7 +147,7 @@ const SignIn: React.FC = () => {
 
   const checkEmail = async (email: string) => {
     try {
-      const response = await axios.post(`https://api.blackstoneinfomaticstech.com/check-email`, {
+      const response = await axios.post(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CHECKMAIL.CREATE_CHECK_EMAIL}`, {
         email,
       });
 
@@ -235,7 +236,7 @@ const SignIn: React.FC = () => {
             console.log("Course missing in check-email, fetching full profile...");
             const studentId = result.data.id;
             const token = result.data.accessToken;
-            const detailRes = await axios.get(`https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`, {
+            const detailRes = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}/${studentId}`, {
               headers: { Authorization: `Bearer ${token}` }
             });
             console.log("Full profile response:", detailRes.data);

@@ -6,6 +6,7 @@ import { FaStar } from "react-icons/fa";
 import WaveSurfer from "wavesurfer.js";
 import StudentHeader from "../../components/StudentHeader";
 import BaseLayout2 from "@/app/(tenant)/modules/users/student/components/BaseLayout2";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 type QuizData = {
   _id: string;
@@ -285,7 +286,7 @@ const QuizPage = () => {
           return;
         }
        const res = await fetch(
-          `https://api.blackstoneinfomaticstech.com/assignments?assignmentId=${assignmentId}`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GET_LIST}?assignmentId=${assignmentId}`,
           {
             headers: {
               "Authorization": `Bearer ${token}`,
@@ -675,7 +676,7 @@ const QuizPage = () => {
         return;
       }
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/assignments/bulk?assignmentId=${assignmentId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GET_LIST}/bulk?assignmentId=${assignmentId}`,
         {
           method: "PUT",
           headers: {

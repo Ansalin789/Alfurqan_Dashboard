@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import PdfCard from '@/app/student/components/knowlegdebase/PdfCard';
+import PdfCard from '@/app/(tenant)/modules/users/student/components/knowlegdebase/PdfCard';
 import BaseLayout2 from '@/app/(tenant)/modules/users/student/components/BaseLayout2';
 import { MdTune } from 'react-icons/md';
 import { Search, Zap } from 'lucide-react';

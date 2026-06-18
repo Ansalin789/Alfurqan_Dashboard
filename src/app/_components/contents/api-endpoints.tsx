@@ -118,7 +118,8 @@ export const AppApiEndpoints = {
     UPDATE_CLASS_ATTENDANCE:"/classShedule/attendanceupdate",
     UPDATE_GROUP_CLASSSCHEDULE:"/groupclassschedule/bulkupdate",
     UPDATE_CLASS_REQUEST_RESCHEDULE:"/classShedule/requestReshedule",
-    GET_CLASS_TOTAL_HOURS:"/classShedule/totalhours"
+    GET_CLASS_TOTAL_HOURS:"/classShedule/totalhours",
+    GET_CLASSSCHEDULE_ACTIVITY: "/classShedule/activity"
   },
 
   AVAILABLE_TIME_SLOT: {
@@ -233,6 +234,7 @@ export const AppApiEndpoints = {
 
   CHECKMAIL: {
     CREATE_CHECK: "/allcheck-email",
+    CREATE_CHECK_EMAIL: "/check-email",
   },
 
   MESSAGES: {
@@ -258,6 +260,10 @@ export const AppApiEndpoints = {
     SUPERVISOR_FEEDBACK: "/allfeedback",
     SUPERVISORS_FEEDBACK: "/supervisorfeedback",
     CREATE_FEEDBACK: "/feedback",
+  },
+
+  PROFILE : {
+    STUDENT_PROFILE : "/studentProfile"
   }
 
 };

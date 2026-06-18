@@ -13,6 +13,7 @@ import {
   TooltipItem,
 } from "chart.js";
 import axios from "axios";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 ChartJS.register(
   LineElement,
@@ -47,7 +48,7 @@ const TeachingActivity = () => {
         }
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/classShedule/activity`,
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASSSCHEDULE_ACTIVITY}`,
           {
             params: { studentId },
             headers:{

@@ -11,6 +11,7 @@ import Image from "next/image";
 import BaseLayout2 from "@/app/(tenant)/modules/users/student/components/BaseLayout2";
 import axios from "axios";
 import { X } from "lucide-react";
+import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Student {
   course: string;
@@ -150,7 +151,7 @@ const StudentProfile = () => {
       }
   
       await axios.put(
-        `https://api.blackstoneinfomaticstech.com/studentProfile/${studentId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.PROFILE.STUDENT_PROFILE}/${studentId}`,
         updateData,
         {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
@@ -202,7 +203,7 @@ const StudentProfile = () => {
           }
           const studentId = localStorage.getItem("StudentPortalId");
           const response = await axios.get<ApiResponse>(
-            "https://api.blackstoneinfomaticstech.com/alstudents",
+            `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -271,7 +272,7 @@ const StudentProfile = () => {
           return;
         }
         const response = await axios.get<StudentDashboardCounts>(
-          "https://api.blackstoneinfomaticstech.com/dashboard/student/counts",
+          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.DASHBOARD_STUDENT_COUNTS}`,
           {
             params: { studentId },
             headers: {

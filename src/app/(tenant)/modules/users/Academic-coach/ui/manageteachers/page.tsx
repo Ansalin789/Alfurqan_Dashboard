@@ -382,7 +382,7 @@ const TeachersSchedule = () => {
         lastUpdatedDate: new Date().toISOString(),
       }
       console.log("PUT Request Payload:", payload)
-      console.log("PUT Request URL:", `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`)
+      console.log("PUT Request URL:", `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.UPDATE_TEACHER_RESCHEDULE}/${meetingToReschedule._id}`)
       const response = await axios.put(
         `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.UPDATE_TEACHER_RESCHEDULE}/${meetingToReschedule._id}`,
         payload,

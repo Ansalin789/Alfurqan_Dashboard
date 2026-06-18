@@ -12,7 +12,6 @@ import Pagination from "@/components/Pagination";
 import { getSocket } from "@/app/utils/socket";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
-
 interface TransformedUser {
   _id: string;
   studentId: string;
@@ -143,7 +142,7 @@ const getAllUser = async (): Promise<{
       typeof window !== "undefined"
         ? localStorage.getItem("AcademicCoachAuthToken")
         : null;
-
+    console.log("this is the auth", token);
     if (!token) {
       console.error("❌ AdminAuthToken not found");
     }
@@ -155,7 +154,7 @@ const getAllUser = async (): Promise<{
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     console.log("Raw API Response:", response.data.evaluation);
@@ -184,7 +183,7 @@ const getAllUser = async (): Promise<{
           paymentLink: item.paymentLink,
           studentStatus: item.studentStatus,
         };
-      }
+      },
     );
 
     console.log("Transformed Data:", transformedData);
@@ -224,17 +223,17 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
     console.log("Raw API Response:", JSON.stringify(response.data, null, 2));
     console.log(
       "First student data:",
-      JSON.stringify(response.data.students[0], null, 2)
+      JSON.stringify(response.data.students[0], null, 2),
     );
     console.log("First student status:", response.data.students[0]?.status);
     console.log(
       "First student studentStatus:",
-      response.data.students[0]?.studentStatus
+      response.data.students[0]?.studentStatus,
     );
 
     if (!response.data.students || !Array.isArray(response.data.students)) {
@@ -285,7 +284,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
           allFields: Object.keys(transformed),
         });
         return transformed;
-      }
+      },
     );
 
     return {
@@ -340,11 +339,11 @@ const FilterModal = ({
 
   // Get unique values for each filter
   const uniqueCountries = Array.from(
-    new Set(users.map((user) => user.country))
+    new Set(users.map((user) => user.country)),
   );
   const uniqueCourses = Array.from(new Set(users.map((user) => user.course)));
   const uniqueTeachers = Array.from(
-    new Set(users.map((user) => user.preferredTeacher))
+    new Set(users.map((user) => user.preferredTeacher)),
   );
 
   const handleApply = () => {
@@ -574,23 +573,23 @@ const TrailManagement = () => {
           prev.map((user) =>
             user.studentId === student.studentId
               ? {
-                ...user,
-                evaluationStatus: student.evaluationStatus ?? "PENDING",
-                status: classPayload.studentStatus ?? "NOT JOINED",
-              }
-              : user
-          )
+                  ...user,
+                  evaluationStatus: student.evaluationStatus ?? "PENDING",
+                  status: classPayload.studentStatus ?? "NOT JOINED",
+                }
+              : user,
+          ),
         );
         setUsers((prev) =>
           prev.map((user) =>
             user.studentId === student.studentId
               ? {
-                ...user,
-                evaluationStatus: student.evaluationStatus ?? "PENDING",
-                status: classPayload.studentStatus ?? "NOT JOINED",
-              }
-              : user
-          )
+                  ...user,
+                  evaluationStatus: student.evaluationStatus ?? "PENDING",
+                  status: classPayload.studentStatus ?? "NOT JOINED",
+                }
+              : user,
+          ),
         );
       }
     };
@@ -635,7 +634,7 @@ const TrailManagement = () => {
 
   const mergedUsers = users.map((user) => {
     const evalUser = evaluationUsers.find(
-      (evalUser) => evalUser.studentId === user.studentId
+      (evalUser) => evalUser.studentId === user.studentId,
     );
     return {
       ...user,
@@ -693,34 +692,34 @@ const TrailManagement = () => {
     }
     if (filters.teacher) {
       filtered = filtered.filter(
-        (user) => user.preferredTeacher === filters.teacher
+        (user) => user.preferredTeacher === filters.teacher,
       );
     }
     if (filters.status) {
       filtered = filtered.filter(
-        (user) => user.evaluationStatus === filters.status
+        (user) => user.evaluationStatus === filters.status,
       );
     }
     if (filters.trailId) {
       filtered = filtered.filter((user) =>
-        user.studentId.includes(filters.trailId)
+        user.studentId.includes(filters.trailId),
       );
     }
     if (filters.studentName) {
       filtered = filtered.filter((user) =>
         `${user.fname} ${user.lname}`
           .toLowerCase()
-          .includes(filters.studentName.toLowerCase())
+          .includes(filters.studentName.toLowerCase()),
       );
     }
     if (filters.email) {
       filtered = filtered.filter((user) =>
-        user.email.toLowerCase().includes(filters.email.toLowerCase())
+        user.email.toLowerCase().includes(filters.email.toLowerCase()),
       );
     }
     if (filters.mobile) {
       filtered = filtered.filter((user) =>
-        user.number.includes(filters.mobile)
+        user.number.includes(filters.mobile),
       );
     }
     if (filters.time) {
@@ -814,12 +813,13 @@ const TrailManagement = () => {
                         ].map((header, index) => (
                           <th
                             key={header.label}
-                            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] whitespace-nowrap ${header.width} ${index === 0
-                              ? "sticky left-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
-                              : index === 9
-                                ? "sticky right-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
-                                : ""
-                              }`}
+                            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] whitespace-nowrap ${header.width} ${
+                              index === 0
+                                ? "sticky left-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                                : index === 9
+                                  ? "sticky right-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                                  : ""
+                            }`}
                           >
                             {header.label}
                           </th>
@@ -832,15 +832,19 @@ const TrailManagement = () => {
                         currentItems.map((item, index) => (
                           <tr
                             key={item.studentId || index}
-                            className={`text-[12px] ${index % 2 === 0
-                              ? "bg-[#fff] dark:bg-[#2C2C2C] "
-                              : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
+                            className={`text-[12px] ${
+                              index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C] "
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
+                            }`}
                           >
-                            <td className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[8%] sticky left-0 z-10 ${index % 2 === 0
-                              ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                              : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}>
+                            <td
+                              className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[8%] sticky left-0 z-10 ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
+                            >
                               {item.studentId}
                             </td>
                             <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] whitespace-nowrap w-[12%]">
@@ -853,7 +857,7 @@ const TrailManagement = () => {
                                   year: "numeric",
                                   month: "short",
                                   day: "numeric",
-                                }
+                                },
                               )}
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
@@ -871,12 +875,13 @@ const TrailManagement = () => {
 
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap">
                               <span
-                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${item.evaluationStatus === "COMPLETED"
-                                  ? "bg-[#ECFDF3] text-[#377E36] px-2 dark:bg-[#377E3633]"
-                                  : item.evaluationStatus === "INPROGRESS"
-                                    ? " bg-[#FDECEC] text-[#D34645]  px-3 dark:bg-[#D3464533]"
-                                    : "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
-                                  }`}
+                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                                  item.evaluationStatus === "COMPLETED"
+                                    ? "bg-[#ECFDF3] text-[#377E36] px-2 dark:bg-[#377E3633]"
+                                    : item.evaluationStatus === "INPROGRESS"
+                                      ? " bg-[#FDECEC] text-[#D34645]  px-3 dark:bg-[#D3464533]"
+                                      : "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
+                                }`}
                               >
                                 {item.evaluationStatus === "COMPLETED"
                                   ? "COMPLETED"
@@ -888,7 +893,7 @@ const TrailManagement = () => {
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap">
                               {(() => {
                                 const evalUser = evaluationUsers.find(
-                                  (eu) => eu.studentId === item.studentId
+                                  (eu) => eu.studentId === item.studentId,
                                 );
 
                                 let status = "NOT JOINED";
@@ -920,59 +925,66 @@ const TrailManagement = () => {
                             </td>
 
                             <td
-                              className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[7%] sticky right-0 z-10 ${index % 2 === 0
+                              className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[7%] sticky right-0 z-10 ${
+                                index % 2 === 0
                                   ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                }`}
+                              }`}
                             >
                               <div className="relative inline-block text-left">
                                 <button
-                                  disabled={item.evaluationStatus === "COMPLETED"}
+                                  disabled={
+                                    item.evaluationStatus === "COMPLETED"
+                                  }
                                   onClick={() =>
                                     item.evaluationStatus !== "COMPLETED" &&
-                                    setOpenMenuId(openMenuId === item.id ? null : item.id)
+                                    setOpenMenuId(
+                                      openMenuId === item.id ? null : item.id,
+                                    )
                                   }
-                                  className={`text-center p-2 ${item.evaluationStatus === "COMPLETED"
+                                  className={`text-center p-2 ${
+                                    item.evaluationStatus === "COMPLETED"
                                       ? "opacity-40 cursor-not-allowed"
                                       : "hover:cursor-pointer"
-                                    }`}
+                                  }`}
                                 >
                                   <FaEllipsisV
                                     size={12}
-                                    className={`${item.evaluationStatus === "COMPLETED"
+                                    className={`${
+                                      item.evaluationStatus === "COMPLETED"
                                         ? "text-gray-400"
                                         : "text-[#5F6368] dark:text-white"
-                                      }`}
+                                    }`}
                                   />
                                 </button>
                               </div>
-                              
                             </td>
-                            {openMenuId === item.id && item.evaluationStatus !== "COMPLETED" && (
-                              <div
-                                className="absolute right-16 mt-10 w-28 -ml-10 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-30 dark:bg-[#2E2E2E]"
-                                data-open={openMenuId === item.id}
-                              >
-                                <div className="py-1">
-                                  <button
-                                    onClick={() => {
-                                      handleEditClick(item)
-                                      setOpenMenuId(null)
-                                    }}
-                                    className="block w-full px-3 py-2 text-left text-[11px] text-[#010E30E5] hover:bg-gray-100 dark:text-white dark:hover:bg-[#3A3A3A]"
-                                  >
-                                    Evaluate
-                                  </button>
+                            {openMenuId === item.id &&
+                              item.evaluationStatus !== "COMPLETED" && (
+                                <div
+                                  className="absolute right-16 mt-10 w-28 -ml-10 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-30 dark:bg-[#2E2E2E]"
+                                  data-open={openMenuId === item.id}
+                                >
+                                  <div className="py-1">
+                                    <button
+                                      onClick={() => {
+                                        handleEditClick(item);
+                                        setOpenMenuId(null);
+                                      }}
+                                      className="block w-full px-3 py-2 text-left text-[11px] text-[#010E30E5] hover:bg-gray-100 dark:text-white dark:hover:bg-[#3A3A3A]"
+                                    >
+                                      Evaluate
+                                    </button>
 
-                                  <button
-                                    onClick={() => setOpenMenuId(null)}
-                                    className="block w-full px-3 py-2 text-left text-[11px] text-[#D34645] hover:bg-gray-100 dark:hover:bg-[#3A3A3A]"
-                                  >
-                                    Cancel
-                                  </button>
+                                    <button
+                                      onClick={() => setOpenMenuId(null)}
+                                      className="block w-full px-3 py-2 text-left text-[11px] text-[#D34645] hover:bg-gray-100 dark:hover:bg-[#3A3A3A]"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
                           </tr>
                         ))
                       ) : (
@@ -986,11 +998,24 @@ const TrailManagement = () => {
                   </table>
                 </div>
                 <style jsx>{`
-                  .thin-scroll { scrollbar-width: thin; scrollbar-color: rgba(100,100,100,.5) transparent; }
-                  .thin-scroll::-webkit-scrollbar { height: 3px; }
-                  .thin-scroll::-webkit-scrollbar-track { background: transparent; }
-                  .thin-scroll::-webkit-scrollbar-thumb { background-color: rgba(100,100,100,.5); border-radius: 9999px; }
-                  .thin-scroll table th, .thin-scroll table td { white-space: nowrap; }
+                  .thin-scroll {
+                    scrollbar-width: thin;
+                    scrollbar-color: rgba(100, 100, 100, 0.5) transparent;
+                  }
+                  .thin-scroll::-webkit-scrollbar {
+                    height: 3px;
+                  }
+                  .thin-scroll::-webkit-scrollbar-track {
+                    background: transparent;
+                  }
+                  .thin-scroll::-webkit-scrollbar-thumb {
+                    background-color: rgba(100, 100, 100, 0.5);
+                    border-radius: 9999px;
+                  }
+                  .thin-scroll table th,
+                  .thin-scroll table td {
+                    white-space: nowrap;
+                  }
                 `}</style>
               </div>
             </div>

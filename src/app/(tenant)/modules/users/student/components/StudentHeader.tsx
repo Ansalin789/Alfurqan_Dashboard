@@ -129,7 +129,7 @@ export default function StudentHeader({
       }
 
       await axios.put(
-        `https://api.blackstoneinfomaticstech.com/notification/${notificationId}`,
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.NOTIFICATION.UPDATE}/${notificationId}`,
         {
           isRead: true,
           notificationStatus: "Seen",
