@@ -23,8 +23,9 @@ import PhoneInput from "react-phone-number-input";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { appSuccessToastMessages, AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 type Props = {
   readonly onClose: () => void;
 };
@@ -197,7 +198,6 @@ const minutes = ["00", "30"];
   }, [addApplicantForm.country, countries]);
 
 const validateForm = () => {
-
   if (!addApplicantForm.firstName.trim()) {
     toast.error(
       AppValidationMessages.APPLICANT.FIRST_NAME.required
@@ -231,6 +231,13 @@ const validateForm = () => {
   if (!addApplicantForm.phone.trim()) {
     toast.error(
       AppValidationMessages.APPLICANT.PHONE.required
+    );
+    return false;
+  }
+
+  if (!/^[0-9]{8,15}$/.test(addApplicantForm.phone)) {
+    toast.error(
+      AppValidationMessages.APPLICANT.PHONE.pattern
     );
     return false;
   }
@@ -287,109 +294,169 @@ const validateForm = () => {
   return true;
 };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    const formData = new FormData();
-    formData.append("applicationDate", addApplicantForm.applicationDate);
-    formData.append("candidateFirstName", addApplicantForm.firstName); // Changed
-    formData.append("candidateLastName", addApplicantForm.lastName); // Changed
-    formData.append("candidateEmail", addApplicantForm.email); // Changed
-    formData.append("candidatePhoneNumber", addApplicantForm.phone); // Changed
-    formData.append("candidateCountry", addApplicantForm.country); // Changed
-    formData.append("candidateCity", addApplicantForm.city); // Changed
-    formData.append("positionApplied", addApplicantForm.position);
-    formData.append("gender", addApplicantForm.gender);
-    formData.append("skills", addApplicantForm.skillList.join(","));
-    formData.append("currency", "$");
-    formData.append("duration", "0");
-    formData.append("meetingminutes", "");
-    formData.append("professionalExperience", JSON.stringify(experiences));
-    formData.append("expectedSalary", addApplicantForm.expectedSalary); // Changed
-    formData.append("preferedWorkingHours", addApplicantForm.workingHours); // Changed
-    formData.append("comments", addApplicantForm.comment); // Changed
-    formData.append("applicationStatus", "NEWAPPLICATION");
-    formData.append("overallRating", "1");
-    formData.append("status", "Active");
-
-    if (addApplicantForm.resume) {
-      formData.append("uploadResume", addApplicantForm.resume);
-    }
-
+  // Validate first
   if (!validateForm()) {
     return;
   }
-    try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("SupervisorAuthToken")
-          : null;
 
-      if (!token) {
-        console.error("❌ SupervisorAuthToken not found");
-        return;
+  const formData = new FormData();
+
+  formData.append("applicationDate", addApplicantForm.applicationDate);
+  formData.append("candidateFirstName", addApplicantForm.firstName);
+  formData.append("candidateLastName", addApplicantForm.lastName);
+  formData.append("candidateEmail", addApplicantForm.email);
+  formData.append("candidatePhoneNumber", addApplicantForm.phone);
+  formData.append("candidateCountry", addApplicantForm.country);
+  formData.append("candidateCity", addApplicantForm.city);
+  formData.append("positionApplied", addApplicantForm.position);
+  formData.append("gender", addApplicantForm.gender);
+  formData.append("skills", addApplicantForm.skillList.join(","));
+  formData.append("currency", "$");
+  formData.append("duration", "0");
+  formData.append("meetingminutes", "");
+  formData.append(
+    "professionalExperience",
+    JSON.stringify(experiences)
+  );
+  formData.append(
+    "expectedSalary",
+    addApplicantForm.expectedSalary
+  );
+  formData.append(
+    "preferedWorkingHours",
+    addApplicantForm.workingHours
+  );
+  formData.append("comments", addApplicantForm.comment);
+  formData.append("applicationStatus", "NEWAPPLICATION");
+  formData.append("overallRating", "1");
+  formData.append("status", "Active");
+
+  if (addApplicantForm.resume) {
+    formData.append(
+      "uploadResume",
+      addApplicantForm.resume
+    );
+  }
+
+  try {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorAuthToken")
+        : null;
+
+    if (!token) {
+      toast.error(
+        AppValidationMessages.AUTH.TOKEN_REQUIRED
+      );
+      return;
+    }
+
+    const response = await axios.post(
+      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.RECRUITMENT.CREATE_SUPERVISOR_RECRUIT}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
       }
-      const response = await axios.post(
-        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.RECRUITMENT.CREATE_SUPERVISOR_RECRUIT}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+    );
+
+    if ([200, 201].includes(response.status)) {
+      toast.success(
+        appSuccessToastMessages.APPLICANT_CREATE
       );
 
-      if ([200, 201].includes(response.status)) {
-        setTimeout(() => {
-          onClose();
-        }, 3000);
-        setSucces(true);
-        setAddApplicantForm({
-          applicationDate: new Date().toISOString().split("T")[0],
-          firstName: "",
-          lastName: "",
-          email: "",
-          state: "",
-          phone: "",
-          country: "USA",
-          city: "",
-          gender: "",
-          position: "Arabic Teacher",
-          expectedSalary: "",
-          workingHours: "",
-          skills: " ",
-          skillList: [],
-          professionalExperience: [],
-          resume: null,
-          comment: "",
-        });
-      }
-    } catch (err) {
-      const error = err as AxiosError;
+      setSucces(true);
+
+      setAddApplicantForm({
+        applicationDate: new Date()
+          .toISOString()
+          .split("T")[0],
+        firstName: "",
+        lastName: "",
+        email: "",
+        state: "",
+        phone: "",
+        country: "USA",
+        city: "",
+        gender: "",
+        position: "Arabic Teacher",
+        expectedSalary: "",
+        workingHours: "",
+        skills: " ",
+        skillList: [],
+        professionalExperience: [],
+        resume: null,
+        comment: "",
+      });
+
       setTimeout(() => {
         onClose();
-      }, 3000);
-      const status = error.response?.status;
-      if (Number(status === 400)) {
-        console.log("please >");
-        setFailedMessage("Please check the inputs fields.");
-        setFailed(true);
-      } else if (status === 401) {
-        setFailedMessage("Please login again.");
-        setFailed(true);
-      } else if (status === 403) {
-        setFailedMessage("You don't have permission to perform this action.");
-        setFailed(true);
-      } else if (status === 500) {
-        setFailedMessage("Server error");
-        setFailed(true);
-      } else {
-        setFailed(true);
-        console.error(`Unexpected error: ${status}`);
-      }
+      }, 2000);
     }
-  };
+  } catch (err) {
+    const error = err as AxiosError;
+    const status = error.response?.status;
+
+    if (status === 400) {
+      toast.error(
+        AppFailureToastMessages.BAD_REQUEST
+      );
+
+      setFailedMessage(
+        AppFailureToastMessages.BAD_REQUEST
+      );
+
+      setFailed(true);
+    } else if (status === 401) {
+      toast.error(
+        AppFailureToastMessages.UNAUTHORIZED
+      );
+
+      setFailedMessage(
+        AppFailureToastMessages.UNAUTHORIZED
+      );
+
+      setFailed(true);
+    } else if (status === 403) {
+      toast.error(
+        AppFailureToastMessages.FORBIDDEN
+      );
+
+      setFailedMessage(
+        AppFailureToastMessages.FORBIDDEN
+      );
+
+      setFailed(true);
+    } else if (status === 500) {
+      toast.error(
+        AppFailureToastMessages.SERVER_ERROR
+      );
+
+      setFailedMessage(
+        AppFailureToastMessages.SERVER_ERROR
+      );
+
+      setFailed(true);
+    } else {
+      toast.error("Unable to create applicant");
+
+      setFailedMessage(
+        "Unable to create applicant"
+      );
+
+      setFailed(true);
+
+      console.error(
+        `Unexpected error: ${status}`
+      );
+    }
+  }
+};
   useEffect(() => {
     if (addApplicantForm.country) {
       const selectedCountry = countries.find(
@@ -1056,6 +1123,7 @@ const validateForm = () => {
           </button>
         </div>
       </form>
+
       {success && (
         <SuccessPopup onClose={() => setSucces(false)} title="Applicant" />
       )}
