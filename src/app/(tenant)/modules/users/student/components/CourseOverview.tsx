@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { PieChart, Pie, Cell } from "recharts";
 import axios from "axios";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 const CourseOverview = () => {
   const [dashboardCounts, setDashboardCounts] = useState({
@@ -47,10 +49,26 @@ const CourseOverview = () => {
         const studentId = localStorage.getItem("StudentPortalId");
         const courseName = localStorage.getItem("StudentcourseName"); // check exact key
 
-        if (!token || !studentId || !courseName) {
-          console.error("❌ studentId or courseName missing in localStorage");
-          return;
-        }
+        if (!token) {
+  console.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+  return;
+}
+
+if (!studentId) {
+  console.error(
+    AppValidationMessages.AUTH.STUDENT_REQUIRED
+  );
+  return;
+}
+
+if (!courseName) {
+  console.error(
+    AppValidationMessages.AUTH.COURSE_REQUIRED
+  );
+  return;
+}
 
         const response = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.DASHBOARD_STUDENT_COUNTS}`, {
           params: { studentId, courseName },
@@ -67,14 +85,30 @@ const CourseOverview = () => {
           presentCount: 0,
           totalDuration: Number(response.data.totalDuration) || 0,
         });
-
+              if (
+  !response.data ||
+  (
+    Number(response.data.totalLevel) === 0 &&
+    Number(response.data.totalAttendance) === 0 &&
+    Number(response.data.totalClasses) === 0 &&
+    Number(response.data.totalDuration) === 0
+  )
+) {
+  console.log(
+    AppValidationMessages.COURSE
+      .NO_COURSE_OVERVIEW_DATA
+  );
+}
         // Set maximum values based on current totals
         setMaxDuration(Number(response.data.totalDuration)); // Set maxDuration to current totalDuration
         setMaxClasses(Number(response.data.totalClasses)); // Set maxClasses to current totalClasses
 
       } catch (error) {
-        console.error("❌ Error fetching dashboard counts:", error);
-      }
+  console.error(
+    AppFailureToastMessages.COURSE_OVERVIEW_FETCH,
+    error
+  );
+}
     };
 
     fetchData();

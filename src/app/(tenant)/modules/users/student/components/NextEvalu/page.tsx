@@ -9,6 +9,7 @@ import axios from "axios";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 
 interface Student {
   studentId: string;
@@ -60,6 +61,7 @@ const NextClass = () => {
     const now = new Date();
 
     const upcomingClasses = response.classSchedule.filter((cls) => {
+      
       const classDate = new Date(cls.startDate);
       const [startHours, startMinutes] = cls.startTime[0]
         .split(":")
@@ -98,13 +100,17 @@ const NextClass = () => {
  const token =
     typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
 
-  if (!token) {
-    console.error("❌ StudentAuthToken not found");
-    return;
-  }        if (!studentId || !token) {
-          console.log("Missing studentId or authToken");
-          return;
-        }
+ if (!token) {
+  console.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+  return;
+}      if (!studentId) {
+  console.error(
+    AppValidationMessages.AUTH.STUDENT_REQUIRED
+  );
+  return;
+}
 
         const response = await axios.get<ApiResponse>(
           `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASSSHEDULE_STUDENTS}`,
@@ -115,7 +121,19 @@ const NextClass = () => {
            },
           }
         );
+        const upcomingClass = filterUpcomingClass(
+  response.data
+);
+
+setClassData(upcomingClass);
+
+if (!upcomingClass) {
+  console.log(
+    AppValidationMessages.CLASS.NO_UPCOMING_CLASS
+  );
+}
         setClassData(filterUpcomingClass(response.data));
+
       } catch (err) {
         console.log("Error loading class details:", err);
       }

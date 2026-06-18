@@ -4,6 +4,8 @@ export const AppValidationMessages = Object.freeze({
   AUTH: {
     TOKEN_REQUIRED: "Please login again",
     STUDENT_REQUIRED: "Student information not found",
+      COURSE_REQUIRED: "Course information not found",
+
   },
 
   FILTER: {
@@ -26,9 +28,19 @@ export const AppValidationMessages = Object.freeze({
   CLASS: {
     NO_UPCOMING_CLASS: "No upcoming classes available",
     CLASS_LINK_REQUIRED: "Class link is unavailable",
+    NO_CLASS_HOURS_FOUND: "No class hours data available",
+
   },
 
   PAYMENT: {
     NO_PAYMENT_FOUND: "No payment records found",
   },
+
+  COURSE: {
+    NO_COURSE_OVERVIEW_DATA:"No course overview data available",
+},
+
+GROWTH: {
+  NO_PROGRESS_DATA: "No learning progress data available",
+},
 });

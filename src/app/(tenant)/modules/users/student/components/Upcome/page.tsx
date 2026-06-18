@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { Calendar, User } from "lucide-react";
 import axios from "axios";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 const UpcomingClasses = () => {
   interface ClassEvent {
@@ -48,13 +50,26 @@ const UpcomingClasses = () => {
     const fetchNextEvaluationClass = async () => {
       try {
         const studentId = localStorage.getItem("StudentPortalId");
+        if (!studentId) {
+  console.error(
+    AppValidationMessages.AUTH.STUDENT_REQUIRED
+  );
+
+  setLoading(false);
+  return;
+}
+
          const token =
     typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
 
-  if (!token) {
-    console.error("❌ StudentAuthToken not found");
-    return;
-  }  
+ if (!token) {
+  console.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+
+  setLoading(false);
+  return;
+} 
         const response = await axios.get<ApiResponse>(
           `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASSSHEDULE_STUDENTS}`,
           {
@@ -65,7 +80,18 @@ const UpcomingClasses = () => {
             },
           }
         );
+if (
+  !response.data.classSchedule ||
+  response.data.classSchedule.length === 0
+) {
+  console.log(
+    AppValidationMessages.CLASS.NO_UPCOMING_CLASS
 
+  );
+
+  setClasses([]);
+  return;
+}
         const sortedClasses = response.data.classSchedule.toSorted(
           (a, b) =>
             new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
@@ -73,14 +99,14 @@ const UpcomingClasses = () => {
 
         setClasses(sortedClasses.slice(0, 4));
       } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("An unexpected error occurred");
-        }
-      } finally {
-        setLoading(false);
-      }
+  console.error(err);
+
+  setError(
+    AppFailureToastMessages.UPCOMING_CLASSES_FETCH
+  );
+} finally {
+  setLoading(false);
+}
     };
 
     fetchNextEvaluationClass();

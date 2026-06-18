@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 interface ApiResponse {
   pendingPercentage: number;
@@ -21,11 +23,22 @@ const Page = () => {
         const studentId = localStorage.getItem("StudentPortalId");
         const token =
     typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+if (!token) {
+  console.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
 
-  if (!token) {
-    console.error("❌ StudentAuthToken not found");
-    return;
-  }  
+  setLoading(false);
+  return;
+}
+  if (!studentId) {
+  console.error(
+    AppValidationMessages.AUTH.STUDENT_REQUIRED
+  );
+
+  setLoading(false);
+  return;
+} 
 
         const response = await axios.get<ApiResponse>(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASS_TOTAL_HOURS}`, {
           params: { studentId },
@@ -35,7 +48,16 @@ const Page = () => {
         });
 
         const { pendingPercentage, completedPercentage, totalHours } = response.data;
-
+if (
+  totalHours === 0 &&
+  pendingPercentage === 0 &&
+  completedPercentage === 0
+) {
+  console.log(
+    AppValidationMessages.CLASS
+      .NO_CLASS_HOURS_FOUND
+  );
+}
         setTotalHours(totalHours);
 
         // Prepare chart data using API values
@@ -46,9 +68,13 @@ const Page = () => {
 
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching class hours:", error);
-        setLoading(false);
-      }
+  console.error(
+    AppFailureToastMessages.CLASS_HOURS_FETCH,
+    error
+  );
+
+  setLoading(false);
+}
     };
 
     fetchClassHours();

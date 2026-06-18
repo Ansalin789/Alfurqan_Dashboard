@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import axios from "axios"; // Added axios import
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 interface Invoice {
   student: {
@@ -29,7 +31,14 @@ const Profile = () => {
     // Ensure code runs only in the browser
     if (typeof window !== "undefined") {
       const studentId = localStorage.getItem("StudentPortalId");
-      
+
+if (!studentId) {
+  console.error(
+    AppValidationMessages.AUTH.STUDENT_REQUIRED
+  );
+  setLoading(false);
+  return;
+}
       setStudentName(localStorage.getItem("StudentPortalName"));
 
       const fetchInvoice = async () => {
@@ -37,10 +46,13 @@ const Profile = () => {
            const token =
     typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
 
-  if (!token) {
-    console.error("❌ StudentAuthToken not found");
-    return;
-  }
+if (!token) {
+  console.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+  setLoading(false);
+  return;
+}
           const response = await axios.get<{ invoice: Invoice[] }>(
             `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_CLASS_TOTAL_HOURS}`,
             {
@@ -51,13 +63,18 @@ const Profile = () => {
            
             }
           );
-
-          if (response.data?.invoice?.length > 0) {
-            setInvoice(response.data.invoice[0]); // Get the latest invoice
-          }
+if (response.data?.invoice?.length > 0) {
+  setInvoice(response.data.invoice[0]);
+} else {
+  console.log(
+    AppValidationMessages.PAYMENT.NO_PAYMENT_FOUND
+  );
+}
         } catch (error) {
-          console.error("Error fetching invoice:", error);
-        } finally {
+ console.error(
+    AppFailureToastMessages.PROFILE_PAYMENT_FETCH,
+    error
+  );        } finally {
           setLoading(false);
         }
       };
