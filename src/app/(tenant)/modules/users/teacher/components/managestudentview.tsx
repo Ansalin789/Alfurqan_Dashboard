@@ -6,6 +6,9 @@ import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
 import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
+import { AppValidationMessages } from '@/app/_components/contents/validation_message';
+import { toast } from 'react-toastify';
+import { AppFailureToastMessages } from '@/app/_components/contents/toast_message';
 
 const ManageStudentView = () => {
   const router = useRouter();
@@ -104,10 +107,12 @@ const ManageStudentView = () => {
           const token =
     typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
 
-  if (!token) {
-    console.error("❌ TeacherAuthToken not found");
-    return;
-  }
+if (!token) {
+  toast.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+  return;
+}
           const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}/${studentId}`,
             {
                 headers:{
@@ -119,9 +124,22 @@ const ManageStudentView = () => {
           const data = await response.json();
           setStudentData(data);
           console.log(data);
+
+          if (!data) {
+  toast.error(
+    AppValidationMessages.STUDENT
+      .STUDENT_DATA_NOT_FOUND
+  );
+  return;
+}
+
         } catch (error) {
-          console.error('Error fetching student data:', error);
-        }
+  console.error(error);
+
+  toast.error(
+    AppFailureToastMessages.STUDENT_FETCH
+  );
+}
       };
       fetchData();
     }

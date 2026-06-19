@@ -10,6 +10,9 @@ import { FiVideo } from "react-icons/fi";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 interface Student {
   studentId: string;
@@ -51,13 +54,25 @@ const NextScheduledClass = () => {
   const fetchClassData = async () => {
     try {
       setLoading(true);
+      
       const teacherId = localStorage.getItem("TeacherPortalId");
-      const token = localStorage.getItem("TeacherAuthToken");
-      if (!teacherId || !token) {
-        setClassData(null);
-        setLoading(false);
-        return;
-      }
+const token = localStorage.getItem("TeacherAuthToken");
+
+if (!teacherId) {
+  toast.error(
+    AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_TEACHER_ID
+  );
+  setLoading(false);
+  return;
+}
+
+if (!token) {
+  toast.error(
+    AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_TOKEN
+  );
+  setLoading(false);
+  return;
+}
 
       const response = await axios.get(
         `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}`,
@@ -91,12 +106,23 @@ const NextScheduledClass = () => {
             a.classStart!.getTime() - b.classStart!.getTime()
         )[0];
 
-      setClassData(upcoming ?? null);
+      if (upcoming) {
+  setClassData(upcoming);
+} else {
+  setClassData(null);
+
+  console.log(
+    AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_CLASS_FOUND
+  );
+}
+
     } catch (error) {
-      console.error("Failed to fetch scheduled class:", error);
-    } finally {
-      setLoading(false);
-    }
+  console.error(error);
+
+  toast.error(
+    AppFailureToastMessages.NEXT_SCHEDULED_CLASS_FETCH
+  );
+}
   };
 
  
@@ -186,8 +212,12 @@ const NextScheduledClass = () => {
             fetchClassData();
           }, 1500);
         } catch (err) {
-          console.error("❌ Failed to mark in evaluation:", err);
-        }
+  console.error(err);
+
+  toast.error(
+    AppFailureToastMessages.CLASS_END_UPDATE
+  );
+}
       }
     }, 10000); // every 10 sec
 
@@ -196,7 +226,12 @@ const NextScheduledClass = () => {
 
 
   const handleJoinClass = () => {
-    if (!classData?.classLink) return;
+    if (!classData?.classLink) {
+  toast.error(
+    "Class link not available"
+  );
+  return;
+}
 
     const isCountdownFinished = timeRemaining <= 0;
     if (!isCountdownFinished) {

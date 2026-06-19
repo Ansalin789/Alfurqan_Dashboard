@@ -23,7 +23,10 @@ export const AppFailureToastMessages = Object.freeze({
   PERMISSION_FETCH: "Unable to load user permissions",
   CLASS_FETCH: "Unable to fetch class schedule",
   CLASS_ANALYTICS_FETCH: "Unable to fetch class analytics data",
-
+  STUDENT_FETCH: "Error fetching student data",
+  NEXT_SCHEDULED_CLASS_FETCH: "Unable to fetch next scheduled class",
+  CLASS_END_UPDATE: "Unable to update class session status",
+  NEXT_MEETING_FETCH: "Unable to fetch meeting details",
  
 GROWTH_FETCH:
 "Unable to fetch learning progress details",
@@ -34,9 +37,8 @@ export const AppSuccessToastMessages = Object.freeze({
   MEETING_CREATE: "Meeting created successfully",
   ASSIGNMENT_CREATED: "Assignment created successfully",
   ASSIGNMENT_ASSIGNED: "Assignment assigned successfully",
+
 });
-
-
 
 export const appSuccessToastMessages = Object.freeze({
   SIGNIN: "Welcome back",

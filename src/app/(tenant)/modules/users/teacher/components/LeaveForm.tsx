@@ -5,6 +5,9 @@ import axios, { AxiosError } from "axios";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { toast } from "react-toastify";
+
 type LeaveFormProps = {
   readonly onClose: () => void;
 };
@@ -37,7 +40,6 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
     deductionDays: 0,
   });
   
-
   useEffect(() => {
     const Id = localStorage.getItem("TeacherId") ?? "";
     console.log("TeacherId from localStorage:", Id); // Debug log
@@ -88,14 +90,69 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
     }));
   };
 
+  const validateForm = () => {
+  if (!form.leaveType) {
+    toast.error(
+      AppValidationMessages.LEAVE.LEAVE_TYPE_REQUIRED
+    );
+    return false;
+  }
+
+  if (!form.fromDate) {
+    toast.error(
+      AppValidationMessages.LEAVE.FROM_DATE_REQUIRED
+    );
+    return false;
+  }
+
+  if (!form.toDate) {
+    toast.error(
+      AppValidationMessages.LEAVE.TO_DATE_REQUIRED
+    );
+    return false;
+  }
+
+  if (!form.reason.trim()) {
+    toast.error(
+      AppValidationMessages.LEAVE.REASON_REQUIRED
+    );
+    return false;
+  }
+
+  if (form.reason.trim().length < 5) {
+    toast.error(
+      AppValidationMessages.LEAVE.REASON_MIN_LENGTH
+    );
+    return false;
+  }
+
+  if (new Date(form.toDate) < new Date(form.fromDate)) {
+    toast.error(
+      AppValidationMessages.LEAVE.INVALID_DATE_RANGE
+    );
+    return false;
+  }
+
+  return true;
+};
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
+
+      if (!validateForm()) return false;
 
     try {
       const token =
         typeof window !== "undefined"
           ? localStorage.getItem("TeacherAuthToken")
           : null;
+
+          if (!token) {
+  toast.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+  return;
+}
 
       const response = await axios.post(
         `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.LEAVE.CREATE}`,
@@ -109,6 +166,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
       );
 
       console.log("Leave request submitted:", response.data);
+      
       if ([200, 201].includes(response.status)) {
         setSucces(true);
       }
@@ -116,23 +174,17 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
       const error = err as AxiosError;
 
       const status = error.response?.status;
-      if (status === 400) {
-        console.log("please >");
-        setFailedMessage("Please check the form inputs.");
-        setFailed(true);
-      } else if (status === 401) {
-        setFailedMessage("Please login again.");
-        setFailed(true);
-      } else if (status === 403) {
-        setFailedMessage("You don't have permission to perform this action.");
-        setFailed(true);
-      } else if (status === 500) {
-        setFailedMessage("Server error");
-        setFailed(true);
-      } else {
-        setFailed(true);
-        console.error(`Unexpected error: ${status}`);
-      }
+   if (status === 400) {
+  toast.error(AppValidationMessages.LEAVE.INVALID_INPUTS);
+} else if (status === 401) {
+  toast.error(AppValidationMessages.LEAVE.LOGIN_REQUIRED);
+} else if (status === 403) {
+  toast.error(AppValidationMessages.LEAVE.ACCESS_DENIED);
+} else if (status === 500) {
+  toast.error(AppValidationMessages.LEAVE.SERVER_ERROR);
+} else {
+  toast.error(AppValidationMessages.LEAVE.UNEXPECTED_ERROR);
+}
     }
   };
 

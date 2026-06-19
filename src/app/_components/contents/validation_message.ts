@@ -63,6 +63,10 @@ GROWTH: {
   NO_PROGRESS_DATA: "No learning progress data available",
 },
 
+EARNINGS: {
+  NO_EARNINGS_DATA: "No earnings data found",
+},
+
 ASSIGNMENT: {
   TEACHER_REQUIRED: "Teacher information not found",
   NO_ASSIGNMENT_DATA: "No assignment data available",
@@ -73,8 +77,37 @@ ASSIGNMENT: {
   DUE_DATE_REQUIRED: "Due date is required",
   CORRECT_ANSWER_REQUIRED: "Please select a correct answer",
 },
+
+LEAVE: {
+  LEAVE_TYPE_REQUIRED: "Please select leave type",
+  FROM_DATE_REQUIRED: "From date is required",
+  TO_DATE_REQUIRED: "To date is required",
+  REASON_REQUIRED: "Reason is required",
+  REASON_MIN_LENGTH: "Reason must be at least 5 characters",
+  INVALID_DATE_RANGE: "To date should be greater than from date",
+  LOGIN_REQUIRED: "Please login again",
+  ACCESS_DENIED: "You don't have permission to perform this action",
+  SERVER_ERROR: "Server error occurred",
+  INVALID_INPUTS: "Please check the form inputs",
+  UNEXPECTED_ERROR: "Something went wrong"
+},
   
-  
+STUDENT: {
+  STUDENT_ID_REQUIRED: "Student information not found",
+  STUDENT_DATA_NOT_FOUND: "Student details not available",
+},
+
+NEXT_SCHEDULED_CLASS: {
+  NO_TEACHER_ID: "Teacher information not found",
+  NO_TOKEN: "Please login again",
+  NO_CLASS_FOUND: "No upcoming class found",
+},
+
+NEXT_MEETING: {
+  NO_MEETING_FOUND: "No upcoming meetings available",
+  MEETING_LINK_REQUIRED: "Meeting link is not available"
+},
+
 APPLICANT: {
     FIRST_NAME: {
       required: "First name is required",

@@ -9,6 +9,9 @@ import { FiVideo } from "react-icons/fi";
 import { TimerReset } from "lucide-react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 // Interfaces based on your API response
 interface Teacher {
@@ -122,8 +125,18 @@ const [timeRemaining, setTimeRemaining] = useState(0);
             ? localStorage.getItem("TeacherAuthToken")
             : null;
 
+        if (!teacherId) {
+          toast.error(
+            AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_TEACHER_ID
+          );
+          setLoading(false);
+          return;
+        }
+
         if (!token) {
-          console.error("❌ Teacher AuthToken not found");
+          toast.error(
+            AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_TOKEN
+          );
           setLoading(false);
           return;
         }
@@ -166,13 +179,31 @@ const [timeRemaining, setTimeRemaining] = useState(0);
     return aDateTime.getTime() - bDateTime.getTime();
   })[0] || null;
 
-        setClassData(upcoming);
+        setClassData(upcoming);                                                                   
         setLoading(false);
+
+if (upcoming) {
+  setClassData(upcoming);
+} else {
+  toast.info(
+    AppValidationMessages.NEXT_MEETING.NO_MEETING_FOUND
+  );
+  setClassData(null);
+}
+
       } catch (err: any) {
-        console.error(err);
-        setError("Failed to fetch meeting data");
-        setLoading(false);
-      }
+  console.error(err);
+
+  toast.error(
+    AppFailureToastMessages.NEXT_MEETING_FETCH
+  );
+
+  setError(
+    AppFailureToastMessages.NEXT_MEETING_FETCH
+  );
+
+  setLoading(false);
+}
     };
 
     fetchMeeting();
@@ -227,7 +258,6 @@ useEffect(() => {
   const interval = setInterval(tick, 1000);
   return () => clearInterval(interval);
 }, [classData]);
-
 
 
   if (loading) {
