@@ -12,6 +12,9 @@ import { IoMdClose } from "react-icons/io";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { toast } from "react-toastify";
+import { AppFailureToastMessages, AppSuccessToastMessages } from "@/app/_components/contents/toast_message";
 
 interface Meeting {
   _id: string;
@@ -126,7 +129,20 @@ const TeacherFilter = () => {
       try {
         const teacherId = localStorage.getItem("TeacherPortalId");
         const token = localStorage.getItem("TeacherAuthToken");
-        if (!token || !teacherId) return;
+         if (!teacherId) {
+                              toast.error(
+                                AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_TEACHER_ID
+                              );
+        
+                              return;
+                            }
+                    
+                     if (!token) {
+                              toast.error(
+                                AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_TOKEN
+                              );
+                              return;
+                            }
 
         const response = await axios.get<MeetingResponse>(
           `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET_TEACHERMEETINGLIST}`,
@@ -171,8 +187,12 @@ console.log({
 
      
       } catch (error) {
-        console.error("Error fetching meeting data:", error);
-      }
+  console.error(error);
+
+  toast.error(
+    AppFailureToastMessages.TEACHER_MEETING_FETCH
+  );
+}
     };
 
     fetchClasses();
@@ -289,16 +309,50 @@ console.log({
     indexOfLastItem
   );
 
+  const validateRescheduleForm = () => {
+
+  if (!rescheduleReason.trim()) {
+    toast.error(
+      AppValidationMessages.TEACHER_MEETING.RESCHEDULE_REASON_REQUIRED
+    );
+    return false;
+  }
+
+  if (!rescheduleDate) {
+    toast.error(
+      AppValidationMessages.TEACHER_MEETING.RESCHEDULE_DATE_REQUIRED
+    );
+    return false;
+  }
+
+  if (!rescheduleTime) {
+    toast.error(
+      AppValidationMessages.TEACHER_MEETING.RESCHEDULE_TIME_REQUIRED
+    );
+    return false;
+  }
+
+  return true;
+};
+
   async function handleRescheduleSubmit(
     event: React.MouseEvent<HTMLButtonElement>
   ): Promise<void> {
     event.preventDefault();
 
     const meetingId = selectedMeetingDetails?._id;
+
+    if (!validateRescheduleForm()) {
+  return;
+}
+
     if (!meetingId) {
-      console.error("Meeting ID is missing");
-      return;
-    }
+  toast.error(
+    AppValidationMessages.TEACHER_MEETING.MEETING_ID_REQUIRED
+  );
+  return;
+}
+
     const teacherId = localStorage.getItem("TeacherPortalId");
     const token = localStorage.getItem("TeacherAuthToken");
     if (!token || !teacherId) {
@@ -327,12 +381,22 @@ console.log({
         }
       );
       console.log("Meeting rescheduled successfully:", response.data);
-      setSuccess(true);
+      toast.success(
+  AppSuccessToastMessages.MEETING_RESCHEDULE
+);
+
+setSuccess(true);
       setIsRescheduleModalOpen(false);
       // Optionally refresh meeting list
     } catch (error) {
-      setFailed(true);
-      setFailedMessage("Failed to reschedule the meeting. Please try again.");
+    toast.error(
+  AppFailureToastMessages.MEETING_RESCHEDULE
+);
+
+setFailed(true);
+setFailedMessage(
+  AppFailureToastMessages.MEETING_RESCHEDULE
+);
     }
   }
   return (

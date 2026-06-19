@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { toast } from "react-toastify";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 interface TrialClass {
   _id: string;
@@ -61,11 +64,21 @@ const NextTrailSession = () => {
       const teacherId = localStorage.getItem("TeacherPortalId");
       const token = localStorage.getItem("TeacherAuthToken");
 
-      if (!teacherId || !token) {
-        setError("Missing teacher credentials");
-        setLoading(false);
-        return;
-      }
+      if (!teacherId) {
+                toast.error(
+                  AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_TEACHER_ID
+                );
+                setLoading(false);
+                return;
+              }
+      
+       if (!token) {
+                toast.error(
+                  AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_TOKEN
+                );
+                setLoading(false);
+                return;
+              }
 
       try {
         const response = await axios.get<TrialClass[]>(
@@ -81,14 +94,25 @@ const NextTrailSession = () => {
 
         const data = response.data;
         if (data.length > 0) {
-          setSelectedTrial(data[0]);
-        } else {
-          setSelectedTrial(null);
-        }
+  setSelectedTrial(data[0]);
+} else {
+  setSelectedTrial(null);
+
+  console.log(
+    AppValidationMessages.TRIAL_CLASS.NO_TRIAL_CLASS_FOUND
+  );
+}
       } catch (err) {
-        console.error("API Error:", err);
-        setError("Failed to fetch data");
-      } finally {
+  console.error(err);
+
+  toast.error(
+    AppFailureToastMessages.TRIAL_CLASS_FETCH
+  );
+
+  setError(
+    AppFailureToastMessages.TRIAL_CLASS_FETCH
+  );
+} finally {
         setLoading(false);
       }
     };
@@ -131,13 +155,18 @@ const NextTrailSession = () => {
     return `${dd}-${mm}-${yyyy}`;
   };
 
-  const handleStartClass = (meetingLink: string | undefined) => {
-    if (meetingLink) {
-      window.open(meetingLink, "_blank");
-    } else {
-      console.error("No meeting link available");
-    }
-  };
+const handleStartClass = (
+  meetingLink: string | undefined
+) => {
+  if (!meetingLink) {
+    toast.error(
+      AppValidationMessages.TRIAL_CLASS.MEETING_LINK_REQUIRED
+    );
+    return;
+  }
+
+  window.open(meetingLink, "_blank");
+};
 
   if (loading) return <p className="text-center">Loading upcoming class...</p>;
   if (!selectedTrial) {

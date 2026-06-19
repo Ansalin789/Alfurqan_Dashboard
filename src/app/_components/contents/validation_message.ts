@@ -44,7 +44,7 @@ export const AppValidationMessages = Object.freeze({
 
   CLASS: {
     NO_UPCOMING_CLASS: "No upcoming classes available",
-    CLASS_LINK_REQUIRED: "Class link is unavailable",
+    CLASS_LINK_REQUIRED: "Class link is not available",
     NO_CLASS_HOURS_FOUND: "No class hours data available",
     NO_CLASS_FOUND: "No upcoming classes found",
     NO_ANALYTICS_DATA: "No class analytics data found",
@@ -106,6 +106,30 @@ NEXT_SCHEDULED_CLASS: {
 NEXT_MEETING: {
   NO_MEETING_FOUND: "No upcoming meetings available",
   MEETING_LINK_REQUIRED: "Meeting link is not available"
+},
+
+TRIAL_CLASS: {
+  NO_TRIAL_CLASS_FOUND: "No upcoming trial classes available",
+  MEETING_LINK_REQUIRED: "Meeting link is not available"
+},
+
+SCHEDULED_CLASSES: {
+  NO_CLASSES_FOUND: "No scheduled classes found",
+  FROM_DATE_REQUIRED: "Please select From Date",
+  TO_DATE_REQUIRED: "Please select To Date",
+  INVALID_DATE_RANGE: "To Date should be greater than From Date"
+},
+
+TEACHER_STUDENTS: {
+  NO_STUDENTS_FOUND: "No students found"
+},
+
+TEACHER_MEETING: {
+  NO_MEETINGS_FOUND: "No meetings found",
+  RESCHEDULE_REASON_REQUIRED: "Please enter reschedule reason",
+  RESCHEDULE_DATE_REQUIRED: "Please select reschedule date",
+  RESCHEDULE_TIME_REQUIRED: "Please select reschedule time",
+  MEETING_ID_REQUIRED: "Meeting ID is missing"
 },
 
 APPLICANT: {

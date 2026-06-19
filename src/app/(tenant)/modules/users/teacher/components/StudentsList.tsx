@@ -5,6 +5,9 @@ import RegularStudents from "../ui/allstudents/RegularStudents/page";
 import GroupStudents from "../ui/allstudents/GroupStudents/page";
 import Link from "next/link";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { toast } from "react-toastify";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 // Import the interfaces
 export interface AssignmentItem {
@@ -124,10 +127,20 @@ const Page = () => {
         const teacherId = localStorage.getItem("TeacherPortalId");
         const token = localStorage.getItem("TeacherAuthToken");
 
-        if (!token || !teacherId) {
-          console.warn("Missing teacherId or token");
-          return;
-        }
+             if (!teacherId) {
+                      toast.error(
+                        AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_TEACHER_ID
+                      );
+
+                      return;
+                    }
+            
+             if (!token) {
+                      toast.error(
+                        AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_TOKEN
+                      );
+                      return;
+                    }
 
         console.log("Fetching data for teacherId:", teacherId);
 
@@ -171,8 +184,15 @@ const Page = () => {
 
         setRegularCount(regular.length);
       } catch (error) {
-        console.error("Error fetching assignments:", error);
-      }
+  console.error(
+    AppFailureToastMessages.TEACHER_STUDENT_LIST_FETCH,
+    error
+  );
+
+  toast.error(
+    AppFailureToastMessages.TEACHER_STUDENT_LIST_FETCH
+  );
+}
     };
 
     fetchData();

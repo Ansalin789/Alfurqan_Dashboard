@@ -10,6 +10,9 @@ import { IoArrowBackCircleSharp } from "react-icons/io5";
 import LeaveForm from "./LeaveForm";
 import AddMeeting from "./AddMeeting";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { toast } from "react-toastify";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 type Props = {
   readonly currentSection: string;
@@ -63,7 +66,10 @@ export default function TeacherHeader({
         setLeaveWrite(modules?.leave ?? modules?.dashboard?.write ?? false);
         setAddWrite(modules?.meeting?.write ?? false);
       } catch (error) {
-        console.error("❌ Invalid AcademicRolePermission JSON", error);
+        toast.error(
+  AppFailureToastMessages.PERMISSION_LOAD
+);
+console.error(error);
       }
     }
   }, []);
@@ -100,7 +106,8 @@ export default function TeacherHeader({
       const unreadCount = notifications.filter((n: any) => !n.isRead).length;
       setNotificationCount(unreadCount);
     } catch (error) {
-      console.error("❌ Failed to fetch notifications:", error);
+      toast.error(AppFailureToastMessages.NOTIFICATION_FETCH);
+      console.error(error);
     }
   };
 
@@ -113,9 +120,11 @@ export default function TeacherHeader({
           : null;
 
       if (!token) {
-        console.error("❌ TeacherAuthToken not found");
-        return;
-      }
+  toast.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+  return;
+}
 
       await axios.put(
         `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.NOTIFICATION.UPDATE}/${notificationId}`,
@@ -141,7 +150,10 @@ export default function TeacherHeader({
 
       setNotificationCount((prev) => Math.max(prev - 1, 0));
     } catch (error) {
-      console.error("❌ Failed to mark as seen:", error);
+      toast.error(
+  AppFailureToastMessages.NOTIFICATION_UPDATE
+);
+console.error(error);
     }
   };
   const userName =

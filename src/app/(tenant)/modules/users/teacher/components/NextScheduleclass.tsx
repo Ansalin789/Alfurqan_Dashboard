@@ -10,6 +10,9 @@ import { FiVideo } from "react-icons/fi";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { toast } from "react-toastify";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 interface Student {
   studentId: string;
@@ -51,14 +54,27 @@ const NextScheduledClass = () => {
   const [recentClass, setRecentClass] = useState<ClassData | null>(null);
   const nextClass = upcomingClasses[0];
 
-
-
   const fetchClassData = async () => {
     try {
       setLoading(true);
-      const teacherId = localStorage.getItem("TeacherPortalId");
-      const token = localStorage.getItem("TeacherAuthToken");
-      if (!teacherId || !token) return;
+const teacherId = localStorage.getItem("TeacherPortalId");
+const token = localStorage.getItem("TeacherAuthToken");
+
+if (!teacherId) {
+          toast.error(
+            AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_TEACHER_ID
+          );
+          setLoading(false);
+          return;
+        }
+
+ if (!token) {
+          toast.error(
+            AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_TOKEN
+          );
+          setLoading(false);
+          return;
+        }
 
       const response = await axios.get(
         `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}`,
@@ -93,15 +109,24 @@ const NextScheduledClass = () => {
         .sort((a, b) => b.classEnd!.getTime() - a.classEnd!.getTime())[0];
 
       setUpcomingClasses(upcoming);
+
+if (upcoming.length === 0) {
+  console.log(
+    AppValidationMessages.CLASS.NO_UPCOMING_CLASS
+  );
+}
+
       setRecentClass(past || null);
-    } catch (err) {
-      console.error(err);
-    } finally {
+    }catch (err) {
+  console.error(err);
+
+  toast.error(
+    AppFailureToastMessages.NEXT_CLASS_FETCH
+  );
+}finally {
       setLoading(false);
     }
   };
-
-
 
   useEffect(() => {
     fetchClassData();
@@ -183,9 +208,13 @@ const NextScheduledClass = () => {
 
           // refresh list
           setTimeout(fetchClassData, 1500);
-        } catch (err) {
-          console.error("❌ Failed to mark in evaluation:", err);
-        }
+        }catch (err) {
+  console.error(err);
+
+  toast.error(
+    AppFailureToastMessages.CLASS_SESSION_UPDATE
+  );
+}
       }
     }, 10000);
 

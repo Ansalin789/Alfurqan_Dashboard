@@ -3,6 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
+import { AppValidationMessages } from '@/app/_components/contents/validation_message';
+import { toast } from 'react-toastify';
+import { AppFailureToastMessages } from '@/app/_components/contents/toast_message';
 
 const TeachingActivity: React.FC = () => {
   const [monthlyHours, setMonthlyHours] = useState<number[]>(Array(12).fill(0));
@@ -13,10 +16,19 @@ const TeachingActivity: React.FC = () => {
         const token = typeof window !== 'undefined' ? localStorage.getItem('TeacherAuthToken') : null;
         const teacherId = localStorage.getItem('TeacherPortalId');
 
-        if (!token || !teacherId) {
-          console.error('Missing authentication token or teacher ID.');
-          return;
-        }
+        if (!teacherId) {
+  toast.error(
+    AppValidationMessages.AUTH.TEACHER_REQUIRED
+  );
+  return;
+}
+
+if (!token) {
+  toast.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+  return;
+}
 
         const response = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.GET}`, {
           headers: {
@@ -50,9 +62,13 @@ const TeachingActivity: React.FC = () => {
         });
 
         setMonthlyHours(monthlyData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
+      }catch (error) {
+  toast.error(
+    AppFailureToastMessages.TEACHING_ACTIVITY_FETCH
+  );
+
+  console.error("Error fetching teaching activity:", error);
+}
     };
 
     fetchData();

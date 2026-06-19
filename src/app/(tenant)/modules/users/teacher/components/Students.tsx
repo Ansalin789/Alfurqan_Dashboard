@@ -1,8 +1,11 @@
 'use client';
 
 import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
+import { AppFailureToastMessages } from '@/app/_components/contents/toast_message';
+import { AppValidationMessages } from '@/app/_components/contents/validation_message';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 export interface TeacherAnalytics {
   _id: string;
@@ -26,10 +29,21 @@ const StudentsCard: React.FC = () => {
       const token = localStorage.getItem('TeacherAuthToken');
       const teacherId = localStorage.getItem('TeacherPortalId');
 
-      if (!token || !teacherId) {
-        setLoading(false);
-        return;
-      }
+            if (!teacherId) {
+                      toast.error(
+                        AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_TEACHER_ID
+                      );
+                      setLoading(false);
+                      return;
+                    }
+            
+             if (!token) {
+                      toast.error(
+                        AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_TOKEN
+                      );
+                      setLoading(false);
+                      return;
+                    }
 
       const response = await axios.get<TeacherAnalyticsResponse>(
         `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_STUDENT_COUNT}?teacherId=${teacherId}`,
@@ -45,8 +59,15 @@ const StudentsCard: React.FC = () => {
         setTeacher(response.data.data[0]);
       }
     } catch (error) {
-      console.error('Error fetching teacher data', error);
-    } finally {
+  console.error(
+    AppFailureToastMessages.TEACHER_ANALYTICS_FETCH,
+    error
+  );
+
+  toast.error(
+    AppFailureToastMessages.TEACHER_ANALYTICS_FETCH
+  );
+} finally {
       setLoading(false);
     }
   };

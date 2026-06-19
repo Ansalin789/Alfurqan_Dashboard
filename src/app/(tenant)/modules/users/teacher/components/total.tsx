@@ -4,6 +4,8 @@ import Image from "next/image"
 import axios from "axios"
 import { getSocket } from "@/app/utils/socket"
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints"
+import { AppValidationMessages } from "@/app/_components/contents/validation_message"
+import { toast } from "react-toastify"
 
 interface TeacherDashboardStats {
   totalclasses: number
@@ -46,7 +48,19 @@ const Total = () => {
     const teacherId = localStorage.getItem("TeacherPortalId")
     const token = localStorage.getItem("TeacherAuthToken")
 
-    if (!teacherId || !token) return
+    if (!teacherId) {
+  toast.error(
+    AppValidationMessages.AUTH.TEACHER_REQUIRED
+  );
+  return;
+}
+
+if (!token) {
+  toast.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+  return;
+}
 
     try {
       const response = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD. GET_TEACHER_COUNTS}`, {

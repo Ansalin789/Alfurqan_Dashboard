@@ -27,7 +27,20 @@ export const AppFailureToastMessages = Object.freeze({
   NEXT_SCHEDULED_CLASS_FETCH: "Unable to fetch next scheduled class",
   CLASS_END_UPDATE: "Unable to update class session status",
   NEXT_MEETING_FETCH: "Unable to fetch meeting details",
- 
+  CLASS_SESSION_UPDATE: "Unable to update class session status",
+  TRIAL_CLASS_FETCH: "Unable to fetch trial class details",
+  SCHEDULED_CLASSES_FETCH: "Unable to fetch scheduled classes",
+  CLASS_RESCHEDULE: "Unable to open reschedule page",
+  TEACHER_ANALYTICS_FETCH: "Unable to fetch student analytics data",
+  TEACHER_STUDENT_LIST_FETCH: "Error fetching assignments",
+  TEACHER_MEETING_FETCH: "Error fetching meeting data",
+  MEETING_RESCHEDULE:"Failed to reschedule the meeting. Please try again.",
+  NOTIFICATION_FETCH:"Unable to fetch notifications",
+  NOTIFICATION_UPDATE: "❌ Failed to mark as seen",
+  PERMISSION_LOAD: "❌ Failed to load role permissions",
+  TEACHING_ACTIVITY_FETCH: "Error fetching teaching activity data",
+  TEACHER_DASHBOARD_COUNT_FETCH:"Unable to fetch teacher dashboard statistics",
+
 GROWTH_FETCH:
 "Unable to fetch learning progress details",
 
@@ -37,6 +50,7 @@ export const AppSuccessToastMessages = Object.freeze({
   MEETING_CREATE: "Meeting created successfully",
   ASSIGNMENT_CREATED: "Assignment created successfully",
   ASSIGNMENT_ASSIGNED: "Assignment assigned successfully",
+  MEETING_RESCHEDULE: "Meeting rescheduled successfully",
 
 });
 

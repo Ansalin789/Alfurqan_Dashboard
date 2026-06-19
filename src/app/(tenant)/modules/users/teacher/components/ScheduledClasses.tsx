@@ -10,6 +10,9 @@ import Pagination from "@/components/Pagination";
 import Modal from "react-modal";
 import { getSocket } from "@/app/utils/socket";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { toast } from "react-toastify";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 export interface UnifiedClassSchedule {
   _id: string;
@@ -157,10 +160,19 @@ const ScheduledClasses = () => {
       console.log("Teacher ID:", teacherId);
       console.log("Auth Token Present:", !!token);
 
-      if (!token || !teacherId) {
-        console.warn("Missing token or teacher ID.");
-        return;
-      }
+      if (!teacherId) {
+                      toast.error(
+                        AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_TEACHER_ID
+                      );
+                      return;
+                    }
+            
+             if (!token) {
+                      toast.error(
+                        AppValidationMessages.NEXT_SCHEDULED_CLASS.NO_TOKEN
+                      );
+                      return;
+                    }
 
       const response = await axios.get(
         `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.CLASSSHEDULE.TEACHER_CLASSES}`,
@@ -300,6 +312,11 @@ const ScheduledClasses = () => {
 
       // Combine both types
       const allClasses = [...regularClasses, ...trialClasses];
+      if (allClasses.length === 0) {
+  console.log(
+    AppValidationMessages.SCHEDULED_CLASSES.NO_CLASSES_FOUND
+  );
+}
       console.log("All Classes Combined:", allClasses);
 
       // Filter completed classes
@@ -365,8 +382,12 @@ const ScheduledClasses = () => {
       setFilteredClasses(activeTab === "upcoming" ? upcoming : completed);
       console.log("Class data successfully set to state.");
     } catch (error) {
-      console.error("Error fetching class data:", error);
-    }
+  console.error(error);
+
+  toast.error(
+    AppFailureToastMessages.SCHEDULED_CLASSES_FETCH
+  );
+}
   };
 
   // Add this useEffect to load data on component mount
@@ -394,11 +415,22 @@ const ScheduledClasses = () => {
       socket.off("academicStudentReSchedule", handleUpcoming);
     };
   }, []);
-  const handleRescheduleRedirect = (id: string) => {
-    alert(`Reschedule for ${id}`);
-    setOpenDropdownId(null);
-    router.push(`/modules/users/teacher/ui/teacherreschedule?classId=${id}`);
-  };
+
+const handleRescheduleRedirect = (
+  id: string
+) => {
+  if (!id) {
+    toast.error(
+      AppFailureToastMessages.CLASS_RESCHEDULE
+    );
+    return;
+  }
+
+  router.push(
+    `/modules/users/teacher/ui/teacherreschedule?classId=${id}`
+  );
+};
+
   const dataToShow: UnifiedClassSchedule[] =
     activeTab === "upcoming" ? upcomingClasses : completedData;
 
@@ -438,6 +470,38 @@ const ScheduledClasses = () => {
       activeTab === "upcoming" ? upcomingClasses : completedData;
 
     let filtered = [...latestDataToShow];
+
+    if (
+  filters.fromDate &&
+  !filters.toDate
+) {
+  toast.error(
+    AppValidationMessages.SCHEDULED_CLASSES.TO_DATE_REQUIRED
+  );
+  return;
+}
+
+if (
+  !filters.fromDate &&
+  filters.toDate
+) {
+  toast.error(
+    AppValidationMessages.SCHEDULED_CLASSES.FROM_DATE_REQUIRED
+  );
+  return;
+}
+
+if (
+  filters.fromDate &&
+  filters.toDate &&
+  new Date(filters.toDate) <
+    new Date(filters.fromDate)
+) {
+  toast.error(
+    AppValidationMessages.SCHEDULED_CLASSES.INVALID_DATE_RANGE
+  );
+  return;
+}
 
     if (filters.courseName) {
       filtered = filtered.filter((c) =>
