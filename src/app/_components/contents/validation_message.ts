@@ -179,5 +179,6 @@ APPLICANT: {
       required: "Resume is required",
     },
   },
+  
 });
 

@@ -166,7 +166,11 @@ const ManageTeacher: React.FC = () => {
             },
           }
         );
-        const data = await response.json();
+        if (!response.ok) {
+  throw new Error(`Failed to fetch teachers (${response.status})`);
+}
+
+const data = await response.json();
 
         console.log("Fetched data:", data);
 
