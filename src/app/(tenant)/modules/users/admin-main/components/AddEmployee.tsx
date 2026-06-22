@@ -5,6 +5,8 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Country, State, City, ICountry, ICity } from "country-state-city";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { AppFailureToastMessages, appSuccessToastMessages } from "@/app/_components/contents/toast_message";
 
 interface EmployeeFormData {
   firstName: string;
@@ -128,17 +130,17 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
   const validateForm = (): boolean => {
     const newErrors: Partial<EmployeeFormData> = {};
     
-    if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
-    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
+    if (!formData.firstName.trim()) newErrors.firstName = AppValidationMessages.EMPLOYEE.FIRST_NAME_REQUIRED;
+    if (!formData.lastName.trim()) newErrors.lastName = AppValidationMessages.EMPLOYEE.LAST_NAME_REQUIRED;
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
+      newErrors.email = AppValidationMessages.EMPLOYEE.EMAIL_REQUIRED;
     } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-      newErrors.email = "Email is invalid";
+      newErrors.email = AppValidationMessages.EMPLOYEE.EMAIL_INVALID;
     }
-    if (!formData.phoneNumber) newErrors.phoneNumber = "Phone number is required";
-    if (!formData.designation) newErrors.designation = "Designation is required";
-    if (!formData.department) newErrors.department = "Department is required";
-    if (!formData.comments.trim()) newErrors.comments = "Comments are required"; // Add comments validation
+    if (!formData.phoneNumber) newErrors.phoneNumber = AppValidationMessages.EMPLOYEE.PHONE_REQUIRED;
+    if (!formData.designation) newErrors.designation = AppValidationMessages.EMPLOYEE.DESIGNATION_REQUIRED;
+    if (!formData.department) newErrors.department = AppValidationMessages.EMPLOYEE.DEPARTMENT_REQUIRED;
+    if (!formData.comments.trim()) newErrors.comments = AppValidationMessages.EMPLOYEE.COMMENTS_REQUIRED; // Add comments validation
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -197,15 +199,15 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
         }
       );
 
-      alert("Employee added successfully!");
+      toast.success(appSuccessToastMessages.EMPLOYEE_CREATED);
       onSuccess?.();
       onClose();
     } catch (error: any) {
       console.error("Error adding employee:", error);
       if (error.response) {
-        alert(`Error: ${error.response.data?.message || 'Failed to add employee'}`);
+        toast.error(error.response.data?.message || AppFailureToastMessages.EMPLOYEE_CREATE_FAILED);
       } else {
-        alert("Error adding employee. Please try again.");
+        toast.error(AppFailureToastMessages.NO_RESPONSE);
       }
     } finally {
       setIsSubmitting(false);
@@ -229,12 +231,12 @@ const AddEmployee: React.FC<AddEmployeeProps> = ({ onClose, onSuccess }) => {
     }
 
     if (!allowedTypes.includes(file.type)) {
-      setImageError("Only JPG and PNG formats are allowed.");
+      setImageError(AppFailureToastMessages.IMAGE_INVALID_FORMAT);
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      setImageError("File size must be less than 2MB.");
+      setImageError(AppFailureToastMessages.IMAGE_TOO_LARGE);
       return;
     }
   };

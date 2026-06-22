@@ -3,6 +3,9 @@
 import BaseLayout2 from "@/app/(tenant)/modules/users/student/components/BaseLayout2";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 import "react-datepicker/dist/react-datepicker.css";
 import MyClass from "./MyClass";
 import axios from "axios";
@@ -93,7 +96,7 @@ const Classes = () => {
             : null;
 
         if (!studentId || !token) {
-          console.log("Missing studentId or authToken");
+          toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
           return;
         }
 
@@ -137,10 +140,8 @@ const Classes = () => {
           );
         setUpcomingClasses(upcoming);
         setCompletedClasses(completed);
-        console.log("upcomoinig class",upcoming);
-        console.log("completed clasees",completed);
       } catch (error) {
-        console.error("Error fetching class data:", error);
+        toast.error(AppFailureToastMessages.UPCOMING_CLASSES_FETCH);
       }
     };
 
@@ -154,7 +155,6 @@ const Classes = () => {
     if (!userId) return;
     const socket = getSocket(userId);
     const handleUpcoming = (data: ClassData) => {
-      console.log("Update student");
       setUpcomingClasses((prev) =>
         prev.map((app) =>
           app._id.toString() === data._id.toString() ? data : app
@@ -281,7 +281,6 @@ const Classes = () => {
   };
 
   const handleCancel = (classId: string) => {
-    console.log(`Cancel clicked for classId: ${classId}`);
     setPopupVisible(null);
   };
 

@@ -10,6 +10,7 @@ import { IoLocationSharp } from "react-icons/io5";
 import { MdEmail } from "react-icons/md";
 import { BsTelephoneFill } from "react-icons/bs";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppFailureToastMessages, appSuccessToastMessages } from "@/app/_components/contents/toast_message";
 
 interface IStudent {
   student: {
@@ -255,7 +256,7 @@ export default function GenerateInvoice({ onClose }: { onClose: () => void }) {
         };
 
         console.log("Combined invoice data:", invoiceWithEvaluation);
-        toast.success("Invoice created successfully!", {
+        toast.success(appSuccessToastMessages.INVOICE_CREATED, {
           position: "top-right",
           autoClose: 3000,
         });
@@ -291,7 +292,7 @@ export default function GenerateInvoice({ onClose }: { onClose: () => void }) {
       }
     } catch (error) {
       console.error("Error creating invoice:", error);
-      toast.error("Error creating invoice!", {
+      toast.error(AppFailureToastMessages.INVOICE_CREATE_FAILED, {
         position: "top-right",
         autoClose: 3000,
       });

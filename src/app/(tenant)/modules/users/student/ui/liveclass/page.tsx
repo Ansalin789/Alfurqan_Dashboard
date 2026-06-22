@@ -8,6 +8,9 @@ import { FaUser } from "react-icons/fa";
 import { MdDateRange } from "react-icons/md";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
+import { toast } from "react-toastify";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Student {
@@ -68,9 +71,8 @@ function LiveClass() {
             ? localStorage.getItem("StudentAuthToken")
             : null;
         const id = searchParams.get("id");
-        console.log(id);
         if (!studentId || !token) {
-          console.log("Missing studentId or authToken");
+          toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
           return;
         }
 
@@ -84,21 +86,16 @@ function LiveClass() {
           }
         );
 
-        console.log("Raw API Response:", response.data);
-
         const nextClass = response.data;
         setRoomName(nextClass?.classLink ?? "");
-        console.log("Filtered Next Class:", nextClass);
 
         if (nextClass) {
-          console.log("Setting classData to:", nextClass);
           setClassData(nextClass);
         } else {
-          console.log("No upcoming class found.");
           setClassData(null);
         }
       } catch (err) {
-        console.log("Error loading class details:", err);
+        toast.error(AppFailureToastMessages.NEXT_CLASS_FETCH);
       }
     };
 
@@ -115,7 +112,6 @@ function LiveClass() {
       const id = searchParams.get("id");
 
       if (!token || !id) {
-        console.warn("Missing token or ID in beforeunload.");
         return;
       }
 
@@ -152,7 +148,7 @@ function LiveClass() {
           : null;
       const id = searchParams.get("id");
       if (!token) {
-        console.error("Token not found. User may not be logged in.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
         return;
       }
       const res = await axios.put(
@@ -166,17 +162,15 @@ function LiveClass() {
         }
       );
 
-      console.log("Attendance updated:", res.data);
       return res;
     } catch (err) {
-      console.error("Failed to update attendance", err);
+      toast.error(AppFailureToastMessages.CLASS_SESSION_UPDATE);
       return null;
     }
   };
   const handleJoinCall = async () => {
     const now = new Date();
     const sessionStartTime = now.toTimeString().slice(0, 5);
-    console.log("Joined at:", sessionStartTime);
 
     await updateAttendance({
       studnetSessionStart: sessionStartTime,
@@ -185,8 +179,7 @@ function LiveClass() {
   const handleEndCall = async () => {
     const now = new Date();
     const sessionEndTime = now.toTimeString().slice(0, 5);
-    console.log("Left at:", sessionEndTime);
-
+    
     const res = await updateAttendance({
       studnetSessionEnd: sessionEndTime,
     });
@@ -236,7 +229,7 @@ function LiveClass() {
           : null;
 
       if (!token) {
-        console.error("❌ StudentAuthToken not found");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
         return;
       }
       const response = await axios.post(
@@ -259,22 +252,25 @@ function LiveClass() {
     } catch (err) {
       const error = err as AxiosError;
       const status = error.response?.status;
-      if (Number(status === 400)) {
-        console.log("please >");
-        setFailedMessage("Please check the form inputs.");
+      if (status === 400) {
+        setFailedMessage(AppFailureToastMessages.BAD_REQUEST);
         setFailed(true);
+        toast.error(AppFailureToastMessages.BAD_REQUEST);
       } else if (status === 401) {
-        setFailedMessage("Please login again.");
+        setFailedMessage(AppFailureToastMessages.UNAUTHORIZED);
         setFailed(true);
+        toast.error(AppFailureToastMessages.UNAUTHORIZED);
       } else if (status === 403) {
-        setFailedMessage("You don't have permission to perform this action.");
+        setFailedMessage(AppFailureToastMessages.FORBIDDEN);
         setFailed(true);
+        toast.error(AppFailureToastMessages.FORBIDDEN);
       } else if (status === 500) {
-        setFailedMessage("Server error");
+        setFailedMessage(AppFailureToastMessages.SERVER_ERROR);
         setFailed(true);
+        toast.error(AppFailureToastMessages.SERVER_ERROR);
       } else {
         setFailed(true);
-        console.error(`Unexpected error: ${status}`);
+        toast.error(AppFailureToastMessages.UNEXPECTED_ERROR + (status ?? ""));
       }
     }
   };

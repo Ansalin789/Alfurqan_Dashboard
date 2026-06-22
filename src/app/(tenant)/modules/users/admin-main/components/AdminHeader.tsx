@@ -13,6 +13,7 @@ import AddEmployee from "./AddEmployee";
 import KnowledgeBaseForm from "./AddKnowledgeBase";
 import GenerateInvoice from "./GenerateInvoice";
 import { toast } from "react-toastify";
+import { appSuccessToastMessages } from "@/app/_components/contents/toast_message";
 import { io } from "socket.io-client";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
@@ -510,9 +511,9 @@ useEffect(() => {
       {showAddEmployee && (
         <AddEmployee
           onClose={() => setShowAddEmployee(false)}
-          onSuccess={() => {
+            onSuccess={() => {
             setShowAddEmployee(false);
-            toast.success("Employee added successfully!");
+            toast.success(appSuccessToastMessages.EMPLOYEE_CREATED);
           }}
         />
       )}

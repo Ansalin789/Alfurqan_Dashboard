@@ -228,7 +228,7 @@ if (!token) {
   const handleJoinClass = () => {
     if (!classData?.classLink) {
   toast.error(
-    "Class link not available"
+    AppFailureToastMessages.CLASS_LINK_REQUIRED
   );
   return;
 }

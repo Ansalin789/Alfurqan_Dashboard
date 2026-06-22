@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { FaRegSquare, FaRegCheckSquare } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
+import { AppFailureToastMessages, appSuccessToastMessages } from "@/app/_components/contents/toast_message";
 import { FaRegMinusSquare } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 import BaseLayout4 from "../../../components/BaseLayout4";
@@ -60,7 +61,7 @@ const TeacherModuleAccess = () => {
 
   useEffect(() => {
     if (!employeeId) {
-      toast.error("Employee ID not found in the URL!");
+      toast.error(AppFailureToastMessages.EMPLOYEE_ID_NOT_FOUND);
       setIsRedirecting(true);
       return;
     }
@@ -117,7 +118,7 @@ const TeacherModuleAccess = () => {
       }));
     } catch (error) {
       console.error("Failed to fetch employee data:", error);
-      toast.error("Error loading employee access data");
+      toast.error(AppFailureToastMessages.PERMISSION_LOAD);
     }
   };
 
@@ -189,7 +190,7 @@ const TeacherModuleAccess = () => {
         }
       );
 
-      toast.success("Access updated successfully!");
+      toast.success(appSuccessToastMessages.ACCESS_UPDATED);
       console.log("Access updated successfully:", response.data);
 
       setTimeout(() => {
@@ -197,7 +198,7 @@ const TeacherModuleAccess = () => {
       }, 2000);
     } catch (error) {
       console.error("Failed to update access:", error);
-      toast.error("Failed to update access");
+      toast.error(AppFailureToastMessages.ACCESS_UPDATE_FAILED);
     }
   };
 

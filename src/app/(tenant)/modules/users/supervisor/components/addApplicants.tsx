@@ -443,17 +443,13 @@ const handleSubmit = async (e: React.FormEvent) => {
 
       setFailed(true);
     } else {
-      toast.error("Unable to create applicant");
+      toast.error(AppFailureToastMessages.APPLICANT_CREATE_FAILED);
 
-      setFailedMessage(
-        "Unable to create applicant"
-      );
+      setFailedMessage(AppFailureToastMessages.APPLICANT_CREATE_FAILED);
 
       setFailed(true);
 
-      console.error(
-        `Unexpected error: ${status}`
-      );
+      console.error(`Unexpected error: ${status}`);
     }
   }
 };
@@ -512,14 +508,14 @@ const handleSubmit = async (e: React.FormEvent) => {
       const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
 
       if (!allowedTypes.includes(fileExtension)) {
-        setFailedMessage("Please upload only PDF, DOC, or DOCX files");
+        setFailedMessage(AppFailureToastMessages.UPLOAD_INVALID_FORMAT);
         setFailed(true);
         return;
       }
 
       // Check file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        setFailedMessage("File size should be less than 5MB");
+        setFailedMessage(AppFailureToastMessages.UPLOAD_FILE_TOO_LARGE);
         setFailed(true);
         return;
       }
@@ -650,7 +646,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     if (!value) {
       setAddApplicantForm(prev => ({ ...prev, phone: "" }));
-      setPhoneError("Invalid phone number");
+      setPhoneError(AppValidationMessages.APPLICANT.PHONE.pattern);
       return;
     }
 
@@ -670,7 +666,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     // Validation
     if (localNumber.length < 10) {
-      setPhoneError("Invalid phone number");
+      setPhoneError(AppValidationMessages.APPLICANT.PHONE.pattern);
     } else {
       setPhoneError("");
     }

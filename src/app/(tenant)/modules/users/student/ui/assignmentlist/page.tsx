@@ -5,6 +5,9 @@ import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import {  useSearchParams } from "next/navigation";
+import { toast } from "react-toastify";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 import Pagination from "@/components/Pagination";
 import BaseLayout2 from "@/app/(tenant)/modules/users/student/components/BaseLayout2";
 import StudentHeader from "../../components/StudentHeader";
@@ -166,7 +169,7 @@ useEffect(() => {
       const studentId = localStorage.getItem("StudentPortalId");
 
       if (!token || !studentId) {
-        console.error("Missing token or student ID");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
         setLoading(false);
         return;
       }
@@ -183,6 +186,7 @@ useEffect(() => {
       const data = await res.json();
       setAssignments(data.data || []);
     } catch (err) {
+      toast.error(AppFailureToastMessages.ASSIGNMENT_FETCH);
       setError("Failed to fetch assignments");
     } finally {
       setLoading(false);

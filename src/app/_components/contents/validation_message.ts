@@ -73,12 +73,7 @@ ASSIGNMENT: {
   ASSIGNMENT_NAME_REQUIRED: "Assignment name is required",
   ASSIGNMENT_TYPE_REQUIRED: "Assignment type is required",
   QUESTION_REQUIRED: "Question is required",
-  ASSIGNED_DATE_REQUIRED: "Assigned date is required",
-  DUE_DATE_REQUIRED: "Due date is required",
-  CORRECT_ANSWER_REQUIRED: "Please select a correct answer",
-},
-
-LEAVE: {
+  ANSWER_REQUIRED: "You must answer at least one question before submitting.",
   LEAVE_TYPE_REQUIRED: "Please select leave type",
   FROM_DATE_REQUIRED: "From date is required",
   TO_DATE_REQUIRED: "To date is required",
@@ -179,6 +174,23 @@ APPLICANT: {
       required: "Resume is required",
     },
   },
-  
+  EXPENSE: {
+    PAYMENT_DATE_REQUIRED: "Payment date is required",
+    EXPENSE_TYPE_REQUIRED: "Expense type is required",
+    AMOUNT_REQUIRED: "Amount is required",
+    AMOUNT_POSITIVE: "Amount must be greater than 0",
+    CATEGORY_REQUIRED: "Category is required",
+    PAYMENT_METHOD_REQUIRED: "Payment method is required",
+  },
+  EMPLOYEE: {
+    FIRST_NAME_REQUIRED: "First name is required",
+    LAST_NAME_REQUIRED: "Last name is required",
+    EMAIL_REQUIRED: "Email is required",
+    EMAIL_INVALID: "Email is invalid",
+    PHONE_REQUIRED: "Phone number is required",
+    DESIGNATION_REQUIRED: "Designation is required",
+    DEPARTMENT_REQUIRED: "Department is required",
+    COMMENTS_REQUIRED: "Comments are required",
+  },
 });
 

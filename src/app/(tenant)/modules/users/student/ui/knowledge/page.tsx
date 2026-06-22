@@ -8,6 +8,9 @@ import { Search, Zap } from 'lucide-react';
 import RecordedClassesBase from '../../components/knowlegdebase/RecordedClassesBase';
 import StudentHeader from '../../components/StudentHeader';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import { AppFailureToastMessages } from '@/app/_components/contents/toast_message';
+import { AppValidationMessages } from '@/app/_components/contents/validation_message';
 import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
 
 interface Knowledge {
@@ -75,7 +78,10 @@ const Knowledge: React.FC = () => {
     const fetchKnowledgeList = async () => {
       try {
         const token = localStorage.getItem('StudentAuthToken');
-        if (!token) return;
+        if (!token) {
+          toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
+          return;
+        }
 
         const response = await fetch(
           `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.KNOWLEDGE_BASE.LIST}`,
@@ -104,6 +110,7 @@ const Knowledge: React.FC = () => {
         }
       } catch (error) {
         console.error('❌ Error fetching knowledge list:', error);
+        toast.error(AppFailureToastMessages.KNOWLEDGE_FETCH_FAILED);
       }
     };
     fetchKnowledgeList();
@@ -115,6 +122,7 @@ const Knowledge: React.FC = () => {
       try {
         const token = localStorage.getItem('StudentAuthToken');
         if (!token) {
+          toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
           return;
         }
 
@@ -143,6 +151,7 @@ const Knowledge: React.FC = () => {
         setRecordedClasses(transformed);
       } catch (err) {
         console.error('Failed to fetch recorded classes:', err);
+        toast.error(AppFailureToastMessages.RECORDED_CLASSES_FETCH_FAILED);
       }
     };
 

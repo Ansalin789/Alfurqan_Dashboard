@@ -4,9 +4,12 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import axios from "axios";
+import { toast } from "react-toastify";
 import { AlertCircle, ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 
 const slides = [
   {
@@ -54,15 +57,10 @@ const SignIn: React.FC = () => {
         username,
         password,
       };
-      console.log("[Student SignIn] Request URL:", url);
-      console.log("[Student SignIn] Request Payload:", {
-        username,
-        password: password ? `*** (len:${password.length})` : "<empty>",
-      });
+      // Request payload prepared for submission.
 
       const response = await axios.post(url, payload);
-      console.log("[Student SignIn] Response Status:", response.status);
-      console.log("[Student SignIn] Response Data:", response.data);
+      // Received response from server.
 
       if (response.status === 200) {
         return response.data;
@@ -70,13 +68,7 @@ const SignIn: React.FC = () => {
 
       throw new Error("Unexpected error occurred");
     } catch (error: any) {
-      console.log("[Student SignIn] Error Occurred:", {
-        message: error?.message,
-        status: error?.response?.status,
-        data: error?.response?.data,
-        url: error?.config?.url,
-        method: error?.config?.method,
-      });
+      // Error handled below.
 
       if (error.response && error.response.status === 404) {
         throw new Error("Email not found");
@@ -90,21 +82,11 @@ const SignIn: React.FC = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    console.log("[Student SignIn] Submitting form with:", {
-      username: username1,
-      password: password ? `*** (len:${password.length})` : "<empty>",
-    });
 
     try {
       const data = await signIn(username1, password);
       const { accessToken, role, _id, username } = data;
       const userEmail: string = data.email ?? data.userEmail ?? "";
-      console.log("[Student SignIn] Parsed Response:", {
-        hasAccessToken: Boolean(accessToken),
-        role,
-        _id,
-        username,
-      });
 
       const course = data.student.course || data.student.courseName || (Array.isArray(data.student.courses) ? data.student.courses[0] : "");
 
@@ -115,16 +97,7 @@ const SignIn: React.FC = () => {
       localStorage.setItem("StudentPackage", data.student.package);
       localStorage.setItem("StudentPortalEmail", userEmail);
       localStorage.setItem("StudentRole", role);
-      console.log("[Student SignIn] Setting localStorage:", {
-        StudentAuthToken: accessToken,
-        StudentPortalId: _id,
-        StudentcourseName: course,
-        StudentPortalName: username,
-        StudentPackage: data.student.package,
-        StudentPortalEmail: userEmail,
-        StudentRole: role,
-        FullStudentData: data.student 
-      });
+      // localStorage saved for authenticated session.
       if (role?.includes("Student")) {
         router.push("/modules/users/student/ui/dashboard");
       }
@@ -133,13 +106,15 @@ const SignIn: React.FC = () => {
         const { status, data } = error.response;
         if (status === 404) {
           setError("Email not found");
+          toast.error("Email not found");
         } else {
           setError(data.message || "Login failed. Please try again later.");
+          toast.error(data.message || "Login failed. Please try again later.");
         }
       } else {
         setError("Login failed. Please try again later.");
+        toast.error(AppFailureToastMessages.UNEXPECTED_ERROR + " Login failed.");
       }
-      console.error("Login error:", error);
     } finally {
       setLoading(false);
     }
@@ -152,23 +127,22 @@ const SignIn: React.FC = () => {
       });
 
       if (response.status === 200) {
-        console.log("Email exists:", response.data);
         return { message: "Email exists", data: response.data };
       }
     } catch (error: any) {
       if (error.response) {
         if (error.response.status === 404) {
-          console.log("Email not found");
+          toast.error("Email not found");
           return { message: "Email not found" };
         }
 
         if (error.response.status === 500) {
-          console.log("Internal Server Error");
+          toast.error(AppFailureToastMessages.SERVER_ERROR);
           return { message: "Internal Server Error" };
         }
       }
 
-      console.log("Error occurred:", error.message || "Unknown error");
+      toast.error(AppFailureToastMessages.UNEXPECTED_ERROR + (error.message ? ` ${error.message}` : ""));
       return { message: "Unknown error occurred" };
     }
   };
@@ -209,10 +183,10 @@ const SignIn: React.FC = () => {
 
   const handleGoogleSuccess = async (response: CredentialResponse) => {
     const { credential } = response;
-    if (!credential) {
-      console.error("Google login failed: No credential received");
-      return;
-    }
+      if (!credential) {
+        toast.error(AppFailureToastMessages.UNEXPECTED_ERROR);
+        return;
+      }
     const emaildata = await getGoogleUserInfo(credential);
 
     if (!emaildata) {
@@ -232,14 +206,13 @@ const SignIn: React.FC = () => {
         let portalName = result.data.username || result.data.username1 || result.data.student?.username || result.data.student?.studentName || "";
 
         if (!course) {
-          try {
-            console.log("Course missing in check-email, fetching full profile...");
+              try {
             const studentId = result.data.id;
             const token = result.data.accessToken;
             const detailRes = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ALSTUDENTS.GET}/${studentId}`, {
               headers: { Authorization: `Bearer ${token}` }
             });
-            console.log("Full profile response:", detailRes.data);
+            
 
             const details = detailRes.data?.studentDetails || detailRes.data;
             course = details?.course || details?.courseName || details?.student?.course || details?.student?.courseName || "";
@@ -249,7 +222,7 @@ const SignIn: React.FC = () => {
             }
 
           } catch (fetchErr) {
-            console.error("Failed to fetch extra student details:", fetchErr);
+            toast.error(AppFailureToastMessages.UNEXPECTED_ERROR + " Failed to retrieve student profile.");
           }
         }
 
@@ -271,10 +244,10 @@ const SignIn: React.FC = () => {
         setError("Email not found");
         console.log(result?.message);
       }
-    } catch (error) {
-      console.error("Error during email verification:", error);
-      setError("An unexpected error occurred. Please try again.");
-    } finally {
+      } catch (error) {
+        toast.error(AppFailureToastMessages.UNEXPECTED_ERROR + " Please try again.");
+        setError("An unexpected error occurred. Please try again.");
+      } finally {
       setLoading(false);
     }
   };
@@ -287,10 +260,7 @@ const SignIn: React.FC = () => {
   }
 
   const handleGoogleFailure = (error: GoogleError) => {
-    console.error("Google login failed:", error.error);
-    if (error.details) {
-      console.error("Error details:", error.details);
-    }
+    toast.error(AppFailureToastMessages.UNEXPECTED_ERROR);
   };
 
   const errorWrapper = () => {

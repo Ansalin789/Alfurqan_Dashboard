@@ -5,11 +5,14 @@ import { useEffect, useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
+import { toast } from "react-toastify";
 import { useRouter } from "next/navigation"; // Add this at the top
 import Pagination from "@/components/Pagination";
 import BaseLayout2 from "@/app/(tenant)/modules/users/student/components/BaseLayout2";
 import StudentHeader from "../../components/StudentHeader";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 
 interface AssignmentType {
   _id: string;
@@ -169,13 +172,13 @@ const StudentList = () => {
        const token =
     typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
       if (!token) {
-    console.error("❌ StudentAuthToken not found");
+    toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
     return;
   }
         const studentId = localStorage.getItem("StudentPortalId");
 
         if (!token || !studentId) {
-          console.error("Missing token or teacher ID");
+          toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
           return;
         }
         const res = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GET_STUDENT_ASSIGNMENTS}?studentId=${studentId}`,
@@ -197,8 +200,8 @@ const StudentList = () => {
         setRegularCount(pending.length);
         setGroupCount(completed.length);
       } catch (err: any) {
-        console.log(err.message || "Error fetching assignments");
-      } 
+        toast.error(AppFailureToastMessages.ASSIGNMENT_FETCH);
+      }
     };
     fetchAssignments();
   }, []);
@@ -405,7 +408,6 @@ const StudentList = () => {
                                 className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
                                 onClick={() => {
                                   setOpenDropdownId(null);
-                                  console.log('Start Assignment clicked, assignmentId:', assignment.assignmentId); // <-- log assignmentId
                                   router.push(
                                     `/modules/users/student/ui/startassignment?assignmentId=${assignment.assignmentId}`
                                   );

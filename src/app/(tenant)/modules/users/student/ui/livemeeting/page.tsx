@@ -8,6 +8,9 @@ import { useSearchParams } from "next/navigation";
 import BaseLayout2 from "@/app/(tenant)/modules/users/student/components/BaseLayout2";
 import StudentHeader from "../../components/StudentHeader";
 import { JitsiMeeting } from "@jitsi/react-sdk";
+import { toast } from "react-toastify";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface Attendance {
@@ -54,7 +57,7 @@ const LiveMeeting = () => {
       try {
         const token = localStorage.getItem("StudentAuthToken");
         if (!token) {
-          console.error("Missing auth token");
+          toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
           return;
         }
 
@@ -89,7 +92,7 @@ const LiveMeeting = () => {
           setAttendance(initialAttendance);
         }
       } catch (error) {
-        console.error("Error fetching meeting data:", error);
+        toast.error(AppFailureToastMessages.MEETING_DATA_FETCH_FAILED);
       }
     };
 
@@ -105,7 +108,7 @@ const LiveMeeting = () => {
     const startTimeUsed = startTimeRef.current;
 
     if (!meetingData || !startTimeUsed) {
-      console.error("Missing meeting data or start time");
+      toast.error(AppFailureToastMessages.MEETING_DATA_FETCH_FAILED);
       return;
     }
 
@@ -159,10 +162,9 @@ const LiveMeeting = () => {
           },
         },
       );
-      console.log("Meeting schedule updated");
       setRedirectTo("/modules/users/student/ui/meeting");
     } catch (error) {
-      console.error("Failed to update meeting schedule:", error);
+      toast.error(AppFailureToastMessages.MEETING_SCHEDULE_UPDATE_FAILED);
     }
   };
 
@@ -254,7 +256,7 @@ const LiveMeeting = () => {
                           hour12: true,
                         });
 
-                        console.log("🟢 Joined:", event.displayName, event.id);
+                        // Joined event handled silently
 
                         let name = event.displayName || "Guest";
 
@@ -323,7 +325,7 @@ const LiveMeeting = () => {
                           hour12: true,
                         });
 
-                        console.log("🔴 Left:", event.id);
+                        // Left event handled silently
 
                         setAttendance((prev) =>
                           prev.map((a) =>

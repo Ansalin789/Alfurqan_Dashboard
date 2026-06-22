@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
 import { useRouter, } from "next/navigation";
 import Modal from "react-modal";
 import StudentHeader from "../../components/StudentHeader";
 import { FcEditImage } from "react-icons/fc";
+import { AppFailureToastMessages, appSuccessToastMessages } from "@/app/_components/contents/toast_message";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 
 import Image from "next/image";
 import BaseLayout2 from "@/app/(tenant)/modules/users/student/components/BaseLayout2";
@@ -129,7 +132,7 @@ const StudentProfile = () => {
       const studentId = studentData._id;
   
       if (!token) {
-        alert("Auth token not found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
         setIsUpdating(false);
         return;
       }
@@ -169,12 +172,11 @@ const StudentProfile = () => {
             }
           : prev
       );
-  
-      alert("Profile updated successfully!");
+
+      toast.success(appSuccessToastMessages.PROFILE_UPDATED);
       setIsEditModalOpen(false);
-    } catch (error) {
-      console.error("❌ Error updating profile:", error);
-      alert("Failed to update profile. Please try again.");
+      } catch (error) {
+        toast.error(AppFailureToastMessages.PROFILE_UPDATE_FAILED);
     } finally {
       setIsUpdating(false);
     }
@@ -187,7 +189,9 @@ const StudentProfile = () => {
   useEffect(() => {
     const studentId = localStorage.getItem("StudentPortalId");
 
-    console.log("Retrieved Student ID:", studentId);
+    if (!studentId) {
+      toast.error(AppValidationMessages.AUTH.STUDENT_REQUIRED);
+    }
 
     if (studentId) {
       const fetchData = async () => {
@@ -198,7 +202,7 @@ const StudentProfile = () => {
               : null;
 
           if (!token) {
-            console.error("❌ StudentAuthToken not found");
+            toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
             return;
           }
           const studentId = localStorage.getItem("StudentPortalId");
@@ -213,7 +217,7 @@ const StudentProfile = () => {
           );
 
           if (!studentId) {
-            console.warn("No StudentPortalId found in localStorage");
+            // StudentPortalId is required for filtering student data.
             return;
           }
 
@@ -238,7 +242,7 @@ const StudentProfile = () => {
                 photoUrl: filteredStudent.student.photoUrl,
               },
             });
-            console.log("Filtered Student Data:", filteredStudent);
+            
           } else {
             console.warn(
               "No matching student found for StudentPortalId:",
@@ -246,7 +250,7 @@ const StudentProfile = () => {
             );
           }
         } catch (error) {
-          console.error("Error fetching student data:", error);
+          toast.error(AppFailureToastMessages.STUDENT_FETCH);
         }
       };
 
@@ -282,8 +286,8 @@ const StudentProfile = () => {
           }
         );
         setDashboardStats(response.data);
-      } catch (err) {
-       console.log("Failed to load stats");
+        } catch (err) {
+         toast.error(AppFailureToastMessages.STUDENT_FETCH);
       } 
     };
     fetchStats();

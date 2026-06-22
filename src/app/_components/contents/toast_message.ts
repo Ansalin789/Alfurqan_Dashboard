@@ -44,6 +44,34 @@ export const AppFailureToastMessages = Object.freeze({
 GROWTH_FETCH:
 "Unable to fetch learning progress details",
 
+  UPLOAD_INVALID_FORMAT: "Please upload only PDF, DOC, or DOCX files",
+  UPLOAD_FILE_TOO_LARGE: "File size should be less than 5MB",
+  APPLICANT_CREATE_FAILED: "Unable to create applicant",
+
+  NO_RESPONSE: "No response from server. Please try again.",
+  REQUEST_ERROR: "Request error: ",
+  UNEXPECTED_ERROR: "Unexpected error: ",
+  INVOICE_SELECT_REQUIRED: "Please select an invoice first.",
+  INVOICE_FETCH_FAILED: "Failed to fetch invoices. Please try again.",
+  INVALID_PAYMENT_SESSION: "Invalid payment session. Please try again.",
+  PAYMENT_ELEMENT_UNAVAILABLE: "Payment element is not available. Please try again.",
+  PAYMENT_PROCESSING_FAILED: "Something went wrong while processing the payment.",
+  PROFILE_UPDATE_FAILED: "Failed to update profile. Please try again.",
+  ASSIGNMENT_SUBMISSION_FAILED: "Failed to submit answers. Please try again.",
+  SPEECH_RECOGNITION_UNSUPPORTED: "Speech recognition is not supported in this browser.",
+  AUDIO_PLAYBACK_FAILED: "Audio failed to play. Please check the audio format or backend data.",
+  EMPLOYEE_CREATE_FAILED: "Unable to add employee",
+  IMAGE_INVALID_FORMAT: "Only JPG and PNG formats are allowed.",
+  CLASS_LINK_REQUIRED: "Class link not available",
+  EMPLOYEE_ID_NOT_FOUND: "Employee ID not found in the URL!",
+  KNOWLEDGE_FETCH_FAILED: "Unable to fetch knowledge base. Please try again.",
+  RECORDED_CLASSES_FETCH_FAILED: "Unable to fetch recorded classes. Please try again.",
+  MEETING_DATA_FETCH_FAILED: "Unable to fetch meeting details. Please try again.",
+  MEETING_ATTENDANCE_UPDATE_FAILED: "Unable to update attendance. Please try again.",
+  MEETING_SCHEDULE_UPDATE_FAILED: "Unable to complete meeting update. Please try again.",
+  ACCESS_UPDATED: "Access updated successfully!",
+  ACCESS_UPDATE_FAILED: "Failed to update access",
+
 });
 
 export const AppSuccessToastMessages = Object.freeze({
@@ -59,5 +87,10 @@ export const appSuccessToastMessages = Object.freeze({
   USER_CREATE: "User created successfully",
 
   APPLICANT_CREATE: "Applicant created successfully",
+  EXPENSE_RECORDED: "Expense recorded successfully",
+  EMPLOYEE_CREATED: "Employee added successfully",
+  INVOICE_CREATED: "Invoice created successfully",
+  PROFILE_UPDATED: "Profile updated successfully!",
+  QUESTION_ADDED: "Question added successfully",
 });
 

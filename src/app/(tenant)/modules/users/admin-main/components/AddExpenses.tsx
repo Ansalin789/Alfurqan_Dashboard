@@ -3,6 +3,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { X } from "lucide-react";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { AppFailureToastMessages, appSuccessToastMessages } from "@/app/_components/contents/toast_message";
 
 interface ExpenseFormData {
   paymentDate: string;
@@ -54,32 +56,32 @@ const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) =
 
   const validateForm = (): boolean => {
     if (!formData.paymentDate) {
-      toast.error("Payment date is required");
+      toast.error(AppValidationMessages.EXPENSE.PAYMENT_DATE_REQUIRED);
       return false;
     }
-    
+
     if (!formData.expenseType.trim()) {
-      toast.error("Expense type is required");
+      toast.error(AppValidationMessages.EXPENSE.EXPENSE_TYPE_REQUIRED);
       return false;
     }
-    
+
     if (!formData.amount) {
-      toast.error("Amount is required");
+      toast.error(AppValidationMessages.EXPENSE.AMOUNT_REQUIRED);
       return false;
     }
-    
+
     if (Number(formData.amount) <= 0) {
-      toast.error("Amount must be greater than 0");
+      toast.error(AppValidationMessages.EXPENSE.AMOUNT_POSITIVE);
       return false;
     }
-    
+
     if (!formData.category) {
-      toast.error("Category is required");
+      toast.error(AppValidationMessages.EXPENSE.CATEGORY_REQUIRED);
       return false;
     }
-    
+
     if (!formData.paymentMethod) {
-      toast.error("Payment method is required");
+      toast.error(AppValidationMessages.EXPENSE.PAYMENT_METHOD_REQUIRED);
       return false;
     }
 
@@ -129,7 +131,7 @@ const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) =
       );
 
       console.log("Server response:", response.data);
-      toast.success("Expense recorded successfully!");
+      toast.success(appSuccessToastMessages.EXPENSE_RECORDED);
       
       setSubmitSuccess(true);
       setTimeout(() => {
@@ -162,16 +164,16 @@ const AddExpenses: React.FC<AddExpensesProps> = ({ onClose, refreshExpenses }) =
                 toast.error(`${field}: ${messages}`);
               }
             });
+            } else {
+              toast.error(error.response.data.message || AppFailureToastMessages.BAD_REQUEST);
+            }
+          } else if (error.request) {
+            toast.error(AppFailureToastMessages.NO_RESPONSE);
           } else {
-            toast.error(error.response.data.message || "Validation failed. Please check your inputs.");
+            toast.error(AppFailureToastMessages.REQUEST_ERROR + error.message);
           }
-        } else if (error.request) {
-          toast.error("No response from server. Please try again.");
-        } else {
-          toast.error("Request error: " + error.message);
-        }
       } else {
-        toast.error("Unexpected error: " + error.message);
+        toast.error(AppFailureToastMessages.UNEXPECTED_ERROR + error.message);
       }
     } finally {
       setIsSubmitting(false);

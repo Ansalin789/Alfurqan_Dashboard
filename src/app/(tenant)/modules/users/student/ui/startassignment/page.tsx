@@ -1,10 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { toast } from "react-toastify";
 import { useSearchParams, useRouter } from "next/navigation";
 import { FaStar } from "react-icons/fa";
 import WaveSurfer from "wavesurfer.js";
 import StudentHeader from "../../components/StudentHeader";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 import BaseLayout2 from "@/app/(tenant)/modules/users/student/components/BaseLayout2";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
@@ -261,7 +264,7 @@ const QuizPage = () => {
     if (sentenceBuilderAudioRef.current) {
       // Debug log for audio URL
       if (currentQuestion && currentQuestion.audioUrl) {
-        console.log("Playing audio URL:", currentQuestion.audioUrl);
+        // audio URL available
       }
       sentenceBuilderAudioRef.current.currentTime = 0;
       sentenceBuilderAudioRef.current.play();
@@ -276,13 +279,13 @@ const QuizPage = () => {
        const token =
     typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
       if (!token) {
-    console.error("❌ StudentAuthToken not found");
-    return;
-  }
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
+        return;
+      }
         const studentId = localStorage.getItem("StudentPortalId");
 
         if (!token || !studentId) {
-          console.error("Missing token or teacher ID");
+          toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
           return;
         }
        const res = await fetch(
@@ -535,7 +538,7 @@ const QuizPage = () => {
         setIsLoading(false);
       } catch (error) {
         setIsLoading(false);
-        alert("Failed to load assignments");
+        toast.error(AppFailureToastMessages.ASSIGNMENT_FETCH);
       }
     };
 
@@ -556,9 +559,8 @@ const QuizPage = () => {
     }
     setSelectedOption(answerToStore);
     if (currentQuestion && currentQuestion._id) {
-      setUserAnswers((prev) => {
+        setUserAnswers((prev) => {
         const updated = { ...prev, [currentQuestion._id]: answerToStore };
-        console.log('Updated userAnswers (option):', updated);
         return updated;
       });
     }
@@ -597,7 +599,6 @@ const QuizPage = () => {
       const correct = currentQuestion.correctAnswer.trim().toLowerCase();
       setUserAnswers((prev) => {
         const updated = { ...prev, [currentQuestion._id]: selectedWords.join(" ") };
-        console.log('Updated userAnswers (word-match):', updated);
         return updated;
       });
       setIsChecked(true);
@@ -645,7 +646,7 @@ const QuizPage = () => {
 
   // Add submitAnswers function to send all answers at once
   const submitAnswers = async () => {
-    console.log('userAnswers at submit:', userAnswers);
+    // submitting userAnswers
     const answersArray = quizData.map((q) => {
       let userAnswer = userAnswers[q._id] || "";
       let correctAnswer = q.correctAnswer || "";
@@ -665,14 +666,14 @@ const QuizPage = () => {
     });
 
     if (answersArray.length === 0) {
-      alert("You must answer at least one question before submitting.");
+      toast.error(AppValidationMessages.ASSIGNMENT.ANSWER_REQUIRED);
       return;
     }
 
     try {
       const token = typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
       if (!token) {
-        alert("StudentAuthToken not found");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
         return;
       }
       const res = await fetch(
@@ -693,7 +694,7 @@ const QuizPage = () => {
       setIsQuizCompleted(true);
       setIsSubmitted(true);
     } catch (err) {
-      alert("Failed to submit answers");
+      toast.error(AppFailureToastMessages.ASSIGNMENT_SUBMISSION_FAILED);
     }
   };
 
@@ -758,7 +759,7 @@ const QuizPage = () => {
       setIsSpeaking(true);
       recognition.start();
     } else {
-      alert("Speech recognition is not supported in this browser.");
+      toast.error(AppFailureToastMessages.SPEECH_RECOGNITION_UNSUPPORTED);
     }
   };
   const handleStopSpeaking = () => {
@@ -839,9 +840,7 @@ const QuizPage = () => {
                       }
                       preload="auto"
                       onError={() =>
-                        alert(
-                          "Audio failed to play. Please check the audio format or backend data."
-                        )
+                        toast.error(AppFailureToastMessages.AUDIO_PLAYBACK_FAILED)
                       }
                     />
                   </div>

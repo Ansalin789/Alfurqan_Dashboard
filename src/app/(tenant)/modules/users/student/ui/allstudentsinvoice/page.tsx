@@ -17,6 +17,9 @@ import StudentHeader from "../../components/StudentHeader";
 import React from "react";
 import Pagination from "@/components/Pagination";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 interface Student {
   studentId: string;
@@ -100,7 +103,7 @@ const Invoice = () => {
             : null;
 
         if (!token) {
-          console.error("❌ StudentAuthToken not found");
+          toast.error(AppFailureToastMessages.UNAUTHORIZED);
           return;
         }
         const response = await axios.get<InvoiceResponse>(
@@ -112,7 +115,6 @@ const Invoice = () => {
             },
           }
         );
-        console.log("api response", response);
         const filteredInvoices = response.data.invoice.filter(
           (invoice) => invoice.student.studentId === studentIdToFilter
         );
@@ -122,8 +124,8 @@ const Invoice = () => {
           setSelectedInvoice(filteredInvoices[0]);
         }
       } catch (error) {
-        console.log("Failed to fetch invoices. Please try again.");
         console.error("Error fetching invoices:", error);
+        toast.error(AppFailureToastMessages.INVOICE_FETCH_FAILED);
       }
     };
 
@@ -135,7 +137,7 @@ const Invoice = () => {
   };
   const handleClick = async () => {
     if (!selectedInvoice) {
-      alert("Please select an invoice first.");
+      toast.error(AppFailureToastMessages.INVOICE_SELECT_REQUIRED || "Please select an invoice first.");
       return;
     }
 
@@ -143,9 +145,7 @@ const Invoice = () => {
     const evaluationid = selectedInvoice._id;
     const totalprice = totalPrice;
 
-    // Debug: Log values before making the request
-    console.log("[DEBUG] totalprice:", totalprice);
-    console.log("[DEBUG] evaluationid:", evaluationid);
+    const paymentDate = new Date().toISOString();
 
     // Set paymentDate to current date/time in ISO format
     const paymentDate = new Date().toISOString();
@@ -166,18 +166,15 @@ const Invoice = () => {
         }
       );
 
-      console.log("[DEBUG] Stripe Response:", response.data); // Debugging
       const clientSecret = response?.data?.clientSecret;
-      console.log("[DEBUG] Stripe clientSecret:", clientSecret);
+      
 
      
     } catch (error: any) {
       if (error && error.response && error.response.data) {
-        console.error("[DEBUG] Error response data:", error.response.data);
-        alert("Backend error: " + JSON.stringify(error.response.data));
+        toast.error(AppFailureToastMessages.REQUEST_ERROR + JSON.stringify(error.response.data));
       } else {
-        console.error("[DEBUG] Unknown error:", error);
-        alert("Unknown error occurred. Check console for details.");
+        toast.error(AppFailureToastMessages.UNEXPECTED_ERROR + (error?.message || ""));
       }
     }
   };
@@ -300,6 +297,7 @@ const Invoice = () => {
   return (
     <BaseLayout2>
       <StudentHeader currentSection="Payment" />
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={true} />
       <div id="invoic" className="px-4 py-4 flex justify-center w-full ">
         <div className="w-full  ">
           {/* Header Section */}

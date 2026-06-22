@@ -8,8 +8,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiSearch } from "react-icons/fi";
 import axios from "axios";
 import { io } from "socket.io-client";
+import { toast } from "react-toastify";
 import StudentHeader from "../../components/StudentHeader";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 interface IMessage {
   _id: string;
@@ -120,7 +122,6 @@ const Message = () => {
   const fetchUsersByRole = async (role: string): Promise<IUser[]> => {
     try {
       if (!userData.token) {
-        console.error("❌ StudentAuthToken not found");
         return [];
       }
 
@@ -142,7 +143,7 @@ const Message = () => {
       );
       return filtered;
     } catch (err) {
-      console.error(`❌ Failed to fetch users:`, err);
+      toast.error(AppFailureToastMessages.UNAUTHORIZED);
       return [];
     }
   };
@@ -169,7 +170,6 @@ const Message = () => {
   const fetchMessages = async (receiverId: string) => {
     try {
       if (!userData.token) {
-        console.error("❌ StudentAuthToken not found");
         return;
       }
 
@@ -190,7 +190,7 @@ const Message = () => {
       const unreadCount = allMessages.filter((m) => !m.isRead).length;
       setMessageCount(unreadCount);
     } catch (error) {
-      console.error("Error fetching messages:", error);
+      toast.error(AppFailureToastMessages.MEETING_FETCH);
     }
   };
 
@@ -236,16 +236,15 @@ const Message = () => {
       });
 
       socketRef.current.on("connect", () => {
-        console.log("Connected to Socket.IO with ID:", socketRef.current?.id);
         socketRef.current?.emit("subscribe", userData.userId);
       });
 
       socketRef.current.on("disconnect", () => {
-        console.log("Disconnected from Socket.IO");
+        // socket disconnected
       });
 
       socketRef.current.on("connect_error", (err: any) => {
-        console.error("Connection error:", err);
+        toast.error(AppFailureToastMessages.NO_RESPONSE);
       });
     }
     
@@ -355,11 +354,11 @@ const Message = () => {
       updatedBy: "System",
     };
 
-    try {
-      if (!userData.token) {
-        console.error("❌ StudentAuthToken not found");
-        return;
-      }
+      try {
+        if (!userData.token) {
+          toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
+          return;
+        }
 
       const response = await axios.post(
         `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MESSAGES.CREATE}`,
@@ -417,10 +416,10 @@ const Message = () => {
         });
         setMessageText("");
       } else {
-        console.error("Error posting message:", response.data.message);
+        toast.error(response.data.message || AppFailureToastMessages.NO_RESPONSE);
       }
     } catch (error) {
-      console.error("Error sending message:", error);
+      toast.error(AppFailureToastMessages.NO_RESPONSE);
     }
   };
 

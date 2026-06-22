@@ -11,6 +11,7 @@ import axios, { AxiosError } from "axios";
 import AdminHeader from "@/app/(tenant)/modules/users/admin-main/components/AdminHeader";
 import BaseLayout4 from "../../../../components/BaseLayout4";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { appSuccessToastMessages } from "@/app/_components/contents/toast_message";
 
 interface Assignment {
   assignmentName: string;
@@ -292,7 +293,7 @@ const Page = () => {
     };
 
     setQuestions((prev) => [...prev, newQuestion]);
-    toast.success("✅ Question added successfully!", { autoClose: 2000 });
+    toast.success(appSuccessToastMessages.QUESTION_ADDED, { autoClose: 2000 });
     setUploadedFileName("");
     setForm((prev) => ({
       ...prev,

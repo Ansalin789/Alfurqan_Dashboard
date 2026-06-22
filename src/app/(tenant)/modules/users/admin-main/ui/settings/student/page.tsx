@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
+import { AppFailureToastMessages, appSuccessToastMessages } from '@/app/_components/contents/toast_message';
 import 'react-toastify/dist/ReactToastify.css';
 import BaseLayout4 from '../../../components/BaseLayout4';
 import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
@@ -49,7 +50,7 @@ const StudentModuleAccess = () => {
   // ----------------------------- FETCH EMPLOYEE ACCESS -----------------------------
   useEffect(() => {
     if (!employeeId) {
-      toast.error('Employee ID not found!');
+      toast.error(AppFailureToastMessages.EMPLOYEE_ID_NOT_FOUND);
       setIsRedirecting(true);
       return;
     }
@@ -99,7 +100,7 @@ const StudentModuleAccess = () => {
         studentmodules: modulePermissions,
       }));
     } catch (error) {
-      toast.error('Error loading access data');
+      toast.error(AppFailureToastMessages.PERMISSION_LOAD);
     }
   };
 
@@ -174,10 +175,10 @@ const StudentModuleAccess = () => {
         }
       );
 
-      toast.success('Access updated!');
+      toast.success(appSuccessToastMessages.ACCESS_UPDATED);
       setTimeout(() => router.push('/modules/users/admin-main/ui/settings'), 2000);
     } catch (error) {
-      toast.error('Failed to update access');
+      toast.error(AppFailureToastMessages.ACCESS_UPDATE_FAILED);
     }
   };
 

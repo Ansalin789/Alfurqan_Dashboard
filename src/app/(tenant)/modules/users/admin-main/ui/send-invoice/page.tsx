@@ -12,6 +12,7 @@ import { BsTelephoneFill } from "react-icons/bs";
 import SuccessPopup from "@/app/(tenant)/modules/users/admin-main/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/admin-main/components/failedPopup";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppFailureToastMessages, appSuccessToastMessages } from "@/app/_components/contents/toast_message";
 
 
 interface IStudent {
@@ -284,7 +285,7 @@ export default function InvoicePage() {
         };
 
         console.log("Combined invoice data:", invoiceWithEvaluation);
-        toast.success("Invoice created successfully!", {
+        toast.success(appSuccessToastMessages.INVOICE_CREATED, {
           position: "top-right",
           autoClose: 3000, // Toast will auto-close after 3 seconds
         });
@@ -324,7 +325,7 @@ export default function InvoicePage() {
       }
     } catch (error) {
       console.error("Error creating invoice:", error);
-      toast.error("Error creating invoice!", {
+      toast.error(AppFailureToastMessages.INVOICE_CREATE_FAILED, {
         position: "top-right",
         autoClose: 3000, // Toast will auto-close after 3 seconds
       });

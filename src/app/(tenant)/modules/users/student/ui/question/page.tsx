@@ -82,7 +82,7 @@ useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
 
     if (!token) {
-      console.error("Missing auth token");
+      toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       return;
     }
 
@@ -101,7 +101,7 @@ useEffect(() => {
       );
       setAssignments(res.data);
     } catch (error) {
-      console.log("Failed to fetch assignment", error);
+      toast.error(AppFailureToastMessages.ASSIGNMENT_FETCH);
     }
   };
 
@@ -110,11 +110,7 @@ useEffect(() => {
 
 
 useEffect(() => {
-  console.log("ASSIGNMENT FULL DATA:", assignments);
-  console.log("TYPE:", assignments?.assignmentType?.type);
-  console.log("OPTIONS:", optionArray);
-  console.log("ANSWER:", assignments?.answer);
-  console.log("VALIDATION:", assignments?.answerValidation);
+  // assignment data updated
 }, [assignments]);
 
   const optionArray = assignments?.options

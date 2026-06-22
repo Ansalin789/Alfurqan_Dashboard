@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { FaUser } from "react-icons/fa";
 import { MdDateRange } from "react-icons/md";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
@@ -11,6 +12,8 @@ import "react-circular-progressbar/dist/styles.css";
 import { FiVideo } from "react-icons/fi";
 import { TimerReset } from "lucide-react";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 
 interface Student {
   studentId: string;
@@ -141,7 +144,7 @@ const NextClass = () => {
             ? localStorage.getItem("StudentAuthToken")
             : null;
         if (!studentId || !token) {
-          console.log("Missing studentId or authToken");
+          toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
           setLoading(false);
           return;
         }
@@ -166,7 +169,7 @@ const NextClass = () => {
           setSessionNumber(sessionNum);
         }
       } catch (err) {
-        console.log("Error loading class details:", err);
+        toast.error(AppFailureToastMessages.NEXT_CLASS_FETCH);
         setLoading(true);
       }
     };
@@ -208,7 +211,7 @@ const NextClass = () => {
           setSessionNumber(sessionNum);
         }
       } catch (error) {
-        console.error("Failed to fetch next class:", error);
+        toast.error(AppFailureToastMessages.NEXT_CLASS_FETCH);
         setLoading(false);
       }
     };

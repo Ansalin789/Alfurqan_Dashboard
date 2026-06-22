@@ -17,8 +17,11 @@ import { Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import StudentHeader from "../../components/StudentHeader";
 import React from "react";
+import { toast } from "react-toastify";
 import Link from "next/link";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 
 const stripePromise = loadStripe(
   "pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE"
@@ -349,8 +352,7 @@ const Invoice = () => {
         const studentId = localStorage.getItem("StudentPortalId");
         const courseName = localStorage.getItem("StudentcourseName");
         if (!studentId || !courseName) {
-          console.error("❌ No studentId found in localStorage");
-          alert("No studentId found. Please log in again.");
+          toast.error(AppValidationMessages.AUTH.STUDENT_REQUIRED);
           return;
         }
 
@@ -365,8 +367,7 @@ const Invoice = () => {
           localStorage.getItem("userToken");
 
         if (!token) {
-          console.error("❌ No authentication token found");
-          alert("No authentication token found. Please log in again.");
+          toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
           return;
         }
 
@@ -392,8 +393,7 @@ const Invoice = () => {
           }
         );
 
-        console.log("✅ API response:", response.data);
-        console.log("🔎 studentId sent:", studentIdQuery);
+        
 
         // Normalize response shape to an Invoice[] list
         const payload: any = response.data;
@@ -414,9 +414,9 @@ const Invoice = () => {
       } catch (error: any) {
         console.error("❌ Failed to fetch invoices:", error);
         if (error.response?.status === 401) {
-          alert("Authentication failed. Please log in again.");
+          toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
         } else {
-          alert("Failed to fetch invoices. Please try again.");
+          toast.error(AppFailureToastMessages.INVOICE_FETCH_FAILED);
         }
       }
     };
@@ -429,7 +429,7 @@ const Invoice = () => {
   };
   const handleClick = async () => {
     if (!selectedInvoice) {
-      alert("Please select an invoice first.");
+      toast.error(AppFailureToastMessages.INVOICE_SELECT_REQUIRED);
       return;
     }
 
@@ -438,9 +438,7 @@ const Invoice = () => {
     const evaluationid = selectedInvoice._id;
     const totalprice = totalPrice;
 
-    // Debug: Log values before making the request
-    console.log("[DEBUG] totalprice:", totalprice);
-    console.log("[DEBUG] evaluationid:", evaluationid);
+    
 
 
     try {
@@ -459,24 +457,21 @@ const Invoice = () => {
         }
       );
 
-      console.log("[DEBUG] Stripe Response:", response.data); // Debugging
       const clientSecret = response?.data?.clientSecret;
-      console.log("[DEBUG] Stripe clientSecret:", clientSecret);
+      
 
       if (clientSecret?.includes("_secret_")) {
         setClientSecret(clientSecret);
       } else {
         console.error("Invalid clientSecret received:", response.data);
-        alert("Error: Invalid payment session. Please try again.");
+        toast.error(AppFailureToastMessages.INVALID_PAYMENT_SESSION);
         setShowModal(false);
       }
     } catch (error: any) {
       if (error && error.response && error.response.data) {
-        console.error("[DEBUG] Error response data:", error.response.data);
-        alert("Backend error: " + JSON.stringify(error.response.data));
+        toast.error(AppFailureToastMessages.REQUEST_ERROR + JSON.stringify(error.response.data));
       } else {
-        console.error("[DEBUG] Unknown error:", error);
-        alert("Unknown error occurred. Check console for details.");
+        toast.error(AppFailureToastMessages.UNEXPECTED_ERROR + " Check console for details.");
       }
       setShowModal(false);
     }

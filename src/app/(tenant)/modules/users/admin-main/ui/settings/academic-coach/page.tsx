@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { FaRegMinusSquare } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
+import { AppFailureToastMessages, appSuccessToastMessages } from "@/app/_components/contents/toast_message";
 import "react-toastify/dist/ReactToastify.css";
 import BaseLayout4 from "../../../components/BaseLayout4";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
@@ -50,7 +51,7 @@ const AcademiccoachModuleAccess = () => {
 
   useEffect(() => {
     if (!employeeId) {
-      toast.error("Employee ID not found in the URL!");
+      toast.error(AppFailureToastMessages.EMPLOYEE_ID_NOT_FOUND);
       setIsRedirecting(true);
       return;
     }
@@ -108,7 +109,7 @@ const AcademiccoachModuleAccess = () => {
       }));
     } catch (error) {
       console.error("Failed to fetch employee data:", error);
-      toast.error("Error loading employee access data");
+      toast.error(AppFailureToastMessages.PERMISSION_LOAD);
     }
   };
 
@@ -181,14 +182,14 @@ const AcademiccoachModuleAccess = () => {
       );
 
       console.log("Access updated successfully:", response.data);
-      toast.success("Access updated successfully!");
+      toast.success(appSuccessToastMessages.ACCESS_UPDATED);
 
       setTimeout(() => {
         router.push("/modules/users/admin-main/ui/settings");
       }, 2000);
     } catch (error) {
       console.error("Failed to update access:", error);
-      toast.error("Failed to update access");
+      toast.error(AppFailureToastMessages.ACCESS_UPDATE_FAILED);
     }
   };
 

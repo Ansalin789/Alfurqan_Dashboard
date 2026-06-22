@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 import BaseLayout2 from "@/app/(tenant)/modules/users/student/components/BaseLayout2";
 import moment from "moment";
 import { Clock } from "lucide-react";
@@ -96,7 +99,7 @@ const StudentSchedulePage = () => {
         : null;
 
     if (!token || !studentId) {
-      console.error("❌ StudentAuthToken or StudentPortalId not found");
+      toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       return;
     }
 
@@ -112,9 +115,10 @@ const StudentSchedulePage = () => {
       .then((data: ClassScheduleApiResponse) => {
         setClassSchedule(data.classSchedule);
       })
-      .catch((error) =>
-        console.error("Error fetching class schedule: ", error)
-      );
+      .catch((error) => {
+        console.error("Error fetching class schedule: ", error);
+        toast.error(AppFailureToastMessages.CLASS_FETCH);
+      });
   }, []);
 
   useEffect(() => {

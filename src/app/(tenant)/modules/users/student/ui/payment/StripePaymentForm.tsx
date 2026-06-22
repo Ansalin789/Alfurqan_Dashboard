@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
+import { toast } from "react-toastify";
 import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
 
 type StripePaymentFormProps = {
   onPaymentSuccess: (token: any) => void;
@@ -20,7 +22,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess 
 
     if (!cardElement) {
       console.error('Card element not found');
-      alert('Payment element is not available. Please try again.');
+      toast.error(AppFailureToastMessages.PAYMENT_ELEMENT_UNAVAILABLE);
       return;
     }
 
@@ -29,13 +31,13 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess 
 
       if (error) {
         console.error(error);
-        alert(error.message);
+        toast.error(error.message || AppFailureToastMessages.PAYMENT_PROCESSING_FAILED);
       } else {
         onPaymentSuccess(token);
       }
     } catch (err) {
       console.error('Payment processing error:', err);
-      alert('Something went wrong while processing the payment.');
+      toast.error(AppFailureToastMessages.PAYMENT_PROCESSING_FAILED);
     }
   };
 
