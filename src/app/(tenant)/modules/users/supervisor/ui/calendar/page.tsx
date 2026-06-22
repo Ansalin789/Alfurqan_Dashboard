@@ -45,7 +45,8 @@ const SchedulePage = () => {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [filteredMeetings, setFilteredMeetings] = useState<Meeting[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
+  const [loading, setLoading] = useState(true);
+const [error, setError] = useState("");
   const tabs = ["monthly", "weekly", "daily"] as const;
 
   const meetingTypeColors = {
@@ -78,12 +79,15 @@ const SchedulePage = () => {
 
   useEffect(() => {
     const fetchMeetings = async () => {
-      try {
+  setLoading(true);
+  setError("");
+
+  try {
         const token = localStorage.getItem("SupervisorAuthToken");
-        if (!token) {
-          console.error("❌ SupervisorAuthToken not found");
-          return;
-        }
+       if (!token) {
+  setError("Authentication token not found.");
+  return;
+}
 
         const [supervisorResponse, adminResponse] = await Promise.all([
           axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MEETING.GET_SUPERVISOR_MEETING}`, {
@@ -104,14 +108,23 @@ const SchedulePage = () => {
         ]);
 
         const supervisorMeetings = supervisorResponse.data?.meetings || [];
-
+          if (!Array.isArray(supervisorMeetings)) {
+  setError("Invalid supervisor meetings response.");
+  return;
+}
         // Parse admin meetings: data.data.meetings[].records
         const adminMeetingsData = adminResponse.data?.data?.meetings || [];
         const adminMeetings = adminMeetingsData.flatMap((group: any) => group.records || []);
 
         const allMeetings = [...supervisorMeetings, ...adminMeetings];
 
-        if (allMeetings.length > 0) {
+        if (allMeetings.length === 0) {
+  setMeetings([]);
+  setFilteredMeetings([]);
+  return;
+}
+
+{
           // Deduplicate meetings based on a composite key of date, time, and name
           // This handles cases where _id might be different but the meeting content is identical
           const uniqueMeetingsMap = new Map();
@@ -138,9 +151,33 @@ const SchedulePage = () => {
           setMeetings(sortedMeetings);
           setFilteredMeetings(sortedMeetings);
         }
-      } catch (error) {
-        console.error("Error fetching meetings:", error);
-      }
+      } catch (error: any) {
+  console.error("Error fetching meetings:", error);
+
+  if (error.response) {
+    switch (error.response.status) {
+      case 401:
+        setError("Session expired. Please login again.");
+        break;
+      case 403:
+        setError("Access denied.");
+        break;
+      case 404:
+        setError("Meetings not found.");
+        break;
+      case 500:
+        setError("Server error.");
+        break;
+      default:
+        setError("Failed to load meetings.");
+    }
+  } else {
+    setError("Network error. Please try again.");
+  }
+}
+finally {
+  setLoading(false);
+}
     };
 
     fetchMeetings();

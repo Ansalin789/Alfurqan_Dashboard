@@ -28,67 +28,119 @@ const COLORS = ["#AFC0FF", "#9FD0FF", "#B9DDFF"]; // Customize as needed
 
 const GenderPieChart: React.FC = () => {
   const [genderData, setGenderData] = useState<PieChartData[]>([]);
+  const [loading, setLoading] = useState(false);
+const [error, setError] = useState("");
+useEffect(() => {
+  const fetchGenderData = async () => {
+    setLoading(true);
+    setError("");
 
-  useEffect(() => {
-    const fetchGenderData = async () => {
-      try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("SupervisorAuthToken")
-            : null;
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorAuthToken")
+          : null;
 
-        if (!token) {
-          console.error("❌ SupervisorAuthToken not found");
-          return;
+      if (!token) {
+        setError("Authentication token not found");
+        return;
+      }
+
+      const response = await fetch(
+        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.GET_TEACHER_FEMALEMALE}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        switch (response.status) {
+          case 401:
+            setError("Session expired. Please login again.");
+            break;
+          case 403:
+            setError("Permission denied.");
+            break;
+          case 404:
+            setError("Gender statistics not found.");
+            break;
+          case 500:
+            setError("Server error.");
+            break;
+          default:
+            setError("Failed to load chart data.");
         }
 
-        const response = await fetch(
-          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.DASHBOARD.GET_TEACHER_FEMALEMALE}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
+        return;
+      }
+
+      const data: ApiResponse = await response.json();
+
+      if (
+        !data ||
+        !Array.isArray(data.genderBreakdownBySubject)
+      ) {
+        setError("Invalid API response");
+        return;
+      }
+
+      if (data.genderBreakdownBySubject.length === 0) {
+        setGenderData([]);
+        return;
+      }
+
+      const transformed: PieChartData[] =
+        data.genderBreakdownBySubject.map(
+          (item: GenderDataItem, index: number) => {
+            const total = item.male + item.female;
+
+            return {
+              name: item.subject.replace(" Teacher", ""),
+              male: item.male,
+              female: item.female,
+              totalCount: total,
+              value: total,
+              color: COLORS[index % COLORS.length],
+            };
           }
         );
 
-        if (!response.ok) {
-          console.error("Failed to fetch data:", response.statusText);
-          return;
-        }
+      setGenderData(transformed);
+    } catch (error) {
+      console.error("Gender API Error:", error);
 
-        const data: ApiResponse = await response.json();
-        console.log("Fetched API Response:", data);
+      setError("Unable to load gender statistics.");
+      setGenderData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        if (!data.genderBreakdownBySubject) {
-          console.error("Invalid data structure:", data);
-          return;
-        }
+  fetchGenderData();
+}, []);
 
-const transformed: PieChartData[] = data.genderBreakdownBySubject.map(
-  (item: GenderDataItem, index: number) => {
-    const total = item.male + item.female;
+if (error) {
+  return (
+    <div className="bg-white dark:bg-[#343434] rounded-xl shadow-lg p-4 h-[270px] flex items-center justify-center">
+      <span className="text-sm text-red-500">
+        {error}
+      </span>
+    </div>
+  );
+}
 
-    return {
-      name: item.subject.replace(" Teacher", ""),
-      male: item.male,        // <-- use raw count
-      female: item.female,    // <-- use raw count
-      totalCount: total,
-      value: total,           
-      color: COLORS[index % COLORS.length],
-    };
-  }
-);
-
-
-        setGenderData(transformed);
-      } catch (error) {
-        console.error("Error fetching gender data:", error);
-      }
-    };
-
-    fetchGenderData();
-  }, []);
+if (genderData.length === 0) {
+  return (
+    <div className="bg-white dark:bg-[#343434] rounded-xl shadow-lg p-4 h-[270px] flex items-center justify-center">
+      <span className="text-sm text-gray-500">
+        No data available
+      </span>
+    </div>
+  );
+}
 
   return (
     <div className="bg-[#FFFFFF] dark:bg-[#343434] rounded-xl shadow-lg p-4 h-[270px]">
@@ -129,7 +181,9 @@ const transformed: PieChartData[] = data.genderBreakdownBySubject.map(
               const x = cx + radius * Math.cos(-midAngle * RADIAN);
               const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-              const data = genderData[index];
+              const data = genderData[index ?? 0];
+
+if (!data) return null;
               return (
                 <text
                   x={x}

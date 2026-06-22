@@ -193,10 +193,25 @@ const SignIn: React.FC = () => {
     setError("");
     setLoading(true);
 
+    if (!username.trim()) {
+  setLoginError("Username is required");
+  return;
+}
+
+if (!password.trim()) {
+  setLoginError("Password is required");
+  return;
+}
+
     try {
       const response = await signIn(username, password);
       const data = response.data;
       const { accessToken, role, _id, userName } = data;
+
+      if (!accessToken || !_id) {
+  setLoginError("Invalid login response");
+  return;
+}
       const userEmail: string = data.email ?? data.userEmail ?? "";
 
       if (!role?.includes("SUPERVISOR")) {
@@ -259,8 +274,14 @@ const SignIn: React.FC = () => {
       setLoginError("Google login failed: No credential received");
       return;
     }
-    const emaildata = await getGoogleUserInfo(credential);
-    const email: any = emaildata.email;
+const emaildata = await getGoogleUserInfo(credential);
+
+if (!emaildata?.email) {
+  setLoginError("Unable to fetch Google account details");
+  return;
+}
+
+const email = emaildata.email;
     const checkEmail = async (email: string) => {
       try {
         const response = await axios.post(

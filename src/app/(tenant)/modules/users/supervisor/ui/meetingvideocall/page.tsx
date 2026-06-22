@@ -92,10 +92,15 @@ export default function Page() {
   const seacrh = useSearchParams();
   const meetingId = seacrh.get("id");
   console.log("📌 MEETING ID:", meetingId);
-
+if (!meetingId) {
+  console.error("Meeting ID missing");
+  return;
+}
   const [meetingUpdate, setMeetingUpdate] = useState(false);
   const [meetingMinutes, setMeetingMinutes] = useState<string>("");
 
+
+  
   useEffect(() => {
     console.log("📡 FETCHING CLASS DATA...");
 
@@ -122,7 +127,12 @@ export default function Page() {
 
         console.log("✅ API RESPONSE:", response.data);
 
-        const meeting = response.data.meetings[0]?.data;
+        const meeting = response?.data?.meetings?.[0]?.data;
+
+if (!meeting) {
+  console.error("Meeting data not found");
+  return;
+}
 
         if (!meeting) {
           console.log("⚠️ NO MEETING FOUND IN RESPONSE");
@@ -135,7 +145,7 @@ export default function Page() {
         console.log("🎯 ROOM NAME SET TO:", meeting.meetingId);
 
         // ✅ Initialize attendance
-        const initialAttendance = meeting.participants.map((p: any) => ({
+        const initialAttendance = (meeting.participants || []).map((p: any) => ({
           id: null,
           studentId: (p.studentId || p.participantId || p._id || "")
             .toString()
@@ -273,6 +283,12 @@ export default function Page() {
     const today = new Date().toDateString();
     const start = new Date(`${today} ${startTime}`);
     const end = new Date(`${today} ${endTime}`);
+    if (!startTime || !endTime) {
+  return "0h 0m";
+}
+if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+  return "Invalid";
+}
     const diffMs = end.getTime() - start.getTime();
     if (diffMs < 0) return "Invalid";
     const diffMins = Math.floor(diffMs / 60000);
@@ -358,8 +374,8 @@ export default function Page() {
 
                 {/* Jitsi Video Box */}
                 <div className="flex-1 min-w-0 w-full h-[50vh] md:h-[60vh] rounded-md overflow-hidden shadow-inner border border-gray-300">
-                  {roomName && (
-                    <JitsiMeeting
+                  {roomName?.trim() && (
+  <JitsiMeeting
                       roomName={roomName}
                       domain="meet.blackstoneinfomaticstech.com"
                       userInfo={{
@@ -406,6 +422,7 @@ export default function Page() {
 
                             // try extract studentId from displayName like "Name | ID : <studentId>"
                             let name = event.displayName || "Guest";
+                            if (!event) return;
                             let extractedStudentId: string | null = null;
                             if (name.includes("| ID :")) {
                               const parts = name.split("| ID :");

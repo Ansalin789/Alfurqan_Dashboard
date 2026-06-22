@@ -17,6 +17,8 @@ import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 // import "../../../../public/assets/css/supervisordashcalendar.css";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ApplicationChart = () => {
   const [range, setRange] = useState<Range[]>([
@@ -80,11 +82,43 @@ const ApplicationChart = () => {
     fetchData(fromDate, toDate);
   }, []);
 
-  useEffect(() => {
-    if (fromDate && toDate) {
-      fetchData(fromDate, toDate);
-    }
-  }, [fromDate, toDate]);
+useEffect(() => {
+  if (!fromDate || !toDate) return;
+
+  const from = new Date(fromDate);
+  const to = new Date(toDate);
+
+  if (from > to) {
+    toast.error("From Date cannot be greater than To Date");
+    return;
+  }
+
+  fetchData(fromDate, toDate);
+}, [fromDate, toDate]);
+
+const validateDateRange = (
+  startDate: Date | undefined,
+  endDate: Date | undefined
+) => {
+  if (!startDate || !endDate) {
+    toast.error("Please select both From Date and To Date");
+    return false;
+  }
+
+  if (startDate > endDate) {
+    toast.error("From Date cannot be greater than To Date");
+    return false;
+  }
+
+  const today = new Date();
+
+  if (endDate > today) {
+    toast.error("Future dates are not allowed");
+    return false;
+  }
+
+  return true;
+};
 
   return (
     <div className="w-full relative">
@@ -129,12 +163,23 @@ const ApplicationChart = () => {
                   <DateRange
                     editableDateInputs={true}
                     onChange={(item) => {
-                      const selection = item.selection;
-                      setRange([selection]);
-                      setFromDate(format(selection.startDate!, "yyyy-MM-dd"));
-                      setToDate(format(selection.endDate!, "yyyy-MM-dd"));
-                      setShowCalendar(false);
-                    }}
+  const selection = item.selection;
+
+  const startDate = selection.startDate;
+  const endDate = selection.endDate;
+
+  if (!validateDateRange(startDate, endDate)) {
+    return;
+  }
+
+  setRange([selection]);
+  setFromDate(format(startDate!, "yyyy-MM-dd"));
+  setToDate(format(endDate!, "yyyy-MM-dd"));
+
+  setShowCalendar(false);
+
+  toast.success("Date range updated");
+}}
                     moveRangeOnFirstSelection={false}
                     ranges={range}
                     months={1}
@@ -186,6 +231,16 @@ const ApplicationChart = () => {
           </ResponsiveContainer>
         </div>
       </div>
+      <ToastContainer
+  position="top-right"
+  autoClose={3000}
+  hideProgressBar={false}
+  newestOnTop
+  closeOnClick
+  pauseOnHover
+  draggable
+  theme="colored"
+/>
     </div>
   );
 };

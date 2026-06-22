@@ -101,36 +101,74 @@ export default function SupervisorHeader({
     typeof window !== "undefined"
       ? localStorage.getItem("SupervisorPortalId")
       : null;
-  const fetchNotifications = async (token: string) => {
-    try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("SupervisorAuthToken")
-          : null;
-      const userId =
-        typeof window !== "undefined"
-          ? localStorage.getItem("SupervisorPortalId")
-          : null;
-      const { data } = await axios.get(
-        `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.NOTIFICATION.GET_LIST}?receiverId=${userId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+const fetchNotifications = async (token: string) => {
+  try {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorAuthToken")
+        : null;
 
-      const notifications = data?.data?.notifications ?? [];
-      setNotifications(notifications);
+    const userId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorPortalId")
+        : null;
 
-      const unreadCount = notifications.filter((n: any) => !n.isRead).length;
-      setNotificationCount(unreadCount);
-    } catch (error) {
-      console.error("❌ Failed to fetch notifications:", error);
+    if (!token) {
+      console.error("❌ Authentication token not found");
+      return;
     }
-  };
+
+    if (!userId) {
+      console.error("❌ Supervisor ID not found");
+      return;
+    }
+
+    const { data } = await axios.get(
+      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.NOTIFICATION.GET_LIST}?receiverId=${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const notificationList = data?.data?.notifications ?? [];
+
+    setNotifications(notificationList);
+
+    const unreadCount = notificationList.filter(
+      (n: NotificationType) => !n.isRead
+    ).length;
+
+    setNotificationCount(unreadCount);
+  } catch (error: any) {
+    console.error("❌ Failed to fetch notifications:", error);
+
+    if (axios.isAxiosError(error)) {
+      switch (error.response?.status) {
+        case 401:
+          console.error("Session expired");
+          break;
+
+        case 403:
+          console.error("Permission denied");
+          break;
+
+        case 404:
+          console.error("Notifications not found");
+          break;
+
+        case 500:
+          console.error("Server error");
+          break;
+
+        default:
+          console.error("Unable to load notifications");
+      }
+    }
+  }
+};
 
   // Mark as Seen
   const handleNotificationClick = async (notificationId: string) => {

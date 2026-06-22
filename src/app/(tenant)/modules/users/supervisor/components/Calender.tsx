@@ -38,7 +38,8 @@ interface Meeting {
 
 const Academic: React.FC = () => {
   const router = useRouter();
-
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState("");
   const [events, setEvents] = useState<Event[]>([]);
   const [value, setValue] = useState<Date>(new Date());
   const [activeStartDate, setActiveStartDate] = useState<Date>(new Date());
@@ -48,92 +49,122 @@ const Academic: React.FC = () => {
   >([]);
 
   useEffect(() => {
-    const fetchMeetings = async () => {
-      try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("SupervisorAuthToken")
-            : null;
+const fetchMeetings = async () => {
+  setLoading(true);
+  setError("");
 
-        if (!token) {
-          console.error("❌ SupervisorAuthToken not found");
-          return;
+  try {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorAuthToken")
+        : null;
+
+    if (!token) {
+      setError("Authentication token not found");
+      return;
+    }
+
+    const response = await axios.get(
+      `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MEETING.GET_SUPERVISOR_MEETING}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const allMeetingsResponse: Meeting[] =
+      response.data?.meetings || [];
+
+    if (!allMeetingsResponse.length) {
+      setMeetingDays([]);
+      setTodayMeetings([]);
+      return;
+    }
+
+    const uniqueMeetingsMap = new Map();
+
+    allMeetingsResponse.forEach((m: Meeting) => {
+      const key = `${m.selectedDate}_${m.startTime}_${m.endTime}_${m.meetingName}`;
+
+      if (!uniqueMeetingsMap.has(key)) {
+        uniqueMeetingsMap.set(key, m);
+      }
+    });
+
+    const allMeetings = Array.from(
+      uniqueMeetingsMap.values()
+    ) as Meeting[];
+
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const upcomingMeetings = allMeetings.filter((meeting) => {
+      const meetingDate = new Date(meeting.selectedDate);
+      meetingDate.setHours(0, 0, 0, 0);
+
+      return meetingDate.getTime() >= now.getTime();
+    });
+
+    const allMeetingDates = upcomingMeetings.map((m) => {
+      const d = new Date(m.selectedDate);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    });
+
+    setMeetingDays(allMeetingDates);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todayData = upcomingMeetings
+      .filter((meeting) => {
+        const meetingDate = new Date(meeting.selectedDate);
+
+        meetingDate.setHours(0, 0, 0, 0);
+
+        return meetingDate.getTime() === today.getTime();
+      })
+      .map((meeting) => {
+        let color = "bg-blue-100 text-blue-800";
+
+        if (meeting.meetingStatus === "Scheduled") {
+          color = "bg-amber-100 text-amber-800";
+        } else if (meeting.meetingStatus === "Reschedule") {
+          color = "bg-green-100 text-green-800";
         }
 
-        const response = await axios.get(
-          `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.MEETING.GET_SUPERVISOR_MEETING}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        return {
+          time: meeting.startTime,
+          title: meeting.meetingName,
+          type: meeting.meetingStatus.toLowerCase(),
+          color,
+        };
+      });
 
-        const allMeetingsResponse: Meeting[] = response.data?.meetings || [];
-        console.log("✅ Full Meetings Data:", allMeetingsResponse);
+    setTodayMeetings(todayData);
+  } catch (error: any) {
+    console.error("Meeting API Error:", error);
 
-        // Deduplicate meetings
-        const uniqueMeetingsMap = new Map();
-        allMeetingsResponse.forEach((m: Meeting) => {
-          const compositeKey = `${m.selectedDate}_${m.startTime}_${m.endTime}_${m.meetingName}`;
-          if (!uniqueMeetingsMap.has(compositeKey)) {
-            uniqueMeetingsMap.set(compositeKey, m);
-          }
-        });
-        const allMeetings = Array.from(uniqueMeetingsMap.values()) as Meeting[];
+    if (error.response?.status === 401) {
+      setError("Session expired. Please login again.");
+    } else if (error.response?.status === 403) {
+      setError("You don't have permission.");
+    } else if (error.response?.status === 404) {
+      setError("Meeting data not found.");
+    } else if (error.response?.status === 500) {
+      setError("Server error. Please try again later.");
+    } else {
+      setError("Failed to load meetings.");
+    }
 
-        // Filter out past meetings
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
-
-        const upcomingMeetings = allMeetings.filter((meeting) => {
-          const meetingDate = new Date(meeting.selectedDate);
-          meetingDate.setHours(0, 0, 0, 0);
-          return meetingDate.getTime() >= now.getTime();
-        });
-
-        // Convert meeting dates to Date objects normalized to 00:00:00
-        const allMeetingDates = upcomingMeetings.map((m) => {
-          const d = new Date(m.selectedDate);
-          d.setHours(0, 0, 0, 0);
-          return d;
-        });
-
-        setMeetingDays(allMeetingDates);
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        // Filter today's meetings
-        const todayMeetings = upcomingMeetings
-          .filter((meeting) => {
-            const meetingDate = new Date(meeting.selectedDate);
-            meetingDate.setHours(0, 0, 0, 0);
-            return meetingDate.getTime() === today.getTime();
-          })
-          .map((meeting) => {
-            let color = "bg-blue-100 text-blue-800"; // Default
-
-            if (meeting.meetingStatus === "Scheduled") {
-              color = "bg-amber-100 text-amber-800";
-            } else if (meeting.meetingStatus === "Reschedule") {
-              color = "bg-green-100 text-green-800";
-            }
-
-            return {
-              time: meeting.startTime,
-              title: meeting.meetingName,
-              type: meeting.meetingStatus.toLowerCase(),
-              color,
-            };
-          });
-
-        setTodayMeetings(todayMeetings);
-      } catch (error) {
-        console.error("🚨 Error fetching meetings:", error);
-      }
-    };
+    setMeetingDays([]);
+    setTodayMeetings([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchMeetings();
   }, []);
@@ -148,8 +179,18 @@ const Academic: React.FC = () => {
     );
   };
 
+
+if (error) {
+  return (
+    <div className="p-4 text-center text-red-500">
+      {error}
+    </div>
+  );
+}
+
   return (
     <div className="dark:bg-[#343434] w-full rounded-xl">
+      
       <Calendar
         onChange={(newValue) => setValue(newValue as Date)}
         value={value}

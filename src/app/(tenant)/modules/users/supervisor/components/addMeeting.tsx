@@ -7,6 +7,8 @@ import axios, { AxiosError } from "axios";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { toast, ToastContainer } from "react-toastify";
 
 type Props = {
   readonly onClose: () => void;
@@ -19,7 +21,7 @@ interface Teacher {
 }
 
 export default function AddMeeting({ onClose }: Props) {
-  const [meetingTitle, setMeetingTitle] = useState("Weekly Sync");
+const [meetingTitle, setMeetingTitle] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
@@ -83,8 +85,68 @@ export default function AddMeeting({ onClose }: Props) {
     });
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const validateForm = () => {
+  if (!meetingTitle.trim()) {
+    console.log("TITLE FAILED");
+    toast.error(
+      AppValidationMessages.MEETING.TITLE_REQUIRED
+    );
+    return false;
+  }
+
+  if (meetingTitle.trim().length < 3) {
+    toast.error(AppValidationMessages.MEETING.TITLE_MIN);
+    return false;
+  }
+
+  if (!selectedDate) {
+    toast.error(AppValidationMessages.MEETING.DATE_REQUIRED);
+    return false;
+  }
+
+  if (!startTime) {
+    toast.error(AppValidationMessages.MEETING.START_TIME_REQUIRED);
+    return false;
+  }
+
+  if (!endTime) {
+    toast.error(AppValidationMessages.MEETING.END_TIME_REQUIRED);
+    return false;
+  }
+
+  if (startTime >= endTime) {
+    toast.error(AppValidationMessages.MEETING.INVALID_TIME);
+    return false;
+  }
+
+  if (selectedTeachers.length === 0) {
+    toast.error(AppValidationMessages.MEETING.PARTICIPANT_REQUIRED);
+    return false;
+  }
+
+  if (!description.trim()) {
+    toast.error(AppValidationMessages.MEETING.DESCRIPTION_REQUIRED);
+    return false;
+  }
+
+  if (description.trim().length < 10) {
+    toast.error(AppValidationMessages.MEETING.DESCRIPTION_MIN);
+    return false;
+  }
+
+  return true;
+};
+ const handleSubmit = async (
+  event: FormEvent<HTMLFormElement>
+) => {
+  event.preventDefault();
+
+ if (!validateForm()) {
+    console.log("VALIDATION FAILED");
+    return;
+  }
+
+  console.log("VALIDATION PASSED");
 
     if (
       !meetingTitle ||
@@ -146,7 +208,7 @@ export default function AddMeeting({ onClose }: Props) {
         }
       );
 
-      if ([200, 201, 400].includes(response.status)) {
+      if ([200, 201].includes(response.status)) {
         setSuccess(true);
         setTimeout(() => {
           setMeetingTitle("");
@@ -164,7 +226,7 @@ export default function AddMeeting({ onClose }: Props) {
       setTimeout(() => {
         onClose();
       }, 3000);
-      if (Number(status === 400)) {
+      if (status === 400)  {
         console.log("please >");
         setFailedMessage("Please check the form inputs.");
         setFailed(true);
@@ -290,17 +352,20 @@ export default function AddMeeting({ onClose }: Props) {
                     </div>
                     <div className="flex justify-end mt-4 gap-2">
                       <button
-                        onClick={() => setOpen(false)}
-                        className="px-3 py-1 border text-[#576CBC] rounded"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={() => setOpen(false)}
-                        className="px-4 py-1 bg-[#576CBC] text-white rounded"
-                      >
-                        Done
-                      </button>
+  type="button"
+  onClick={() => setOpen(false)}
+  className="px-3 py-1 border text-[#576CBC] rounded"
+>
+  Cancel
+</button>
+
+<button
+  type="button"
+  onClick={() => setOpen(false)}
+  className="px-4 py-1 bg-[#576CBC] text-white rounded"
+>
+  Done
+</button>
                     </div>
                   </section>
                 </div>
@@ -393,7 +458,17 @@ export default function AddMeeting({ onClose }: Props) {
           </button>
         </div>
       </form>
-
+  <ToastContainer
+    position="top-right"
+    autoClose={3000}
+    hideProgressBar={false}
+    newestOnTop
+    closeOnClick
+    pauseOnHover
+    draggable
+    closeButton={false}
+    theme="colored"
+  />
       {success && (
         <SuccessPopup onClose={() => setSuccess(false)} title="Meeting" />
       )}

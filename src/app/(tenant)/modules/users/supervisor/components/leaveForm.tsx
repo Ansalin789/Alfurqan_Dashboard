@@ -5,6 +5,8 @@ import axios, { AxiosError } from "axios";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 type LeaveFormProps = {
   readonly onClose: () => void;
 };
@@ -74,15 +76,11 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
           setLeaveRecords(data.records || []);
           // Pre-fill form with the latest record if available
           if (data.records && data.records.length > 0) {
-            const latest = data.records[data.records.length - 1];
-            setForm((prev) => ({
-              ...prev,
-              ...latest,
-              fromDate: latest.fromDate ? latest.fromDate.slice(0, 10) : "",
-              toDate: latest.toDate ? latest.toDate.slice(0, 10) : "",
-              createdDate: latest.createdDate || new Date().toISOString(),
-              UpdatedDate: latest.updatedDate || new Date().toISOString(),
-            }));
+setForm((prev) => ({
+  ...prev,
+  employeeId: prev.employeeId,
+  name: prev.name,
+}));
           }
         })
         .catch((err) => {
@@ -103,9 +101,44 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
     }));
   };
 
+const validateForm = () => {
+  console.log("FORM STATE:", form);
+
+  if (!form.leaveType) {
+    console.log("FAILED: leaveType");
+    toast.error("Leave type is required");
+    return false;
+  }
+
+  if (!form.fromDate) {
+    console.log("FAILED: fromDate");
+    toast.error("From date is required");
+    return false;
+  }
+
+  if (!form.toDate) {
+    console.log("FAILED: toDate");
+    toast.error("To date is required");
+    return false;
+  }
+
+  return true;
+};
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
+  console.log("Submit Clicked");
 
+  const isValid = validateForm();
+
+  console.log("Validation Result:", isValid);
+
+  if (!isValid) {
+    console.log("Validation Failed");
+    return;
+  }
+
+  console.log("Validation Passed");
     try {
       const token =
         typeof window !== "undefined"
@@ -234,33 +267,35 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
             </div>
 
             <div className="mb-4">
-              <label
-                htmlFor="fromDate"
-                className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]"
-              >
-                From Date
-              </label>
-              <input
-                name="fromDate"
-                onChange={handleChange}
-                type="date"
-                className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
-              />
+  <label
+    htmlFor="fromDate"
+    className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]"
+  >
+    From Date
+  </label>
+  <input
+    name="fromDate"
+    value={form.fromDate}
+    onChange={handleChange}
+    type="date"
+    className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
+  />
             </div>
 
             <div className="mb-4">
-              <label
-                htmlFor="toDate"
-                className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]"
-              >
-                To Date
-              </label>
-              <input
-                name="toDate"
-                onChange={handleChange}
-                type="date"
-                className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
-              />
+  <label
+    htmlFor="toDate"
+    className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]"
+  >
+    To Date
+  </label>
+  <input
+    name="toDate"
+    value={form.toDate}
+    onChange={handleChange}
+    type="date"
+    className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
+  />
             </div>
           </div>
 
@@ -364,6 +399,17 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
           </button>
         </div>
       </form>
+<ToastContainer
+  position="top-right"
+  autoClose={3000}
+  hideProgressBar={false}
+  newestOnTop
+  closeOnClick
+  pauseOnHover
+  draggable
+  theme="colored"
+/>
+
       {success && (
         <SuccessPopup
           onClose={() => {

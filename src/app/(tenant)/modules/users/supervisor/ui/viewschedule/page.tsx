@@ -126,6 +126,12 @@ const ViewSchedule = () => {
           }
         );
 
+        if (!response?.data || !Array.isArray(response.data.students)) {
+  console.error("Invalid API response");
+  setUniqueStudentSchedules([]);
+  return;
+}
+
         const now = new Date();
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -267,9 +273,18 @@ const ViewSchedule = () => {
       console.log("✅ Filtered data:", response.data);
 
      setUniqueStudentSchedules(Array.isArray(response.data.students) ? response.data.students : []);
-    } catch (error) {
-      console.error("❌ Error fetching filtered data:", error);
-    }
+    } 
+catch (error: any) {
+  if (axios.isAxiosError(error)) {
+    console.error(
+      error.response?.data?.message ||
+      error.message ||
+      "Request failed"
+    );
+  } else {
+    console.error(error);
+  }
+}
   };
 
   // Update displayed data when tab changes

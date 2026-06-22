@@ -75,6 +75,10 @@ const TeacherDetails = () => {
   const teacherId = search.get("teacherId");
 
   useEffect(() => {
+    if (!teacherId) {
+  console.error("Teacher ID not found");
+  return;
+}
     const fetchTeachers = async () => {
       try {
         const token =

@@ -348,10 +348,13 @@ const ScheduledClasses = () => {
         ? localStorage.getItem("SupervisorAuthToken")
         : null;
 
-    if (!token) {
-      console.error("❌ AdminAuthToken not found");
-      return;
-    }
+if (!token) {
+  setFailed(true);
+  setFailedMessage(
+    "Session expired. Please login again."
+  );
+  return;
+}
 
     axios
       .get<{ totalCount: number; applicants: ApiResponse[] }>(
@@ -383,6 +386,11 @@ const ScheduledClasses = () => {
         ? localStorage.getItem("SupervisorPortalID")
         : null;
     const socket = getSocket(id ?? "");
+    if (!socket) {
+  setFailed(true);
+  setFailedMessage("Socket connection failed");
+  return;
+}
     const handleList = (data: { data: Meeting }) => {
       console.log("📩 Received WebSocket Data:", data);
       setUpcomingClasses((prev) => {
@@ -528,9 +536,15 @@ const ScheduledClasses = () => {
 
         // ✅ single source of truth
         setGroupedMeetings(finalGrouped);
-      } catch (error) {
-        console.error("Error fetching meetings:", error);
-      }
+      } catch (error: any) {
+  console.error("Error fetching meetings:", error);
+
+  setFailed(true);
+  setFailedMessage(
+    error?.response?.data?.message ||
+    "Unable to load meetings"
+  );
+}
     };
 
     fetchMeetings();
@@ -541,15 +555,18 @@ const ScheduledClasses = () => {
   const currentApplicants = currentItems;
 
   const handleRescheduleSubmit = async () => {
-    if (
-      !rescheduleReason.trim() ||
-      !rescheduleDate ||
-      !rescheduleTime ||
-      !selectedItemId
-    ) {
-      alert("Please fill all fields");
-      return;
-    }
+  if (
+  !rescheduleReason.trim() ||
+  !rescheduleDate ||
+  !rescheduleTime ||
+  !selectedItemId
+) {
+  setFailed(true);
+  setFailedMessage(
+    "Please fill all required fields"
+  );
+  return;
+}
 
     try {
       const token = localStorage.getItem("token");
@@ -593,10 +610,18 @@ const ScheduledClasses = () => {
         setIsRescheduleModalOpen(false);
         setRescheduleReason("");
       }, 2000);
-    } catch (error) {
-      console.error("Error during rescheduling:", error);
-      alert("Could not update meeting. Please try again.");
-    }
+    } catch (error: any) {
+  console.error(
+    "Error during rescheduling:",
+    error
+  );
+
+  setFailed(true);
+  setFailedMessage(
+    error?.response?.data?.message ||
+    "Unable to reschedule meeting"
+  );
+}
   };
 
   const getMeetingStatusClass = (status: string) => {
@@ -741,9 +766,18 @@ const ScheduledClasses = () => {
       setGroupedMeetings(grouped);
 
       // ✅ No need separate states anymore
-    } catch (error) {
-      console.error("❌ Error fetching filtered meetings:", error);
-    }
+    } catch (error: any) {
+  console.error(
+    "❌ Error fetching filtered meetings:",
+    error
+  );
+
+  setFailed(true);
+  setFailedMessage(
+    error?.response?.data?.message ||
+    "Unable to apply filters"
+  );
+}
   };
 
   return (
