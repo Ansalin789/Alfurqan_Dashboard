@@ -1,8 +1,10 @@
 'use client';
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
+import { toast } from "react-toastify";
 interface Assignment {
   assignedTeacherId: string;
   _id: string;
@@ -45,12 +47,20 @@ const AssignmentList = () => {
   useEffect(() => {
     const fetchAssignments = async () => {
       const storedStudentId = localStorage.getItem('studentviewcontrol');
+
+      if (!storedStudentId) {
+  toast.error(AppValidationMessages.AUTH.STUDENT_REQUIRED);
+  return;
+}
+
       try {
         const token =
           typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
 
         if (!token) {
-          console.error("❌ TeacherAuthToken not found");
+           toast.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
           return;
         }
         const response = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GET_ALL_ASS}`, {
@@ -61,8 +71,13 @@ const AssignmentList = () => {
           },
         });
 
-        console.log("Assignments:", response);
-
+        // 👇 Add here
+if (!response.data?.assignments?.length) {
+  toast.warning(
+    AppValidationMessages.ASSIGNMENT.NO_ASSIGNMENT_DATA
+  );
+  return;
+}
 
         const filteredAssignments = response.data.assignments.filter(
           (assignment: Assignment) => assignment.studentId === storedStudentId
@@ -70,8 +85,9 @@ const AssignmentList = () => {
 
         setAssignments(filteredAssignments);
         console.log(filteredAssignments);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
-        console.error("Error fetching assignments:", error);
+        toast.error(AppValidationMessages.ASSIGNMENT.NO_ASSIGNMENT_DATA);
       }
     };
 
@@ -225,7 +241,7 @@ const AssignmentList = () => {
         typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
 
       if (!token) {
-        console.error("❌ TeacherAuthToken not found");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
         return;
       }
       const response = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.CREATE}`, {
@@ -257,10 +273,12 @@ const AssignmentList = () => {
       const token =
         typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
 
-      if (!token) {
-        console.error("❌ TeacherAuthToken not found");
-        return;
-      }
+     if (!token) {
+  toast.error(
+    AppValidationMessages.AUTH.TOKEN_REQUIRED
+  );
+  return;
+}
       const response = await axios.get(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ASSIGNMENT.GET_LIST}/${selectedAssignmentId}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
