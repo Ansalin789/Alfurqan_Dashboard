@@ -11,6 +11,9 @@ import { Search } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { getSocket } from "@/app/utils/socket";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
+import { toast } from "react-toastify";
 
 interface TransformedUser {
   _id: string;
@@ -137,15 +140,29 @@ const getAllUser = async (): Promise<{
 }> => {
   try {
     const academicId = localStorage.getItem("AcademicCoachPortalId");
-    console.log("academicId>>", academicId);
     const token =
       typeof window !== "undefined"
         ? localStorage.getItem("AcademicCoachAuthToken")
         : null;
-    console.log("this is the auth", token);
+
     if (!token) {
-      console.error("❌ AdminAuthToken not found");
+      toast.error(AppValidationMessages.ERROR_MESSAGES.MISSING_AUTH_TOKEN);
+      return {
+        success: false,
+        data: [],
+        message: AppValidationMessages.ERROR_MESSAGES.MISSING_AUTH_TOKEN,
+      };
     }
+
+    if (!academicId) {
+      toast.error(AppValidationMessages.ERROR_MESSAGES.MISSING_ACADEMIC_COACH_ID);
+      return {
+        success: false,
+        data: [],
+        message: AppValidationMessages.ERROR_MESSAGES.MISSING_ACADEMIC_COACH_ID,
+      };
+    }
+
     const response = await axios.get(
       `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.EVALUATION.GET_LIST}`,
       {
@@ -157,7 +174,14 @@ const getAllUser = async (): Promise<{
       },
     );
 
-    console.log("Raw API Response:", response.data.evaluation);
+    if (!response.data.evaluation || !Array.isArray(response.data.evaluation)) {
+      toast.error(AppValidationMessages.DATA_FETCH.INVALID_DATA_STRUCTURE);
+      throw new Error(AppValidationMessages.DATA_FETCH.INVALID_DATA_STRUCTURE);
+    }
+
+    if (response.data.evaluation.length === 0) {
+      toast.warning(AppValidationMessages.ACADEMIC_COACH.NO_EVALUATION_DATA);
+    }
 
     const transformedData: TransformedUser[] = response.data.evaluation.map(
       (item: any) => {
@@ -194,11 +218,12 @@ const getAllUser = async (): Promise<{
       message: "Users fetched successfully",
     };
   } catch (error) {
-    console.error("Error fetching users:", error);
+    console.error(AppFailureToastMessages.ACADEMIC_COACH_EVALUATION_FETCH, error);
+    toast.error(AppFailureToastMessages.ACADEMIC_COACH_EVALUATION_FETCH);
     return {
       success: false,
       data: [],
-      message: error instanceof Error ? error.message : "Failed to fetch users",
+      message: AppFailureToastMessages.ACADEMIC_COACH_EVALUATION_FETCH,
     };
   }
 };
@@ -206,15 +231,29 @@ const getAllUser = async (): Promise<{
 const getAllUsers = async (): Promise<GetAllUsersResponse> => {
   try {
     const academicId = localStorage.getItem("AcademicCoachPortalId");
-    console.log("academicId>>", academicId);
     const token =
       typeof window !== "undefined"
         ? localStorage.getItem("AcademicCoachAuthToken")
         : null;
 
     if (!token) {
-      console.error("❌ AdminAuthToken not found");
+      toast.error(AppValidationMessages.ERROR_MESSAGES.MISSING_AUTH_TOKEN);
+      return {
+        success: false,
+        data: [],
+        message: AppValidationMessages.ERROR_MESSAGES.MISSING_AUTH_TOKEN,
+      };
     }
+
+    if (!academicId) {
+      toast.error(AppValidationMessages.ERROR_MESSAGES.MISSING_ACADEMIC_COACH_ID);
+      return {
+        success: false,
+        data: [],
+        message: AppValidationMessages.ERROR_MESSAGES.MISSING_ACADEMIC_COACH_ID,
+      };
+    }
+
     const response = await axios.get(
       `${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.STUDENT.GET_LIST}`,
       {
@@ -225,19 +264,13 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
         },
       },
     );
-    console.log("Raw API Response:", JSON.stringify(response.data, null, 2));
-    console.log(
-      "First student data:",
-      JSON.stringify(response.data.students[0], null, 2),
-    );
-    console.log("First student status:", response.data.students[0]?.status);
-    console.log(
-      "First student studentStatus:",
-      response.data.students[0]?.studentStatus,
-    );
-
     if (!response.data.students || !Array.isArray(response.data.students)) {
-      throw new Error("Invalid data structure received from API");
+      toast.error(AppValidationMessages.DATA_FETCH.INVALID_DATA_STRUCTURE);
+      throw new Error(AppValidationMessages.DATA_FETCH.INVALID_DATA_STRUCTURE);
+    }
+
+    if (response.data.students.length === 0) {
+      toast.warning(AppValidationMessages.ACADEMIC_COACH.NO_STUDENTS_FOUND);
     }
 
     // Transform API data to match User interface
@@ -293,11 +326,12 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
       message: "Users fetched successfully",
     };
   } catch (error) {
-    console.error("Error fetching users:", error);
+    console.error(AppFailureToastMessages.ACADEMIC_COACH_STUDENT_FETCH, error);
+    toast.error(AppFailureToastMessages.ACADEMIC_COACH_STUDENT_FETCH);
     return {
       success: false,
       data: [],
-      message: error instanceof Error ? error.message : "Failed to fetch users",
+      message: AppFailureToastMessages.ACADEMIC_COACH_STUDENT_FETCH,
     };
   }
 };
@@ -523,6 +557,8 @@ const TrailManagement = () => {
       const result = await getAllUser();
       if (result.success) {
         setEvaluationUsers(result.data);
+      } else {
+        setErrorMessage(result.message);
       }
     };
     fetchEvaluationUsers();
@@ -617,11 +653,13 @@ const TrailManagement = () => {
           setUsers(allData.data);
           setFilteredUsers(allData.data);
         } else {
-          setErrorMessage(allData.message ?? "Failed to fetch users");
+          setErrorMessage(
+            allData.message ?? AppFailureToastMessages.ACADEMIC_COACH_STUDENT_FETCH,
+          );
         }
-      } catch (error) {
-        setErrorMessage("An unexpected error occurred");
-        console.error("An unexpected error occurred", error);
+      } catch {
+        setErrorMessage(AppValidationMessages.ERROR_MESSAGES.UNEXPECTED_ERROR);
+        toast.error(AppValidationMessages.ERROR_MESSAGES.UNEXPECTED_ERROR);
       }
     };
 
@@ -656,11 +694,13 @@ const TrailManagement = () => {
       if (allData.success && allData.data) {
         setUsers(allData.data);
       } else {
-        setErrorMessage(allData.message ?? "Failed to fetch users");
+        setErrorMessage(
+          allData.message ?? AppFailureToastMessages.ACADEMIC_COACH_STUDENT_FETCH,
+        );
       }
-    } catch (error) {
-      setErrorMessage("An unexpected error occurred");
-      console.error("An unexpected error occurred", error);
+    } catch {
+      setErrorMessage(AppValidationMessages.ERROR_MESSAGES.UNEXPECTED_ERROR);
+      toast.error(AppValidationMessages.ERROR_MESSAGES.UNEXPECTED_ERROR);
     }
   };
 
@@ -753,7 +793,7 @@ const TrailManagement = () => {
   if (errorMessage) {
     return (
       <div className="min-h-screen flex items-center justify-center text-xl font-semibold text-red-600">
-        {errorMessage === "Failed to fetch users" ? "Not Found" : errorMessage}
+        {errorMessage}
       </div>
     );
   }

@@ -71,6 +71,8 @@ GROWTH_FETCH:
   MEETING_SCHEDULE_UPDATE_FAILED: "Unable to complete meeting update. Please try again.",
   ACCESS_UPDATED: "Access updated successfully!",
   ACCESS_UPDATE_FAILED: "Failed to update access",
+  ACADEMIC_COACH_EVALUATION_FETCH: "Unable to fetch evaluation data",
+  ACADEMIC_COACH_STUDENT_FETCH: "Unable to fetch student list",
 
 });
 

@@ -130,12 +130,17 @@ TEACHER_MEETING: {
   MEETING_ID_REQUIRED: "Meeting ID is missing"
 },
 
-EVALUATION: {
-  PREFERRED_HOURS_REQUIRED: "Please select preferred hours first",
-  WEEKLY_HOUR_LIMIT: "You've reached your weekly hour limit."
-  ,
-  DUPLICATE_SLOT: "Slot already added",
-},
+  EVALUATION: {
+    PREFERRED_HOURS_REQUIRED: "Please select preferred hours first",
+    WEEKLY_HOUR_LIMIT: "You've reached your weekly hour limit."
+    ,
+    DUPLICATE_SLOT: "Slot already added",
+  },
+
+  ACADEMIC_COACH: {
+    NO_STUDENTS_FOUND: "No students found",
+    NO_EVALUATION_DATA: "No evaluation data available",
+  },
 
 APPLICANT: {
     FIRST_NAME: {

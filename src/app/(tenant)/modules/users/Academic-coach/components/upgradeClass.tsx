@@ -95,13 +95,6 @@ export default function UpgradeClassForm({ onClose }: Readonly<Props>) {
       socket.off("academicTeacherWeeklySlotsListResponse", handleResponse);
     };
   }, [startDate, selectedTeacher]);
-  useEffect(() => {
-    setSelectedTeacher({
-      teacherId: "686024410f28c07d6fe0dc27",
-      teacherName: "Rohit",
-      teacherEmail: "rohitsharma@gmail.com",
-    });
-  }, []);
   const buildWeeklySlots = () => {
     const map: WeeklySlotMap = {};
     schedule.forEach((item) => {
