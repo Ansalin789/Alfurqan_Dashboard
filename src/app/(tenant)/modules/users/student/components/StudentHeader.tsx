@@ -8,6 +8,9 @@ import { getSocket } from "@/app/utils/socket";
 import axios from "axios";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import "react-toastify/dist/ReactToastify.css";
 
 type Props = {
   readonly currentSection: string;
@@ -186,7 +189,7 @@ export default function StudentHeader({
       if (token) {
         fetchNotifications(token);
       } else {
-        console.log("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, [userId]);

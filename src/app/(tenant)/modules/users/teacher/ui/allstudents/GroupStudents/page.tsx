@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import SuccessPopup from "@/app/(tenant)/modules/users/admin-main/components/successPopup";
 import FailedPopup from "@/app/(tenant)/modules/users/admin-main/components/failedPopup";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 export interface AssignmentItem {
   assignmentId?: string;
   assignmentType: string;
@@ -715,7 +716,7 @@ const GroupStudents = () => {
   }) => {
     try {
       if (!selectedAssignments.length) {
-        setFailedMessage("Please select at least one assignment");
+        setFailedMessage(AppValidationMessages.ASSIGNMENT.SELECT_REQUIRED);
         setFailed(true);
         return;
       }

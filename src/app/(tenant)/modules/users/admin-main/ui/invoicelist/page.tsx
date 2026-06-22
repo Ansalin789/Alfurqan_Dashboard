@@ -8,6 +8,9 @@ import { Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 import AdminHeader from "../../components/AdminHeader";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import "react-toastify/dist/ReactToastify.css";
 import BaseLayout4 from "../../components/BaseLayout4";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
@@ -68,7 +71,7 @@ useEffect(() => {
   if (token) {
     fetchInvoice(token); // Or call the function that performs the GET request
   } else {
-    console.log("No auth token found.");
+    toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
   }
   if (typeof window !== "undefined") {
       const roleAccessRaw = localStorage.getItem("AdminRolePermission");

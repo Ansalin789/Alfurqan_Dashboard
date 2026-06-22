@@ -105,15 +105,16 @@ const SignIn: React.FC = () => {
       if (error.response) {
         const { status, data } = error.response;
         if (status === 404) {
-          setError("Email not found");
-          toast.error("Email not found");
+          toast.error(AppValidationMessages.ERROR_MESSAGES.MISSING_EMAIL);
+          setError(AppValidationMessages.ERROR_MESSAGES.MISSING_EMAIL);
         } else {
-          setError(data.message || "Login failed. Please try again later.");
-          toast.error(data.message || "Login failed. Please try again later.");
+          const msg = data.message || AppValidationMessages.ERROR_MESSAGES.LOGIN_FAILED;
+          setError(msg);
+          toast.error(msg);
         }
       } else {
-        setError("Login failed. Please try again later.");
-        toast.error(AppFailureToastMessages.UNEXPECTED_ERROR + " Login failed.");
+        toast.error(AppValidationMessages.ERROR_MESSAGES.LOGIN_FAILED);
+        setError(AppValidationMessages.ERROR_MESSAGES.LOGIN_FAILED);
       }
     } finally {
       setLoading(false);
@@ -190,7 +191,8 @@ const SignIn: React.FC = () => {
     const emaildata = await getGoogleUserInfo(credential);
 
     if (!emaildata) {
-      setError("Failed to retrieve user information from Google.");
+      toast.error(AppValidationMessages.ERROR_MESSAGES.UNEXPECTED_ERROR);
+      setError(AppValidationMessages.ERROR_MESSAGES.UNEXPECTED_ERROR);
       return;
     }
 
@@ -241,12 +243,13 @@ const SignIn: React.FC = () => {
         });
         router.push("/modules/users/student/ui/dashboard");
       } else {
-        setError("Email not found");
+        toast.error(AppValidationMessages.ERROR_MESSAGES.MISSING_EMAIL);
+        setError(AppValidationMessages.ERROR_MESSAGES.MISSING_EMAIL);
         console.log(result?.message);
       }
       } catch (error) {
         toast.error(AppFailureToastMessages.UNEXPECTED_ERROR + " Please try again.");
-        setError("An unexpected error occurred. Please try again.");
+        setError(AppValidationMessages.ERROR_MESSAGES.UNEXPECTED_ERROR);
       } finally {
       setLoading(false);
     }

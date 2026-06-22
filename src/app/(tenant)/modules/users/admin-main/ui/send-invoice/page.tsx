@@ -5,6 +5,7 @@ import { File, MapPin, Phone, Upload, X } from "lucide-react";
 import BaseLayout4 from "@/app/(tenant)/modules/users/admin-main/components/BaseLayout4";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 import { Document } from "mongoose";
 import { IoLocationSharp } from "react-icons/io5";
 import { MdEmail } from "react-icons/md";
@@ -165,7 +166,7 @@ export default function InvoicePage() {
     if (token) {
       fetchStudents(token); // Or call the function that performs the GET request
     } else {
-      console.log("No auth token found.");
+      toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
     }
   }, []);
   const fetchStudents = async (token: string) => {

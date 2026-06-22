@@ -7,6 +7,7 @@ import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/suc
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 import axios, { AxiosError } from "axios";
 import AdminHeader from "@/app/(tenant)/modules/users/admin-main/components/AdminHeader";
 import BaseLayout4 from "../../../../components/BaseLayout4";
@@ -152,7 +153,7 @@ const Page = () => {
     if (token) {
       fetchAssignments(courseId, levelId, token);
     } else {
-      console.log("No auth token found.");
+      toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
     }
     if (typeof window !== "undefined") {
       const roleAccessRaw = localStorage.getItem("AdminRolePermission");
@@ -248,7 +249,7 @@ const Page = () => {
 
     if (form.answerType === "trueorfalse") {
       if (form.correctAnswer !== "True" && form.correctAnswer !== "False") {
-        errors.push("Please select True or False as the correct answer.");
+        errors.push(AppValidationMessages.ASSIGNMENT.TRUE_FALSE_REQUIRED);
       }
     }
 

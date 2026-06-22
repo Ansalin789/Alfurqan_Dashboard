@@ -6,6 +6,9 @@ import { PieChart, Pie, Cell } from "recharts";
 import { useRouter } from "next/navigation";
 import Pagination from "@/components/Pagination";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import "react-toastify/dist/ReactToastify.css";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || `${AppApiEndpoints.API_END_POINT}`; // Fallback to AppApiEndpoints if env variable is not set
 
@@ -361,7 +364,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
       if (token) {
         fetchStudentDetails(token, studentId);
       } else {
-        console.log("No auth token found for fetchStudentDetails.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, [studentId]);
@@ -416,7 +419,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId, courseName, userId
       if (token) {
         fetchClassSchedule(token, studentId);
       } else {
-        console.log("No auth token found for fetchClassSchedule."); // Modified message
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, [studentId]); // Changed dependency from [] to [studentId]

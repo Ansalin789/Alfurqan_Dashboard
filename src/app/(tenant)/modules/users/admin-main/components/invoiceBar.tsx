@@ -13,6 +13,9 @@ import {
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import "react-toastify/dist/ReactToastify.css";
 
 type InvoiceMonthData = {
     date: string;
@@ -34,9 +37,9 @@ const ApplicationChart = () => {
       }
         if (token) {
           fetchMonthlyInvoices(token); // call your function with token
-        } else {
-          console.log("No auth token found.");
-        }
+          } else {
+            toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
+          }
       }, []);
       
       const fetchMonthlyInvoices = async (token: string) => {

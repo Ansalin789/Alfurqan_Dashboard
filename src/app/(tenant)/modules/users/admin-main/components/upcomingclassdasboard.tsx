@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import "react-toastify/dist/ReactToastify.css";
 
 interface ClassItem {
   id: string;
@@ -27,7 +30,7 @@ const UpcomingClasses: React.FC = () => {
       if (token) {
         fetchMeetings(token);
       } else {
-        console.log("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, []);

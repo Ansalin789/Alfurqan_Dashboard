@@ -6,6 +6,7 @@ import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import BaseLayout4 from "../../components/BaseLayout4";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
 interface ClassSchedule {
@@ -65,7 +66,7 @@ export default function StudentClassPage({ searchParams }: { searchParams: { stu
       try {
         const token = localStorage.getItem("AdminAuthToken");
         if (!token) {
-          setError("No auth token found.");
+          setError(AppValidationMessages.AUTH.TOKEN_REQUIRED);
           setLoading(false);
           return;
         }

@@ -13,6 +13,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export interface RoleModuleAccess {
   read: boolean;
@@ -198,7 +200,8 @@ const SignIn: React.FC = () => {
       const userEmail: string = data.email ?? data.userEmail ?? "";
 
       if (!role?.includes("TEACHER")) {
-        setLoginError(AppFailureToastMessages.TEACHER_SIGNIN);
+        toast.error(AppFailureToastMessages.TEACHER_SIGNIN);
+        setError(AppFailureToastMessages.TEACHER_SIGNIN);
         return;
       }
 
@@ -217,16 +220,20 @@ const SignIn: React.FC = () => {
         const { status, data } = error.response;
 
         if (status === 404) {
-          setLoginError("Email not found");
+          toast.error(AppValidationMessages.ERROR_MESSAGES.MISSING_EMAIL);
+          setError(AppValidationMessages.ERROR_MESSAGES.MISSING_EMAIL);
         } else if (status === 401) {
-          setLoginError(
-            data.message ?? "User already logged in on another device/session"
-          );
+          const msg = data.message ?? "User already logged in on another device/session";
+          toast.error(msg);
+          setError(msg);
         } else {
-          setLoginError(data.message ?? "Login failed. Please try again later.");
+          const msg = data.message ?? AppValidationMessages.ERROR_MESSAGES.LOGIN_FAILED;
+          toast.error(msg);
+          setError(msg);
         }
       } else {
-        setLoginError("Network error. Please try again later.");
+        toast.error(AppValidationMessages.ERROR_MESSAGES.NETWORK_ERROR);
+        setError(AppValidationMessages.ERROR_MESSAGES.NETWORK_ERROR);
       }
     } finally {
       setLoading(false);
@@ -255,7 +262,8 @@ const SignIn: React.FC = () => {
     const { credential } = response;
     if (!credential) {
       console.error("Google login failed: No credential received");
-      setLoginError("Google login failed: No credential received");
+      toast.error(AppValidationMessages.ERROR_MESSAGES.UNEXPECTED_ERROR);
+      setError(AppValidationMessages.ERROR_MESSAGES.UNEXPECTED_ERROR);
       return;
     }
     const emaildata = await getGoogleUserInfo(credential);
@@ -304,11 +312,13 @@ const SignIn: React.FC = () => {
         localStorage.setItem("TeacherId", result.data._id);
         router.push("/modules/users/teacher/ui/dashboard");
       } else {
-        setLoginError("Access denied: Not an Teacher");
+        toast.error(AppValidationMessages.ERROR_MESSAGES.PERMISSION_DENIED);
+        setError(AppValidationMessages.ERROR_MESSAGES.PERMISSION_DENIED);
       }
     } catch (error) {
       console.error("Error during email verification:", error);
-      setLoginError("An unexpected error occurred. Please try again.");
+      toast.error(AppValidationMessages.ERROR_MESSAGES.UNEXPECTED_ERROR);
+      setError(AppValidationMessages.ERROR_MESSAGES.UNEXPECTED_ERROR);
     } finally {
       setLoading(false);
     }
@@ -318,7 +328,8 @@ const SignIn: React.FC = () => {
 
   const handleGoogleFailure = (error?: any) => {
     console.error("Google login failed:", error);
-    setLoginError("Google login failed. Please try again.");
+    toast.error(AppValidationMessages.ERROR_MESSAGES.GOOGLE_LOGIN_FAILED);
+    setError(AppValidationMessages.ERROR_MESSAGES.GOOGLE_LOGIN_FAILED);
   };
 
   const login = useGoogleLogin({

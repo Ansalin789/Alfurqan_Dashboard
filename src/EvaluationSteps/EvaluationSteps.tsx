@@ -18,6 +18,7 @@ import moment from "moment";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 
 interface AcademicCoach {
   academicCoachId: string; // Assuming it's a string or number
@@ -1007,12 +1008,12 @@ const Step5 = ({
                 <button
                   key={plan.label}
                   className="group relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-105"
-                  onClick={() => {
+                    onClick={() => {
                     if (selectedHours > 0) {
                       setSelectedPlan(plan.label);
                       setSubscriptionName(plan.label); // Set the selected plan when clicked
                     } else {
-                      alert("Please select preferred hours first"); // Alert if no hours are selected
+                      toast.error(AppValidationMessages.EVALUATION.PREFERRED_HOURS_REQUIRED);
                     }
                   }}
                 >
@@ -1267,7 +1268,7 @@ const Step6 = ({
     const remainingHours = weeklyHourLimit - totalHours;
 
     if (remainingHours === 0) {
-      toast.warning(" You've reached your weekly hour limit.", {
+      toast.warning(AppValidationMessages.EVALUATION.WEEKLY_HOUR_LIMIT, {
         className:
           "w-[340px] px-4 py-3 text-sm rounded-lg shadow bg-yellow-600 text-white",
       });
@@ -1400,7 +1401,7 @@ const Step6 = ({
 
   const handleAddSuggestedSlot = (day: string, from: string, to: string) => {
     if (calculateTotalHours() >= weeklyHourLimit) {
-      toast.warning(" You've reached your weekly hour limit.");
+      toast.warning(AppValidationMessages.EVALUATION.WEEKLY_HOUR_LIMIT);
       return;
     }
     const index = schedule.findIndex((item) => item.day === day);
@@ -1416,7 +1417,7 @@ const Step6 = ({
     );
 
     if (isDuplicate) {
-      alert("⛔ Already added.");
+      toast.error(AppValidationMessages.EVALUATION.DUPLICATE_SLOT);
       return;
     }
 

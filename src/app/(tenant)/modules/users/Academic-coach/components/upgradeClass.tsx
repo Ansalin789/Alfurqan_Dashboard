@@ -3,6 +3,7 @@
 import FailedPopup from "@/app/(tenant)/modules/users/supervisor/components/failedPopup";
 import SuccessPopup from "@/app/(tenant)/modules/users/supervisor/components/successPopup";
 import { getSocket } from "@/app/utils/socket";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 import {
   CalendarDays,
   CheckCircle,
@@ -137,7 +138,7 @@ export default function UpgradeClassForm({ onClose }: Readonly<Props>) {
     const remainingHours = weeklyHourLimit - totalHours;
 
     if (remainingHours === 0) {
-      toast.warning(" You've reached your weekly hour limit.", {
+      toast.warning(AppValidationMessages.EVALUATION.WEEKLY_HOUR_LIMIT, {
         className:
           "w-[340px] px-4 py-3 text-sm rounded-lg shadow bg-yellow-600 text-white",
       });
@@ -156,7 +157,7 @@ export default function UpgradeClassForm({ onClose }: Readonly<Props>) {
 
   const handleAddSuggestedSlot = (day: string, from: string, to: string) => {
     if (calculateTotalHours() >= weeklyHourLimit) {
-      toast.warning(" You've reached your weekly hour limit.");
+      toast.warning(AppValidationMessages.EVALUATION.WEEKLY_HOUR_LIMIT);
       return;
     }
     const index = schedule.findIndex((item) => item.day === day);
@@ -172,7 +173,7 @@ export default function UpgradeClassForm({ onClose }: Readonly<Props>) {
     );
 
     if (isDuplicate) {
-      alert("⛔ Already added.");
+      toast.error(AppValidationMessages.EVALUATION.DUPLICATE_SLOT);
       return;
     }
 

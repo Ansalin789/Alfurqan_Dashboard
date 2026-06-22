@@ -2,6 +2,9 @@
 import { useState, useEffect } from "react"
 import { Check, Clock, X } from "lucide-react"
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints"
+import { toast } from "react-toastify"
+import { AppValidationMessages } from "@/app/_components/contents/validation_message"
+import "react-toastify/dist/ReactToastify.css"
 
 interface TrialRequestData {
   totalTrialRequest: number
@@ -22,7 +25,7 @@ export default function TrialRequests() {
       if (token) {
         fetchData(token);
       } else {
-        console.log("No auth token found.");
+          toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, []);

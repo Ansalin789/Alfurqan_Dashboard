@@ -6,6 +6,8 @@ import 'react-calendar/dist/Calendar.css';
 import './Calendaradmin.css';
 import { useRouter } from 'next/navigation';
 import { AppApiEndpoints } from '@/app/_components/contents/api-endpoints';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface Event {
   title: string;
@@ -48,7 +50,7 @@ const Academic: React.FC = () => {
       if (token) {
         fetchMeetings(token);
       } else {
-        console.log("No auth token found.");
+          toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, []);

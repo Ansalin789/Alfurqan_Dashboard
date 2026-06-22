@@ -15,6 +15,10 @@ import { MdTune } from "react-icons/md";
 import { setTime } from "react-datepicker/dist/date_utils";
 import { getSocket } from "@/app/utils/socket";
 import AdminHeader from "../../components/AdminHeader";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import { AppFailureToastMessages } from "@/app/_components/contents/toast_message";
+import "react-toastify/dist/ReactToastify.css";
 import SuccessPopup from "../../components/successPopup";
 import FailedPopup from "../../components/failedPopup";
 import NextMeetingSchedule from "../../components/NextMeetingSchedule";
@@ -339,13 +343,13 @@ const Meetings = () => {
       !rescheduleReason ||
       !selectedItemId
     ) {
-      alert("Please fill all fields");
+      toast.error(AppValidationMessages.MEETING.FILL_ALL_FIELDS);
       return;
     }
 
     const endTime = rescheduleEndTime;
     if (!endTime) {
-      alert("End time is missing for this meeting.");
+      toast.error(AppValidationMessages.MEETING.END_TIME_REQUIRED);
       return;
     }
 
@@ -389,7 +393,7 @@ const Meetings = () => {
       }, 2000);
     } catch (error) {
       console.error("Error during rescheduling:", error);
-      alert("Could not update meeting. Please try again.");
+      toast.error(AppFailureToastMessages.MEETING_RESCHEDULE);
     }
   };
 

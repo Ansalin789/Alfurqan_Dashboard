@@ -7,6 +7,9 @@ import BaseLayout1 from "@/app/(tenant)/modules/users/Academic-coach/components/
 import { useSearchParams } from "next/navigation";
 import AcademicHeader from "../../components/academicHeader";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import "react-toastify/dist/ReactToastify.css";
 interface Attendance {
   id: string | null;
   studentId: string;
@@ -213,9 +216,8 @@ export default function Page() {
         }
 
         setAttendance(tempAttendance);
-        console.log("Attendance list initialized:", tempAttendance);
       } catch (err) {
-        console.error("❌ Error loading meeting:", err);
+        toast.error(AppValidationMessages.ERROR_MESSAGES.FAILED_TO_UPDATE);
       }
     };
 
@@ -228,12 +230,10 @@ export default function Page() {
 
   // Function to handle API update
   const handleMeetingMinutesUpdate = async () => {
-    console.log("📌 Submit clicked");
     let duration = "";
     if (startTime && endTime) {
       duration = calculateDuration(startTime, endTime);
     } else {
-      console.warn("Missing start or end time for duration calculation");
     }
 
     const normalizedTeachers = Array.isArray(classData?.teacher)
@@ -252,16 +252,13 @@ const payload = {
   })),
 };
 
-console.log("Final Payload:", payload);
-
-
     try {
       const token =
         typeof window !== "undefined"
           ? localStorage.getItem("AcademicCoachAuthToken")
           : null;
       if (!token) {
-        console.error("❌ AcademicCoachAuthToken not found");
+        toast.error(AppValidationMessages.DATA_FETCH.MISSING_TOKEN);
         return;
       }
 
@@ -276,18 +273,16 @@ console.log("Final Payload:", payload);
           body: JSON.stringify(payload),
         },
       );
-      console.log("pay", payload);
 
       if (!response.ok) {
-        throw new Error("Failed to update meeting minutes");
+        throw new Error(AppValidationMessages.ERROR_MESSAGES.FAILED_TO_UPDATE);
       }
 
       const result = await response.json();
-      console.log("✅ Meeting Minutes Updated:", result);
 
       setMeetingUpdate(false); // close modal
     } catch (error) {
-      console.error("❌ Error updating meeting minutes:", error);
+      toast.error(AppValidationMessages.ERROR_MESSAGES.FAILED_TO_UPDATE);
     }
   };
   const calculateDuration = (startTime: string, endTime: string): string => {

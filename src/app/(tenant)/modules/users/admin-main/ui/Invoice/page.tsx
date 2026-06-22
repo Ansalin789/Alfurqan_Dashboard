@@ -46,6 +46,9 @@ import { useRouter } from "next/navigation";
 import InvoicesDueByDays from "../../components/invoicedue";
 import { MdTune } from "react-icons/md";
 import AdminHeader from "../../components/AdminHeader";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import "react-toastify/dist/ReactToastify.css";
 import BaseLayout4 from "../../components/BaseLayout4";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
 
@@ -108,7 +111,7 @@ export default function Page() {
     if (token) {
       fetchInvoice(token); // Or call the function that performs the GET request
     } else {
-      console.log("No auth token found.");
+      toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
     }
     if (typeof window !== "undefined") {
       const roleAccessRaw = localStorage.getItem("AdminRolePermission");
@@ -236,7 +239,7 @@ export default function Page() {
     if (token) {
       fetchInvoiceCounts(token); // call your function with token
     } else {
-      console.log("No auth token found.");
+      toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
     }
   }, []);
   const fetchInvoiceCounts = async (token: string) => {

@@ -204,7 +204,7 @@ console.error(error);
       if (token) {
         fetchNotifications(token);
       } else {
-        console.log("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, [userId]);

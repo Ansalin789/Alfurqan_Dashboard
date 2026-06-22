@@ -16,6 +16,9 @@ import {
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import "react-toastify/dist/ReactToastify.css";
 
 interface ChartDataItem {
   name: string;
@@ -48,7 +51,7 @@ const StudentsRecord = () => {
         fetchGenderData(token);
         fetchCountryStats(token);
       } else {
-        console.log("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, []);

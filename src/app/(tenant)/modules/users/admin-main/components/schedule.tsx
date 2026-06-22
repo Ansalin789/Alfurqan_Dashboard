@@ -1,6 +1,9 @@
 "use client";
 
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import "react-toastify/dist/ReactToastify.css";
 import { Card } from "@nextui-org/react";
 import { useState, useEffect } from "react";
 import {
@@ -67,7 +70,7 @@ const DashboardClasses = () => {
       if (token) {
         fetchClassData(token);
       } else {
-        console.log("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, []);
@@ -104,7 +107,7 @@ const DashboardClasses = () => {
       if (token) {
         fetchClassData(token);
       } else {
-        console.log("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   },[duration]);

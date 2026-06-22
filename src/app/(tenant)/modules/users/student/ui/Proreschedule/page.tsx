@@ -16,6 +16,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import StudentHeader from "../../components/StudentHeader";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppInfoToastMessages } from "@/app/_components/contents/toast_message";
 
 interface ClassSchedule {
   _v: { __v: any };
@@ -134,7 +135,7 @@ const TeachersSchedule = () => {
     },
   };
   useEffect(() => {
-    toast.info("Please select a new date and time for rescheduling your class");
+    toast.info(AppInfoToastMessages.RESCHEDULE_PROMPT);
   }, []);
 
   useEffect(() => {

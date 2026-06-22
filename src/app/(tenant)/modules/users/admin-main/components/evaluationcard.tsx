@@ -17,6 +17,9 @@ import {
   TooltipProps,
 } from "recharts";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import "react-toastify/dist/ReactToastify.css";
 
 interface CourseStats {
   totalPercentage: number;
@@ -49,7 +52,7 @@ const TotalRequestChart = () => {
       if (token) {
         fetchData(token);
       } else {
-        console.log("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, []);
@@ -166,7 +169,7 @@ const CountriesCard = () => {
       if (token) {
         fetchData(token); // pass token into the function
       } else {
-        console.log("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, []);
@@ -256,7 +259,7 @@ const PreferredTeachersCard = () => {
       if (token) {
         fetchData(token); // pass token into the function
       } else {
-        console.log("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, []);
@@ -462,7 +465,7 @@ const CoursesChart = () => {
       if (token) {
         fetchCourseData(token); // pass token into the function
       } else {
-        console.log("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, []);

@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { FaRegSquare, FaRegCheckSquare } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import { AppFailureToastMessages, appSuccessToastMessages } from "@/app/_components/contents/toast_message";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 import { FaRegMinusSquare } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 import BaseLayout4 from "../../../components/BaseLayout4";
@@ -74,7 +75,7 @@ const TeacherModuleAccess = () => {
     if (token) {
       fetchEmployeeData(token);
     } else {
-      console.log("No auth token found.");
+      toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
     }
   }, [employeeId]);
 

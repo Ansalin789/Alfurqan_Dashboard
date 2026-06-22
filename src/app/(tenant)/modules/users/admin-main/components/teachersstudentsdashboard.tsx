@@ -1,5 +1,8 @@
 "use client";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import "react-toastify/dist/ReactToastify.css";
 import { useEffect, useState } from "react";
 
 type TeacherAPI = {
@@ -28,7 +31,7 @@ export default function TeachersStudents() {
       if (token) {
         fetchTeacherStudentCount(token);
       } else {
-        console.log("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, []);

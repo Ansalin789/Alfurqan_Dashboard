@@ -4,6 +4,9 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import AdminHeader from "../../components/AdminHeader";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import "react-toastify/dist/ReactToastify.css";
 import Pagination from "@/components/Pagination";
 import { MdTune } from "react-icons/md";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -142,7 +145,7 @@ const [meetingFilters, setMeetingFilters] = useState({
     if (token) {
       fetchStudents(token); // call your function with token
     } else {
-      console.log("No auth token found.");
+      toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
     }
   }, []);
   const fetchStudents = async (token: string) => {

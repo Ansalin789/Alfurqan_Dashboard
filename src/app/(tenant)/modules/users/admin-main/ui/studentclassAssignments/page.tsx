@@ -7,6 +7,9 @@ import AdminHeader from "../../components/AdminHeader";
 import Pagination from "@/components/Pagination";
 import BaseLayout4 from "../../components/BaseLayout4";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import "react-toastify/dist/ReactToastify.css";
 // Interfaces
 interface Assignment {
   _id?: string;
@@ -79,7 +82,7 @@ const StudentClassAssignmentsPage = () => {
         const token = localStorage.getItem("AdminAuthToken");
 
         if (!token || !studentId) {
-          console.error("Missing token or student ID");
+          toast.error(AppValidationMessages.DATA_FETCH.MISSING_CREDENTIALS);
           return;
         }
 
@@ -121,7 +124,7 @@ const StudentClassAssignmentsPage = () => {
 
   // Calculate the display range
         if (!token || !studentId) {
-          console.error("Missing token or student ID");
+          toast.error(AppValidationMessages.DATA_FETCH.MISSING_CREDENTIALS);
           return;
         }
 

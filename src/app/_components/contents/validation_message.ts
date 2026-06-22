@@ -34,6 +34,7 @@ export const AppValidationMessages = Object.freeze({
 
     DESCRIPTION_REQUIRED: "Description is required",
     DESCRIPTION_MIN: "Description must be at least 10 characters long",
+    FILL_ALL_FIELDS: "Please fill all fields",
   },
 
   RESCHEDULE: {
@@ -70,8 +71,10 @@ EARNINGS: {
 ASSIGNMENT: {
   TEACHER_REQUIRED: "Teacher information not found",
   NO_ASSIGNMENT_DATA: "No assignment data available",
+  SELECT_REQUIRED: "Please select at least one assignment",
   ASSIGNMENT_NAME_REQUIRED: "Assignment name is required",
   ASSIGNMENT_TYPE_REQUIRED: "Assignment type is required",
+  TRUE_FALSE_REQUIRED: "Please select True or False as the correct answer",
   QUESTION_REQUIRED: "Question is required",
   ANSWER_REQUIRED: "You must answer at least one question before submitting.",
   LEAVE_TYPE_REQUIRED: "Please select leave type",
@@ -125,6 +128,13 @@ TEACHER_MEETING: {
   RESCHEDULE_DATE_REQUIRED: "Please select reschedule date",
   RESCHEDULE_TIME_REQUIRED: "Please select reschedule time",
   MEETING_ID_REQUIRED: "Meeting ID is missing"
+},
+
+EVALUATION: {
+  PREFERRED_HOURS_REQUIRED: "Please select preferred hours first",
+  WEEKLY_HOUR_LIMIT: "You've reached your weekly hour limit."
+  ,
+  DUPLICATE_SLOT: "Slot already added",
 },
 
 APPLICANT: {
@@ -191,6 +201,62 @@ APPLICANT: {
     DESIGNATION_REQUIRED: "Designation is required",
     DEPARTMENT_REQUIRED: "Department is required",
     COMMENTS_REQUIRED: "Comments are required",
+  },
+
+  DATA_FETCH: {
+    MISSING_CREDENTIALS: "Missing token or student ID",
+    MISSING_TOKEN: "Authentication token not found",
+    MISSING_ID: "Required ID not found",
+    MISSING_DATA: "Required data is missing",
+    FAILED_ASSIGNMENTS: "Failed to fetch assignments",
+    FAILED_NOTIFICATIONS: "Failed to fetch notifications",
+    FAILED_STUDENTS: "Failed to fetch students",
+    FAILED_TEACHERS: "Failed to fetch teachers",
+    FAILED_SCHEDULE: "Failed to fetch class schedule",
+    FAILED_MEETINGS: "Failed to fetch meetings",
+    FAILED_PROFILE: "Failed to fetch profile information",
+    FAILED_INVOICES: "Failed to fetch invoices",
+    FAILED_KNOWLEDGE: "Failed to fetch knowledge base",
+    FAILED_RECORDED_CLASSES: "Failed to fetch recorded classes",
+    INVALID_DATA_STRUCTURE: "Invalid data structure received from API",
+  },
+
+  ERROR_MESSAGES: {
+    MISSING_STUDENT_ID: "Missing student ID",
+    MISSING_TEACHER_ID: "Teacher ID not found",
+    MISSING_ACADEMIC_COACH_ID: "Academic Coach ID not found",
+    MISSING_AUTH_TOKEN: "Authentication token not found",
+    MISSING_START_TIME: "Start time is missing",
+    MISSING_END_TIME: "End time is missing",
+    MISSING_CLASS_DATA: "Missing class data or start time",
+    MISSING_DURATION: "Missing start or end time for duration calculation",
+    MISSING_REQUIRED_FIELDS: "Please fill all required fields",
+    MISSING_MEETING_ID: "No meeting found for this ID",
+    MISSING_MEETING_DATA: "Meeting data is missing",
+    MISSING_EMAIL: "Email not found",
+    HTTP_ERROR: "HTTP error occurred",
+    UNEXPECTED_ERROR: "An unexpected error occurred. Please try again.",
+    NETWORK_ERROR: "Network error. Please try again later.",
+    SESSION_EXPIRED: "Session expired. Please login again.",
+    PERMISSION_DENIED: "Permission denied",
+    NOT_FOUND: "Resource not found",
+    SERVER_ERROR: "Server error occurred",
+    LOGIN_FAILED: "Login failed. Please try again later.",
+    GOOGLE_LOGIN_FAILED: "Google login failed. Please try again.",
+    FAILED_TO_UPDATE: "Failed to update. Please try again.",
+    FAILED_TO_SAVE: "Failed to save changes. Please try again.",
+    FAILED_TO_MARK_SEEN: "Failed to mark as seen",
+    FAILED_TO_MARK_READ: "Failed to mark as read",
+  },
+
+  FORM: {
+    FILL_ALL_FIELDS: "Please fill all required fields",
+    CHECK_FORM_INPUTS: "Please check the form inputs",
+    INVALID_FORM: "Invalid form data",
+  },
+
+  AUDIO: {
+    PLAYBACK_FAILED: "Failed to play audio",
   },
 });
 

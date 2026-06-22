@@ -11,6 +11,7 @@ import { AxiosError } from "axios";
 import AdminHeader from "@/app/(tenant)/modules/users/admin-main/components/AdminHeader";
 import BaseLayout4 from "../../../../components/BaseLayout4";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
 
 interface Course {
   courseId: string;
@@ -69,14 +70,13 @@ const Page = () => {
         : null;
 
     if (!token) {
-      console.error("❌ AdminAuthToken not found");
+      toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       return;
     }
-    if (token) {
-      fetchLevels(token); // call your function with token
-    } else {
-      console.log("No auth token found.");
-    }
+
+    // Fetch levels using the valid token
+    fetchLevels(token);
+
     if (typeof window !== "undefined") {
       const roleAccessRaw = localStorage.getItem("AdminRolePermission");
 

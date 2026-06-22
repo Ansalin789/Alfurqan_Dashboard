@@ -94,3 +94,8 @@ export const appSuccessToastMessages = Object.freeze({
   QUESTION_ADDED: "Question added successfully",
 });
 
+export const AppInfoToastMessages = Object.freeze({
+  RESCHEDULE_PROMPT: "Please select a new date and time for rescheduling your class",
+  WEEKLY_HOUR_LIMIT: "You've reached your weekly hour limit.",
+});
+

@@ -11,6 +11,9 @@ import axios from "axios";
 import { AlertCircle, ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import "react-toastify/dist/ReactToastify.css";
 
 export interface RoleModuleAccess {
   read: boolean;
@@ -195,7 +198,8 @@ const SignIn: React.FC = () => {
       const userEmail: string = data.email ?? data.userEmail ?? "";
 
       if (!role?.includes("ACADEMICCOACH")) {
-        setLoginError("Only Academic Coaches are allowed to log in.");
+        toast.error(AppValidationMessages.ERROR_MESSAGES.PERMISSION_DENIED);
+        setError(AppValidationMessages.ERROR_MESSAGES.PERMISSION_DENIED);
         return;
       }
 
@@ -213,16 +217,20 @@ router.push("/modules/users/Academic-coach/ui/dashboard");
         const { status, data } = error.response;
 
         if (status === 404) {
-          setLoginError("Email not found");
+          toast.error(AppValidationMessages.ERROR_MESSAGES.MISSING_EMAIL);
+          setError(AppValidationMessages.ERROR_MESSAGES.MISSING_EMAIL);
         } else if (status === 401) {
-          setLoginError(
-            data.message ?? "User already logged in on another device/session"
-          );
+          const errorMsg = data.message ?? "User already logged in on another device/session";
+          toast.error(errorMsg);
+          setError(errorMsg);
         } else {
-          setLoginError(data.message ?? "Login failed. Please try again later.");
+          const errorMsg = data.message ?? AppValidationMessages.ERROR_MESSAGES.LOGIN_FAILED;
+          toast.error(errorMsg);
+          setError(errorMsg);
         }
       } else {
-        setLoginError("Network error. Please try again later.");
+        toast.error(AppValidationMessages.ERROR_MESSAGES.NETWORK_ERROR);
+        setError(AppValidationMessages.ERROR_MESSAGES.NETWORK_ERROR);
       }
     } finally {
       setLoading(false);
@@ -251,7 +259,8 @@ router.push("/modules/users/Academic-coach/ui/dashboard");
     const { credential } = response;
     if (!credential) {
       console.error("Google login failed: No credential received");
-      setLoginError("Google login failed: No credential received");
+      toast.error(AppValidationMessages.ERROR_MESSAGES.UNEXPECTED_ERROR);
+      setError(AppValidationMessages.ERROR_MESSAGES.UNEXPECTED_ERROR);
       return;
     }
     const emaildata = await getGoogleUserInfo(credential);
@@ -297,11 +306,13 @@ router.push("/modules/users/Academic-coach/ui/dashboard");
         localStorage.setItem("AcademicCoachPortalName", result.data.username);
 router.push("/modules/users/Academic-coach/ui/dashboard");
       } else {
-        setLoginError("Access denied: Not an Academic Coach");
+        toast.error(AppValidationMessages.ERROR_MESSAGES.PERMISSION_DENIED);
+        setError(AppValidationMessages.ERROR_MESSAGES.PERMISSION_DENIED);
       }
     } catch (error) {
       console.error("Error during email verification:", error);
-      setLoginError("An unexpected error occurred. Please try again.");
+      toast.error(AppValidationMessages.ERROR_MESSAGES.UNEXPECTED_ERROR);
+      setError(AppValidationMessages.ERROR_MESSAGES.UNEXPECTED_ERROR);
     } finally {
       setLoading(false);
     }
@@ -311,7 +322,8 @@ router.push("/modules/users/Academic-coach/ui/dashboard");
 
   const handleGoogleFailure = (error?: any) => {
     console.error("Google login failed:", error);
-    setLoginError("Google login failed. Please try again.");
+    toast.error(AppValidationMessages.ERROR_MESSAGES.GOOGLE_LOGIN_FAILED);
+    setError(AppValidationMessages.ERROR_MESSAGES.GOOGLE_LOGIN_FAILED);
   };
 
   const login = useGoogleLogin({

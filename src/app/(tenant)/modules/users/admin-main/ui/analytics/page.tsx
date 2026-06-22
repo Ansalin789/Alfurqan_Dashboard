@@ -22,6 +22,9 @@ import AdminHeader from "../../components/AdminHeader";
 import { TooltipProps } from "recharts";
 import BaseLayout4 from "../../components/BaseLayout4";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import "react-toastify/dist/ReactToastify.css";
 
 interface CountryStat {
   revenue: number;
@@ -96,9 +99,7 @@ const CustomDot = (props: DotProps & { payload?: any }) => {
 const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
   if (active && payload?.length) {
     return (
-      <div className="rounded-md p-2 text-xs border shadow-sm
-        bg-black text-white dark:bg-white dark:text-black
-        border-gray-300 dark:border-gray-700">
+      <div className="rounded-md p-2 text-xs border shadow-sm bg-black text-white dark:bg-white dark:text-black border-gray-300 dark:border-gray-700">
         <p className="font-semibold mb-1">{label}</p>
         {payload.map((entry, index) => (
           <p key={index} style={{ color: entry.stroke }}>
@@ -377,9 +378,9 @@ useEffect(()=>{
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('AdminAuthToken');
       if (token) {
-        fetchMeetings(token);
       } else {
-        alert("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, []);
@@ -416,12 +417,7 @@ useEffect(()=>{
       if (token) {
         fetchInvoices(token);
       } else {
-        alert("No auth token found.");
-      }
-    }
-  }, []);
-
-  const fetchVisitorData = async (token: string) => {
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
     try {
       const res = await fetch(`${AppApiEndpoints.API_END_POINT}${AppApiEndpoints.ANALYTICS.STUDENT_VISITOR}`, {
         headers: {
@@ -442,7 +438,7 @@ useEffect(()=>{
       if (token) {
         fetchVisitorData(token);
       } else {
-        alert("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, []);
@@ -490,12 +486,7 @@ useEffect(()=>{
       if (token) {
         fetchRevenueData(selectedYear, token);
       } else {
-        alert("No auth token found.");
-      }
-    }
-  }, [selectedYear]);
-
-  const maxRevenue = Math.max(...revenueDatas.map((d) => d.revenue), 0);
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
 
   return (
     <BaseLayout4>

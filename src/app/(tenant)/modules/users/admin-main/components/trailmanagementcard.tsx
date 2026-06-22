@@ -1,5 +1,8 @@
 "use client";
 import { AppApiEndpoints } from "@/app/_components/contents/api-endpoints";
+import { toast } from "react-toastify";
+import { AppValidationMessages } from "@/app/_components/contents/validation_message";
+import "react-toastify/dist/ReactToastify.css";
 import { useState, useEffect } from "react";
 
 
@@ -47,7 +50,7 @@ const TotalScheduledChart = () => {
       if (token) {
         fetchChartData(token);
       } else {
-        console.log("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, []);
@@ -192,7 +195,7 @@ const CoursesChart = () => {
       if (token) {
         fetchData(token); // pass token into the function
       } else {
-        console.log("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, []);
@@ -310,7 +313,7 @@ const PreferredTeachersCard = () => {
       if (token) {
         fetchData(token);
       } else {
-        console.log("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, []);
@@ -492,7 +495,7 @@ const TrialByTeachers = () => {
       if (token) {
         fetchData(token);
       } else {
-        console.log("No auth token found.");
+        toast.error(AppValidationMessages.AUTH.TOKEN_REQUIRED);
       }
     }
   }, []);
