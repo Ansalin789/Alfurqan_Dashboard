@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import TenantStats from "../../components/Tenant-Cards";
 import SupervisorHeader from "@/app/(tenant)/modules/users/supervisor/components/supervisorHeader";
 import BaseLayout3 from "@/app/(tenant)/modules/users/supervisor/components/BaseLayout3";
 import { MdTune } from "react-icons/md";
@@ -23,7 +22,7 @@ interface TenantType {
   status: string;
 }
 
-const page = () => {
+const TenantUserTable = () => {
   const router = useRouter();
 const [tenants, setTenants] = useState([
   {
@@ -167,10 +166,8 @@ const getPlanStyle = (plan: string) => {
 };
   return (
     <div>
-      <BaseLayout3>
-        <SupervisorHeader currentSection="Tenant Management" />
+      
 
-        <TenantStats />
 <br />
 
         <div className="md:p-0 mx-auto w-full">
@@ -179,30 +176,7 @@ const getPlanStyle = (plan: string) => {
               {/* Tabs */}
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
                 <div className="flex flex-wrap gap-4 font-semibold">
-  {tabOptions.map(({ type, label, count }) => (
-    <button
-      key={type}
-      onClick={() => setActiveTab(type)}
-      className={
-        activeTab === type
-          ? "text-[#576CBC] text-[18px] relative pb-1"
-          : "text-[#010E30] dark:text-white text-[18px]"
-      }
-      style={
-        activeTab === type
-          ? {
-              position: "relative",
-            }
-          : {}
-      }
-    >
-      {label} ({count})
-
-      {activeTab === type && (
-        <div className="absolute bottom-0 left-10 transform -translate-x-1/2 w-12 h-0.5 bg-[#576CBC] rounded-full" />
-      )}
-    </button>
-  ))}
+  Blackstone Academy Users
 </div>
               </div>
 
@@ -240,15 +214,13 @@ const getPlanStyle = (plan: string) => {
                   <thead className="text-[13px] bg-[#4C6993] text-white">
                     <tr>
                       {[
-                        "Tenant Name",
-                        "Domain",
-                        "Phone Number",
-                        "Email",
-                        "Start Date",
-                        "Plan",
-                        "User",
-                        "Renewal Date",
-                        "Tenant Status",
+                        "Users",
+                        "Email Id",
+                        "Role",
+                        "Department",
+                        "Status",
+                        "Created Date",
+                        
                         "Action",
                       ].map((header, idx) => (
                         <th
@@ -276,14 +248,6 @@ const getPlanStyle = (plan: string) => {
           {tenant.tenantName}
         </td>
 
-        <td className="px-3 py-3 text-[#3D8FDE] font-medium break-words text-[11px] text-left">
-          {tenant.domain}
-        </td>
-
-        <td className="px-3 py-3 break-words text-[11px] text-left">
-          {tenant.phoneNumber}
-        </td>
-
         <td className="px-3 py-3 break-words text-[11px] text-left">
           {tenant.email}
         </td>
@@ -292,23 +256,6 @@ const getPlanStyle = (plan: string) => {
           {tenant.startDate}
         </td>
 
-       <td className="px-4 py-4  text-left">
-  <span
-    className={`inline-flex items-center justify-center w-[90px] h-8 rounded-md text-xs font-medium ${getPlanStyle(
-      tenant.plan
-    )}`}
-  >
-    {tenant.plan}
-  </span>
-</td>
-
-        <td className="px-3 py-3 break-words text-[11px] text-left">
-          {tenant.users}
-        </td>
-
-        <td className="px-3 py-3 break-words text-[11px] text-left">
-          {tenant.renewalDate}
-        </td>
 
         <td className="px-3 py-3 break-words text-left">
   <span
@@ -318,6 +265,9 @@ const getPlanStyle = (plan: string) => {
   >
     {tenant.status}
   </span>
+        </td>
+         <td className="px-3 py-3 break-words text-[11px] text-left">
+          {tenant.renewalDate}
         </td>
 
        <td className="px-3 py-3 text-left relative text-[12px]">
@@ -481,9 +431,9 @@ const getPlanStyle = (plan: string) => {
     />
   </div>
 )}
-      </BaseLayout3>
+    
     </div>
   );
 };
 
-export default page;
+export default TenantUserTable;
