@@ -40,6 +40,7 @@ export const AppFailureToastMessages = Object.freeze({
   PERMISSION_LOAD: "❌ Failed to load role permissions",
   TEACHING_ACTIVITY_FETCH: "Error fetching teaching activity data",
   TEACHER_DASHBOARD_COUNT_FETCH:"Unable to fetch teacher dashboard statistics",
+  INVOICE_CREATE_FAILED:"Unable to create invoice",
 
 GROWTH_FETCH:
 "Unable to fetch learning progress details",

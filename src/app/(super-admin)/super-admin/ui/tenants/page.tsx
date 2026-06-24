@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import TenantStats from "../../components/Tenant-Cards";
 import SupervisorHeader from "@/app/(tenant)/modules/users/supervisor/components/supervisorHeader";
-import BaseLayout3 from "@/app/(tenant)/modules/users/supervisor/components/BaseLayout3";
+import BaseSuperLayout from "@/app/(super-admin)/super-admin/components/BaseSuperLayout"
 import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -167,7 +167,7 @@ const getPlanStyle = (plan: string) => {
 };
   return (
     <div>
-      <BaseLayout3>
+      <BaseSuperLayout>
         <SupervisorHeader currentSection="Tenant Management" />
 
         <TenantStats />
@@ -481,7 +481,7 @@ const getPlanStyle = (plan: string) => {
     />
   </div>
 )}
-      </BaseLayout3>
+      </BaseSuperLayout>
     </div>
   );
 };
