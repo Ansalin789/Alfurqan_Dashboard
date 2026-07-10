@@ -389,7 +389,7 @@ const UpcomingTasks: React.FC = () => {
   }
 
   return (
-    <div className="bg-white dark:bg-[#343434] w-full rounded-xl px-4 pt-4 pb-6">
+    <div className="bg-white dark:bg-[#343434] w-full rounded-xl h-20 px-4 pt-4 pb-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-4 px-1">
         <h2 className="font-semibold text-[16px] text-[#010e30] dark:text-white">

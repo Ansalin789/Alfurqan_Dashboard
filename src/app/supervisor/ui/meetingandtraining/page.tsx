@@ -404,7 +404,7 @@ const ScheduledClasses = () => {
 
   useEffect(() => {
     const fetchMeetings = async () => {
-      const supervisorId = "67a467bcc346aaaea402f760";
+      const supervisorId = localStorage.getItem("SupervisorPortalId");
       const token = localStorage.getItem("SupervisorAuthToken");
 
       if (!token) {
