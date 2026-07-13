@@ -4,4 +4,6 @@ declare module 'html2pdf.js' {
   }
 
 declare module 'react-world-flags';
+
+declare module 'react-phone-number-input/style.css';
   
