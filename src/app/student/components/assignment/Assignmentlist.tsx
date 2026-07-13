@@ -459,7 +459,7 @@ const StudentList = () => {
                       "Assigned By",
                       "Course",
                       "Level",
-                      "Assignemnt Name",
+                      "Assignment Name",
                        "Class Type",
                       "Assigned Date",
                       "Due Date",

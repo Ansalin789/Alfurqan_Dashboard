@@ -79,11 +79,11 @@ const Support = () => {
             </div>
           </div>
 
-          <div className="bg-[#5E6578] shadow-lg rounded-xl p-6 w-[915px] h-[616px]">
+          <div className="bg-[#5E6578] shadow-lg rounded-xl p-6 w-[915px] h-[616px] flex flex-col">
             <h2 className="text-[20px] p-4 text-left font-semibold text-[#FAFAFA] mb-7">
               Do you have questions?
             </h2>
-            <div className="px-6">
+            <div className="px-6 flex-1 overflow-y-auto scrollbar-none">
               <details className="group mb-6 py-2 w-full border-b border-b-[#818795]">
                 <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
                   How can I view my upcoming class schedule and student list?
@@ -142,7 +142,7 @@ const Support = () => {
               </details>
             </div>
 
-            <div className="flex gap-3 mt-32 text-[#fff] text-center justify-end p-2">
+            <div className="flex gap-3 text-[#fff] text-center justify-end pt-4">
               <button className="bg-[#FAFAFA] text-[#1B242C] p-2 rounded-lg flex items-center gap-2">
                 Connect Us
                 <MdOutlineArrowOutward className="w-4 h-4" />

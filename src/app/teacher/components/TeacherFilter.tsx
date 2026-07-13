@@ -392,14 +392,14 @@ console.log({
 
       <div className="w-full h-[610px] bg-[#FAFAFB] dark:bg-[#343434] overflow-y-auto">
         <table className="w-full table-auto">
-          <thead className="text-[12px] bg-[#4C6993] text-white">
+          <thead className="text-[14px] font-normal bg-[#4C6993] text-white">
             <tr>
-              <th className="text-left px-4 py-3">Meeting ID</th>
-              <th className="text-left px-4 py-3">Meeting Name</th>
-              <th className="text-left px-4 py-3">Date</th>
-              <th className="text-left px-4 py-3">Timing</th>
-              <th className="text-left px-4 py-3">Status</th>
-              <th className="text-left px-4 py-3">Action</th>
+              <th className="text-left font-normal px-4 py-3">Meeting ID</th>
+              <th className="text-left font-normal px-4 py-3">Meeting Name</th>
+              <th className="text-left font-normal px-4 py-3">Date</th>
+              <th className="text-left font-normal px-4 py-3">Timing</th>
+              <th className="text-left font-normal px-4 py-3">Status</th>
+              <th className="text-left font-normal px-4 py-3">Action</th>
             </tr>
           </thead>
           <tbody>

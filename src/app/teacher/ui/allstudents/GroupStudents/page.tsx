@@ -1166,7 +1166,7 @@ const GroupStudents = () => {
 
             {/* Table */}
             <table className="table-fixed w-full border border-gray-300 dark:border-gray-600">
-              <thead className="text-[12px] bg-[#4C6993] text-white">
+              <thead className="text-[14px] font-normal bg-[#4C6993] text-white">
                 <tr>
                   {[
                     { label: "Assignment ID", width: "w-[14%]" },
@@ -1182,7 +1182,7 @@ const GroupStudents = () => {
                   ].map((header) => (
                     <th
                       key={header.label}
-                      className={`px-2 py-2 border border-[#4C6993] text-left text-wrap break-words ${header.width}`}
+                      className={`px-2 py-2 border font-normal border-[#4C6993] text-left text-wrap break-words ${header.width}`}
                     >
                       {header.label}
                     </th>
