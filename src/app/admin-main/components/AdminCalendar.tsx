@@ -428,7 +428,7 @@ const getUniqueMeetingsById = (list: Event[]) => {
           </div>
 
           {/* List Schedule */}
-          <div className="w-full lg:w-1/3 bg-white dark:bg-[#343434] shadow-md rounded-xl flex flex-col min-h-[630px] lg:h-[630px]">
+          <div className="w-full lg:w-1/3 bg-white dark:bg-[#343434] shadow-md overflow-y-scroll scrollbar-none rounded-xl flex flex-col min-h-[630px] lg:h-[630px]">
             <div className="p-4 md:p-6">
               <h2 className="text-[18px] font-semibold">List Schedule</h2>
               {isLoading ? (

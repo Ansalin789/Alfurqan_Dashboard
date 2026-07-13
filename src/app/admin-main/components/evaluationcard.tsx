@@ -244,10 +244,14 @@ const CountriesCard = () => {
 const COLORS = ["#9FD0FF", "#FECAFF", "#78A1DB"];
 
 
-
 const PreferredTeachersCard = () => {
   const [male, setMale] = useState(0);
   const [female, setFemale] = useState(0);
+  
+  const data = [
+  { name: "Male", value: male, color: COLORS[0] },
+  { name: "Female", value: female, color: COLORS[1] },
+];
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -286,22 +290,32 @@ const PreferredTeachersCard = () => {
     setFemale(femaleCount);
   };
 
-  const getPieLabelPosition = (
-    cx: number,
-    cy: number,
-    innerRadius: number,
-    outerRadius: number,
-    startAngle: number,
-    endAngle: number
-  ) => {
-    const midAngle = (startAngle + endAngle) / 2;
-    const radius = (innerRadius + outerRadius) / 2;
-    const RADIAN = Math.PI / 180;
-    return {
-      x: cx + radius * Math.cos(-midAngle * RADIAN),
-      y: cy + radius * Math.sin(-midAngle * RADIAN),
-    };
+const getPieLabelPosition = (
+  cx: number,
+  cy: number,
+  innerRadius: number,
+  outerRadius: number,
+  startAngle: number,
+  endAngle: number,
+  percent: number
+) => {
+  const midAngle = (startAngle + endAngle) / 2;
+
+  // Dynamically move the label based on slice size
+  let radius;
+
+  if (percent > 0.7) radius = outerRadius * 0.55;
+  else if (percent > 0.4) radius = outerRadius * 0.62;
+  else if (percent > 0.2) radius = outerRadius * 0.72;
+  else radius = outerRadius * 0.82;
+
+  const RADIAN = Math.PI / 180;
+
+  return {
+    x: cx + radius * Math.cos(-midAngle * RADIAN),
+    y: cy + radius * Math.sin(-midAngle * RADIAN),
   };
+};
 
   return (
     <div>
@@ -317,8 +331,15 @@ const PreferredTeachersCard = () => {
               const percent = total > 0 ? Math.round((male / total) * 100) : 0;
               const startAngle = -90;
               const endAngle = -90 + (male / (total || 1)) * 360;
-              const pos = getPieLabelPosition(75, 75, 0, 55, startAngle, endAngle);
-              return (
+const pos = getPieLabelPosition(
+  75,
+  75,
+  0,
+  55,
+  startAngle,
+  endAngle,
+  male / total
+);              return (
                 <>
                   <Pie
                     data={[{ name: "Male", value: male }]}
@@ -356,8 +377,15 @@ const PreferredTeachersCard = () => {
               const percent = total > 0 ? Math.round((female / total) * 100) : 0;
               const startAngle = -90 + (male / (total || 1)) * 360;
               const endAngle = 270;
-              const pos = getPieLabelPosition(75, 75, 0, 50, startAngle, endAngle);
-              return (
+const pos = getPieLabelPosition(
+  75,
+  75,
+  0,
+  50,
+  startAngle,
+  endAngle,
+  female / total
+);              return (
                 <>
                   <Pie
                     data={[{ name: "Female", value: female }]}

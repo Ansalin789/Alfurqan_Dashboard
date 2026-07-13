@@ -12,9 +12,9 @@ import Dashboard from "../../components/evaluationcard";
 import BaseLayout4 from "@/components/BaseLayout4";
 import error from "next/error";
 import { MdTune } from "react-icons/md";
-import AcademicHeader from "@/app/Academic-coach/components/academicHeader";
 import axios from "axios";
 import { getSocket } from "@/app/utils/socket";
+import AdminHeader from "../../components/AdminHeader";
 
 
 // Define the transformed user structure
@@ -472,7 +472,7 @@ const TrailSection = () => {
 
   return (
     <BaseLayout4>
-      <AcademicHeader currentSection="Trial Class Request" />
+      <AdminHeader currentSection="Trial Class Request" />
       <div className="h-full w-full md:mr-10 scrollbar-none">
         <div>
           <Dashboard />
