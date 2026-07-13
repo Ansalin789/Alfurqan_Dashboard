@@ -26,26 +26,42 @@ const Academic: React.FC = () => {
   useEffect(() => {
      const token =
     typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
-
+      const acId = typeof window !== "undefined" ? localStorage.getItem("AcademicCoachPortalId") : null;   
+  
+    const params = {
+    academicCoachId: acId,
+}; 
   if (!token) {
     console.error("❌ AdminAuthToken not found");
     return;
   }
 
-    fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist`,{
+    fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist?academicCoachId=${params.academicCoachId}`,{
       headers:{
         "Authorization": `Bearer ${token}`,
       }
     })
       .then((response) => response.json())
       .then((data) => {
-        const mappedEvents = data.academicCoach.map(
+        console.log("RAW meetingSchedulelist response:", data);
+        const academicEvents = (data.academicCoach ?? []).map(
           (item: AcademicCoachItem) => ({
             title: item.subject,
             start: new Date(item.scheduledStartDate),
             end: new Date(item.scheduledEndDate),
           })
         );
+        const supervisorEvents = (data.meetingList ?? []).map((item: any) => ({
+          title: item.meetingName,
+          start: new Date(item.selectedDate),
+          end: new Date(item.selectedDate),
+        }));
+        const adminEvents = (data.adminMeetingList ?? []).map((item: any) => ({
+          title: item.meetingName,
+          start: new Date(item.selectedDate),
+          end: new Date(item.selectedDate),
+        }));
+        const mappedEvents = [...academicEvents, ...supervisorEvents, ...adminEvents];
         setEvents(mappedEvents);
         console.log("Fetched Events: ", mappedEvents);
       })

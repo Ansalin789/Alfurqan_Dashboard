@@ -358,9 +358,28 @@ export default function AddMeeting({ onClose, onSuccess }: Props) {
                       Select Participants
                     </h2>
                     <div className="flex items-center gap-2 mb-3 border-b border-gray-300 dark:border-gray-600 pb-2">
+                      <button onClick={() => setRoleTab("Student")} className={`px-3 py-1.5 text-xs rounded-md ${roleTab === "Student" ? "bg-[#576CBC] text-white" : "bg-gray-100 dark:bg-[#2B2B2B] text-gray-800 dark:text-white"}`}>Students</button>
                       <button onClick={() => setRoleTab("Teacher")} className={`px-3 py-1.5 text-xs rounded-md ${roleTab === "Teacher" ? "bg-[#576CBC] text-white" : "bg-gray-100 dark:bg-[#2B2B2B] text-gray-800 dark:text-white"}`}>Teachers</button>
                     </div>
-                   
+
+                    {roleTab === "Student" && (
+                      <div className="space-y-2 max-h-48 overflow-y-auto text-sm pr-1">
+                        {Teachers.length === 0 && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 px-1">No students found.</p>
+                        )}
+                        {Teachers.map((student) => (
+                          <label key={student._id} className="flex items-center gap-2 px-1">
+                            <input
+                              type="checkbox"
+                              checked={selectedTeachers.some((t) => t._id === student._id)}
+                              onChange={() => toggleTeacher(student)}
+                            />
+                            <span className="dark:text-white text-gray-700">{student.username}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+
                     {roleTab === "Teacher" && (
                       <>
                         <div className="flex gap-2 mb-2">

@@ -19,8 +19,7 @@ import {
   ListboxOption,
   ListboxOptions,
 } from "@headlessui/react";
-import PhoneInput from "react-phone-number-input";
-import { isValidPhoneNumber } from "react-phone-number-input";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 type Props = {
   readonly onClose: () => void;
@@ -93,31 +92,29 @@ export default function AddApplicants({ onClose }: Props) {
       jobDescription: "",
     },
   ]);
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-
   const [startHour, setStartHour] = useState("");
-const [startMinute, setStartMinute] = useState("");
+  const [startMinute, setStartMinute] = useState("");
 
-const [endHour, setEndHour] = useState("");
-const [endMinute, setEndMinute] = useState("");
+  const [endHour, setEndHour] = useState("");
+  const [endMinute, setEndMinute] = useState("");
 
-const updateWorkingHours = (sh : any, sm : any, eh: any, em: any) => {
-  if (!sh || !sm || !eh || !em) return;
+  const updateWorkingHours = (sh: string, sm: string, eh: string, em: string) => {
+    if (!sh || !sm || !eh || !em) return;
 
-  const start = `${sh}:${sm}`;
-  const end = `${eh}:${em}`;
+    const start = `${sh}:${sm}`;
+    const end = `${eh}:${em}`;
 
-  setAddApplicantForm(prev => ({
-    ...prev,
-    workingHours: `${start} - ${end}`
-  }));
-};
-const hours = Array.from({ length: 24 }, (_, i) =>
-  String(i).padStart(2, "0")
-);
+    setAddApplicantForm((prev) => ({
+      ...prev,
+      workingHours: `${start} - ${end}`,
+    }));
+  };
+  const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
 
-const minutes = ["00", "30"];
+  const minutes = ["00", "30"];
+  const selectedCountryIsoCode =
+    (countries.find((c) => c.name === addApplicantForm.country)
+      ?.isoCode as string | undefined) ?? undefined;
 
 
   const handleChange1 = (
@@ -170,29 +167,6 @@ const minutes = ["00", "30"];
     const allCountries = Country.getAllCountries();
     setCountries(allCountries);
   }, []);
-  useEffect(() => {
-    if (addApplicantForm.country) {
-      const selectedCountry = countries.find(
-        (c) => c.name === addApplicantForm.country
-      );
-      if (selectedCountry) {
-        const allStates = State.getStatesOfCountry(selectedCountry.isoCode);
-        const allCities = allStates.flatMap((state) =>
-          City.getCitiesOfState(selectedCountry.isoCode, state.isoCode)
-        );
-
-        // 🔥 Deduplicate by city name
-        const uniqueCities = Array.from(
-          new Map(allCities.map((city) => [city.name, city])).values()
-        );
-
-        setCities(uniqueCities);
-      } else {
-        setCities([]);
-      }
-    }
-  }, [addApplicantForm.country, countries]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -408,397 +382,373 @@ const minutes = ["00", "30"];
         {/* Applicant Date */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Left Column */}
+          <div>
+            <label
+              htmlFor="inonoin"
+              className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]"
+            >
+              Applicant Date
+            </label>
+            <input
+              name="applicationDate"
+              value={addApplicantForm.applicationDate}
+              onChange={handleChange}
+              type="date"
+              className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
+            />
+          </div>
 
-          <div className="space-y-3">
-            <div>
-              <label
-                htmlFor="inonoin"
-                className="block text-sm font-normal text-black mb-1 dark:text-[#FFFFFF]"
-              >
-                Applicant Date
-              </label>
-              <input
-                name="fromDate"
-                value={addApplicantForm.applicationDate}
-                onChange={handleChange}
-                type="date"
-                className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
+          <div>
+            <label
+              htmlFor="position"
+              className="block mb-1 text-black dark:text-white"
+            >
+              Position Applied
+            </label>
+            <select
+              name="position"
+              value={addApplicantForm.position}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+            >
+              <option value="">Select Position</option>
+              <option value="Quran Teacher">Quran Teacher</option>
+              <option value="Arabic Teacher">Arabic Teacher</option>
+              <option value="Islamic Teacher">Islamic Teacher</option>
+            </select>
+          </div>
+
+          <div>
+            <label
+              htmlFor="inonoin"
+              className="block mb-1 text-black dark:text-white"
+            >
+              First Name
+            </label>
+            <input
+              name="firstName"
+              value={addApplicantForm.firstName}
+              onChange={handleChange}
+              type="text"
+              className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="inonoin"
+              className="block mb-1 text-black dark:text-white"
+            >
+              Last Name
+            </label>
+            <input
+              name="lastName"
+              value={addApplicantForm.lastName}
+              onChange={handleChange}
+              type="text"
+              className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="inonoin"
+              className="block mb-1 text-black dark:text-white"
+            >
+              Email
+            </label>
+            <input
+              name="email"
+              value={addApplicantForm.email}
+              onChange={handleChange}
+              type="email"
+              className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="Phone"
+              className="block mb-1 text-black dark:text-white text-sm"
+            >
+              Phone Number
+            </label>
+
+            <div className="flex items-center w-full text-xs dark:text-white dark:bg-[#343434]">
+              <PhoneInput
+                country={selectedCountryIsoCode}
+                value={addApplicantForm.phone || undefined}
+                onChange={(value) => {
+                  const phoneValue = value ?? "";
+                  setAddApplicantForm((prev) => ({ ...prev, phone: phoneValue }));
+
+                  if (!phoneValue) {
+                    setPhoneError("Invalid phone number");
+                    return;
+                  }
+
+                  setPhoneError(
+                    isValidPhoneNumber(phoneValue) ? "" : "Invalid phone number"
+                  );
+                }}
+                className="w-full"
+                inputClassName="!border-0 !outline-none !shadow-none !w-full dark:!bg-transparent text-xs"
               />
             </div>
-            <div>
-              <label
-                htmlFor="inonoin"
-                className="block mb-1 text-black dark:text-white"
-              >
-                First Name
-              </label>
-              <input
-                name="firstName"
-                value={addApplicantForm.firstName}
-                onChange={handleChange}
-                type="text"
-                className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="inonoin"
-                className="block mb-1 text-black dark:text-white"
-              >
-                Last Name
-              </label>
-              <input
-                name="lastName"
-                value={addApplicantForm.lastName}
-                onChange={handleChange}
-                type="text"
-                className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="inonoin"
-                className="block mb-1 text-black dark:text-white"
-              >
-                Email
-              </label>
-              <input
-                name="email"
-                value={addApplicantForm.email}
-                onChange={handleChange}
-                type="email"
-                className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="Phone"
-                className="block mb-1 text-black dark:text-white text-sm"
-              >
-                Phone Number
-              </label>
 
-              <div className="flex items-center w-full   text-xs dark:text-white dark:bg-[#343434] ">
-               <PhoneInput
-  defaultCountry="IN"
-  value={addApplicantForm.phone}
-  onChange={(value) => {
-    // value = "+919876543210"
+            {phoneError && (
+              <p className="text-red-500 text-xs mt-1">{phoneError}</p>
+            )}
+          </div>
 
-    if (!value) {
-      setAddApplicantForm(prev => ({ ...prev, phone: "" }));
-      setPhoneError("Invalid phone number");
-      return;
-    }
+          <div>
+            <label className="block text-black dark:text-white">Country</label>
+            <Listbox
+              value={addApplicantForm.country}
+              onChange={(val) =>
+                setAddApplicantForm({
+                  ...addApplicantForm,
+                  country: val,
+                  state: "",
+                  city: "",
+                })
+              }
+            >
+              <div className="relative mt-1">
+                <ListboxButton className="w-full h-9 border rounded px-3 py-2 text-left text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]">
+                  {addApplicantForm.country || "Select Country"}
+                </ListboxButton>
 
-    // Extract only digits (remove +)
-    const digitsOnly = value.replace(/\D/g, ""); // "919876543210"
-
-    // Remove the country code (first N digits)
-    // For India (IN) dial code is 91
-    const localNumber = digitsOnly.startsWith("91")
-      ? digitsOnly.substring(2)
-      : digitsOnly; // fallback
-
-    setAddApplicantForm(prev => ({
-      ...prev,
-      phone: localNumber, // store only local number
-    }));
-
-    // Validation
-    if (localNumber.length < 10) {
-      setPhoneError("Invalid phone number");
-    } else {
-      setPhoneError("");
-    }
-  }}
-  className="w-full"
-  inputClassName="!border-0 !outline-none !shadow-none !w-full dark:!bg-transparent text-xs"
-/>
-
+                <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#343434] shadow-lg">
+                  {countries.map((c) => (
+                    <ListboxOption
+                      key={c.isoCode}
+                      value={c.name}
+                      className="cursor-pointer px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    >
+                      {c.name}
+                    </ListboxOption>
+                  ))}
+                </ListboxOptions>
               </div>
+            </Listbox>
+          </div>
 
-              {phoneError && (
-                <p className="text-red-500 text-xs mt-1">{phoneError}</p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="position"
-                className="block mb-1 text-black dark:text-white"
-              >
-                Position Applied
-              </label>
-              <select
-                name="position"
-                value={addApplicantForm.position}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              >
-                <option value="">Select Position</option>
-                <option value="Quran Teacher">Quran Teacher</option>
-                <option value="Arabic Teacher">Arabic Teacher</option>
-                <option value="Islamic Teacher">Islamic Teacher</option>
-              </select>
-            </div>
-            <div>
-              <label
-                htmlFor="jbjb"
-                className="block mb-2 text-black dark:text-white"
-              >
-                Upload Resume
-              </label>
-              <div className="flex items-center gap-2">
-                <label
-                  htmlFor="resumeUpload"
-                  className="cursor-pointer mb-2 inline-flex items-center px-3 py-1.5 bg-[#576CBC] text-white text-xs rounded hover:bg-blue-700 transition "
+          <div>
+            <label className="text-sm text-[#010E30] dark:text-white">State</label>
+            <Listbox
+              value={addApplicantForm.state}
+              onChange={(val) =>
+                setAddApplicantForm({
+                  ...addApplicantForm,
+                  state: val,
+                  city: "",
+                })
+              }
+              disabled={!addApplicantForm.country}
+            >
+              <div className="relative mt-1">
+                <ListboxButton
+                  className={`w-full h-8 border rounded px-3 py-2 text-left text-xs
+            ${!addApplicantForm.country ? "opacity-50 cursor-not-allowed" : ""}
+           border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]`}
                 >
-                  <Paperclip size={14} className="mr-1" />
-                  Upload Resume
-                </label>
-                <span className="text-xs text-gray-500 dark:text-gray-300">
-                  {addApplicantForm.resume
-                    ? addApplicantForm.resume.name
-                    : "No file chosen"}
-                </span>
-                <input
-                  id="resumeUpload"
-                  name="resume"
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
+                  {addApplicantForm.country
+                    ? addApplicantForm.state || "Select State"
+                    : "Select Country First"}
+                </ListboxButton>
+
+                {addApplicantForm.country && (
+                  <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#343434] shadow-lg">
+                    {states.length > 0 ? (
+                      states.map((state) => (
+                        <ListboxOption
+                          key={state.isoCode}
+                          value={state.name}
+                          className="cursor-pointer px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        >
+                          {state.name}
+                        </ListboxOption>
+                      ))
+                    ) : (
+                      <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                        No states available
+                      </div>
+                    )}
+                  </ListboxOptions>
+                )}
               </div>
+            </Listbox>
+          </div>
+
+          <div>
+            <label className="block text-black dark:text-white">City</label>
+            <Listbox
+              value={addApplicantForm.city}
+              onChange={(val) =>
+                setAddApplicantForm({ ...addApplicantForm, city: val })
+              }
+              disabled={!addApplicantForm.state}
+            >
+              <div className="relative mt-1">
+                <ListboxButton className="w-full h-8 border rounded px-3 py-2 text-left text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]">
+                  {addApplicantForm.city || "Select City"}
+                </ListboxButton>
+
+                <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#343434] shadow-lg">
+                  {cities.map((city) => (
+                    <ListboxOption
+                      key={city.name}
+                      value={city.name}
+                      className="cursor-pointer px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    >
+                      {city.name}
+                    </ListboxOption>
+                  ))}
+                </ListboxOptions>
+              </div>
+            </Listbox>
+          </div>
+
+          <div>
+            <label className="block text-black dark:text-white">Gender</label>
+            <select
+              name="gender"
+              value={addApplicantForm.gender}
+              onChange={handleChange}
+              className="w-full border mt-1 rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+            >
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-black dark:text-white">
+              Expected Salary / Hour
+            </label>
+            <div className="relative mt-1">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-900 dark:text-white">
+                $
+              </span>
+              <input
+                name="expectedSalary"
+                value={addApplicantForm.expectedSalary}
+                onChange={handleChange}
+                type="number"
+                className="w-full border pl-6 rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+              />
             </div>
           </div>
 
-          {/* Right Column */}
-          <div className="space-y-3">
-            {/* Country */}
-            <div>
-              <label className="block text-black dark:text-white">
-                Country
-              </label>
-              <Listbox
-                value={addApplicantForm.country}
-                onChange={(val) =>
-                  setAddApplicantForm({ ...addApplicantForm, country: val })
-                }
-              >
-                <div className="relative mt-1">
-                  <ListboxButton className="w-full h-9 border rounded px-3 py-2 text-left text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]">
-                    {addApplicantForm.country || "Select Country"}
-                  </ListboxButton>
+          <div>
+            <label className="block text-black dark:text-white">Preferred Working Hours</label>
 
-                  <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#343434] shadow-lg">
-                    {countries.map((c) => (
-                      <ListboxOption
-                        key={c.isoCode}
-                        value={c.name}
-                        className="cursor-pointer px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-600"
-                      >
-                        {c.name}
-                      </ListboxOption>
-                    ))}
-                  </ListboxOptions>
-                </div>
-              </Listbox>
-            </div>
-
-            {/* State */}
-            <div>
-              <label className="text-sm text-[#010E30] dark:text-white">
-                State
-              </label>
-              <Listbox
-                value={addApplicantForm.state}
-                onChange={(val) =>
-                  setAddApplicantForm({
-                    ...addApplicantForm,
-                    state: val,
-                    city: "",
-                  })
-                }
-                disabled={!addApplicantForm.country}
-              >
-                <div className="relative mt-1">
-                  <ListboxButton
-                    className={`w-full h-8 border rounded px-3 py-2 text-left text-xs
-            ${!addApplicantForm.country ? "opacity-50 cursor-not-allowed" : ""}
-           border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]`}
-                  >
-                    {addApplicantForm.country
-                      ? addApplicantForm.state || "Select State"
-                      : "Select Country First"}
-                  </ListboxButton>
-
-                  {addApplicantForm.country && (
-                    <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#343434] shadow-lg">
-                      {states.length > 0 ? (
-                        states.map((state) => (
-                          <ListboxOption
-                            key={state.isoCode}
-                            value={state.name}
-                            className="cursor-pointer px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-600"
-                          >
-                            {state.name}
-                          </ListboxOption>
-                        ))
-                      ) : (
-                        <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
-                          No states available
-                        </div>
-                      )}
-                    </ListboxOptions>
-                  )}
-                </div>
-              </Listbox>
-            </div>
-
-            {/* City */}
-            <div>
-              <label className="block text-black dark:text-white">City</label>
-              <Listbox
-                value={addApplicantForm.city}
-                onChange={(val) =>
-                  setAddApplicantForm({ ...addApplicantForm, city: val })
-                }
-                disabled={!addApplicantForm.state}
-              >
-                <div className="relative mt-1">
-                  <ListboxButton className="w-full h-8 border rounded px-3 py-2 text-left text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]">
-                    {addApplicantForm.city || "Select City"}
-                  </ListboxButton>
-
-                  <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#343434] shadow-lg">
-                    {cities.map((city) => (
-                      <ListboxOption
-                        key={city.name}
-                        value={city.name}
-                        className="cursor-pointer px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-600"
-                      >
-                        {city.name}
-                      </ListboxOption>
-                    ))}
-                  </ListboxOptions>
-                </div>
-              </Listbox>
-            </div>
-
-            {/* Gender */}
-            <div>
-              <label className="block text-black dark:text-white">Gender</label>
+            <div className="flex items-center gap-2 mt-1">
               <select
-                name="gender"
-                value={addApplicantForm.gender}
-                onChange={handleChange}
-                className="w-full border mt-1 rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                value={startHour}
+                onChange={(e) => {
+                  setStartHour(e.target.value);
+                  updateWorkingHours(e.target.value, startMinute, endHour, endMinute);
+                }}
+                className="border rounded px-2 py-2 text-xs w-16 dark:text-white dark:bg-[#343434]"
               >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
+                <option value="">HH</option>
+                {hours.map((h) => (
+                  <option key={h} value={h}>
+                    {h}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={startMinute}
+                onChange={(e) => {
+                  setStartMinute(e.target.value);
+                  updateWorkingHours(startHour, e.target.value, endHour, endMinute);
+                }}
+                className="border rounded px-2 py-2 text-xs w-16 dark:text-white dark:bg-[#343434]"
+              >
+                <option value="">MM</option>
+                {minutes.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+
+              <span className="text-black dark:text-white">-</span>
+
+              <select
+                value={endHour}
+                onChange={(e) => {
+                  setEndHour(e.target.value);
+                  updateWorkingHours(startHour, startMinute, e.target.value, endMinute);
+                }}
+                className="border rounded px-2 py-2 text-xs w-16 dark:text-white dark:bg-[#343434]"
+              >
+                <option value="">HH</option>
+                {hours.map((h) => (
+                  <option key={h} value={h}>
+                    {h}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={endMinute}
+                onChange={(e) => {
+                  setEndMinute(e.target.value);
+                  updateWorkingHours(startHour, startMinute, endHour, e.target.value);
+                }}
+                className="border rounded px-2 py-2 text-xs w-16 dark:text-white dark:bg-[#343434]"
+              >
+                <option value="">MM</option>
+                {minutes.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
               </select>
             </div>
 
-            {/* Salary */}
-            <div>
-              <label className="block text-black dark:text-white">
-                Expected Salary / Hour
+            <input type="hidden" name="workingHours" value={addApplicantForm.workingHours} />
+
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Selected: {addApplicantForm.workingHours || "None"}
+            </p>
+          </div>
+
+          <div className="md:col-span-2">
+            <label
+              htmlFor="jbjb"
+              className="block mb-2 text-black dark:text-white"
+            >
+              Upload Resume
+            </label>
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="resumeUpload"
+                className="cursor-pointer mb-2 inline-flex items-center px-3 py-1.5 bg-[#576CBC] text-white text-xs rounded hover:bg-blue-700 transition"
+              >
+                <Paperclip size={14} className="mr-1" />
+                Upload Resume
               </label>
-              <div className="relative mt-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs  text-gray-900 dark:text-white">
-                  $
-                </span>
-                <input
-                  name="expectedSalary"
-                  value={addApplicantForm.expectedSalary}
-                  onChange={handleChange}
-                  type="number"
-                  className="w-full border pl-6 rounded px-3 py-2 text-xs border-[#5C5C5C] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                />
-              </div>
+              <span className="text-xs text-gray-500 dark:text-gray-300">
+                {addApplicantForm.resume
+                  ? addApplicantForm.resume.name
+                  : "No file chosen"}
+              </span>
+              <input
+                id="resumeUpload"
+                name="resume"
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={handleFileChange}
+                className="hidden"
+              />
             </div>
-
-            {/* Working Hours */}
-        <div>
-  <label className="block text-black dark:text-white">Preferred Working Hours</label>
-
-  <div className="flex items-center gap-2 mt-1">
-
-    {/* Start Hour */}
-    <select
-      value={startHour}
-      onChange={(e) => {
-        setStartHour(e.target.value);
-        updateWorkingHours(e.target.value, startMinute, endHour, endMinute);
-      }}
-      className="border rounded px-2 py-2 text-xs w-16 dark:text-white dark:bg-[#343434]"
-    >
-      <option value="">HH</option>
-      {hours.map((h) => (
-        <option key={h} value={h}>{h}</option>
-      ))}
-    </select>
-
-    {/* Start Minute */}
-    <select
-      value={startMinute}
-      onChange={(e) => {
-        setStartMinute(e.target.value);
-        updateWorkingHours(startHour, e.target.value, endHour, endMinute);
-      }}
-      className="border rounded px-2 py-2 text-xs w-16 dark:text-white dark:bg-[#343434]"
-    >
-      <option value="">MM</option>
-      {minutes.map((m) => (
-        <option key={m} value={m}>{m}</option>
-      ))}
-    </select>
-
-    <span className="text-black dark:text-white">-</span>
-
-    {/* End Hour */}
-    <select
-      value={endHour}
-      onChange={(e) => {
-        setEndHour(e.target.value);
-        updateWorkingHours(startHour, startMinute, e.target.value, endMinute);
-      }}
-      className="border rounded px-2 py-2 text-xs w-16 dark:text-white dark:bg-[#343434]"
-    >
-      <option value="">HH</option>
-      {hours.map((h) => (
-        <option key={h} value={h}>{h}</option>
-      ))}
-    </select>
-
-    {/* End Minute */}
-    <select
-      value={endMinute}
-      onChange={(e) => {
-        setEndMinute(e.target.value);
-        updateWorkingHours(startHour, startMinute, endHour, e.target.value);
-      }}
-      className="border rounded px-2 py-2 text-xs w-16 dark:text-white dark:bg-[#343434]"
-    >
-      <option value="">MM</option>
-      {minutes.map((m) => (
-        <option key={m} value={m}>{m}</option>
-      ))}
-    </select>
-  </div>
-
-  <input type="hidden" name="workingHours" value={addApplicantForm.workingHours} />
-
-  <p className="text-xs text-gray-500 dark:text-gray-400">
-    Selected: {addApplicantForm.workingHours || "None"}
-  </p>
-</div>
-
-
           </div>
         </div>
 
@@ -822,7 +772,7 @@ const minutes = ["00", "30"];
 
           {/* Show added skills below */}
           <div className="mt-2 flex flex-wrap gap-2">
-            {addApplicantForm.skillList.map((skill, idx) => (
+            {addApplicantForm.skillList.map((skill) => (
               <button
                 key={skill}
                 className="bg-[#576CBC] text-white text-xs px-2 py-1 rounded cursor-pointer"

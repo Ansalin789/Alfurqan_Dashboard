@@ -1,7 +1,7 @@
 "use client";
 
 import BaseLayout from "@/components/BaseLayout";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { GrAttachment } from "react-icons/gr";
 import { FaTelegramPlane } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
@@ -104,11 +104,16 @@ const Message = () => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [messageCount, setMessageCount] = useState<number>(0);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
     const [userName, setUserName] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
  const [academicCoaches, setAcademicCoaches] = useState<IUser[]>([]);
   const [userStatus, setUserStatus] = useState<string>("inactive");
+
+  const messageCount = useMemo(
+    () => Object.values(unreadCounts).reduce((sum, count) => sum + count, 0),
+    [unreadCounts]
+  );
   
     useEffect(() => {
       // setIsClient(true);
@@ -208,6 +213,16 @@ const Message = () => {
     }
     setSelectedUser(selected);
     setMessages([]); // Optional: clear previous messages
+
+    // Opening chat clears unread badge for that specific user.
+    setUnreadCounts((prev) => {
+      if (!prev[selected._id]) return prev;
+      return {
+        ...prev,
+        [selected._id]: 0,
+      };
+    });
+
     fetchMessages(selected._id); // ✅ Load messages for the selected user
   };
   
@@ -241,9 +256,15 @@ const Message = () => {
         (msg.senderId === receiverId && msg.receiverId === userId) // for bidirectional chat
     );
     setMessages(filteredMessages);
-      // Count unread messages
-      const unreadCount = fetchedMessages.filter((m) => !m.isRead).length;
-      setMessageCount(unreadCount); // Update the unread message count
+      const unreadCount = filteredMessages.filter(
+        (m: IMessage) =>
+          m.receiverId === userId && m.senderId === receiverId && !m.isRead
+      ).length;
+
+      setUnreadCounts((prev) => ({
+        ...prev,
+        [receiverId]: unreadCount,
+      }));
     } catch (err: any) {
       console.error("Error fetching messages:", err.message);
       // If CORS or network issue, error.response will be undefined — log request too
@@ -257,6 +278,33 @@ const Message = () => {
     }
   }, [messages]);
 
+  const fetchUnreadCountForUser = async (chatUserId: string): Promise<number> => {
+    try {
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+      if (!token || !userId) return 0;
+
+      const { data } = await axios.get<IMessageResponse>(
+        `https://api.blackstoneinfomaticstech.com/realtimemessage/${userId}/${chatUserId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 10000,
+        }
+      );
+
+      const fetchedMessages = data?.data?.[0]?.messages ?? [];
+
+      return fetchedMessages.filter(
+        (m: IMessage) =>
+          m.receiverId === userId && m.senderId === chatUserId && !m.isRead
+      ).length;
+    } catch (err) {
+      console.error("Error fetching unread count:", err);
+      return 0;
+    }
+  };
+
   // Initialize socket connection
   useEffect(() => {
     const socketRef = getSocket(userId ?? '')
@@ -264,10 +312,25 @@ const Message = () => {
     // Handle incoming messages
     const handleNewMessage = (newMessage: IMessage) => {
       console.log("Received new message:", newMessage);
-      setMessages((prev) => [newMessage, ...prev]);
-      // Only increment count if message is unread
-      if (!newMessage.isRead) {
-        setMessageCount((prev) => prev + 1);
+
+      const isForCurrentChat =
+        (newMessage.senderId === userId &&
+          newMessage.receiverId === selectedUser?._id) ||
+        (newMessage.senderId === selectedUser?._id &&
+          newMessage.receiverId === userId);
+
+      const isIncomingForMe = newMessage.receiverId === userId;
+      const isFromSelectedUser = newMessage.senderId === selectedUser?._id;
+
+      if (isIncomingForMe && !newMessage.isRead && !isFromSelectedUser) {
+        setUnreadCounts((prev) => ({
+          ...prev,
+          [newMessage.senderId]: (prev[newMessage.senderId] || 0) + 1,
+        }));
+      }
+
+      if (isForCurrentChat) {
+        setMessages((prev) => [newMessage, ...prev]);
       }
     };
     const handleUserStatusCheck = (statusUpdate: { success: string; message: string }) => {
@@ -297,6 +360,18 @@ const Message = () => {
       setStudents(studentsList);
       setSupervisor(supervisorList);
       setAcademicCoaches(academicList);
+
+      const allUsers = [
+        ...studentsList.map((s) => ({ _id: s._id })),
+        ...supervisorList.map((s) => ({ _id: s._id })),
+        ...academicList.map((a) => ({ _id: a._id })),
+      ];
+
+      const uniqueUserIds = Array.from(new Set(allUsers.map((u) => u._id)));
+      const unreadEntries = await Promise.all(
+        uniqueUserIds.map(async (id) => [id, await fetchUnreadCountForUser(id)] as const)
+      );
+      setUnreadCounts(Object.fromEntries(unreadEntries));
     };
     
     fetchAllUsers();
@@ -412,7 +487,7 @@ const Message = () => {
                   </h3>
                   <button className="ml-2 text-gray-500">
                     {messageCount > 0 && (
-                      <span className=" -mt-7 bg-red-600 text-white text-[8px] rounded-full h-3 w-3 flex items-center justify-center animate-pulse">
+                      <span className="-mt-7 min-w-[16px] px-1 bg-red-600 text-white text-[9px] rounded-full h-4 flex items-center justify-center animate-pulse">
                         {messageCount}
                       </span>
                     )}
@@ -525,7 +600,14 @@ const Message = () => {
                         </p>
                       </div>
                     </div>
-                    <span className="text-[9px] text-gray-400">{lastSeen}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] text-gray-400">{lastSeen}</span>
+                      {(unreadCounts[user._id] || 0) > 0 && (
+                        <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] leading-[18px] text-center font-medium">
+                          {unreadCounts[user._id]}
+                        </span>
+                      )}
+                    </div>
                   </motion.button>
                 );
               })}

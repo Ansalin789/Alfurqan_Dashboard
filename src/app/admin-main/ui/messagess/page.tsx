@@ -1,7 +1,7 @@
 "use client";
 
 import BaseLayout4 from "@/components/BaseLayout4";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { GrAttachment } from "react-icons/gr";
 import { FaTelegramPlane } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
@@ -74,10 +74,15 @@ const Message = () => {
   const [messages, setMessages] = useState<IMessageData[]>([]);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [messageCount, setMessageCount] = useState<number>(0);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<any>(null);
   const [dashboardRead, setdashboardRead] = useState(false);
+
+  const messageCount = useMemo(
+    () => Object.values(unreadCounts).reduce((sum, count) => sum + count, 0),
+    [unreadCounts]
+  );
 
   let userId: string | null = null;
   const userName =
@@ -142,6 +147,13 @@ const Message = () => {
   const handleUserClick = (user: IUser) => {
     setSelectedUser(user);
     setMessages([]);
+    setUnreadCounts((prev) => {
+      if (!prev[user._id]) return prev;
+      return {
+        ...prev,
+        [user._id]: 0,
+      };
+    });
     fetchMessages(user._id);
   };
 
@@ -172,13 +184,47 @@ const Message = () => {
       const fetchedMessages = data?.data;
       setMessages(fetchedMessages); // for rendering
 
-      // Count unread messages in all groups
       const allMessages = fetchedMessages.flatMap((group) => group.messages);
-      const unreadCount = allMessages.filter((m) => !m.isRead).length;
-      setMessageCount(unreadCount);
-      // Update the unread message count
+      const unreadCount = allMessages.filter(
+        (m) => m.receiverId === userId && m.senderId === receiverId && !m.isRead
+      ).length;
+      setUnreadCounts((prev) => ({
+        ...prev,
+        [receiverId]: unreadCount,
+      }));
     } catch (error) {
       console.error("Error fetching messages:", error);
+    }
+  };
+
+  const fetchUnreadCountForUser = async (chatUserId: string): Promise<number> => {
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AdminAuthToken")
+          : null;
+
+      if (!token || !userId) return 0;
+
+      const { data } = await axios.get<IMessageResponse>(
+        `https://api.blackstoneinfomaticstech.com/realtimemessage/${userId}/${chatUserId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const fetchedMessages = data?.data || [];
+      const allMessages = fetchedMessages.flatMap((group) => group.messages || []);
+
+      return allMessages.filter(
+        (m) => m.receiverId === userId && m.senderId === chatUserId && !m.isRead
+      ).length;
+    } catch (error) {
+      console.error("Error fetching unread count:", error);
+      return 0;
     }
   };
 
@@ -209,6 +255,28 @@ const Message = () => {
     };
     fetchUsers();
   }, [activeTab]);
+
+  useEffect(() => {
+    const loadUnreadCounts = async () => {
+      const allUsers = [...teachers, ...academicCoaches, ...supervisors];
+      const uniqueUsers = Array.from(new Map(allUsers.map((u) => [u._id, u])).values());
+
+      if (!uniqueUsers.length) {
+        setUnreadCounts({});
+        return;
+      }
+
+      const unreadEntries = await Promise.all(
+        uniqueUsers.map(async (u) => [u._id, await fetchUnreadCountForUser(u._id)] as const)
+      );
+
+      setUnreadCounts(Object.fromEntries(unreadEntries));
+    };
+
+    if (userId) {
+      loadUnreadCounts();
+    }
+  }, [teachers, academicCoaches, supervisors, userId]);
 
   useEffect(() => {
     setSelectedUser(null); // clear selected user on tab change
@@ -266,9 +334,14 @@ const Message = () => {
           newMessage.receiverId === userId);
       console.log(userId);
       console.log(selectedUser?._id);
-      // Always update message count for unread messages
-      if (newMessage.receiverId === userId && !newMessage.isRead) {
-        setMessageCount((prev) => prev + 1);
+      const isIncomingForMe = newMessage.receiverId === userId;
+      const isFromSelectedUser = newMessage.senderId === selectedUser?._id;
+
+      if (isIncomingForMe && !newMessage.isRead && !isFromSelectedUser) {
+        setUnreadCounts((prev) => ({
+          ...prev,
+          [newMessage.senderId]: (prev[newMessage.senderId] || 0) + 1,
+        }));
       }
 
       // Only update messages if it's for the current chat
@@ -487,7 +560,7 @@ const Message = () => {
                   </h3>
                   <button className="ml-[4px] text-gray-500">
                     {messageCount > 0 && (
-                      <span className=" -mt-2 ml-1 bg-red-600 text-white text-[8px] rounded-full h-3 w-3 flex items-center justify-center animate-pulse">
+                      <span className="-mt-2 ml-1 min-w-[16px] px-1 bg-red-600 text-white text-[9px] rounded-full h-4 flex items-center justify-center animate-pulse">
                         {messageCount}
                       </span>
                     )}
@@ -601,9 +674,16 @@ const Message = () => {
                         </p>
                       </div>
                     </div>
-                    <span className="text-[10px] text-gray-500 dark:text-[#fff] dark:text-opacity-[60%] truncate max-w-[180px]">
-                      {user.lastSeen}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-gray-500 dark:text-[#fff] dark:text-opacity-[60%] truncate max-w-[180px]">
+                        {user.lastSeen}
+                      </span>
+                      {(unreadCounts[user._id] || 0) > 0 && (
+                        <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] leading-[18px] text-center font-medium">
+                          {unreadCounts[user._id]}
+                        </span>
+                      )}
+                    </div>
                   </motion.button>
                 ))}
               </AnimatePresence>

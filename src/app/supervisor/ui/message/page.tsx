@@ -1,7 +1,7 @@
 "use client";
 
 import BaseLayout3 from "@/components/BaseLayout3";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { FaTelegramPlane } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiSearch } from "react-icons/fi";
@@ -119,10 +119,27 @@ const Message = () => {
   const [messages, setMessages] = useState<IMessageData[]>([]);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [messageCount, setMessageCount] = useState<number>(0);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [locallyReadUsers, setLocallyReadUsers] = useState<Record<string, boolean>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<any>(null);
   const [userStatus, setUserStatus] = useState<string>("inactive");
+
+  const messageCount = useMemo(
+    () => Object.values(unreadCounts).reduce((sum, count) => sum + count, 0),
+    [unreadCounts]
+  );
+
+  const getUniqueUsers = (users: IUser[]) =>
+    Array.from(new Map(users.map((u) => [u._id, u])).values());
+
+  const getUnreadForUsers = (users: IUser[]) =>
+    getUniqueUsers(users).reduce((sum, u) => sum + (unreadCounts[u._id] || 0), 0);
+
+  const teachersUnread = getUnreadForUsers(teachers);
+  const adminUnread = getUnreadForUsers(admin);
+  const academicUnread = getUnreadForUsers(academicCoaches);
+  const allUnread = getUnreadForUsers([...teachers, ...admin, ...academicCoaches, ...students]);
 
 
   // read from localStorage safely
@@ -273,6 +290,22 @@ const Message = () => {
   const handleUserClick = (user: IUser) => {
     setSelectedUser(user);
     setMessages([]);
+
+    // Mark as locally read so unread badge does not re-appear from API until new message arrives.
+    setLocallyReadUsers((prev) => ({
+      ...prev,
+      [user._id]: true,
+    }));
+
+    // Opening a chat clears unread badge for that user in UI.
+    setUnreadCounts((prev) => {
+      if (!prev[user._id]) return prev;
+      return {
+        ...prev,
+        [user._id]: 0,
+      };
+    });
+
     fetchMessages(user._id);
   };
 
@@ -305,13 +338,39 @@ const Message = () => {
       const fetchedMessages = data?.data || [];
       setMessages(fetchedMessages);
 
-      const allMessages = (Array.isArray(fetchedMessages) ? fetchedMessages : []).flatMap((group: any) =>
-        Array.isArray(group.messages) ? group.messages : []
-      );
-      const unreadCount = allMessages.filter((m: any) => !m.isRead).length;
-      setMessageCount(unreadCount);
     } catch (error) {
       console.error("Error fetching messages:", error);
+    }
+  };
+
+  const fetchUnreadCountForUser = async (chatUserId: string): Promise<number> => {
+    try {
+      if (locallyReadUsers[chatUserId]) return 0;
+
+      const token = typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+      if (!token || !userId) return 0;
+
+      const { data } = await axios.get<IMessageResponse>(
+        `https://api.blackstoneinfomaticstech.com/realtimemessage/${userId}/${chatUserId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const groups = Array.isArray(data?.data) ? data.data : [];
+      const allMessages = groups.flatMap((group: IMessageData) =>
+        Array.isArray(group.messages) ? group.messages : []
+      );
+
+      return allMessages.filter(
+        (m) => m.receiverId === userId && m.senderId === chatUserId && !m.isRead
+      ).length;
+    } catch (error) {
+      console.error("Error fetching unread count:", error);
+      return 0;
     }
   };
 
@@ -358,8 +417,20 @@ const Message = () => {
         (newMessage.senderId === userId && newMessage.receiverId === selectedUser?._id) ||
         (newMessage.senderId === selectedUser?._id && newMessage.receiverId === userId);
 
-      if (newMessage.receiverId === userId && !newMessage.isRead) {
-        setMessageCount((prev) => prev + 1);
+      const isIncomingForMe = newMessage.receiverId === userId;
+      const isFromSelectedUser = newMessage.senderId === selectedUser?._id;
+
+      // Increase unread only when message is for me and chat is not currently open.
+      if (isIncomingForMe && !newMessage.isRead && !isFromSelectedUser) {
+        setLocallyReadUsers((prev) => ({
+          ...prev,
+          [newMessage.senderId]: false,
+        }));
+
+        setUnreadCounts((prev) => ({
+          ...prev,
+          [newMessage.senderId]: (prev[newMessage.senderId] || 0) + 1,
+        }));
       }
 
       if (isForCurrentChat) {
@@ -433,12 +504,28 @@ const Message = () => {
         setAdmin(adminList || []);
         setAcademicCoaches(academicCoachList || []);
         setStudents(studentsList || []);
+
+        // Build initial unread counters per chat user.
+        const allUsers = [
+          ...(teachersList || []),
+          ...(adminList || []),
+          ...(academicCoachList || []),
+          ...(studentsList || []),
+        ];
+
+        const uniqueUsers = Array.from(new Map(allUsers.map((u) => [u._id, u])).values());
+        const unreadEntries = await Promise.all(
+          uniqueUsers.map(async (u) => [u._id, await fetchUnreadCountForUser(u._id)] as const)
+        );
+
+        setUnreadCounts(Object.fromEntries(unreadEntries));
       } catch (error) {
         console.error("Error fetching all users:", error);
         setTeachers([]);
         setAdmin([]);
         setAcademicCoaches([]);
         setStudents([]);
+        setUnreadCounts({});
       }
     };
 
@@ -447,6 +534,7 @@ const Message = () => {
     return () => {
       try {
         socketRef.current?.off("newmessage", handleNewMessage);
+        socketRef.current?.off("userActiveStatusResponse", handleUserStatusCheck);
       } catch (e) {
         // ignore cleanup errors
       }
@@ -596,7 +684,7 @@ const Message = () => {
                   <h3 className="text-[18px] font-medium text-[#010E30] dark:text-[#fff]">{userName}</h3>
                   <button className="ml-[4px] text-gray-500">
                     {messageCount > 0 && (
-                      <span className=" -mt-2 ml-1 bg-red-600 text-white text-[8px] rounded-full h-3 w-3 flex items-center justify-center animate-pulse">
+                      <span className="-mt-2 ml-1 min-w-[16px] px-1 bg-red-600 text-white text-[9px] rounded-full h-4 flex items-center justify-center animate-pulse">
                         {messageCount}
                       </span>
                     )}
@@ -630,6 +718,11 @@ const Message = () => {
                 onClick={() => setActiveTab("all")}
               >
                 All
+                {allUnread > 0 && (
+                  <span className="ml-1 inline-flex min-w-[16px] h-4 px-1 items-center justify-center rounded-full bg-red-600 text-white text-[9px]">
+                    {allUnread}
+                  </span>
+                )}
               </button>
               <button
                 className={`px-2 py-1.5 text-[12px] font-medium ${
@@ -638,6 +731,11 @@ const Message = () => {
                 onClick={() => setActiveTab("teachers")}
               >
                 Teachers
+                {teachersUnread > 0 && (
+                  <span className="ml-1 inline-flex min-w-[16px] h-4 px-1 items-center justify-center rounded-full bg-red-600 text-white text-[9px]">
+                    {teachersUnread}
+                  </span>
+                )}
               </button>
               <button
                 className={`px-2 py-1.5 text-[12px] font-medium ${
@@ -646,15 +744,20 @@ const Message = () => {
                 onClick={() => setActiveTab("admin")}
               >
                 Admin
+                {adminUnread > 0 && (
+                  <span className="ml-1 inline-flex min-w-[16px] h-4 px-1 items-center justify-center rounded-full bg-red-600 text-white text-[9px]">
+                    {adminUnread}
+                  </span>
+                )}
               </button>
-              <button
+              {/* <button
                 className={`px-2 py-1.5 text-[12px] font-medium ${
                   activeTab === "students" ? "text-[#576CBC] border-b-2 border-[#576CBC]" : "text-[#010e30] dark:text-[#ffffff]"
                 }`}
                 onClick={() => setActiveTab("students")}
               >
                 Students
-              </button>
+              </button> */}
               <button
                 className={`px-2 py-1.5 text-[12px] font-medium ${
                   activeTab === "academic-coach" ? "text-[#576CBC] border-b-2 border-[#576CBC]" : "text-[#010e30] dark:text-[#ffffff]"
@@ -662,6 +765,11 @@ const Message = () => {
                 onClick={() => setActiveTab("academic-coach")}
               >
                 Academic
+                {academicUnread > 0 && (
+                  <span className="ml-1 inline-flex min-w-[16px] h-4 px-1 items-center justify-center rounded-full bg-red-600 text-white text-[9px]">
+                    {academicUnread}
+                  </span>
+                )}
               </button>
             </div>
 
@@ -695,6 +803,11 @@ const Message = () => {
                       </div>
                     </div>
                     <span className="text-[9px] text-gray-400">{user.lastSeen ? new Date(user.lastSeen).toLocaleString() : ""}</span>
+                    {(unreadCounts[user._id] || 0) > 0 && (
+                      <span className="ml-2 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] leading-[18px] text-center font-medium">
+                        {unreadCounts[user._id]}
+                      </span>
+                    )}
                   </motion.button>
                 ))}
               </AnimatePresence>
