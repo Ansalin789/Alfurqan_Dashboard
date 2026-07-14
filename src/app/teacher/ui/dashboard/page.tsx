@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import React from 'react';
-import 'react-calendar/dist/Calendar.css';
-import BaseLayout from '@/components/BaseLayout';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import Calender from '../../components/Calender';
-import Total from '@/app/teacher/components/total';
-import NextScheduleClass from '@/app/teacher/components/NextScheduleclass';
-import ClassAnalyticsChart from '@/app/teacher/components/ClassAnalyticsChart';
-import EarningAnalytics from '../../components/EarningAnalytics';
-import TeachingActivity from '../../components/TeachingActivity';
-import UpcomingTask from '../../components/UpcomingTask';
-import StudentsCard from '../../components/Students';
-import TeacherHeader from '../../components/TeacherHeader';
+import React from "react";
+import "react-calendar/dist/Calendar.css";
+import BaseLayout from "@/components/BaseLayout";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import Calender from "../../components/Calender";
+import Total from "@/app/teacher/components/total";
+import NextScheduleClass from "@/app/teacher/components/NextScheduleclass";
+import ClassAnalyticsChart from "@/app/teacher/components/ClassAnalyticsChart";
+import EarningAnalytics from "../../components/EarningAnalytics";
+import TeachingActivity from "../../components/TeachingActivity";
+import UpcomingTask from "../../components/UpcomingTask";
+import StudentsCard from "../../components/Students";
+import TeacherHeader from "../../components/TeacherHeader";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -21,8 +21,8 @@ export default function Academic() {
     <BaseLayout>
       <TeacherHeader currentSection="Dashboard" />
 
-      <div className="flex flex-col lg:flex-row gap-4 bg-[#E4E7F4] dark:bg-[#252525]   min-h-screen">
-        {/* Main Content */}
+      <div className="flex flex-col lg:flex-row gap-4 bg-[#E4E7F4] dark:bg-[#252525] h-[calc(100vh-90px)]">
+        {" "}
         <div className="flex-1 flex flex-col gap-4 w-full">
           {/* Summary Cards */}
           <div className="grid grid-cols-1 gap-4">
@@ -44,8 +44,6 @@ export default function Academic() {
             </div>
           </div>
 
-
-
           {/* Teaching Activity and Class Analytics */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 w-full">
             {/* Teaching Activity (8 cols) */}
@@ -62,17 +60,14 @@ export default function Academic() {
               </div>
             </div>
           </div>
-
         </div>
-
         {/* Sidebar */}
-        <div className="w-full lg:w-[310px] flex flex-col gap-4">
-          {/* Calendar */}
-          <div className="rounded-xl shadow-lg  bg-white dark:bg-[#343434] p-2">
+<div className="w-full lg:w-[270px] lg:min-w-[270px] lg:max-w-[300px] flex flex-col gap-4">
+          <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] p-2 shrink-0">
             <Calender />
           </div>
-          {/* Upcoming Tasks */}
-          <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] overflow-y-auto scrollbar-none flex-1">
+
+          <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] flex-1 min-h-0 overflow-hidden">
             <UpcomingTask />
           </div>
         </div>
