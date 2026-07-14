@@ -297,11 +297,11 @@ const NextClass = () => {
   return (
     <div className="w-full ">
       <div className="max-w-screen-xl mx-auto bg-[#78A1DB] rounded-xl shadow-md px-1 py-[11px] sm:px-2 md:px-6 lg:px-8 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-        <div className="flex flex-col gap-2 w-full sm:w-auto">
+        <div className="flex flex-col mb-3 gap-2 w-full sm:w-auto">
           <h3 className="text-[15px] font-semibold">
             Your Next Scheduled Class 
           </h3>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm sm:text-sm md:text-sm">
+          <div className="flex flex-wrap mt-4 items-center gap-x-4 gap-y-2 text-sm sm:text-sm md:text-sm">
             <span className="flex items-center gap-1 whitespace-nowrap">
               <FaUser className="text-white/90 text-base sm:text-sm shrink-0" />
               {classData?.teacher?.teacherName.charAt(0).toUpperCase() + classData?.teacher?.teacherName.slice(1).toLowerCase() || "N/A"}
