@@ -100,8 +100,9 @@ const TeachersSchedule = () => {
 
 
   const Search = useSearchParams()
-  const teacherId = Search.get("_id")
-  const sendteacher = Search.get("teacherId");
+  const teacherId = Search.get("teacher.teacherId") || Search.get("_id") || Search.get("teacherId")
+  const sendteacher = Search.get("teacherId") || Search.get("_id");
+  const sendTeacherProfileId = Search.get("teacher.teacherId") || Search.get("_id") || Search.get("teacherId");
   const [rescheduleDate, setRescheduleDate] = useState("")
   const [success, setSucces] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -777,7 +778,7 @@ const TeachersSchedule = () => {
 
   return (
     <BaseLayout1>
-      <AcademicHeader currentSection="Reschedule Calendar" showBackButton={true} showBackPath={`teacherDetails?teacherId=${sendteacher}`}/>
+      <AcademicHeader currentSection="Reschedule Calendar" showBackButton={true} showBackPath={`teacherDetails?teacherId=${sendteacher || ""}&teacher.teacherId=${sendTeacherProfileId || ""}`}/>
       <div className="p-2">
         <div className="mx-auto gap-4 flex flex-col lg:flex-row overflow-hidden min-h-[630px]">
           <div className="w-full lg:w-2/3 p-4 md:p-6 bg-white dark:bg-[#343434] shadow-md rounded-xl">

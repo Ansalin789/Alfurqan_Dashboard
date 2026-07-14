@@ -384,12 +384,18 @@ const formattedMeetings = allMeetings.map((meeting) => {
   };
 });
 
-// Step 2: Unique by meetingId only
-const uniqueMap = new Map();
+// Step 2: Deduplicate repeated rows by name/date/time.
+// Some API responses may include multiple rows for the same visible event.
+const uniqueMap = new Map<string, (Meeting & { meetingDateTime: Date })>();
 
 formattedMeetings.forEach((meeting) => {
-  if (!uniqueMap.has(meeting.meetingId)) {
-    uniqueMap.set(meeting.meetingId, meeting);
+  const datePart = meeting.selectedDate?.split("T")?.[0] || "";
+  const dedupeKey = `${meeting.meetingName || ""}__${datePart}__${meeting.startTime || ""}__${meeting.endTime || ""}`;
+  const fallbackKey = meeting.meetingId || meeting._id;
+  const key = dedupeKey || fallbackKey;
+
+  if (!uniqueMap.has(key)) {
+    uniqueMap.set(key, meeting);
   }
 });
 
@@ -399,7 +405,7 @@ const uniqueMeetings = Array.from(uniqueMap.values());
 const upcomingMeetings = uniqueMeetings
   .filter((m) => m.meetingDateTime >= now)
 
-  .sort((a, b) => a.meetingDateTime - b.meetingDateTime)
+  .sort((a, b) => a.meetingDateTime.getTime() - b.meetingDateTime.getTime())
 
   .slice(0, 5)
 

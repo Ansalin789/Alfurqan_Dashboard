@@ -51,7 +51,7 @@ const UpcomingClasses: React.FC = () => {
         const academicId = localStorage.getItem("AcademicCoachPortalId");
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/dashboard/ac/upcomingclass`,
+          `https://api.blackstoneinfomaticstech.com/dashboard/ac/upcomingclass?academicCoachId=${academicId}`,
           {
             params: { academicCoachId: academicId },
             headers: {
@@ -61,9 +61,7 @@ const UpcomingClasses: React.FC = () => {
           }
         );
 
-        if (!response.data || !Array.isArray(response.data)) {
-          throw new Error(`Failed to fetch classes: ${response.statusText}`);
-        }
+        const classList: any[] = Array.isArray(response.data) ? response.data : [];
 
         const now = new Date();
         const toDateTime = (item: any) => {
@@ -79,7 +77,7 @@ const UpcomingClasses: React.FC = () => {
           return datePart;
         };
 
-        const upcomingClasses = response.data
+        const upcomingClasses = classList
           .filter((item: any) => toDateTime(item) > now)
           .sort(
             (a: any, b: any) =>

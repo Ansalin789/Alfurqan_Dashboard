@@ -323,17 +323,17 @@ export default function AcademicHeader({
         </button>
       );
     }
-    if (currentSection === "Calendar") {
-      return (
-        <button
-          onClick={() => setAddMeetings(true)}
-          className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
-          disabled={!calendarWrite}
-        >
-          Add Meeting
-        </button>
-      );
-    }
+    // if (currentSection === "Calendar") {
+    //   return (
+    //     <button
+    //       onClick={() => setAddMeetings(true)}
+    //       className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
+    //       disabled={!calendarWrite}
+    //     >
+    //       Add Meeting
+    //     </button>
+    //   );
+    // }
     if (currentSection === "Student List") {
       return (
         <button

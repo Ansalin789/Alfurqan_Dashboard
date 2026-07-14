@@ -23,6 +23,7 @@ interface IProfessionalExperience {
 
 interface ICandidateApplication {
   _id: string;
+  candidateId: string;
   candidateFirstName: string;
   candidateLastName: string;
   supervisor: {
@@ -174,14 +175,19 @@ const ManageTeacher: React.FC = () => {
   }, []);
 
 
-  const handleViewTeacherSchedule = (teacherId: string) => {
-    if (!teacherId) {
+  const handleViewTeacherSchedule = (teacher: ICandidateApplication) => {
+    const applicantId = teacher?._id;
+    const teacherProfileId = teacher?.candidateId || applicantId;
+
+    if (!applicantId) {
       console.error("Teacher ID is undefined.");
       return;
     }
-    localStorage.setItem("manageTeacherId", teacherId);
-    console.log("Teacher ID:", teacherId);
-    router.push(`/Academic-coach/ui/teacherDetails?teacherId=${teacherId}`);
+    localStorage.setItem("manageTeacherId", applicantId);
+    console.log("Teacher ID:", applicantId);
+    router.push(
+      `/Academic-coach/ui/teacherDetails?teacherId=${applicantId}&teacher.teacherId=${teacherProfileId}`
+    );
   };
 
 
@@ -340,7 +346,7 @@ const ManageTeacher: React.FC = () => {
                   </div>
                   <button
                     className="mt-[8px] text-[11px] bg-[#576cbc] text-[#fff] px-4 py-1 rounded-lg w-full h-[27px]"
-                    onClick={() => handleViewTeacherSchedule(teacher._id)}
+                    onClick={() => handleViewTeacherSchedule(teacher)}
                   >
                     View Profile
                   </button>

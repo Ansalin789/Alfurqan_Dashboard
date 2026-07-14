@@ -1662,14 +1662,14 @@ const handlesendupdate = async (id: string, status: string) => {
                   >
                     Shortlisted
                   </button>
-                  <button
+                  {/* <button
                     onClick={() =>
                       handlesendupdate(Applicantbyid?._id ?? "", "SENDAPPROVAL")
                     }
                     className="px-4 py-2 text-[12px] text-[#4E91F0] bg-[#ECF3FD] rounded-lg dark:bg-[#39475A]"
                   >
                     Send for Approval
-                  </button>
+                  </button> */}
                 </>
               )}
               {mode === "view" && (

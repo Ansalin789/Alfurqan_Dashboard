@@ -19,6 +19,9 @@ interface Event {
   studentName: string,
   studentEmail: string,
   meetingId?: string;
+  classType?: string;
+  meetingStatus?: string;
+  eventState: "Upcoming" | "Completed";
 }
 
 const SchedulePage = () => {
@@ -28,6 +31,7 @@ const SchedulePage = () => {
   const [selectedDate, setSelectedDate] = useState<string>(
     moment().format("YYYY-MM-DD")
   );
+  const [showAllEvents, setShowAllEvents] = useState(false);
   const [eventsForSelectedDate, setEventsForSelectedDate] = useState<Event[]>(
     []
   );
@@ -37,6 +41,12 @@ const SchedulePage = () => {
 const router = useRouter();
 
   const tabs = ["monthly", "weekly", "daily"] as const;
+
+  const getEventState = (_date: string, _endTime: string, meetingStatus?: string): "Upcoming" | "Completed" => {
+    const status = (meetingStatus || "").toLowerCase();
+    // Respect backend status first: only explicit completed should be shown as Completed.
+    return status === "completed" ? "Completed" : "Upcoming";
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("AcademicCoachAuthToken");
@@ -58,52 +68,48 @@ const router = useRouter();
       .then((response) => response.json())
       .then((data) => {
         console.log("dataaa", data);
-        const mappedAcademicEvents = data.academicCoach.map((item: any) => ({
-          id: item._id,
-            meetingId: item._id, // or item.meetingId if exists
+        // Show only Evaluation classes from academic coach schedule entries.
+        const mappedAcademicEvents = (data.academicCoach || [])
+          .filter((item: any) => (item.classType || "").toLowerCase().includes("evaluation"))
+          .map((item: any) => {
+            const eventDate = moment(item.scheduledStartDate).format("YYYY-MM-DD");
+            return {
+              id: item._id,
+              meetingId: item._id,
+              title: item.subject,
+              start: item.scheduledFrom,
+              end: item.scheduledTo,
+              description: item.description,
+              studentName: item.student?.name || "",
+              studentEmail: item.student?.email || "",
+              date: eventDate,
+              classType: item.classType,
+              meetingStatus: item.meetingStatus,
+              eventState: getEventState(eventDate, item.scheduledTo, item.meetingStatus),
+            } as Event;
+          });
 
-          title: item.subject,
-          start: item.scheduledFrom,
-          end: item.scheduledTo,
-          description: item.description,
-          studentName: item.student.name,
-          studentEmail: item.student.email,
-          date: moment(item.scheduledStartDate).format("YYYY-MM-DD"),
-        }));
-
-          const addSupervisorEvents = data.meetingList.map((item: any) => ({
-          id: item._id,
-           meetingId: item.meetingId,
-          title: item.meetingName,
-          start: item.startTime,
-          end: item.endTime,
-          description: item.description,
-          studentName: item.participants.participantName,
-          studentEmail: item.participants.participantEmail,
-          date: moment(item.selectedDate).format("YYYY-MM-DD"),
-        }));
-
-          const adminEvents = data.adminMeetingList.map((item: any) => ({
-          id: item._id,
-          meetingId: item.meetingId,
-          title: item.meetingName,
-          start: item.startTime,
-          end: item.endTime,
-          description: item.description,
-          studentName: item.admin.adminName,
-          studentEmail: item.admin.adminEmail,
-          date: moment(item.selectedDate).format("YYYY-MM-DD"),
-        }));
-         const mappedEvents = [
-    ...mappedAcademicEvents,
-    ...addSupervisorEvents,
-    ...adminEvents,
-  ];
+        const mappedEvents = mappedAcademicEvents;
         setEvents(mappedEvents);
         console.log("Fetched Events: ", mappedEvents);
       })
       .catch((error) => console.error("Error fetching data: ", error));
   }, []);
+
+  useEffect(() => {
+    if (showAllEvents) {
+      const sortedAllEvents = [...events].sort((a, b) => {
+        const aDate = moment(`${a.date} ${a.start}`, "YYYY-MM-DD HH:mm");
+        const bDate = moment(`${b.date} ${b.start}`, "YYYY-MM-DD HH:mm");
+        return bDate.valueOf() - aDate.valueOf();
+      });
+      setEventsForSelectedDate(sortedAllEvents);
+      return;
+    }
+
+    const filteredEvents = events.filter((event) => event.date === selectedDate);
+    setEventsForSelectedDate(filteredEvents);
+  }, [events, selectedDate, showAllEvents]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -123,11 +129,8 @@ const router = useRouter();
 
   const handleDateClick = (date: Date) => {
     const formattedDate = moment(date).format("YYYY-MM-DD");
+    setShowAllEvents(false);
     setSelectedDate(formattedDate);
-    const filteredEvents = events.filter(
-      (event) => event.date === formattedDate
-    );
-    setEventsForSelectedDate(filteredEvents);
   };
 
   const getDaysInMonth = (date: Date) => {
@@ -502,32 +505,46 @@ const canJoinNow = (event: Event) => {
           </div>
 
           {/* List Schedule */}
-          <div className="w-full lg:w-1/3 bg-white dark:bg-[#343434] shadow-md rounded-xl flex flex-col min-h-[630px] lg:h-[630px]">
+          <div className="w-full lg:w-1/3 bg-white dark:bg-[#343434] shadow-md rounded-xl flex flex-col min-h-[630px] lg:h-[630px] scroll-m-0 overflow-y-scroll scrollbar-thumb-gray-400 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800 scrollbar-thin">
             <div className="p-4 md:p-6">
               <h2 className="text-[18px] font-semibold">List Schedule</h2>
+              {showAllEvents ? (
+                <button
+                  onClick={() => setShowAllEvents(false)}
+                  className="text-[11px] mt-1 text-[#576cbc] underline"
+                >
+                  Back to selected date
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowAllEvents(true)}
+                  className="text-[11px] mt-1 text-[#576cbc] underline"
+                >
+                  Show all events
+                </button>
+              )}
               <div className="space-y-3 md:space-y-4 mt-6">
                 {eventsForSelectedDate.length > 0 ? (
                   eventsForSelectedDate.map((item, index) => {
-                    const textColors = [
-                      "text-[#d77277]",
-                      "text-[#72B0D7]",
-                      "text-[#BF63B3]",
-                      "text-[#BFBC63]",
-                      "text-[#BF8C63]",
-                      "text-[#6EBF63]"
-                    ];
-                    const currentTextColor = textColors[index % textColors.length];
+                    const isCompleted = item.eventState === "Completed";
+                    const titleColor = isCompleted ? "text-[#D96A6A]" : "text-[#4C9A69]";
+                    const chipClass = isCompleted
+                      ? "bg-[#FDECEC] text-[#D96A6A] dark:bg-[#5B2A2A] dark:text-[#FFB3B3]"
+                      : "bg-[#EAF8EF] text-[#4C9A69] dark:bg-[#1F3A2A] dark:text-[#A6E7BF]";
                     return (
                       <div
                         key={item.id}
                         className="border-b pb-2 border-[#dadada] dark:border-[#5b5b5b]"
                       >
                         <div className="flex justify-between">
-                          <h3 className={`font-medium text-[14px] ${currentTextColor}`}>
+                          <h3 className={`font-medium text-[14px] ${titleColor}`}>
                             {item.title}
                           </h3>
                           <div>
                             <div className="flex gap-4">
+                              <span className={`text-[10px] px-2 py-[2px] mt-2 rounded-full ${chipClass}`}>
+                                {item.eventState}
+                              </span>
                               <div className="text-[10px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
                                 <FaClock size={10} />
                                 {moment(item.start, 'HH:mm').format("h:mm A")} -{" "}

@@ -11,8 +11,7 @@ import { MdTune } from "react-icons/md";
 import Modal from "react-modal";
 import axios from "axios";
 import AcademicHeader from "../../components/academicHeader";
-import { getSocket } from "@/app/utils/socket";
-import { AiOutlineMenuUnfold } from "react-icons/ai";
+
 
 // --- Interfaces from ScheduledClasses (Unified) ---
 export interface UnifiedClassSchedule {
@@ -125,7 +124,9 @@ interface StudentInfo {
 const TeacherDetails = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const teacherId = searchParams!.get("teacherId");
+  const applicantId = searchParams!.get("teacherId");
+  const teacherProfileId = searchParams!.get("teacher.teacherId");
+  const effectiveTeacherId = teacherProfileId || applicantId;
 
   // --- Profile State ---
   const [teachers, setTeachers] = useState<ICandidateApplication>();
@@ -177,16 +178,17 @@ const TeacherDetails = () => {
 
   // --- Fetch Profile Data ---
   useEffect(() => {
-    if (!teacherId) return;
+    if (!applicantId && !effectiveTeacherId) return;
 
     const fetchTeachers = async () => {
       try {
         const token = localStorage.getItem("AcademicCoachAuthToken");
         if (!token) return;
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/applicants/${teacherId}`,
+          `https://api.blackstoneinfomaticstech.com/applicants/${applicantId || effectiveTeacherId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        console.log("RAW applicants/:id response:", response.data);
         setTeachers(response.data);
       } catch (error) {
         console.error("Error fetching teacher profile:", error);
@@ -198,7 +200,7 @@ const TeacherDetails = () => {
         const token = localStorage.getItem("AcademicCoachAuthToken");
         if (!token) return;
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/classstudentsattendancecounts?teacherId=${teacherId}`,
+          `https://api.blackstoneinfomaticstech.com/classstudentsattendancecounts?teacherId=${effectiveTeacherId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setStats(response.data);
@@ -209,11 +211,11 @@ const TeacherDetails = () => {
 
     fetchTeachers();
     fetchStats();
-  }, [teacherId]);
+  }, [applicantId, effectiveTeacherId]);
 
   // --- Fetch Classes Logic (Adapted from ScheduledClasses) ---
   const fetchClasses = async () => {
-    if (!teacherId) return;
+    if (!effectiveTeacherId) return;
     try {
       const token = localStorage.getItem("AcademicCoachAuthToken");
       if (!token) {
@@ -221,11 +223,11 @@ const TeacherDetails = () => {
         return;
       }
 
-      console.log("Fetching classes for Teacher:", teacherId);
+      console.log("Fetching classes for Teacher:", effectiveTeacherId);
       const response = await axios.get(
         "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
         {
-          params: { teacherId },
+          params: { teacherId: effectiveTeacherId },
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -233,8 +235,13 @@ const TeacherDetails = () => {
         }
       );
 
+      console.log("RAW classShedule/teacher response:", response.data);
+
       // 1. Process Regular Classes
-      const regularClasses: UnifiedClassSchedule[] = response.data.classScheduleList.map((cls: any) => {
+      const classScheduleList = Array.isArray(response.data.classScheduleList)
+        ? response.data.classScheduleList
+        : [];
+      const regularClasses: UnifiedClassSchedule[] = classScheduleList.map((cls: any) => {
         if (cls.student && cls.sessionClassType !== "GROUPCLASS") {
           cls.students = [{ student: cls.student }];
           delete cls.student;
@@ -393,13 +400,13 @@ const TeacherDetails = () => {
       setCompletedData(completed);
       setFilteredClasses(activeTab === "upcoming" ? upcoming : completed);
     } catch (error) {
-      console.error("Error fetching classes:", error);
+      console.error("Error fetching classes:", error, (error as any)?.response?.data);
     }
   };
 
   useEffect(() => {
     fetchClasses();
-  }, [teacherId]);
+  }, [effectiveTeacherId]);
 
   // Update filtered classes when tab changes
   useEffect(() => {
@@ -484,7 +491,14 @@ const TeacherDetails = () => {
 
   const handleReschedule = (id: string) => {
     console.log("Navigating to reschedule page");
-    router.push(`manageteachers?id=${id}&teacherId=${teacherId}`);
+    const params = new URLSearchParams();
+    params.set("id", id);
+    if (applicantId) params.set("teacherId", applicantId);
+    if (effectiveTeacherId) {
+      params.set("teacher.teacherId", effectiveTeacherId);
+      params.set("_id", effectiveTeacherId);
+    }
+    router.push(`manageteachers?${params.toString()}`);
     setOpenDropdownId(null);
   };
 
@@ -631,8 +645,7 @@ const TeacherDetails = () => {
                       className="text-[12px] font-medium text-[#111827] dark:text-white cursor-pointer hover:underline"
                       onClick={() => handleViewDetails(student._id)}
                     >
-                      {student.firstName[0].toUpperCase() +
-                        student.firstName.slice(1).toLowerCase()}
+                      { student.firstName || "Student"}
                     </span>
                   </div>
                   <span className="text-[11px] text-[#576CBC] font-medium whitespace-nowrap">
