@@ -21,57 +21,50 @@ export default function Academic() {
     <BaseLayout>
       <TeacherHeader currentSection="Dashboard" />
 
-      <div className="flex flex-col lg:flex-row gap-4 bg-[#E4E7F4] dark:bg-[#252525] h-[calc(100vh-90px)]">
-        {" "}
-        <div className="flex-1 flex flex-col gap-4 w-full">
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 gap-4">
-            <Total />
-          </div>
+<div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_290px] gap-4 bg-[#E4E7F4] dark:bg-[#252525] lg:items-stretch">  {/* ================= Left Content ================= */}
+  <div className="min-w-0 flex flex-col gap-4">
+    {/* Summary Cards */}
+    <Total />
 
-          {/* Next Class Schedule */}
-          <div className="grid grid-cols-1 gap-4">
-            <NextScheduleClass />
-          </div>
+    {/* Next Schedule */}
+    <NextScheduleClass />
 
-          {/* Analytics Row */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 w-full">
-            <div className="col-span-12 md:col-span-8">
-              <EarningAnalytics />
-            </div>
-            <div className="col-span-12 md:col-span-4">
-              <StudentsCard />
-            </div>
-          </div>
-
-          {/* Teaching Activity and Class Analytics */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 w-full">
-            {/* Teaching Activity (8 cols) */}
-            <div className="col-span-12 lg:col-span-8 flex">
-              <div className="w-full h-full">
-                <TeachingActivity />
-              </div>
-            </div>
-
-            {/* Class Analytics (4 cols) - with constrained container */}
-            <div className="col-span-12 lg:col-span-4 flex">
-              <div className="w-full h-full min-h-[250px]">
-                <ClassAnalyticsChart />
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* Sidebar */}
-<div className="w-full lg:w-[270px] lg:min-w-[270px] lg:max-w-[300px] flex flex-col gap-4">
-          <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] p-2 shrink-0">
-            <Calender />
-          </div>
-
-          <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] flex-1 min-h-0 overflow-hidden">
-            <UpcomingTask />
-          </div>
-        </div>
+    {/* Analytics */}
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+      <div className="md:col-span-8">
+        <EarningAnalytics />
       </div>
+
+      <div className="md:col-span-4">
+        <StudentsCard />
+      </div>
+    </div>
+
+    {/* Bottom Section */}
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div className="lg:col-span-8">
+        <TeachingActivity />
+      </div>
+
+      <div className="lg:col-span-4">
+        <ClassAnalyticsChart />
+      </div>
+    </div>
+  </div>
+
+  {/* ================= Sidebar ================= */}
+ <aside className="w-full lg:w-[290px] lg:flex-shrink-0 flex flex-col gap-4">
+  {/* Calendar */}
+  <div className="rounded-xl bg-white dark:bg-[#343434] shadow-lg p-2">
+    <Calender />
+  </div>
+
+  {/* Upcoming */}
+  <div className="rounded-xl bg-white dark:bg-[#343434] shadow-lg flex-1 min-h-[250px] overflow-hidden">
+    <UpcomingTask />
+  </div>
+</aside>
+</div>
     </BaseLayout>
   );
 }
