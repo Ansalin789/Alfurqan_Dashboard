@@ -301,7 +301,7 @@ const Teacher = () => {
   const [searchEarnings, setSearchEarnings] = useState("");
   const [selectedSalary, setSelectedSalary] = useState<SalaryWageRecord | null>(null);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
-
+const [applicant, setApplicant] = useState<any>(null);
   // Filtered Earnings (months)
   const handleViewDownload = (item: SalaryWageRecord) => {
     setSelectedSalary(item);
@@ -474,6 +474,8 @@ const Teacher = () => {
       fetchSchedule(token);
       fetchWages(token);
       fetchClasses(token);
+      
+fetchApplicant(token);
     } else {
       console.log("No auth token or employee ID found.");
     }
@@ -496,6 +498,32 @@ const Teacher = () => {
       console.error("Error fetching users:", error);
     }
   };
+
+const fetchApplicant = async (token: string) => {
+  try {
+    const response = await axios.get(
+      "https://api.blackstoneinfomaticstech.com/applicants",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("employeeId:", employeeId);
+    console.log("Applicants:", response.data.applicants);
+
+    const applicant = response.data.applicants.find(
+      (item: any) => item.candidateId === employeeId
+    );
+
+    console.log("Matched Applicant:", applicant);
+
+    setApplicant(applicant);
+  } catch (err) {
+    console.log(err);
+  }
+};
 
   const fetchSchedule = async (token: string) => {
     try {
@@ -1128,10 +1156,12 @@ const Teacher = () => {
                 />
               </div>
               <h2 className="text-[12px] font-semibold text-center mt-2">
-                {users?.userName}
+                {/* {users?.userName} */}
+                {applicant?.candidateFirstName} {applicant?.candidateLastName}
               </h2>
               <span className="text-gray-300 text-center text-[10px]">
-                {users?.email}
+                {/* {users?.email} */}
+                {applicant?.candidateEmail || "-"}
               </span>
             </div>
 
@@ -1143,19 +1173,22 @@ const Teacher = () => {
                 <div className="py-2 flex flex-row justify-between">
                   <span className="text-gray-200">Contact:</span>{" "}
                   <span className="text-gray-200 px-2 text-[10px]">
-                    {users?.contact}
+                    {/* {users?.contact} */}
+                    {applicant?.candidatePhoneNumber || "-"}
                   </span>
                 </div>
                 <div className="py-2 flex flex-row justify-between">
                   <span className="text-gray-200">Country:</span>{" "}
                   <span className="text-gray-200 px-2 text-[10px]">
-                    {users?.country}
+                    {/* {users?.country}
+                     */}
+                     {applicant?.candidateCountry || "-"}
                   </span>
                 </div>
                 <div className="py-2 flex flex-row justify-between">
                   <span className="text-gray-200">Gender:</span>{" "}
                   <span className="text-gray-200 px-2 text-[10px]">
-                    {users?.gender}
+                    {applicant?.gender}
                   </span>
                 </div>
               </div>
@@ -1169,13 +1202,16 @@ const Teacher = () => {
                 <div className="py-2 flex flex-row justify-between">
                   <span className="text-gray-200">Nationality:</span>{" "}
                   <span className="text-gray-200 px-2 text-[10px]">
-                    {users?.country}
+                    {/* {users?.country} */}
+                     {applicant?.candidateCountry || "-"}
+
                   </span>
                 </div>
                 <div className="py-2 flex flex-row justify-between">
                   <span className="text-gray-200">Course:</span>{" "}
                   <span className="text-gray-200 px-2 text-[10px]">
-                    {users?.position}
+                    {/* {users?.position} */}
+                    {applicant?.positionApplied || users?.position}
                   </span>
                 </div>
                 <div className="py-2 flex flex-row justify-between">
