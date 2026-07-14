@@ -52,6 +52,7 @@ const NextScheduledClass = () => {
 
 
 
+
   const fetchClassData = async () => {
     try {
       setLoading(true);
@@ -92,7 +93,9 @@ const NextScheduledClass = () => {
         .sort((a, b) => b.classEnd!.getTime() - a.classEnd!.getTime())[0];
 
       setUpcomingClasses(upcoming);
+      setClassData(upcoming[0] || null);
       setRecentClass(past || null);
+      console.log("Fetched class data:", { upcoming, past });
     } catch (err) {
       console.error(err);
     } finally {
@@ -352,7 +355,7 @@ const NextScheduledClass = () => {
         />
 
 
-        {recentClass && (
+        {/* {recentClass && (
           <div className="bg-white rounded-xl shadow p-4 mt-3 text-[#1B1B1B]">
             <p className="text-sm font-semibold">Last Class</p>
             <p className="text-xs">
@@ -364,7 +367,7 @@ const NextScheduledClass = () => {
               {recentClass.classStart?.toDateString()}
             </p>
           </div>
-        )}
+        )} */}
 
       </div>
     </div>

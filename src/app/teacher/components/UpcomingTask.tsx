@@ -316,46 +316,36 @@ const UpcomingTasks: React.FC = () => {
         return date;
       };
 
-      const upcoming = allClasses.filter((cls) => {
-        const start = parseDateTime(cls.startDate, cls.startTime?.[0]);
-        const end = parseDateTime(cls.endDate, cls.endTime?.[0]);
+      const today = new Date();
 
-        console.log("Filter class - id:", cls._id, {
-          startDate: cls.startDate,
-          endDate: cls.endDate,
-          startTime: cls.startTime?.[0],
-          endTime: cls.endTime?.[0],
-          parsedStart: start,
-          parsedEnd: end,
-          status: cls.scheduleStatus,
-        });
+const upcoming = allClasses.filter((cls) => {
+  const start = parseDateTime(cls.startDate, cls.startTime?.[0]);
+  const end = parseDateTime(cls.endDate, cls.endTime?.[0]);
 
-        if (!start || !end) {
-          console.warn("Skipping class due to missing start/end:", cls._id);
-          return false;
-        }
+  if (!start || !end) {
+    return false;
+  }
 
-        const validStatus = [
-          "Scheduled",
-          "BothAbsent",
-          "StudentAbsent",
-          "NotCompleted",
-        ];
+  const validStatus = [
+    "Scheduled",
+    "BothAbsent",
+    "StudentAbsent",
+    "NotCompleted",
+  ];
 
-        if (!validStatus.includes(cls.scheduleStatus)) {
-          console.warn(
-            "Skipping class due to invalid status:",
-            cls._id,
-            cls.scheduleStatus
-          );
-          return false;
-        }
+  if (!validStatus.includes(cls.scheduleStatus)) {
+    return false;
+  }
 
-        // Show until end time
-        const keep = now < end;
-        console.log("Filter result for class", cls._id, "=>", keep);
-        return keep;
-      });
+  // ✅ Check if class is today
+  const isToday =
+    start.getFullYear() === today.getFullYear() &&
+    start.getMonth() === today.getMonth() &&
+    start.getDate() === today.getDate();
+
+  // ✅ Show only today's classes until their end time
+  return isToday && now < end;
+});
 
       console.log("Upcoming Classes:", upcoming);
 
@@ -389,9 +379,8 @@ const UpcomingTasks: React.FC = () => {
   }
 
   return (
-    <div className="bg-white dark:bg-[#343434] w-full rounded-xl h-20 px-4 pt-4 pb-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4 px-1">
+  <div className="h-full flex flex-col p-4">
+      <div className="flex justify-between items-center mb-4">
         <h2 className="font-semibold text-[16px] text-[#010e30] dark:text-white">
           Upcoming Tasks
         </h2>
@@ -400,51 +389,56 @@ const UpcomingTasks: React.FC = () => {
         </span>
       </div>
 
-      <div className="relative">
-        {/* Vertical Dotted Line (Dark mode → white) */}
-        <div className="absolute left-[58px] top-0 bottom-0 border-l-2 border-dotted border-black dark:border-white" />
+     <div className="relative flex-1 min-h-0 overflow-y-auto pr-2">
+  {classes.length === 0 ? (
+    <div className="flex h-full items-center justify-center">
+      <p className="text-center text-gray-500 dark:text-white text-sm">
+        No classes scheduled for today.
+      </p>
+    </div>
+  ) : (
+    <>
+      {/* Vertical Dotted Line */}
+      <div className="absolute left-[58px] top-0 bottom-0 border-l-2 border-dotted border-black dark:border-white" />
 
-        <div className="space-y-4 pl-[8px]">
-          {classes.length === 0 ? (
-            <p className="text-center text-gray-500 dark:text-white text-sm p-4">
-              No classes scheduled for today.
-            </p>
-          ) : (
-            classes.map((classItem) => {
-              const classType = classItem.sessionClassType;
-              const style = classTypeStyles[classType] || classTypeStyles.DEFAULT;
+      <div className="space-y-4 pl-[8px]">
+        {classes.map((classItem) => {
+          const classType = classItem.sessionClassType;
+          const style =
+            classTypeStyles[classType] || classTypeStyles.DEFAULT;
 
-              return (
+          return (
+            <div
+              key={classItem._id}
+              className="flex items-start relative w-full"
+            >
+              {/* Time */}
+              <div className="w-[45px] text-[13px] text-black dark:text-white mt-[6px] text-right pr-1">
+                {classItem.startTime[0]}
+              </div>
+
+              {/* Dot */}
+              <div className="absolute left-[46px] top-1/2 -translate-y-1/2 z-10">
                 <div
-                  key={classItem._id}
-                  className="flex items-start relative w-full"
+                  className={`w-[10px] h-[10px] rounded-full ${style.dot}`}
+                />
+              </div>
+
+              {/* Card */}
+              <div className="ml-[24px] flex-1 bg-[#f4f4f4] dark:bg-[#404040] rounded-md px-3 py-2">
+                <span
+                  className={`text-[14px] font-bold uppercase ${style.text}`}
                 >
-                  {/* Time */}
-                  <div className="w-[45px] text-[13px] text-black dark:text-white mt-[6px] text-right pr-1">
-                    {classItem.startTime[0]}
-                  </div>
-
-                  {/* Dot centered on line */}
-                  <div className="absolute left-[46px] top-[50%] -translate-y-1/2 z-10">
-                    <div
-                      className={`w-[10px] h-[10px] rounded-full ${style.dot}`}
-                    />
-                  </div>
-
-                  {/* Card */}
-                  <div className="ml-[24px] flex-1 bg-[#f4f4f4] dark:bg-[#404040] rounded-md px-3 py-2 flex justify-between items-center">
-                    <span
-                      className={`text-[14px] font-bold uppercase ${style.text}`}
-                    >
-                      {classItem.sessionClassType}
-                    </span>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+                  {classItem.sessionClassType}
+                </span>
+              </div>
+            </div>
+          );
+        })}
       </div>
+    </>
+  )}
+</div>
     </div>
   );
 };
