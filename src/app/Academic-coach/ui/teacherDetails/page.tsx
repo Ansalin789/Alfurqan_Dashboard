@@ -102,6 +102,7 @@ interface ICandidateApplication {
   candidateEmail: string;
   candidatePhoneNumber: number;
   candidateCountry: string;
+  gender: string;
   positionApplied: string;
   overallRating: number;
 }
@@ -571,15 +572,9 @@ const TeacherDetails = () => {
                   </span>
                 </li>
                 <li className="flex justify-between">
-                  <span>Role</span>
+                  <span>Gender</span>
                   <span className="text-[#DADADA]/80">
-                    {teachers?.positionApplied}
-                  </span>
-                </li>
-                <li className="flex justify-between">
-                  <span>Level</span>
-                  <span className="text-[#DADADA]/80">
-                    {teachers?.overallRating}
+                    {teachers?.gender || "N/A"}
                   </span>
                 </li>
               </ul>
