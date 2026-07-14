@@ -732,14 +732,14 @@ const Page = () => {
     leaveFilterTo,
   ]);
 
-  const handleViewTeacher = (teacherId: string) => {
-    if (!teacherId) {
+  const handleViewTeacher = (teacherId: string ,id :string) => {
+    if (!teacherId || !id) {
       console.error("Teacher ID is undefined.");
       return;
     }
 
     console.log("Teacher ID:", teacherId);
-    router.push(`/admin-main/ui/employees/teacher?teacherId=${teacherId}`);
+    router.push(`/admin-main/ui/employees/teacher?teacherId=${teacherId}&id=${id}`);
   };
 
   const handleViewEmployee = (employeeId: string, userId: string) => {
@@ -1574,7 +1574,7 @@ const Page = () => {
                               <button
                                 className="text-[12px] bg-[#576CBC] text-white px-2 py-1 rounded-lg"
                                 onClick={() =>
-                                  handleViewTeacher(teacher.userId)
+                                  handleViewTeacher(teacher.userId, teacher._id)
                                 }
                               >
                                 View Profile

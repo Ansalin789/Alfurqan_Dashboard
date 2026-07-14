@@ -287,7 +287,7 @@ const getPieLabelPosition = (
 ) => {
   const midAngle = (startAngle + endAngle) / 2;
   const radius = (innerRadius + outerRadius) / 2;
-  const RADIAN = Math.PI / 180;
+  const RADIAN = Math.PI / 195;
   return {
     x: cx + radius * Math.cos(-midAngle * RADIAN),
     y: cy + radius * Math.sin(-midAngle * RADIAN),
@@ -354,11 +354,11 @@ const PreferredTeachersCard = () => {
   };
 
   const assignedLabelPos = getPieLabelPosition(
-    75, 75, 0, 55, assignedAngles.start, assignedAngles.end
+    75, 75, 0, 90, assignedAngles.start, assignedAngles.end
   );
 
   const notAssignedLabelPos = getPieLabelPosition(
-    75, 75, 0, 50, notAssignedAngles.start, notAssignedAngles.end
+    75, 75, 0, 35, notAssignedAngles.start, notAssignedAngles.end
   );
 
   return (
@@ -390,7 +390,7 @@ const PreferredTeachersCard = () => {
                 y={assignedLabelPos.y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                fontSize="14px"
+                fontSize="12px"
                 fontWeight="bold"
                 fill="#fff"
               >
@@ -417,7 +417,7 @@ const PreferredTeachersCard = () => {
                 y={notAssignedLabelPos.y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                fontSize="13px"
+                fontSize="12px"
                 fontWeight="bold"
                 fill="#fff"
               >

@@ -90,7 +90,7 @@ export default function TeacherHeader({
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       const notifications = data?.data?.notifications ?? [];
@@ -127,15 +127,15 @@ export default function TeacherHeader({
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       setNotifications((prev) =>
         prev.map((n) =>
           n._id === notificationId
             ? { ...n, isRead: true, notificationStatus: "Seen" }
-            : n
-        )
+            : n,
+        ),
       );
 
       setNotificationCount((prev) => Math.max(prev - 1, 0));
@@ -209,37 +209,35 @@ export default function TeacherHeader({
         return "💬";
       case "ADMIN_MEETING_SCHEDULED":
         return "📝";
-      default:  
+      default:
         return "🔔";
     }
   };
-    const handleNotificationRedirect = (notification : NotificationType) => {
-  const { notificationType, senderId } = notification;
+  const handleNotificationRedirect = (notification: NotificationType) => {
+    const { notificationType, senderId } = notification;
 
-  switch (notificationType) {
-   
-
-    case "ADMIN_NOTIFICATION":
-      router.push(`/admin/alerts/${senderId}`);
-      break;
-
-    case "REQUEST_RESCHEDULE_STUDENT" :
-      router.push(`/teacher/ui/schedule`);
-      break;
-
-      case "TEACHER_TRAILCLASS_NOTIFICATION" :
-      router.push(`/teacher/ui/schedule`);
-      break; 
-
-      case "ADMIN_MEETING_SCHEDULED" :
-        router.push('/teacher/ui/meeting');
+    switch (notificationType) {
+      case "ADMIN_NOTIFICATION":
+        router.push(`/admin/alerts/${senderId}`);
         break;
-      
-    default:
-      console.warn("Unknown notification type:", notificationType);
-      break;
-  }
-};
+
+      case "REQUEST_RESCHEDULE_STUDENT":
+        router.push(`/teacher/ui/schedule`);
+        break;
+
+      case "TEACHER_TRAILCLASS_NOTIFICATION":
+        router.push(`/teacher/ui/schedule`);
+        break;
+
+      case "ADMIN_MEETING_SCHEDULED":
+        router.push("/teacher/ui/meeting");
+        break;
+
+      default:
+        console.warn("Unknown notification type:", notificationType);
+        break;
+    }
+  };
 
   const renderButton = () => {
     if (currentSection === "Dashboard") {
@@ -341,122 +339,163 @@ export default function TeacherHeader({
           </button>
         </div>
       )}
-        {showNotification && (
-               <div
-                 ref={notificationRef}
-                 className="absolute pb-6 ml-[810px] w-[90vw] sm:w-[470px] max-w-[95vw] -mt-1 bg-white/90 dark:bg-[#252525]/80 backdrop-blur-md border rounded-lg shadow-2xl z-30 animate-fade-in-up animation-transition-all duration-300"
-               >
-                 <div className="pt-3 pb-2 pl-4 border-b border-white flex justify-between items-center dark:border-[#252525]">
-                   <h4 className="font-semibold text-[#010E30] text-lg dark:text-[#FFFFFF]">
-                     Notifications
-                   </h4>
-                   <button
-                     onClick={() => setShowNotification(false)}
-                     className="text-white hover:text-gray-200"
-                   >
-                     <X
-                       size={18}
-                       className="text-red-600 mr-3 font-semibold dark:text-white"
-                     />
-                   </button>
-                 </div>
-       
-                 <div className="flex justify-start backdrop-blur-md px-5">
-                   <div className="flex w-full justify-start gap-3">
-                     {["Unseen", "Seen"].map((tab) => (
-                       <button
-                         key={tab}
-                         onClick={() => setActiveTab(tab as "Seen" | "Unseen")}
-                         className={`relative text-sm px-2 py-1 font-medium transition-all text-black ${
-                           activeTab === tab
-                             ? "text-[#576CBC] dark:text-[#576CBC]"
-                             : "dark:text-white"
-                         }`}
-                       >
-                         {tab}
-                         {activeTab === tab && (
-                           <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#576CBC] rounded-full"></span>
-                         )}
-                       </button>
-                     ))}
-                   </div>
-                 </div>
-       
-                 <div className="h-64 overflow-y-auto scrollbar-hide p-1 px-5">
-                   {notifications && notifications.length > 0 ? (
-                     notifications
-                       .filter((n) =>
-                         activeTab === "Seen"
-                           ? n.notificationStatus === "Seen"
-                           : n.notificationStatus !== "Seen"
-                       )
-                       .map((notification) => (
-                         <button
-                           key={notification._id}
-                           onClick={() => {
-                             if (notification.notificationStatus !== "Seen") {
-                               handleNotificationClick(notification._id);
-                             }
-                           }}
-                           disabled={!dashboardWrite}
-                           className={`w-full text-left p-2   flex items-start gap-3 transition-all duration-200 border-b border-[#D9D9D9]  ${
-                             notification.notificationStatus === "Seen"
-                               ? "bg-white/20 text-gray-900 hover:bg-white/50 dark:bg-[#252525]"
-                               : " text-gray-900 font-medium hover:bg-[#bfc5e8] dark:bg-[#252525] dark:hover:bg-[#5a5858]"
-                           }`}
-                         >
-                           <div className="w-8 h-8 rounded-lg bg-[#E4E7F4] flex items-center justify-center relative shrink-0 dark:bg-[#343434] ">
-                             <span className="text-sm font-semibold text-[#576CBC] ">
-                               {notification.senderName?.[0] || "N"}
-                             </span>
-                             {!notification.isRead && (
-                               <span className="absolute bottom-0 right-0 w-2 h-2 bg-[#68D391] rounded-full border-2 border-white dark:bg-[#68D391]"></span>
-                             )}
-                           </div>
-       
-                           <div className="flex-1">
-                             <div className="flex justify-between">
-                               <h4 className="text-xs font-semibold dark:text-white">
-                                 {notification.senderName.toLowerCase() || "Unknown"}
-                               </h4>
-                               <span className="text-xs text-gray-500 dark:text-[#bbb0b099]">
-                                 {new Date(notification.createdDate)
-                                   .toLocaleString("en-GB", {
-                                     day: "2-digit",
-                                     month: "2-digit",
-                                     year: "numeric",
-                                     hour: "2-digit",
-                                     minute: "2-digit",
-                                     hour12: true,
-                                   })
-                                   .replace(",", "")}
-                               </span>
-                             </div>
-                             <div className="text-xs mt-0.5 text-gray-800 flex items-center gap-1">
-                               <span>
-                                 {getNotificationIcon(notification.notificationType)}
-                               </span>
-                               <span
-                                 onClick={() =>
-                                   handleNotificationRedirect(notification)
-                                 }
-                                 className="text-xs text-[#43424299] dark:text-[#bbb0b099] dark:hover:text-white cursor-pointer hover:underline transition"
-                               >
-                                 {notification.messages}
-                               </span>
-                             </div>
-                           </div>
-                         </button>
-                       ))
-                   ) : (
-                     <div className="p-6 text-center text-gray-800">
-                       <Bell size={40} className="mx-auto text-gray-300 mb-2" />
-                       <p className="text-gray-700">No notifications found</p>
-                     </div>
-                   )}
-                 </div>
-               </div>
-             )}
+      {showNotification && (
+        <div
+          ref={notificationRef}
+          className="absolute right-4 mt-0 w-[370px] max-w-[95vw] overflow-hidden rounded-xl border border-gray-200 dark:border-[#3a3a3a] bg-white dark:bg-[#1F1F1F] shadow-xl z-50 animate-fade-in-up"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-[#333]">
+            <div>
+              <h2 className="text-base font-semibold text-[#010E30] dark:text-white">
+                Notifications
+              </h2>
+              <p className="text-[11px] text-gray-500">
+                Stay updated with recent activity
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowNotification(false)}
+              className="w-7 h-7 rounded-full hover:bg-gray-100 dark:hover:bg-[#333] flex items-center justify-center transition"
+            >
+              <X size={16} className="text-red-500 dark:text-gray-300" />
+            </button>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex gap-2 px-4 py-2 border-b border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#252525]">
+            {["Unseen", "Seen"].map((tab) => {
+              const count = notifications.filter((n) =>
+                tab === "Seen"
+                  ? n.notificationStatus === "Seen"
+                  : n.notificationStatus !== "Seen",
+              ).length;
+
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab as "Seen" | "Unseen")}
+                  className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                    activeTab === tab
+                      ? "bg-[#576CBC] text-white"
+                      : "bg-white dark:bg-[#333] text-gray-600 dark:text-gray-300 hover:bg-[#E4E7F4] dark:hover:bg-[#444]"
+                  }`}
+                >
+                  {tab}
+
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-[10px] ${
+                      activeTab === tab
+                        ? "bg-white text-[#576CBC]"
+                        : "bg-gray-200 dark:bg-[#555]"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Notification List */}
+          <div className="max-h-[300px] overflow-y-auto scrollbar-hide px-2 py-2">
+            {notifications &&
+            notifications.filter((n) =>
+              activeTab === "Seen"
+                ? n.notificationStatus === "Seen"
+                : n.notificationStatus !== "Seen",
+            ).length > 0 ? (
+              notifications
+                .filter((n) =>
+                  activeTab === "Seen"
+                    ? n.notificationStatus === "Seen"
+                    : n.notificationStatus !== "Seen",
+                )
+                .map((notification) => (
+                  <button
+                    key={notification._id}
+                    disabled={!dashboardWrite}
+                    onClick={() => {
+                      if (notification.notificationStatus !== "Seen") {
+                        handleNotificationClick(notification._id);
+                      }
+                    }}
+                    className={`w-full rounded-lg p-3 mb-2 text-left transition-all duration-200 ${
+                      notification.notificationStatus === "Seen"
+                        ? "bg-gray-50 dark:bg-[#2B2B2B] hover:bg-gray-100 dark:hover:bg-[#363636]"
+                        : "bg-[#EEF3FF] dark:bg-[#2F364E] hover:bg-[#E5EEFF] dark:hover:bg-[#39466B]"
+                    }`}
+                  >
+                    <div className="flex gap-3">
+                      {/* Avatar */}
+                      <div className="relative shrink-0">
+                        <div className="w-9 h-9 rounded-lg bg-[#576CBC]/15 flex items-center justify-center">
+                          <span className="text-sm font-semibold text-[#576CBC]">
+                            {notification.senderName?.[0] || "N"}
+                          </span>
+                        </div>
+
+                        {!notification.isRead && (
+                          <span className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-blue-500 border-2 border-white"></span>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between gap-2">
+                          <h4 className="text-xs font-semibold text-[#111] dark:text-white truncate">
+                            {notification.senderName || "Unknown"}
+                          </h4>
+
+                          <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                            {new Date(notification.createdDate)
+                              .toLocaleString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              })
+                              .replace(",", "")}
+                          </span>
+                        </div>
+
+                        <div className="flex items-start gap-1 mt-1">
+                          {/* <span className="text-xs mt-0.5">
+                      {getNotificationIcon(notification.notificationType)}
+                    </span> */}
+
+                          <p
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleNotificationRedirect(notification);
+                            }}
+                            className="text-[11px] text-gray-600 dark:text-gray-300 hover:text-[#576CBC] dark:hover:text-[#7F9CFF] cursor-pointer line-clamp-2"
+                          >
+                            {notification.messages}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                ))
+            ) : (
+              <div className="flex flex-col items-center justify-center py-10">
+                <Bell size={42} className="text-gray-300 mb-3" />
+
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-white">
+                  No Notifications
+                </h3>
+
+                <p className="text-xs text-gray-400 mt-1">
+                  You're all caught up 🎉
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
