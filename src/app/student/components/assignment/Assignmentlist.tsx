@@ -270,8 +270,8 @@ const StudentList = () => {
                   onClick={() => setActiveTab(type as "Pending" | "Completed")}
                   className={
                     activeTab === type
-                      ? "text-[#576CBC] text-[18px] relative pb-1"
-                      : "text-[#010E30] dark:text-white text-[18px]"
+                      ? "text-[#576CBC] text-[16px] relative pb-1"
+                      : "text-[#010E30] dark:text-white text-[16px]"
                   }
                   style={activeTab === type ? {
                     position: 'relative'
@@ -296,7 +296,7 @@ const StudentList = () => {
                 <input
                   type="text"
                   placeholder="Search by keyword"
-                  className="bg-transparent outline-none text-[15px] w-52 py-3"
+                  className="bg-transparent outline-none text-[12px] w-52 py-3"
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
                 />
@@ -310,7 +310,7 @@ const StudentList = () => {
                 <span>Filter</span>
               </div>
 
-              <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+              <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
                 <span className="text-left -ml-60">
                   Showing {studentsToDisplay.length} of {assignments.length}
                 </span>
@@ -452,7 +452,7 @@ const StudentList = () => {
           {(() => {
             return (
               <table className="table-fixed w-full">
-                <thead className="text-[12px] bg-[#4C6993] text-white text-left ">
+                <thead className="text-[12px] bg-[#4C6993] border-collapse text-white text-left ">
                   <tr>
                     {[
                       "Assignment ID",
@@ -468,7 +468,7 @@ const StudentList = () => {
                     ].map((header, idx) => (
                       <th
                         key={idx}
-                        className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
+                      className="px-4 py-3.5 text-left font-medium border border-[#4C6993] text-white "
                       >
                         {header}
                       </th>
@@ -610,7 +610,7 @@ const StudentList = () => {
           </div>
           <div className="flex justify-end">
             <button
-              className=" mt-4 text-[#576CBC] border border-[#576CBC] bg-[#fff] rounded-md px-4 py-1 text-sm font-medium hover:bg-[#dbe2f3] transition duration-200 dark:bg-[#2E3343]"
+              className=" mt-4 text-[#576CBC] border border-[#576CBC] bg-[#fff] rounded-md px-4 py-1 text-[11px] font-medium hover:bg-[#dbe2f3] transition duration-200 dark:bg-[#2E3343]"
               onClick={() => {
                 router.push("/student/ui/allassignment");
               }}

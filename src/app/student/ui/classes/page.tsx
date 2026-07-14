@@ -325,7 +325,7 @@ const completedCount = filteredClass.filter(cls =>
         </button>
 
         <button
-          className={`relative text-xs sm:text-sm md:text-base font-medium transition ${
+          className={`relative text-[16px] md:text-base font-medium transition ${
             activeTab === "Completed"
               ? "text-[#576CBC] font-semibold"
               : "text-[#010E30] dark:text-white"
@@ -349,24 +349,24 @@ const completedCount = filteredClass.filter(cls =>
         {/* Table Header & Filters */}
         <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-lg overflow-x-auto scrollbar-none">
           <div className="flex flex-col md:flex-row items-start md:items-center px-4 relative gap-4 md:gap-0">
-            <div className="flex-1 flex items-center gap-2 text-sm text-gray-500 justify-start px-4">
+            <div className="flex-1 flex items-center gap-2 text-[12px] text-gray-500 justify-start px-4">
               <Search className="w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search by Teacher name"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full text-sm outline-none bg-transparent placeholder-gray-400"
+                className="w-full text-[12px] outline-none bg-transparent placeholder-gray-400"
               />
             </div>
             <button
               onClick={() => setShowFilter(true)}
-              className="flex-1 flex items-center gap-2 text-sm text-gray-400 cursor-pointer justify-start border-y-0 border-l-2 border-r-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4"
+              className="flex-1 flex items-center gap-2 text-[12px] text-gray-400 cursor-pointer justify-start border-y-0 border-l-2 border-r-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4"
             >
               <MdTune className="w-5 h-5" />
               <span>Filter</span>
             </button>
-            <div className="flex-1 flex items-center text-sm  px-4 text-gray-500 justify-start">
+            <div className="flex-1 flex items-center text-[12px] px-4 text-gray-500 justify-start">
               <span>
                 Showing {displayedClasses.length} of {filteredClasses.length}
               </span>

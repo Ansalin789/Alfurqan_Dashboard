@@ -243,8 +243,8 @@ const StudentList = () => {
                   onClick={() => setActiveTab(type as "Pending" | "Completed")}
                   className={
                     activeTab === type
-                      ? "text-[#576CBC] text-[18px] relative pb-1"
-                      : "text-[#010E30] dark:text-white text-[18px]"
+                      ? "text-[#576CBC] text-[16px] relative pb-1"
+                      : "text-[#010E30] dark:text-white text-[16px]"
                   }
                   style={activeTab === type ? {
                     position: 'relative'
@@ -269,19 +269,19 @@ const StudentList = () => {
                     <input
                       type="text"
                       placeholder="Search by keyword"
-                      className="bg-transparent outline-none text-[15px] w-52 py-3"
+                      className="bg-transparent outline-none text-[12px] w-52 py-3"
                       value={searchKeyword}
                       onChange={e => setSearchKeyword(e.target.value)}
                     />
                   </div>
   
                   <div  onClick={() => setShowFilter(true)} 
-                  className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
+                  className="flex items-center gap-2 text-[13px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
                     <MdTune className="w-4 h-4" />
                     <span>Filter</span>
                   </div>
   
-                  <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                  <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
                     <span className="text-left -ml-60">
                       Showing {filteredAssignments.length} of{" "}
                       {filteredAssignments.length}
@@ -291,7 +291,7 @@ const StudentList = () => {
   
                 {/* Table */}
                  <table className="table-fixed w-full">
-                <thead className="text-[13px] bg-[#4C6993] text-white">
+                <thead className="text-[12px] bg-[#4C6993] text-white">
                   <tr>
                     {[
                       "Assignment ID",
@@ -309,7 +309,7 @@ const StudentList = () => {
                     ].map((header, idx) => (
                       <th
                         key={idx}
-                        className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
+                        className="px-3 py-3 border border-[#4C6993] text-left font-medium text-wrap break-words"
                       >
                         {header}
                       </th>

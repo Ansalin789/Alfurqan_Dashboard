@@ -301,16 +301,13 @@ const NextClass = () => {
           <h3 className="text-[15px] font-semibold">
             Your Next Scheduled Class 
           </h3>
-          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm sm:text-sm md:text-sm">
-            <div className="mb-4">
-            <p className="text-xs sm:text-[8px] md:text-[9px] items-center ml-4 whitespace-nowrap">(Teacher)</p>
-            <span className="flex items-center gap-1">
-              <FaUser className="text-white/90 text-base sm:text-sm -mt-1" />
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm sm:text-sm md:text-sm">
+            <span className="flex items-center gap-1 whitespace-nowrap">
+              <FaUser className="text-white/90 text-base sm:text-sm shrink-0" />
               {classData?.teacher?.teacherName.charAt(0).toUpperCase() + classData?.teacher?.teacherName.slice(1).toLowerCase() || "N/A"}
+              <span className="text-[11px] sm:text-[10px] md:text-[11px] leading-none">(Teacher)</span>
             </span>
-            </div>
             
-
             <span className="flex items-center gap-1">
               <MdDateRange className="text-white/90 text-base sm:text-sm" />
               Session–{sessionNumber.toString().padStart(2, "0")}

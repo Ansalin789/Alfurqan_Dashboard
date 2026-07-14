@@ -299,7 +299,7 @@ const ScheduledMeetings = () => {
 
       <div className="mt-2">
         <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
-          <div className="flex justify-between items-center px-4 py-0">
+          <div className="flex justify-between items-center text-sm text-gray-500 px-4 py-0">
             <Search className="w-3 h-3 text-gray-400 dark:text-gray-400" />
             <input
               type="text"
@@ -326,13 +326,13 @@ const ScheduledMeetings = () => {
 
       <div className="w-full h-[610px] bg-[#FAFAFB] dark:bg-[#343434] overflow-y-auto">
         <table className="w-full table-auto">
-          <thead className="text-[12px] bg-[#4C6993] text-white">
+          <thead className="text-[13px] bg-[#4C6993] text-white">
             <tr>
-              <th className="text-left px-4 py-3">Meeting ID</th>
-              <th className="text-left px-4 py-3">Meeting Name</th>
-              <th className="text-left px-4 py-3">Date</th>
-              <th className="text-left px-4 py-3">Timing</th>
-              <th className="text-left px-4 py-3">Status</th>
+              <th className="text-left font-medium px-4 py-3">Meeting ID</th>
+              <th className="text-left font-medium px-4 py-3">Meeting Name</th>
+              <th className="text-left font-medium px-4 py-3">Date</th>
+              <th className="text-left font-medium px-4 py-3">Timing</th>
+              <th className="text-left font-mediumpx-4 py-3">Status</th>
             </tr>
           </thead>
           <tbody>

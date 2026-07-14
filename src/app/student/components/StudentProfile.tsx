@@ -270,10 +270,10 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
           <h3 className="text-[#010E30] font-bold text-[16px] dark:text-white text-center">
             {studentName ?? "Loading..."}
           </h3>
-          <p className="text-[#4b5563] text-[11px] text-center mt-1">
+          <p className="text-[#4b5563] text-[11px] dark:text-white text-center mt-1">
             {studentEmail ?? "Loading..."}
           </p>
-          <p className="text-[#4b5563] text-[13px] mb-2 text-center mt-2">
+          <p className="text-[#4b5563] text-[13px] mb-2 dark:text-white text-center mt-2">
            <span className="font-bold">Level</span>  : &nbsp;{dashboardCounts.totalLevel}
           </p>
         
@@ -299,7 +299,7 @@ const shareUrl = `https://alfweb.vercel.app/StudentForm?refernceId=${referenceId
         </h3>
 
         {invoices.filter((i) => i.invoiceStatus === "PENDING").length === 0 ? (
-          <p className="text-gray-500 text-xs text-center mt-12 align-middle">
+          <p className="text-gray-500 text-xs dark:text-white text-center mt-12 align-middle">
             No pending payments found
           </p>
         ) : (
