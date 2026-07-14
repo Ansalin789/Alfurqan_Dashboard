@@ -42,6 +42,7 @@ interface TableRow {
 export default function Page() {
   const searchParams = useSearchParams();
   const employeeId = searchParams.get("teacherId");
+  const teacherProfileId = searchParams.get("teacher.teacherId") || employeeId;
 
   const [tableData, setTableData] = useState<TableRow[]>([]);
 
@@ -74,7 +75,7 @@ export default function Page() {
     try {
       const res = await axios.get(
         `
-https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`,
+https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${teacherProfileId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -335,7 +336,7 @@ https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employ
       <AdminHeader
         currentSection="Scheduled Classes"
         showBackButton
-        showBackPath={`/admin-main/ui/employees/teacher?teacherId=${employeeId}`}
+        showBackPath={`/admin-main/ui/employees/teacher?teacherId=${employeeId}&teacher.teacherId=${teacherProfileId}`}
       />
       <div>
         <div className="rounded-xl overflow-hidden">

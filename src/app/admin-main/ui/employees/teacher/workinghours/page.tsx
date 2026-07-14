@@ -166,6 +166,7 @@ const page = () => {
 
   const searchParams = useSearchParams();
   const employeeId = searchParams.get("teacherId");
+  const teacherProfileId = searchParams.get("teacher.teacherId") || employeeId;
   const [schedule, setSchedule] = useState<ShiftSchedule[]>([]);
   const [scheduledclass, setScheduledClass] = useState<ScheduledClass[]>([]);
   const [students, setStudents] = useState<StudentData[]>([]);
@@ -221,7 +222,7 @@ const page = () => {
   const fetchSchedule = async (token: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${teacherProfileId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -238,7 +239,7 @@ const page = () => {
   const fetchClasses = async (token: string) => {
     try {
       const res = await axios.get<StudentData[]>(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacher/list?teacherId=${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/teacher/list?teacherId=${teacherProfileId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -265,7 +266,7 @@ const page = () => {
       }
       try {
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/shiftschedule/${employeeId}`,
+          `https://api.blackstoneinfomaticstech.com/shiftschedule/${teacherProfileId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -341,7 +342,7 @@ const page = () => {
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Working Hours" showBackButton={true} showBackPath={`/admin-main/ui/employees/teacher?teacherId=${employeeId}`} />
+      <AdminHeader currentSection="Working Hours" showBackButton={true} showBackPath={`/admin-main/ui/employees/teacher?teacherId=${employeeId}&teacher.teacherId=${teacherProfileId}`} />
       <div>
         <div>
           <div className="rounded-xl overflow-hidden">

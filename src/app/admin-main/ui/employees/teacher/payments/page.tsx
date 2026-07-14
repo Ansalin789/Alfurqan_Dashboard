@@ -56,6 +56,7 @@ const page = () => {
 
   const searchParams = useSearchParams();
   const employeeId = searchParams.get("teacherId");
+  const teacherProfileId = searchParams.get("teacher.teacherId") || employeeId;
 
   const [salaryWages, setSalaryWages] = useState<SalaryWageRecord[]>([]);
   const [selectedSalary, setSelectedSalary] = useState<SalaryWageRecord | null>(null);
@@ -83,7 +84,7 @@ const page = () => {
       }
       try {
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/salarywagesById?employeeId=${employeeId}`,
+          `https://api.blackstoneinfomaticstech.com/salarywagesById?employeeId=${teacherProfileId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -141,7 +142,7 @@ const page = () => {
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Payments" showBackButton={true} showBackPath={`/admin-main/ui/employees/teacher?teacherId=${employeeId}`} />
+      <AdminHeader currentSection="Payments" showBackButton={true} showBackPath={`/admin-main/ui/employees/teacher?teacherId=${employeeId}&teacher.teacherId=${teacherProfileId}`} />
       <div>
         <div className="rounded-xl overflow-hidden">
           <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">

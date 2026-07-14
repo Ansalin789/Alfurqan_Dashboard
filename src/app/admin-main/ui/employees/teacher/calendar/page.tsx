@@ -66,6 +66,7 @@ const SchedulePage = () => {
   const [classSchedule, setClassSchedule] = useState<ClassSchedule[]>([]);
    const searchparam = useSearchParams();
   const employeeId = searchparam.get('teacherId');
+  const teacherProfileId = searchparam.get('teacher.teacherId') || employeeId;
 
   const tabs = ["monthly", "weekly", "daily"] as const;
 
@@ -76,7 +77,7 @@ const SchedulePage = () => {
     return;
     }
     axios.get(
-          `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${teacherProfileId}`,
           {
             headers: {
           Authorization: `Bearer ${token}`,
@@ -87,7 +88,7 @@ const SchedulePage = () => {
         setClassSchedule(response.data.classSchedule ?? []);
       })
       .catch((error) => console.error("Error fetching class schedule: ", error));
-  }, [employeeId]);
+  }, [employeeId, teacherProfileId]);
 
   useEffect(() => {
     setEvents(
@@ -333,7 +334,7 @@ const SchedulePage = () => {
 
   return (
     <BaseLayout4>
-    <AdminHeader currentSection="Calendar" showBackButton={true} showBackPath={`/admin-main/ui/employees/teacher?teacherId=${employeeId}`} />
+    <AdminHeader currentSection="Calendar" showBackButton={true} showBackPath={`/admin-main/ui/employees/teacher?teacherId=${employeeId}&teacher.teacherId=${teacherProfileId}`} />
       <div className="p-2">
         <div className="mx-auto gap-4 flex flex-col lg:flex-row overflow-hidden min-h-[630px]">
           {/* Calendar Component */}
