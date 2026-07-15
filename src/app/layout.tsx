@@ -11,8 +11,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Alfurqan Academy",
-  description: "From Learn Quran Alfurqan Academy",
+  title: "Blackstone Academy",
+  description: "From the heart of the community, Blackstone Academy is a beacon of knowledge and growth.",
 };
 
 export default function RootLayout({
