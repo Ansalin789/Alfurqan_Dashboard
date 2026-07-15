@@ -10,9 +10,9 @@ interface StatsData {
 }
 
 const COLORS = {
-  scheduled: "#B1A7F2", // light purple
-  completed: "#6BE6C1", // green
-  absent: "#FFA9A9", // pink
+  scheduled: "#A78BFA",
+  completed: "#34D399",
+  absent: "#FB7185",
 };
 
 const ClassAnalyticsChart = () => {
@@ -21,19 +21,30 @@ const ClassAnalyticsChart = () => {
     completed: 0,
     absent: 0,
   });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const fetchData = async () => {
     try {
       const teacherId = localStorage.getItem("TeacherPortalId");
       const token = localStorage.getItem("TeacherAuthToken");
 
-      if (!teacherId || !token) throw new Error("Authentication info missing");
+      if (!teacherId || !token) {
+        throw new Error("Authentication info missing");
+      }
 
       const response = await axios.get<StatsData>(
         `https://api.blackstoneinfomaticstech.com/classShedule/teacher/count?teacherId=${teacherId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       setData({
@@ -48,109 +59,137 @@ const ClassAnalyticsChart = () => {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  if (loading)
+  if (loading) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
+      <div className="flex h-full items-center justify-center">
         Loading...
       </div>
     );
+  }
 
-  if (error)
+  if (error) {
     return (
-      <div className="w-full h-full flex items-center justify-center text-red-600">
+      <div className="flex h-full items-center justify-center text-red-500">
         {error}
       </div>
     );
+  }
 
   const segments = [
-    { label: "Scheduled", value: data.scheduled, color: COLORS.scheduled },
-    { label: "Completed", value: data.completed, color: COLORS.completed },
-    { label: "Absent", value: data.absent, color: COLORS.absent },
+    {
+      label: "Scheduled",
+      value: data.scheduled,
+      color: COLORS.scheduled,
+    },
+    {
+      label: "Completed",
+      value: data.completed,
+      color: COLORS.completed,
+    },
+    {
+      label: "Absent",
+      value: data.absent,
+      color: COLORS.absent,
+    },
   ];
 
-  const radii = [66, 58, 48];
-  const SIZE = 112;
-  const CENTER = SIZE / 2;
+  const total =
+    data.scheduled +
+    data.completed +
+    data.absent;
 
-  const getDashArray = (value: number, radius: number) => {
+  const SIZE = 140;
+  const CENTER = SIZE / 2;
+  const radii = [55, 46, 37];
+
+  const getDashArray = (
+    value: number,
+    radius: number
+  ) => {
     const circumference = 2 * Math.PI * radius;
     const percent = Math.min(value, 100);
     const dash = (percent / 100) * circumference;
     const gap = circumference - dash;
+
     return `${dash} ${gap}`;
   };
-
-  return (
-    <div className="w-full h-full bg-white dark:bg-[#343434] rounded-2xl shadow p-4 sm:p-6 flex flex-col">
-      <h2 className=" font-semibold text-gray-900 dark:text-white mb-6 text-[16px]">
+    return (
+    <div className="w-full h-full rounded-2xl bg-white dark:bg-[#343434] shadow-md p-4 sm:p-5 flex flex-col">
+      {/* Header */}
+      <h2 className="text-[16px] font-semibold text-gray-900 dark:text-white">
         Class Analytics
       </h2>
 
-      {/* Chart + Legend */}
-      <div className="flex-1 flex flex-col sm:flex-row items-center justify-center w-full">
-        {/* Donut Chart */}
-        <div className="relative w-[40vw] max-w-[220px] aspect-square">
+      {/* Chart */}
+      <div className="flex-1 flex flex-col items-center justify-center py-4">
+        <div className="relative w-44 h-44 sm:w-48 sm:h-48">
           <svg
             viewBox={`0 0 ${SIZE} ${SIZE}`}
             className="w-full h-full overflow-visible"
           >
-            {segments.map((seg, i) => {
-              const radius = radii[i];
-              return (
-                <circle
-                  key={i}
-                  cx={CENTER}
-                  cy={CENTER}
-                  r={radius}
-                  stroke={seg.color}
-                  strokeWidth={6}
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeDasharray={getDashArray(seg.value, radius)}
-                  transform={`rotate(-90 ${CENTER} ${CENTER})`}
-                  style={{ transition: "stroke-dasharray 0.8s ease-in-out" }}
-                />
-              );
-            })}
+            {segments.map((segment, index) => (
+              <circle
+                key={index}
+                cx={CENTER}
+                cy={CENTER}
+                r={radii[index]}
+                fill="none"
+                stroke={segment.color}
+                strokeWidth={7}
+                strokeLinecap="round"
+                strokeDasharray={getDashArray(
+                  segment.value,
+                  radii[index]
+                )}
+                transform={`rotate(-90 ${CENTER} ${CENTER})`}
+                style={{
+                  transition: "stroke-dasharray .8s ease",
+                }}
+              />
+            ))}
           </svg>
 
-          {/* Center value */}
-          <div className="absolute -mt-7 inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <div className="text-[18px] font-extrabold text-gray-900 dark:text-white">
-              {data.scheduled + data.completed + data.absent}
-            </div>
-            <div className="text-[7px] text-gray-500 dark:text-gray-300 uppercase text-center -mt-1 leading-tight">
-              TOTAL CLASS <br /> ASSIGNED
-            </div>
+          {/* Center Content */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
+              {total}
+            </h3>
+
+            <p className="mt-1 text-[9px] leading-tight uppercase tracking-wide text-center text-gray-500 dark:text-gray-300">
+              Total Class
+              <br />
+              Assigned
+            </p>
           </div>
         </div>
+      </div>
 
-        {/* Legend */}
-        <div className="flex flex-col space-y-2 mt-6 sm:mt-0 sm:ml-10 w-[70%] sm:w-40">
-          {segments.map((item, i) => (
-            <div
-              key={i}
-              className="flex items-center justify-between w-full -mt-6 gap-6"
-            >
-              <div className="flex items-center gap-2">
-                <span
-                  className="w-3 h-3 rounded-sm"
-                  style={{ backgroundColor: item.color }}
-                />
-                <span className="text-gray-700 dark:text-white text-[12px] font-medium">
-                  {item.label}
-                </span>
-              </div>
-              <span className="text-gray-900 dark:text-white text-[13px] font-semibold text-right">
-                {item.value}
-              </span>
-            </div>
-          ))}
-        </div>
+      {/* Bottom Cards */}
+      <div className="grid grid-cols-3 gap-2 mt-2">
+        {segments.map((item, index) => (
+          <div
+            key={index}
+            className="rounded-xl bg-gray-50 dark:bg-[#2b2b2b] border border-gray-100 dark:border-gray-700 py-2 px-1 flex flex-col items-center"
+          >
+            {/* Color Dot */}
+            <span
+              className="w-2.5 h-2.5 rounded-full mb-1"
+              style={{
+                backgroundColor: item.color,
+              }}
+            />
+
+            {/* Label */}
+            <p className="text-[9px] sm:text-[10px] font-medium text-center text-gray-500 dark:text-gray-300 leading-tight">
+              {item.label}
+            </p>
+
+            {/* Value */}
+            <p className="mt-1 text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
+              {item.value}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );

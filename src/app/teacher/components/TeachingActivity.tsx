@@ -1,158 +1,274 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 const TeachingActivity: React.FC = () => {
-  const [monthlyHours, setMonthlyHours] = useState<number[]>(Array(12).fill(0));
+  const [monthlyHours, setMonthlyHours] = useState<number[]>(
+    Array(12).fill(0)
+  );
+
+  const [view, setView] = useState("Monthly");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('TeacherAuthToken') : null;
-        const teacherId = localStorage.getItem('TeacherPortalId');
-
-        if (!token || !teacherId) {
-          console.error('Missing authentication token or teacher ID.');
-          return;
-        }
-
-        const response = await axios.get('https://api.blackstoneinfomaticstech.com/classShedule', {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const filteredData = response.data.students.filter(
-          (item: any) => item.teacher.teacherId === teacherId
-        );
-
-        const monthlyData = Array(12).fill(0);
-
-        filteredData.forEach((schedule: any) => {
-          if (!schedule.startDate || !schedule.startTime || !schedule.endTime) return;
-
-          const startDate = new Date(schedule.startDate);
-          const monthIndex = startDate.getMonth();
-
-          schedule.classDay.forEach((_: any, index: number) => {
-            if (!schedule.startTime[index] || !schedule.endTime[index]) return;
-
-            const startHour = parseInt(schedule.startTime[index].split(':')[0], 10);
-            const endHour = parseInt(schedule.endTime[index].split(':')[0], 10);
-
-            if (isNaN(startHour) || isNaN(endHour)) return;
-
-            monthlyData[monthIndex] += Math.max(0, endHour - startHour);
-          });
-        });
-
-        setMonthlyHours(monthlyData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchData();
+    fetchTeachingActivity();
   }, []);
 
-  const width = 1000;
-  const height = 160;
-  const padding = 20;
-  const max = Math.max(...monthlyHours, 1);
+  const fetchTeachingActivity = async () => {
+    try {
+      const token = localStorage.getItem("TeacherAuthToken");
+      const teacherId = localStorage.getItem("TeacherPortalId");
 
-  const points = monthlyHours.map((val, i) => {
-    const x = (i / 11) * width;
-    const y = height - (val / max) * (height - padding);
+      if (!token || !teacherId) {
+        setLoading(false);
+        return;
+      }
+
+      const response = await axios.get(
+        "https://api.blackstoneinfomaticstech.com/classShedule",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const schedules = response.data.students.filter(
+        (item: any) => item.teacher?.teacherId === teacherId
+      );
+
+      const data = Array(12).fill(0);
+
+      schedules.forEach((schedule: any) => {
+        if (!schedule.startDate) return;
+
+        const month = new Date(schedule.startDate).getMonth();
+
+        schedule.classDay?.forEach((_: any, index: number) => {
+          const start = schedule.startTime?.[index];
+          const end = schedule.endTime?.[index];
+
+          if (!start || !end) return;
+
+          const [sh, sm] = start.split(":").map(Number);
+          const [eh, em] = end.split(":").map(Number);
+
+          const startMinutes = sh * 60 + sm;
+          const endMinutes = eh * 60 + em;
+
+          const duration = Math.max(
+            0,
+            (endMinutes - startMinutes) / 60
+          );
+
+          data[month] += duration;
+        });
+      });
+
+      setMonthlyHours(data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const chartHeight = 170;
+  const chartWidth = 900;
+  const padding = 20;
+
+  const maxValue = Math.max(...monthlyHours, 1);
+
+  const yLabels = useMemo(() => {
+    const steps = 5;
+
+    return Array.from({ length: steps + 1 }, (_, i) =>
+      Math.round(maxValue - (maxValue / steps) * i)
+    );
+  }, [maxValue]);  const points = monthlyHours.map((value, index) => {
+    const x = (index / (MONTHS.length - 1)) * chartWidth;
+    const y =
+      chartHeight -
+      (value / maxValue) * (chartHeight - padding);
+
     return { x, y };
   });
 
-  const getSmoothPath = (pts: { x: number; y: number }[]) => {
-    if (pts.length < 2) return '';
+  const getSmoothPath = (
+    pts: { x: number; y: number }[]
+  ) => {
+    if (pts.length < 2) return "";
 
-    let d = `M${pts[0].x},${pts[0].y}`;
+    let d = `M ${pts[0].x} ${pts[0].y}`;
+
     for (let i = 1; i < pts.length; i++) {
-      const cp1x = (pts[i - 1].x + pts[i].x) / 2;
-      const cp1y = pts[i - 1].y;
-      const cp2x = (pts[i - 1].x + pts[i].x) / 2;
-      const cp2y = pts[i].y;
-      d += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${pts[i].x},${pts[i].y}`;
+      const prev = pts[i - 1];
+      const curr = pts[i];
+
+      const cp1x = (prev.x + curr.x) / 2;
+      const cp1y = prev.y;
+
+      const cp2x = (prev.x + curr.x) / 2;
+      const cp2y = curr.y;
+
+      d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${curr.x} ${curr.y}`;
     }
 
     return d;
   };
 
-  const curvePath = getSmoothPath(points);
-  const areaPath = `${curvePath} L${width},${height} L0,${height} Z`;
+  const linePath = getSmoothPath(points);
 
-  return (
-    <div className="bg-white h-full dark:bg-[#343434] rounded-xl p-5 shadow-sm">
+  const areaPath = `
+    ${linePath}
+    L ${chartWidth} ${chartHeight}
+    L 0 ${chartHeight}
+    Z
+  `;
+
+  const gridLines = Array.from({ length: 5 }, (_, i) => ({
+    y: ((i + 1) * chartHeight) / 6,
+  }));
+
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }  return (
+    <div className="bg-white dark:bg-[#343434] rounded-2xl shadow-sm p-5 h-full flex flex-col">
       {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-[16px] dark:text-white font-semibold text-[#0f172a]">
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-[16px] font-semibold text-gray-900 dark:text-white">
           Teaching Activity
         </h2>
-        <select className="bg-[#EFEFEF] dark:bg-[#565656] text-[#3E5E8A] dark:text-white py-[2px] px-2 rounded-md text-[11px] font-medium">
+
+        <select
+          value={view}
+          onChange={(e) => setView(e.target.value)}
+          className="text-xs px-3 py-1 rounded-lg bg-gray-100 dark:bg-[#4B4B4B] dark:text-white outline-none"
+        >
           <option>Monthly</option>
           <option>Weekly</option>
         </select>
       </div>
 
-      {/* Graph */}
-      <div className="flex">
-        {/* Y-Axis */}
-        <div className="flex flex-col justify-between text-xs text-slate-400 dark:text-gray-400 mr-3 h-[160px] pt-2 pb-4">
-          {['50', '40', '30', '20', '10', '0'].map((label, i) => (
-            <div key={i} className="h-[26px] flex items-center justify-end pr-1">
-              <span className="block leading-none">L{label}</span>
-            </div>
+      <div className="flex flex-1">
+        {/* Y Axis */}
+        <div className="w-10 flex flex-col justify-between text-[11px] text-gray-400 dark:text-gray-500 pb-2">
+          {yLabels.map((label, index) => (
+            <span key={index}>{label}h</span>
           ))}
         </div>
 
-        {/* Chart */}
-        <div className="relative flex-1 h-[160px]">
-          <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="w-full h-full">
+        {/* Graph */}
+        <div className="flex-1 overflow-x-auto">
+          <svg
+            viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+            preserveAspectRatio="none"
+            className="w-full h-[180px]"
+          >
             <defs>
-              <linearGradient id="greenGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#86efac" stopOpacity="0.7" />
-                <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+              <linearGradient
+                id="activityGradient"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop
+                  offset="0%"
+                  stopColor="#4ADE80"
+                  stopOpacity="0.45"
+                />
+                <stop
+                  offset="100%"
+                  stopColor="#4ADE80"
+                  stopOpacity="0"
+                />
               </linearGradient>
             </defs>
 
-            {/* Area under the line */}
-            <path d={areaPath} fill="url(#greenGradient)" stroke="none" />
-            {/* Curved Line */}
-            <path d={curvePath} fill="none" stroke="#22c55e" strokeWidth="2" strokeDasharray="4" />
-            {/* Dots */}
-            {points.map((point, idx) => (
-              <circle
-                key={idx}
-                cx={point.x}
-                cy={point.y}
-                r="4"
-                fill="#22c55e"
-                stroke="#fff"
-                strokeWidth="1.5"
+            {/* Grid Lines */}
+            {gridLines.map((line, index) => (
+              <line
+                key={index}
+                x1="0"
+                y1={line.y}
+                x2={chartWidth}
+                y2={line.y}
+                stroke="#E5E7EB"
+                strokeDasharray="4 4"
               />
             ))}
-            {/* Grid lines */}
-            {[32, 64, 96, 128].map((y) => (
-              <line key={y} x1="0" y1={y} x2={width} y2={y} stroke="#e2e8f0" strokeWidth="0.6" />
+
+            {/* Area */}
+            <path
+              d={areaPath}
+              fill="url(#activityGradient)"
+            />
+
+            {/* Line */}
+            <path
+              d={linePath}
+              fill="none"
+              stroke="#22C55E"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+
+            {/* Points */}
+            {points.map((point, index) => (
+              <g key={index}>
+                <circle
+                  cx={point.x}
+                  cy={point.y}
+                  r="5"
+                  fill="#22C55E"
+                  stroke="#fff"
+                  strokeWidth="2"
+                />
+
+                <circle
+                  cx={point.x}
+                  cy={point.y}
+                  r="9"
+                  fill="#22C55E"
+                  opacity="0.15"
+                />
+              </g>
             ))}
           </svg>
-        </div>
-      </div>
 
-      {/* X-Axis Labels */}
-      <div className="flex justify-between text-xs text-slate-500 dark:text-slate-300 mt-2 px-4">
-        {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(
-          (month) => (
-            <span key={month} className="w-[8%] text-center">
-              {month}
-            </span>
-          )
-        )}
+          {/* Month Labels */}
+          <div className="flex justify-between mt-3 px-1">
+            {MONTHS.map((month) => (
+              <span
+                key={month}
+                className="text-[11px] text-gray-500 dark:text-gray-400"
+              >
+                {month}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
