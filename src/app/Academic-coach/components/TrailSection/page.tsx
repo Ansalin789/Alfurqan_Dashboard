@@ -14,7 +14,6 @@ import Pagination from "@/components/Pagination";
 import { getSocket } from "@/app/utils/socket";
 import moment from "moment";
 
-
 interface ClassPayload {
   academicCoachId: string;
   student: {
@@ -87,7 +86,6 @@ interface ClassPayload {
   updatedBy: string;
 }
 
-
 interface TransformedUser {
   _id: string;
   trialId: string;
@@ -151,8 +149,6 @@ export interface IMeeting {
   };
 }
 
-
-
 const getAllUsers = async (): Promise<{
   success: boolean;
   data: TransformedUser[];
@@ -169,13 +165,16 @@ const getAllUsers = async (): Promise<{
     if (!token) {
       console.error("❌ AdminAuthToken not found");
     }
-    const response = await axios.get(`https://api.blackstoneinfomaticstech.com/evaluationlist`, {
-      params: { academicCoachId: academicId },
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+    const response = await axios.get(
+      `https://api.blackstoneinfomaticstech.com/evaluationlist`,
+      {
+        params: { academicCoachId: academicId },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
 
     console.log("Raw API Response:", response.data.evaluation);
 
@@ -204,7 +203,7 @@ const getAllUsers = async (): Promise<{
           paymentLink: item.paymentLink,
           studentStatus: item.studentStatus,
         };
-      }
+      },
     );
 
     console.log("Transformed Data:", transformedData);
@@ -249,11 +248,11 @@ const FilterModal = ({
 
   // Get unique values for each filter
   const uniqueCountries = Array.from(
-    new Set(users.map((user) => user.country))
+    new Set(users.map((user) => user.country)),
   );
   const uniqueCourses = Array.from(new Set(users.map((user) => user.course)));
   const uniqueTeachers = Array.from(
-    new Set(users.map((user) => user.preferredTeacher))
+    new Set(users.map((user) => user.preferredTeacher)),
   );
 
   const handleApply = () => {
@@ -423,11 +422,15 @@ const TrailSection = () => {
     { teacherId: string; teacherName: string; teacherEmail?: string }[]
   >([]);
   const [isLoadingTeachers, setIsLoadingTeachers] = useState(false);
-  const [openActionMenuForId, setOpenActionMenuForId] = useState<string | null>(null);
+  const [openActionMenuForId, setOpenActionMenuForId] = useState<string | null>(
+    null,
+  );
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const response = await fetch("https://api.blackstoneinfomaticstech.com/meetinglist");
+        const response = await fetch(
+          "https://api.blackstoneinfomaticstech.com/meetinglist",
+        );
         if (!response.ok) throw new Error("Failed to fetch meetings");
         const data = await response.json();
         setMeetings(data);
@@ -493,7 +496,7 @@ const TrailSection = () => {
           ([teacherId, teacherName]) => ({
             teacherId,
             teacherName,
-          })
+          }),
         );
         setAvailableTeachers(teacherArray);
         setIsLoadingTeachers(false);
@@ -537,22 +540,25 @@ const TrailSection = () => {
       if (!token) return alert("Token missing!");
       if (!formData?._id) return alert("No evaluationId found!");
 
-      const effectiveDate = editableData.changeDate || formData?.student.preferredDate;
-      const effectiveTime = editableData.changeTime || formData?.student.preferredFromTime;
+      const effectiveDate =
+        editableData.changeDate || formData?.student.preferredDate;
+      const effectiveTime =
+        editableData.changeTime || formData?.student.preferredFromTime;
 
       if (!effectiveDate || !effectiveTime || !editableData.availableTeacher) {
         return alert(
-          "Please select Change Date, Change Time and Available Teacher."
+          "Please select Change Date, Change Time and Available Teacher.",
         );
       }
 
       // 🔹 Find teacher info
       const selectedTeacher = availableTeachers.find(
-        (t) => t.teacherId === editableData.availableTeacher
+        (t) => t.teacherId === editableData.availableTeacher,
       );
 
       // 🔹 Compute time range (30 min duration)
-      const changeFromTime = editableData.changeTime || formData?.student.preferredFromTime;
+      const changeFromTime =
+        editableData.changeTime || formData?.student.preferredFromTime;
       const changeToTime = moment(changeFromTime, "HH:mm")
         .add(30, "minutes")
         .format("HH:mm");
@@ -560,13 +566,15 @@ const TrailSection = () => {
       // 🔹 Build payload that backend expects (for Zoom scheduling)
       const payload = {
         teacher: {
-          teacherId: selectedTeacher?.teacherId || editableData.availableTeacher,
+          teacherId:
+            selectedTeacher?.teacherId || editableData.availableTeacher,
           teacherName: selectedTeacher?.teacherName || "",
           teacherEmail: selectedTeacher?.teacherEmail || "",
         },
         // Also update assigned teacher fields used by the list/table
         assignedTeacher: selectedTeacher?.teacherName || "",
-        assignedTeacherId: selectedTeacher?.teacherId || editableData.availableTeacher,
+        assignedTeacherId:
+          selectedTeacher?.teacherId || editableData.availableTeacher,
         assignedTeacherEmail: selectedTeacher?.teacherEmail || "",
         preferredTrialDate: editableData.changeDate,
         preferredTrialFromTime: changeFromTime,
@@ -583,49 +591,59 @@ const TrailSection = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       console.log("✅ Backend response:", response.data);
 
       if (response.status === 200 || response.status === 204) {
-        alert("✅ Changes saved. Zoom schedule update & email will be triggered.");
+        alert(
+          "✅ Changes saved. Zoom schedule update & email will be triggered.",
+        );
 
         // Optimistically update table and modal state
         setUsers((prev) =>
           prev.map((u) =>
             u._id === formData._id
               ? {
-                ...u,
-                assignedTeacher: selectedTeacher?.teacherName || u.assignedTeacher,
-                time: changeFromTime,
-                prefferedDate: editableData.changeDate || u.prefferedDate,
-              }
-              : u
-          )
+                  ...u,
+                  assignedTeacher:
+                    selectedTeacher?.teacherName || u.assignedTeacher,
+                  time: changeFromTime,
+                  prefferedDate: editableData.changeDate || u.prefferedDate,
+                }
+              : u,
+          ),
         );
         setFilteredUsers((prev) =>
           prev.map((u) =>
             u._id === formData._id
               ? {
-                ...u,
-                assignedTeacher: selectedTeacher?.teacherName || u.assignedTeacher,
-                time: changeFromTime,
-                prefferedDate: editableData.changeDate || u.prefferedDate,
-              }
-              : u
-          )
+                  ...u,
+                  assignedTeacher:
+                    selectedTeacher?.teacherName || u.assignedTeacher,
+                  time: changeFromTime,
+                  prefferedDate: editableData.changeDate || u.prefferedDate,
+                }
+              : u,
+          ),
         );
         setFormData((prev: any) => ({
           ...prev,
-          assignedTeacher: selectedTeacher?.teacherName || prev?.assignedTeacher,
+          assignedTeacher:
+            selectedTeacher?.teacherName || prev?.assignedTeacher,
           assignedTeacherId:
-            selectedTeacher?.teacherId || editableData.availableTeacher || prev?.assignedTeacherId,
-          assignedTeacherEmail: selectedTeacher?.teacherEmail || prev?.assignedTeacherEmail,
+            selectedTeacher?.teacherId ||
+            editableData.availableTeacher ||
+            prev?.assignedTeacherId,
+          assignedTeacherEmail:
+            selectedTeacher?.teacherEmail || prev?.assignedTeacherEmail,
           student: {
             ...prev?.student,
-            preferredDate: editableData.changeDate || prev?.student?.preferredDate,
-            preferredFromTime: changeFromTime || prev?.student?.preferredFromTime,
+            preferredDate:
+              editableData.changeDate || prev?.student?.preferredDate,
+            preferredFromTime:
+              changeFromTime || prev?.student?.preferredFromTime,
             preferredToTime: changeToTime || prev?.student?.preferredToTime,
           },
         }));
@@ -638,7 +656,6 @@ const TrailSection = () => {
       alert("❌ Failed to save changes. Please try again.");
     }
   };
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -682,27 +699,27 @@ const TrailSection = () => {
           prev.map((user) =>
             user.studentId === student.studentId
               ? {
-                ...user,
-                paymentStatus: classPayload.paymentStatus ?? "NOT JOINED",
-                trialClassStatus:
-                  classPayload.trialClassStatus ?? "NOT COMPLETED",
-                studentStatus: classPayload.studentStatus ?? "NOT JOINED",
-              }
-              : user
-          )
+                  ...user,
+                  paymentStatus: classPayload.paymentStatus ?? "NOT JOINED",
+                  trialClassStatus:
+                    classPayload.trialClassStatus ?? "NOT COMPLETED",
+                  studentStatus: classPayload.studentStatus ?? "NOT JOINED",
+                }
+              : user,
+          ),
         );
         setUsers((prev) =>
           prev.map((user) =>
             user.studentId === student.studentId
               ? {
-                ...user,
-                paymentStatus: classPayload.paymentStatus ?? "NOT JOINED",
-                trialClassStatus:
-                  classPayload.trialClassStatus ?? "NOT COMPLETED",
-                studentStatus: classPayload.studentStatus ?? "NOT JOINED",
-              }
-              : user
-          )
+                  ...user,
+                  paymentStatus: classPayload.paymentStatus ?? "NOT JOINED",
+                  trialClassStatus:
+                    classPayload.trialClassStatus ?? "NOT COMPLETED",
+                  studentStatus: classPayload.studentStatus ?? "NOT JOINED",
+                }
+              : user,
+          ),
         );
       }
     };
@@ -860,7 +877,7 @@ const TrailSection = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -881,7 +898,7 @@ const TrailSection = () => {
       setStudentStatus(data.studentStatus);
       setPaymentStatus(data.paymentStatus);
       setPaymentLink(
-        `https://api.blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(data._id)}`
+        `https://api.blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(data._id)}`,
       );
       setFormData(data);
       console.log(data);
@@ -931,11 +948,11 @@ const TrailSection = () => {
 
     // Get unique values for each filter
     const uniqueCountries = Array.from(
-      new Set(users.map((user) => user.country))
+      new Set(users.map((user) => user.country)),
     );
     const uniqueCourses = Array.from(new Set(users.map((user) => user.course)));
     const uniqueTeachers = Array.from(
-      new Set(users.map((user) => user.preferredTeacher))
+      new Set(users.map((user) => user.preferredTeacher)),
     );
 
     const handleApply = () => {
@@ -1132,7 +1149,7 @@ const TrailSection = () => {
     }
     if (filters.teacher) {
       filtered = filtered.filter(
-        (user) => user.preferredTeacher === filters.teacher
+        (user) => user.preferredTeacher === filters.teacher,
       );
     }
     if (filters.status) {
@@ -1140,26 +1157,26 @@ const TrailSection = () => {
     }
     if (filters.trailId) {
       filtered = filtered.filter((user) =>
-        user.studentId.includes(filters.trailId)
+        user.studentId.includes(filters.trailId),
       );
     }
     if (filters.studentName) {
       filtered = filtered.filter((user) =>
         `${user.studentFirstName} ${user.studentLastName}`
           .toLowerCase()
-          .includes(filters.studentName.toLowerCase())
+          .includes(filters.studentName.toLowerCase()),
       );
     }
     if (filters.email) {
       // No email property in TransformedUser, so skip or use a relevant property if available
       // Example: filter by studentId as a placeholder
       filtered = filtered.filter((user) =>
-        user.studentId.toLowerCase().includes(filters.email.toLowerCase())
+        user.studentId.toLowerCase().includes(filters.email.toLowerCase()),
       );
     }
     if (filters.mobile) {
       filtered = filtered.filter((user) =>
-        user.number.includes(filters.mobile)
+        user.number.includes(filters.mobile),
       );
     }
     if (filters.time) {
@@ -1167,7 +1184,7 @@ const TrailSection = () => {
     }
     if (filters.trialClassStatus) {
       filtered = filtered.filter(
-        (user) => user.trialClassStatus === filters.trialClassStatus
+        (user) => user.trialClassStatus === filters.trialClassStatus,
       );
     }
 
@@ -1297,14 +1314,17 @@ const TrailSection = () => {
         console.error("❌ AdminAuthToken not found");
         return;
       }
-      const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `https://api.blackstoneinfomaticstech.com/evaluation/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formDataNames),
         },
-        body: JSON.stringify(formDataNames),
-      });
+      );
 
       console.log("response", response);
       if (!response.ok) {
@@ -1360,7 +1380,7 @@ const TrailSection = () => {
     return searchFields.some((field) =>
       field
         ? field.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        : false
+        : false,
     );
   });
 
@@ -1375,7 +1395,10 @@ const TrailSection = () => {
   // Utility to find relevant meeting for a user
   const getMeetingForUser = (user: TransformedUser) => {
     return meetings.find(
-      (m) => m.student && m.student.studentId && m.student.studentId === user.studentId
+      (m) =>
+        m.student &&
+        m.student.studentId &&
+        m.student.studentId === user.studentId,
     );
   };
 
@@ -1419,7 +1442,7 @@ const TrailSection = () => {
                           { label: "Trial ID", width: "w-[18%]" },
                           { label: "Student Name", width: "w-[14%]" },
                           { label: "Mobile", width: "w-[10%]" },
-                          { label: "Country", width: "w-[8%]" },
+                          { label: "Country", width: "w-[14%]" },
                           { label: "Course", width: "w-[10%]" },
                           { label: "Time", width: "w-[8%]" },
                           { label: "Date", width: "w-[10%]" },
@@ -1432,12 +1455,13 @@ const TrailSection = () => {
                         ].map((header, index) => (
                           <th
                             key={header.label}
-                            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] whitespace-nowrap ${header.width} ${index === 0
+                            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] whitespace-nowrap ${header.width} ${
+                              index === 0
                                 ? "sticky left-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
                                 : index === 12
                                   ? "sticky right-0 z-20 bg-[#4C6993] text-white dark:bg-[#6087C0]"
                                   : ""
-                              }`}
+                            }`}
                           >
                             {header.label}
                           </th>
@@ -1449,15 +1473,19 @@ const TrailSection = () => {
                         currentItems.map((item, index) => (
                           <tr
                             key={item.trialId}
-                            className={`text-[12px] ${index % 2 === 0
+                            className={`text-[12px] ${
+                              index % 2 === 0
                                 ? "bg-[#fff] dark:bg-[#2C2C2C] "
                                 : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
+                            }`}
                           >
-                            <td className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[18%] sticky left-0 z-10 ${index % 2 === 0
-                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}>
+                            <td
+                              className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[18%] sticky left-0 z-10 ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
+                            >
                               {item.trialId}
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[14%]">
@@ -1466,7 +1494,10 @@ const TrailSection = () => {
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.number}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
+                            <td
+                              title={item.country}
+                              className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[14%] max-w-[140px] overflow-hidden text-ellipsis whitespace-nowrap"
+                            >
                               {item.country}
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
@@ -1477,7 +1508,7 @@ const TrailSection = () => {
                               {(() => {
                                 const meeting = getMeetingForUser(item);
                                 return meeting
-                                  ? `${meeting.scheduledFrom || ''}${meeting.scheduledTo ? ' - ' + meeting.scheduledTo : ''}`
+                                  ? `${meeting.scheduledFrom || ""}${meeting.scheduledTo ? " - " + meeting.scheduledTo : ""}`
                                   : item.time;
                               })()}
                             </td>
@@ -1485,8 +1516,24 @@ const TrailSection = () => {
                               {(() => {
                                 const meeting = getMeetingForUser(item);
                                 return meeting
-                                  ? (meeting.scheduledStartDate ? new Date(meeting.scheduledStartDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "")
-                                  : (item.prefferedDate ? new Date(item.prefferedDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "");
+                                  ? meeting.scheduledStartDate
+                                    ? new Date(
+                                        meeting.scheduledStartDate,
+                                      ).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "short",
+                                        day: "numeric",
+                                      })
+                                    : ""
+                                  : item.prefferedDate
+                                    ? new Date(
+                                        item.prefferedDate,
+                                      ).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "short",
+                                        day: "numeric",
+                                      })
+                                    : "";
                               })()}
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
@@ -1495,23 +1542,28 @@ const TrailSection = () => {
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[12%]">
                               {(() => {
                                 const meeting = getMeetingForUser(item);
-                                const name = meeting && meeting.teacher && meeting.teacher.name
-                                  ? meeting.teacher.name
-                                  : item.assignedTeacher;
+                                const name =
+                                  meeting &&
+                                  meeting.teacher &&
+                                  meeting.teacher.name
+                                    ? meeting.teacher.name
+                                    : item.assignedTeacher;
                                 return name && name.length > 0
-                                  ? name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()
+                                  ? name.charAt(0).toUpperCase() +
+                                      name.slice(1).toLowerCase()
                                   : name;
                               })()}
                             </td>
 
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[12%]">
                               <span
-                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${item.trialClassStatus === "COMPLETED"
+                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                                  item.trialClassStatus === "COMPLETED"
                                     ? "bg-[#ECFDF3] text-[#377E36] px-2 dark:bg-[#377E3633]"
                                     : item.trialClassStatus === "INPROGRESS"
                                       ? " bg-[#FDECEC] text-[#D34645]  px-3 dark:bg-[#D3464533]"
                                       : "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
-                                  }`}
+                                }`}
                               >
                                 {item.trialClassStatus === "COMPLETED"
                                   ? "COMPLETED"
@@ -1538,17 +1590,18 @@ const TrailSection = () => {
                                 });
                                 return (
                                   <span
-                                    className={`px-1 text-[10px] text-center py-[3px] rounded-md ${item.studentStatus?.toUpperCase() ===
-                                        "JOINED"
+                                    className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                                      item.studentStatus?.toUpperCase() ===
+                                      "JOINED"
                                         ? "bg-[#ECFDF3] text-[#377E36] px-6 dark:bg-[#377E3633]"
                                         : item.studentStatus?.toUpperCase() ===
-                                          "WAITING"
+                                            "WAITING"
                                           ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
                                           : item.studentStatus?.toUpperCase() ===
-                                            "PENDING"
+                                              "PENDING"
                                             ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
                                             : "bg-[#FDECEC] text-[#D34645] px-3 dark:bg-[#D3464533]"
-                                      }`}
+                                    }`}
                                   >
                                     {item.studentStatus?.toUpperCase() ||
                                       "PENDING"}
@@ -1559,66 +1612,75 @@ const TrailSection = () => {
 
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD]  w-[12%] whitespace-nowrap">
                               <span
-                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${item.paymentStatus === "PAID"
+                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                                  item.paymentStatus === "PAID"
                                     ? "bg-[#ECFDF3] text-[#377E36] px-5 dark:bg-[#377E3633]"
                                     : item.paymentStatus === "FAILED"
                                       ? "bg-[#FDECEC] text-[#D34645] px-3 dark:bg-[#D3464533]"
                                       : "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]" // for Pending or other statuses
-                                  }`}
+                                }`}
                               >
                                 {item.paymentStatus ?? "PAID"}
                               </span>
                             </td>
                             <td
-                              className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[7%] sticky right-0 z-10 ${index % 2 === 0
+                              className={`px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[7%] sticky right-0 z-10 ${
+                                index % 2 === 0
                                   ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                }`}
+                              }`}
                             >
                               <div className="relative inline-block text-left">
                                 <button
-                                  disabled={item.trialClassStatus === "COMPLETED"}
+                                  disabled={
+                                    item.trialClassStatus === "COMPLETED"
+                                  }
                                   onClick={() =>
                                     setOpenActionMenuForId((prev) =>
-                                      prev === item._id ? null : item._id
+                                      prev === item._id ? null : item._id,
                                     )
                                   }
-                                  className={`text-center p-2 ${item.trialClassStatus === "COMPLETED"
-                                    ? "opacity-40 cursor-not-allowed"
-                                    : "hover:cursor-pointer"
-                                    }`}
+                                  className={`text-center p-2 ${
+                                    item.trialClassStatus === "COMPLETED"
+                                      ? "opacity-40 cursor-not-allowed"
+                                      : "hover:cursor-pointer"
+                                  }`}
                                 >
                                   <FaEllipsisV
                                     size={12}
-                                    className={`${item.trialClassStatus === "COMPLETED"
-                                      ? "text-gray-400"
-                                      : "text-[#5F6368] dark:text-white"
-                                      }`}
+                                    className={`${
+                                      item.trialClassStatus === "COMPLETED"
+                                        ? "text-gray-400"
+                                        : "text-[#5F6368] dark:text-white"
+                                    }`}
                                   />
                                 </button>
                               </div>
                             </td>
-                            {openActionMenuForId === item._id && item.trialClassStatus !== "COMPLETED" && (
-                              <div className="absolute right-16 mt-10 w-28 -ml-10 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-30 dark:bg-[#2E2E2E]">
-                                <div className="py-1">
-                                  <button
-                                    className="block w-full px-3 py-2 text-left text-[11px] text-[#010E30E5] hover:bg-gray-100 dark:text-white dark:hover:bg-[#3A3A3A]"
-                                    onClick={() => {
-                                      handleClick(item.trialId.toString());
-                                      setOpenActionMenuForId(null);
-                                    }}
-                                  >
-                                    Edit
-                                  </button>
-                                  <button
-                                    className="block w-full px-3 py-2 text-left text-[11px] text-[#D34645] hover:bg-gray-100 dark:hover:bg-[#3A3A3A]"
-                                    onClick={() => setOpenActionMenuForId(null)}
-                                  >
-                                    Cancel
-                                  </button>
+                            {openActionMenuForId === item._id &&
+                              item.trialClassStatus !== "COMPLETED" && (
+                                <div className="absolute right-16 mt-10 w-28 -ml-10 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-30 dark:bg-[#2E2E2E]">
+                                  <div className="py-1">
+                                    <button
+                                      className="block w-full px-3 py-2 text-left text-[11px] text-[#010E30E5] hover:bg-gray-100 dark:text-white dark:hover:bg-[#3A3A3A]"
+                                      onClick={() => {
+                                        handleClick(item.trialId.toString());
+                                        setOpenActionMenuForId(null);
+                                      }}
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      className="block w-full px-3 py-2 text-left text-[11px] text-[#D34645] hover:bg-gray-100 dark:hover:bg-[#3A3A3A]"
+                                      onClick={() =>
+                                        setOpenActionMenuForId(null)
+                                      }
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
                           </tr>
                         ))
                       ) : (
@@ -1632,10 +1694,20 @@ const TrailSection = () => {
                   </table>
                 </div>
                 <style jsx>{`
-                  .thin-scroll { scrollbar-width: thin; scrollbar-color: rgba(100,100,100,.5) transparent; }
-                  .thin-scroll::-webkit-scrollbar { height: 3px; }
-                  .thin-scroll::-webkit-scrollbar-track { background: transparent; }
-                  .thin-scroll::-webkit-scrollbar-thumb { background-color: rgba(100,100,100,.5); border-radius: 9999px; }
+                  .thin-scroll {
+                    scrollbar-width: thin;
+                    scrollbar-color: rgba(100, 100, 100, 0.5) transparent;
+                  }
+                  .thin-scroll::-webkit-scrollbar {
+                    height: 3px;
+                  }
+                  .thin-scroll::-webkit-scrollbar-track {
+                    background: transparent;
+                  }
+                  .thin-scroll::-webkit-scrollbar-thumb {
+                    background-color: rgba(100, 100, 100, 0.5);
+                    border-radius: 9999px;
+                  }
                 `}</style>
               </div>
             </div>
@@ -1816,8 +1888,8 @@ const TrailSection = () => {
                       ? editableData.changeDate
                       : formData?.student.preferredDate
                         ? new Date(formData.student.preferredDate)
-                          .toISOString()
-                          .split("T")[0]
+                            .toISOString()
+                            .split("T")[0]
                         : ""
                   }
                   onChange={(e) => handleDateChange(e.target.value)}
@@ -1862,7 +1934,12 @@ const TrailSection = () => {
                       ? editableData.availableTeacher
                       : formData?.assignedTeacherId || ""
                   }
-                  onChange={(e) => handleEditableFieldChange('availableTeacher', e.target.value)}
+                  onChange={(e) =>
+                    handleEditableFieldChange(
+                      "availableTeacher",
+                      e.target.value,
+                    )
+                  }
                   disabled={isLoadingTeachers}
                 >
                   <option value="">Select Teacher</option>
@@ -1890,7 +1967,19 @@ const TrailSection = () => {
                 )}
               </div>
 
-              <div> <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]"> Original Assigned Teacher </label> <input value={formData?.assignedTeacher || ""} disabled readOnly className="w-full p-2 border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]" /> </div>
+              <div>
+                {" "}
+                <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
+                  {" "}
+                  Original Assigned Teacher{" "}
+                </label>{" "}
+                <input
+                  value={formData?.assignedTeacher || ""}
+                  disabled
+                  readOnly
+                  className="w-full p-2 border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                />{" "}
+              </div>
 
               <div>
                 <label className="block text-xs font-medium text-black text-[12px] dark:text-[#D6D6D6]">
@@ -1961,10 +2050,12 @@ const TrailSection = () => {
                 >
                   Cancel
                 </button>
-                {((editableData.availableTeacher || formData?.assignedTeacherId) &&
-                  ((editableData.changeDate || formData?.student.preferredDate) &&
-                    (editableData.changeTime || formData?.student.preferredFromTime))
-                ) && (
+                {(editableData.availableTeacher ||
+                  formData?.assignedTeacherId) &&
+                  (editableData.changeDate ||
+                    formData?.student.preferredDate) &&
+                  (editableData.changeTime ||
+                    formData?.student.preferredFromTime) && (
                     <button
                       type="button"
                       onClick={handleSaveChanges}
